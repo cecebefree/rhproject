@@ -4,9 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build": "vite build apps/web",
     "preview": "vite preview"
   },
   "dependencies": {
