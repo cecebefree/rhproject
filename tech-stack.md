@@ -310,3 +310,36 @@ supabase gen types typescript --local > packages/shared/src/types/database.ts
 **Source of truth:** `tech-stack.md` (at repo root).
 Read `tech-stack.md` fully before planning or editing.
 Stay in plan mode until approved, then switch to build.
+## Swarm Installation & Verification
+
+**Post-deployment checklist:**
+- Run `opencode` + `/swarm diagnose`
+- Verify `.opencode/swarm.json` is valid JSON
+- Test MCP server connectivity
+- Validate `events.jsonl` logging
+- Run `/swarm council <test-question>`
+- Check token costs
+- Audit trail inspection
+- Capacity test — run 5 parallel tasks
+- Timeout tuning — set MCP timeouts
+- Credential rotation plan
+
+**Common installation failures:**
+- Silent MCP timeout
+- Credential scope issues
+- Tool-call validation missing
+- Agent initialization race
+
+## Library Module: Planning Brief
+
+**Core Concept:** Digital bookshelf; free in School mode, tokenized in Library mode.
+
+**Data Flow:**
+- Admin uploads e-books
+- Booklist maps each child's course
+- Library auto-populates Bookshelf
+- Child accesses free or by token
+
+**Next Session:** 5 LMS screens + 2–3 reader UI prototypes.
+
+**Status:** Placeholder (LMS 71% done).
