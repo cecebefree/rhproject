@@ -305,6 +305,18 @@ supabase gen types typescript --local > packages/shared/src/types/database.ts
 
 ---
 
+## Memory & Governance Anchor
+
+Read these files **first** before planning or editing:
+
+- **`tech-stack.md`** (this file) — Definitive architecture reference
+- **`best-practices.md`** — CI guards, isolation rules, conventions
+- **`memory-recovery.md`** — Session recovery workflow and state management
+
+These three form the **governance layer** for all OpenCode sessions.
+
+---
+
 ## Project Rules
 
 **Source of truth:** `tech-stack.md` (at repo root).
