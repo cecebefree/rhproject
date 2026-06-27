@@ -101,3 +101,9 @@ Committed to repo. CI drift guard fails on diff.
 - Apple Developer account = TODO (deferred signing for Tauri + Capacitor)
 - Redhouse brand hex codes + logo = TODO
 - Cambridge `billing_basis` = TODO (awaiting licence)
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan:
+- **LMS Core**: `specs/001-lms-core/plan.md`
+<!-- SPECKIT END -->
