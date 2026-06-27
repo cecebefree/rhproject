@@ -1,109 +1,97 @@
-# AGENTS.md — vas-edutech (Redhouse)
+# AGENTS.md — redhouse-real-web
 
-Source of truth: tech-stack.md — read fully first.
-
-**Source of truth:** `tech-stack.md` (repo root). Read it fully before planning or editing.
+**READ tech-stack.md FIRST** — it describes the target architecture, not the current state.
 
 ---
 
-## Current State
+## Current State: Mid-Migration
 
-Single Vite + React 19 app at repo root (`redhouse-real-web`). **Migrating to pnpm + Turborepo monorepo** (`vas-edutech`) with:
-- `apps/web` — React + Vite → Cloudflare Pages (current app moves here)
-- `apps/mobile` — Capacitor iOS → TestFlight/App Store (new)
-- `apps/lms` — Tauri 2.0 + React → Desktop (new, AI isolated here)
-- `packages/shared` — Supabase client, RLS helpers, validation, generated types
-- `supabase/` — 12 migrations, 6 Edge Functions, pgTAP tests
-- `tenants/redhouse/` — Tenant #1 config; `_template/` for new tenants
+Single Vite + React 19 app at repo root. Migration to pnpm + Turborepo monorepo is **in progress but not complete**.
 
----
-
-## Key Commands (from tech-stack.md)
-
-```bash
-# Local bootstrap (Docker, Supabase, types, deps)
-make setup
-
-# Regenerate Supabase types → packages/shared/src/types/database.ts
-make types
-
-# Dev servers
-make dev
-
-# Build all apps
-make build:all
-
-# Run pgTAP tests
-make test
-
-# Lint (Biome)
-make lint
-
-# Typecheck
-make typecheck
+Actual structure:
+```
+repo root/           # Vite app (redhouse-temp)
+├── src/             # Current working app (App.tsx, components/, pages/, hooks/)
+├── apps/web/src/    # New LMS feature code being scaffolded (features/lms/)
+├── supabase/migrations/  # 6 migrations (013–018), LMS schema in progress
+├── package.json     # Has workspaces config (apps/*, packages/*) but structure incomplete
+└── dist/            # Built output
 ```
 
-**Type generation:**
+**What's done vs planned:**
+- `apps/web/` scaffold exists but is not the active app — `src/` at root is
+- `supabase/migrations/013-018` exist (LMS tables: users_profiles, courses, chapters, enrollments, chapter_progress)
+- `packages/`, `tenants/`, `supabase/functions/`, `Makefile`, `biome.json`, `turbo.json` do NOT exist yet
+
+---
+
+## Development Commands
+
 ```bash
-supabase gen types typescript --local > packages/shared/src/types/database.ts
+# Current working app (root)
+npm run dev      # Vite dev server
+npm run build    # Build root app → dist/
+
+# Supabase (when local dev is set up)
+supabase start
+supabase status
+
+# No make targets exist yet (Makefile is TODO)
 ```
-Committed to repo. CI drift guard fails on diff.
 
 ---
 
-## CI Hard Rules (3 Guards)
+## Key Files
 
-1. **AI-import guard** — Fail if `apps/web/**` or `apps/mobile/**` import from `apps/lms/src/ai/**` or any AI SDK (openai, anthropic, @langchain, etc.)
-2. **Platform/tenant import guard** — Fail if `apps/lms/**` or `apps/mobile/**` (engine code) import from `tenants/**`
-3. **Type-drift guard** — Fail if `supabase gen types` output diffs vs committed `packages/shared/src/types/database.ts`
-
----
-
-## AI Isolation
-
-**Only** `apps/lms/src/ai/` contains AI code (engine, RAG, tutor assembly). Mobile has ONE AI screen (AI Tutor) calling `ai-tutor-proxy` Edge Function. Web has **zero** AI imports.
-
----
-
-## Environment Variables
-
-| Status | Variables |
-|--------|-----------|
-| **READY** (in `.env`) | `VITE_GA4_ID`, `HUBSPOT_PORTAL_ID`, `HUBSPOT_FORM_ID`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only, bypasses RLS), `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_PAGES_PROJECT` |
-| **TODO** (`.env.example`) | `WEB3FORMS_KEY`, `BREVO_API_KEY`, `BOTPRESS_KEY`, `CLOUDINARY_URL`, `SENTRY_DSN`, `NEMOTRON_ENDPOINT`, `NEMOTRON_KEY` |
-
-**Never commit secret values.** `SUPABASE_SERVICE_ROLE_KEY` is Edge Functions only.
+| Path | Purpose |
+|------|---------|
+| `src/App.tsx` | Root app entry |
+| `src/pages/` | Page components |
+| `src/components/` | Shared components |
+| `src/hooks/` | Custom React hooks |
+| `src/utils/` | Utility functions |
+| `src/types/` | TypeScript types |
+| `apps/web/src/features/lms/` | New LMS feature (being built) |
+| `supabase/migrations/013-018` | LMS database schema |
+| `tech-stack.md` | Target architecture blueprint |
 
 ---
 
-## Architecture Notes
+## tech-stack.md Notes
 
-- **Supabase = authoritative.** HubSpot is sync-only (outbound Supabase → HubSpot via nightly reconciliation + webhook).
-- **RLS:** Web tables = role-only. LMS/Mobile tables = role + `tenant_id`. pgTAP tests for both.
-- **Time:** All instants stored as `timestamptz` (UTC). Convert to local ONLY on display. pg_cron runs in UTC; schedule in UTC.
-- **Edge Functions (6):** `verify-turnstile`, `nightly-reconciliation`, `hubspot-webhook`, `class-start-ping`, `validate-toggle`, `ai-tutor-proxy`
+`tech-stack.md` describes the **target monorepo** state, not current reality:
+- `pnpm`, `Turborepo`, `Biome`, `Makefile` targets are TODO
+- Apps (`apps/web`, `apps/mobile`, `apps/lms`) are TODO
+- `packages/shared` is TODO
+- Edge Functions (6) are TODO
+- pgTAP tests are TODO
+- CI guards (AI-import, platform/tenant) are TODO
+
+---
+
+## Active Work Context
+
+The `specs/001-lms-core/` directory contains the LMS feature spec and plan being implemented:
+- `specs/001-lms-core/plan.md` — implementation plan
+- `specs/001-lms-core/tasks.md` — task list
+- LMS pages in `apps/web/src/features/lms/pages/`
+- LMS services in `apps/web/src/features/lms/services/`
+- LMS components in `apps/web/src/features/lms/components/`
 
 ---
 
 ## Workflow
 
-1. **Plan mode** — Read `tech-stack.md`, investigate, propose plan. Stop for approval.
-2. **Build mode** — Execute approved plan. Write files, run commands.
-3. **Stay in plan mode** until user explicitly switches.
+1. Read `tech-stack.md` for target architecture
+2. Read `specs/001-lms-core/plan.md` for current implementation plan
+3. Ask before making changes to core architecture (the migration plan is not finalized)
 
 ---
 
 ## Gotchas
 
-- Current `netlify.toml` → will become `wrangler.toml` (Cloudflare Pages)
-- Current ESLint → will become Biome
-- Rust crates: `reqwest` **must use rustls-tls** (not native-tls)
-- Apple Developer account = TODO (deferred signing for Tauri + Capacitor)
-- Redhouse brand hex codes + logo = TODO
-- Cambridge `billing_basis` = TODO (awaiting licence)
-
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan:
-- **LMS Core**: `specs/001-lms-core/plan.md`
-<!-- SPECKIT END -->
+- Root `src/` is the active app; `apps/web/` is being scaffolded — don't assume code there is complete
+- No CI guards exist yet (the AI-import guard, platform/tenant guard, type-drift guard are all TODO)
+- ESLint (not Biome) is currently used
+- `SUPABASE_SERVICE_ROLE_KEY` handling follows what tech-stack.md describes but no Edge Functions exist yet
+- This is a migration-in-progress repo; verify existence of files/dirs before assuming they're implemented

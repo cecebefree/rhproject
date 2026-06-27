@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" href="https://media.base44.com/images/public/69f23a2b0bbaf081e75813b0/7f4474889_logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#121A2B" />
+  <meta name="theme-color" content="#1a2330" />
   <title>Red House School | Cambridge A-Levels by Grade 12 | Global Education</title>
   <meta name="description" content="Premium online Cambridge education with live teachers, real peer connections, and university pathways worldwide." />
   <meta property="og:title" content="Red House School | Cambridge A-Levels by Grade 12" />
@@ -12,33 +12,29 @@
   <meta property="og:image" content="https://media.base44.com/images/public/69f23a2b0bbaf081e75813b0/7f4474889_logo.png/v1/fill/w_1200,h_630/7f4474889_logo.png" />
   <meta property="og:url" content="https://redhouse.school" />
   <link rel="canonical" href="https://redhouse.school" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            rh: {
-              navy: '#121A2B', 'navy-mid': '#18233A', 'navy-dark': '#2D3953', 'navy-darker': '#25304A',
-              red: '#C61C10', 'red-bright': '#F35325', 'red-dim': 'rgba(198,28,16,0.85)',
-              gold: '#F59B14', 'gold-bright': '#FFBA08',
-              concrete: '#F2F2F2', regent: '#8A94A8', alabaster: '#FAFAFA',
-              grey95: '#F3F3F3', 'grey-98': '#F9FAFB', 'azure-12': '#121A2B',
-              'azure-16': '#18233A', 'azure-20': '#212D3F', 'azure-25': '#2D3953',
-              'azure-48': '#05A6F0', 'azure-60': '#8A94A8', 'chartreuse-38': '#81BC06',
-              orange: '#FFBA08', 'orange-52': '#F59B14',
-            }
-          },
-          fontFamily: {
-            playfair: ['Playfair Display', 'Georgia', 'serif'],
-            inter: ['Inter', 'system-ui', 'sans-serif'],
-            menlo: ['Menlo', 'Monaco', 'Consolas', 'monospace'],
-          }
-        }
-      }
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Menlo:wght@400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    
+    html, body, #root {
+      height: 100%;
+      width: 100%;
+    }
+    
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background-color: #f8f7f4;
+      color: #1c1c1e;
+      line-height: 1.6;
+    }
+  </style>
 </head>
-<body class="bg-rh-navy font-inter antialiased">
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
