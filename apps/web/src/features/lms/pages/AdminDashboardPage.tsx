@@ -1,120 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { RegistrationsTable } from '../components/RegistrationsTable';
-import { ProgressReport } from '../components/ProgressReport';
-import { getAllRegistrations, getAllProgress } from '../services/admin';
-import type { RegistrationRecord, ProgressRecord } from '../services/admin';
+import React, { useState } from "react";
+import Home from "./screens/Home";
+import Class from "./screens/Class";
+import Hub from "./screens/Hub";
+import Social from "./screens/Social";
+import Profile from "./screens/Profile";
 
-export function AdminDashboardPage() {
-  const { profile } = useAuth();
-  const navigate = useNavigate();
-  const [registrations, setRegistrations] = useState<RegistrationRecord[]>([]);
-  const [progress, setProgress] = useState<ProgressRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'registrations' | 'progress'>('registrations');
-  const [filterCourse, setFilterCourse] = useState<string>('');
-  const [filterStudent, setFilterStudent] = useState<string>('');
-
-  useEffect(() => {
-    const loadData = async () => {
-      const [regs, prog] = await Promise.all([
-        getAllRegistrations(),
-        getAllProgress(),
-      ]);
-      setRegistrations(regs);
-      setProgress(prog);
-      setLoading(false);
-    };
-    loadData();
-  }, []);
-
-  if (profile?.role !== 'admin') {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <p className="text-red-600">You do not have admin access.</p>
-      </div>
-    );
-  }
-
-  const filteredRegistrations = registrations.filter(r => {
-    if (filterCourse && r.course_id !== filterCourse) return false;
-    if (filterStudent && r.student_id !== filterStudent) return false;
-    return true;
-  });
-
-  const filteredProgress = progress.filter(p => {
-    if (filterCourse && p.course_id !== filterCourse) return false;
-    if (filterStudent && p.student_id !== filterStudent) return false;
-    return true;
-  });
-
-  const uniqueCourses = [...new Map(registrations.map(r => [r.course_id, { id: r.course_id, title: r.course_title }])).values()];
-  const uniqueStudents = [...new Map(registrations.map(r => [r.student_id, { id: r.student_id, name: r.student_name }])).values()];
+export default function App() {
+  // Exact v0 tab router state
+  const [activeTab, setActiveTab] = useState<"Home" | "Class" | "Hub" | "Social" | "Profile">("Home");
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
-
-      <div className="flex border-b border-gray-200 mb-6">
-        <button
-          onClick={() => setActiveTab('registrations')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'registrations'
-              ? 'border-b-2 border-indigo-500 text-indigo-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Registrations
-        </button>
-        <button
-          onClick={() => setActiveTab('progress')}
-          className={`px-4 py-2 font-medium ${
-            activeTab === 'progress'
-              ? 'border-b-2 border-indigo-500 text-indigo-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          Student Progress
-        </button>
-      </div>
-
-      <div className="flex gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Course</label>
-          <select
-            value={filterCourse}
-            onChange={(e) => setFilterCourse(e.target.value)}
-            className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="">All Courses</option>
-            {uniqueCourses.map(c => (
-              <option key={c.id} value={c.id}>{c.title}</option>
-            ))}
-          </select>
+    <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "#e9ebee", padding: "16px", fontFamily: "system-ui, sans-serif" }}>
+      
+      {/* Phone Frame Casing Container */}
+      <div style={{ width: "390px", height: "844px", backgroundColor: "#F8F7F4", borderRadius: "40px", overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", border: "10px solid #1a1a1a", position: "relative" }}>
+        
+        {/* Dynamic Screen Viewport Area */}
+        <div style={{ flex: 1, overflowY: "auto", pb: "80px" }}>
+          {activeTab === "Home" && <Home />}
+          {activeTab === "Class" && <Class />}
+          {activeTab === "Hub" && <Hub />}
+          {activeTab === "Social" && <Social />}
+          {activeTab === "Profile" && <Profile />}
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Student</label>
-          <select
-            value={filterStudent}
-            onChange={(e) => setFilterStudent(e.target.value)}
-            className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          >
-            <option value="">All Students</option>
-            {uniqueStudents.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-        </div>
-      </div>
 
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : activeTab === 'registrations' ? (
-        <RegistrationsTable registrations={filteredRegistrations} />
-      ) : (
-        <ProgressReport progress={filteredProgress} />
-      )}
+        {/* Pure v0 Core Bottom Navigation Tab Bar Structure */}
+        <nav style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "64px", backgroundColor: "white", borderTop: "1px solid #e4e4e7", display: "flex", justifyContent: "space-around", alignItems: "center", padding: "0 8px", zIndex: 50 }}>
+          
+          <button onClick={() => setActiveTab("Home")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justify: "center", flex: 1, height: "100%", border: "none", background: "none", cursor: "pointer", color: activeTab === "Home" ? "#DC2626" : "#a1a1aa" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span style={{ fontSize: "10px", marginTop: "4px", fontWeight: activeTab === "Home" ? "700" : "500" }}>Home</span>
+          </button>
+
+          <button onClick={() => setActiveTab("Class")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justify: "center", flex: 1, height: "100%", border: "none", background: "none", cursor: "pointer", color: activeTab === "Class" ? "#DC2626" : "#a1a1aa" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span style={{ fontSize: "10px", marginTop: "4px", fontWeight: activeTab === "Class" ? "700" : "500" }}>Class</span>
+          </button>
+
+          <button onClick={() => setActiveTab("Hub")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justify: "center", flex: 1, height: "100%", border: "none", background: "none", cursor: "pointer", color: activeTab === "Hub" ? "#DC2626" : "#a1a1aa" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+            <span style={{ fontSize: "10px", marginTop: "4px", fontWeight: activeTab === "Hub" ? "700" : "500" }}>Hub</span>
+          </button>
+
+          <button onClick={() => setActiveTab("Social")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justify: "center", flex: 1, height: "100%", border: "none", background: "none", cursor: "pointer", color: activeTab === "Social" ? "#DC2626" : "#a1a1aa" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span style={{ fontSize: "10px", marginTop: "4px", fontWeight: activeTab === "Social" ? "700" : "500" }}>Social</span>
+          </button>
+
+          <button onClick={() => setActiveTab("Profile")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justify: "center", flex: 1, height: "100%", border: "none", background: "none", cursor: "pointer", color: activeTab === "Profile" ? "#DC2626" : "#a1a1aa" }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span style={{ fontSize: "10px", marginTop: "4px", fontWeight: activeTab === "Profile" ? "700" : "500" }}>Profile</span>
+          </button>
+
+        </nav>
+
+      </div>
     </div>
   );
 }
