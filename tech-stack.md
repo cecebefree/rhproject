@@ -355,3 +355,105 @@ Stay in plan mode until approved, then switch to build.
 **Next Session:** 5 LMS screens + 2–3 reader UI prototypes.
 
 **Status:** Placeholder (LMS 71% done).
+
+---
+
+## Leadership Council (Above the Swarm)
+
+### Standard of Excellence
+- Every lead operates at world-class level for their lane — highest known industry
+  practices, no mediocrity.
+- The Independent Consultant judges against the highest known industry standards
+  current at the time of review, not internal convenience.
+- The 17-agent swarm executes as sharply as the leads direct — precision, no drift,
+  no hallucination.
+- Anyone in the stack below standard is corrected or replaced.
+
+### Hierarchy (top to bottom)
+- **Cece** — Final authority. All approvals and escalations end here.
+- **Independent Consultant** — Read-only oversight outside the swarm. Continuously
+  researches whether the build follows the latest protocols and is on-trend,
+  benchmarks against current industry standards, notes his own sources, makes
+  suggestions, and flags issues to Cece in real time. Head of the monthly report
+  compile. Does NOT run the build.
+- **Orchestrator** — Execution layer. Routes work, convenes 2–3 relevant leads per
+  phase, logs every decision in events.jsonl.
+- **10 Leads** — COO, CTO, Backend, Frontend, Security, QA, DevOps, Data, Product
+  Manager, Governance.
+- **17-agent swarm** — Performs the build under the leads.
+
+### Activation (gated)
+- Leads are not always on. Orchestrator proposes 2–3 relevant leads per phase.
+- Cece approves before any lead activates. No approval = no activation.
+
+### Independent Consultant (continuous oversight)
+- Works the whole time, not just monthly. Read-only — never builds.
+- Continuously researches: are we following the latest protocols? Are we on-trend
+  vs. current best-in-class?
+- Notes his own sources and dates for every finding — no claim without a source.
+- Makes suggestions and flags issues to Cece in real time as they arise, not only
+  at month-end.
+- Is the head who compiles the monthly report from all contributors' sections.
+- Everything he raises — suggestions and flags — goes to Cece for sign-off.
+- Logs his research, sources, suggestions, and flags to events.jsonl.
+
+### Stay-Informed Loop (mandatory, fully tracked)
+- The system keeps itself current; it does not rely on stale knowledge.
+- Data Lead + Consultant continuously ingest current industry standards, trends,
+  and best practices — each with source and date recorded.
+- In-lane sharpening is double-gated and logged. No exceptions:
+  1. The agent proposes a sharpening (what skill, what was learned).
+  2. The agent records the exact source and date it came from.
+  3. The Consultant vets it — source must be proven, current, not junk.
+  4. Cece approves before it is adopted. No approval = no sharpening.
+  5. Orchestrator logs the full entry to events.jsonl.
+- Every sharpening entry must contain: agent, lane, what it sharpened, the source,
+  the date, consultant verdict, Cece approval, timestamp.
+
+### Tie-breaks
+- First attempt in-lane: technical disputes → CTO; operational disputes → COO.
+- If unresolved, the dispute goes UP to the Independent Consultant.
+- The Consultant reviews and sends his verdict to Cece.
+- Cece makes the final decision. The Consultant advises; Cece rules.
+- Irreversible decisions go straight to Cece.
+
+### Human-review triggers (mandatory)
+- Legal / compliance matters
+- Irreversible actions
+- COO-vs-CTO standoff
+
+### Cadence & Reviews
+- Daily: 15-minute brief.
+- Weekly: 1–2 hour deep-dive.
+- Monthly: half-day strategic review + the combined leadership report (below),
+  with human sign-off by Cece.
+- Quarterly: self-assessment.
+
+### Monthly Report (combined, multi-author)
+- ONE document per month, compiled by the Consultant from all contributors.
+- Each lead/agent writes their OWN section in their OWN expertise:
+  - what they did this month
+  - what they sharpened, with source + date
+  - findings under their lane
+  - suggestions tied to OUR build and the trends flagged this month
+- The Consultant adds an independent section:
+  - benchmark vs. current industry standards (dated, cited sources)
+  - what changed in the industry this month and how it affects us
+  - concerns and risks flagged for Cece
+- Consultant combines every section + own audit into one report.
+- All suggestions and flagged items go to Cece for sign-off — approved or rejected
+  item by item. Nothing is adopted without Cece's approval.
+
+### Audit
+- events.jsonl is append-only; records each decision AND each sharpening, with the
+  governing rule used.
+- Every sharpening logs: what was learned, the source, the date, consultant vet,
+  Cece approval.
+- Logs are human-readable and AI-readable (human summaries + consultant logs).
+- Consultant reads the log, judges against best practices, reports up to Cece.
+- Nothing is adopted on unvetted or unsourced data.
+
+### Session Handoff
+- Leadership state (active leads, open approvals, pending sharpenings) is written to
+  the session handoff on close, per the Memory & Session Workflow section.
+
