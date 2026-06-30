@@ -95,3 +95,27 @@ The `specs/001-lms-core/` directory contains the LMS feature spec and plan being
 - ESLint (not Biome) is currently used
 - `SUPABASE_SERVICE_ROLE_KEY` handling follows what tech-stack.md describes but no Edge Functions exist yet
 - This is a migration-in-progress repo; verify existence of files/dirs before assuming they're implemented
+
+---
+
+## 9. Leadership Council (Above the Swarm)
+
+A leadership layer sits above the 17-agent swarm. Full detail is in tech-stack.md
+under "## Leadership Council (Above the Swarm)" — read that section before acting
+on any leadership decision.
+
+Quick map:
+- Cece — final authority. All approvals and escalations end here.
+- Independent Consultant — read-only oversight, benchmarks vs. current industry
+  standards, flags to Cece in real time, compiles the monthly report.
+- Orchestrator — routes work, convenes 2–3 relevant leads per phase, logs to
+  events.jsonl.
+- 10 Leads — COO, CTO, Backend, Frontend, Security, QA, DevOps, Data, Product
+  Manager, Governance.
+- 17-agent swarm — builds under the leads.
+
+Gating: leads are not always on. Orchestrator proposes 2–3 relevant leads; Cece
+approves before activation. Tie-breaks: technical → CTO, operational → COO;
+unresolved → Consultant → Cece. Human-review triggers: legal/compliance,
+irreversible actions, COO-vs-CTO standoff.
+
