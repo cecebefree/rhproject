@@ -54,7 +54,7 @@ All PRs must pass: TypeScript typecheck, Biome lint, `make test` (pgTAP), `make 
 
 This constitution supersedes all other practices. Amendments require: (1) documented rationale, (2) approval, (3) migration plan for affected code. All PRs/reviews must verify compliance. Complexity must be justified. Use `tech-stack.md` as runtime development guidance.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date unknown | **Last Amended**: 2026-06-26
+**Version**: 1.0.0 | **Ratified**: 2026-06-26 | **Last Amended**: 2026-06-26
 
 <!-- Sync Impact Report
 Version change: (template) → 1.0.0
