@@ -26,7 +26,7 @@ CREATE POLICY "Instructors can manage chapters of their courses" ON public.chapt
     EXISTS (
       SELECT 1 FROM public.courses c
       JOIN public.profiles p ON c.instructor_id = p.id
-      WHERE c.id = course_id AND p.id = auth.uid() AND p.role = 'instructor'
+      WHERE c.id = course_id AND p.id = auth.uid() AND p.role IN ('teacher', 'instructor', 'admin')
     )
   );
 

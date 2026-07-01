@@ -29,7 +29,7 @@ CREATE POLICY "Instructors can view progress for their courses" ON public.chapte
       SELECT 1 FROM public.courses c
       JOIN public.profiles p ON c.instructor_id = p.id
       JOIN public.chapters ch ON ch.course_id = c.id
-      WHERE ch.id = chapter_id AND p.id = auth.uid() AND p.role = 'instructor'
+      WHERE ch.id = chapter_id AND p.id = auth.uid() AND p.role IN ('teacher', 'instructor', 'admin')
     )
   );
 

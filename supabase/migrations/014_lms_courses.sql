@@ -20,7 +20,7 @@ CREATE POLICY "Anyone can view published courses" ON public.courses
 -- Instructors can manage their own courses
 CREATE POLICY "Instructors can manage their courses" ON public.courses
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'instructor' AND id = instructor_id)
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('teacher', 'instructor', 'admin') AND id = instructor_id)
   );
 
 -- Admins can view all courses
