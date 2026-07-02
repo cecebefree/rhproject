@@ -85,6 +85,7 @@ The `specs/001-lms-core/` directory contains the LMS feature spec and plan being
 1. Read `tech-stack.md` for target architecture
 2. Read `specs/001-lms-core/plan.md` for current implementation plan
 3. Ask before making changes to core architecture (the migration plan is not finalized)
+4. **Activation gate:** Before any phase work, PROPOSE lead roster to Cece and WAIT for explicit approval. No lead dispatch without prior roster approval (see section 9 HARD RULE).
 
 ---
 
@@ -227,3 +228,42 @@ THE MASTER SCHEDULE IS THE PROOF OF THE RELATIONSHIP:
 
 STATUS: LOCKED. No free changes. Any change requires Cece's explicit OK.
 # ⛔ REPO LOCK — LIVE REPO IS: /Users/ce/Documents/Redhouse-website/rhproject-new — redhouse-real-web is DEAD, IGNORE IT. Every session: run pwd FIRST, confirm it ends in /rhproject-new, else STOP.
+
+
+---
+
+## SUBAGENT FILE ACCESS RULE (NON-NEGOTIABLE)
+
+**Subagents CANNOT access the filesystem directly.** All file reads, writes, globs, greps, and searches MUST be performed by the orchestrator (architect) and the CONTENTS passed into the subagent prompt as inline context.
+
+### Forbidden in subagent prompts:
+- Absolute or relative file paths expecting the subagent to read them
+- Instructions like "read FILE.md" or "check the contents of X"
+- Any tool invocation that touches disk (read, write, edit, glob, grep, bash with file ops)
+
+### Required orchestrator behavior:
+1. **Before dispatching a subagent**, the orchestrator reads all files the subagent will need
+2. **Injects full file contents** into the subagent prompt under a `## CONTEXT FILES` section
+3. **Subagent operates purely on provided context** — no disk access, no path resolution
+
+### Context injection format:
+```
+## CONTEXT FILES
+### path/to/file1.md
+<<<FILE_START>>>
+[full file contents here]
+<<<FILE_END>>>
+
+### path/to/file2.ts
+<<<FILE_START>>>
+[full file contents here]
+<<<FILE_END>>>
+```
+
+### Subagent contract:
+- Subagent MUST NOT attempt to read files not in CONTEXT FILES
+- Subagent MUST NOT output file paths expecting follow-up reads
+- Subagent returns analysis, patches, or decisions — never "I need to read X first"
+- If context is insufficient, subagent explicitly states: "CONTEXT INSUFFICIENT: need [file/path]"
+
+STATUS: LOCKED. Effective 2026-07-02. Violation = governance breach.

@@ -360,6 +360,8 @@ Stay in plan mode until approved, then switch to build.
 
 ## Leadership Council (Above the Swarm)
 
+> **Cross-reference:** Quick map + hard rules (roster approval, deferred items gate) are in AGENTS.md section 9. This file has the full detail. Both must be read at session start.
+
 ### Standard of Excellence
 - Every lead operates at world-class level for their lane — highest known industry
   practices, no mediocrity.
