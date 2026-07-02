@@ -119,3 +119,111 @@ approves before activation. Tie-breaks: technical → CTO, operational → COO;
 unresolved → Consultant → Cece. Human-review triggers: legal/compliance,
 irreversible actions, COO-vs-CTO standoff.
 
+### HARD RULE — Roster Approval Required Before Dispatch (effective 2026-07-01)
+The Orchestrator MUST:
+1. PROPOSE the lead roster (which Leads, for which phase/review) to Cece.
+2. WAIT for Cece’s explicit "approved" (or revised roster) before dispatching ANY
+   Lead review or council action.
+No verdict, recommendation, or finding from any Lead is valid if the roster was not
+approved prior to dispatch. Reviews dispatched without prior roster approval are
+governance violations and must be logged to events.jsonl with severity HIGH.
+
+### HARD RULE — Deferred Items Gate (effective 2026-07-01)
+Open items in .swarm/deferred.md are tracked blockers. No item may be closed in
+deferred.md without a Fix-note containing either a commit ref or a verified result.
+Status must be one of: Open | In Progress | Watch | Closed. Orchestrator reviews
+deferred.md at every phase boundary.
+
+
+
+---
+
+## WHITE-LABEL ARCHITECTURE LOCK (authoritative — do not remap)
+
+1. THREE white-label products, each its own product:
+   - LMS
+   - Mobile
+   - Devotional
+
+2. MOBILE is an OPTIONAL ADD-ON to LMS — NOT a standalone module.
+   LMS and MOBILE SHARE ONE SOURCE OF TRUTH. Same data feeds both.
+   Mobile is a read-mostly companion fed by the LMS source.
+
+3. DEVOTIONAL is SEPARATE — its own white-label, its own data.
+   It is a Redhouse-unique mobile add-on, NOT a permanent mobile-module
+   feature. Devotional is untouched by LMS/Mobile data or the 023 retrofit.
+
+4. "TENANT" is the wrong public word — each product is a WHITE-LABEL.
+   Within each white-label, tenant #1 = REDHOUSE.
+   Redhouse is the first tenant of LMS and carries the Mobile add-on.
+
+5. FK RULE: all Mobile/iOS tables anchor to the LMS SHARED source of
+   truth (because Mobile reads LMS data) — NOT the orphan pre-019
+   tenants table, NOT a separate mobile table.
+
+6. Different tenants may hold different data; Redhouse is first across all.
+
+STATUS: LOCKED. No free changes. Any remap requires Cece's explicit OK.
+
+
+---
+
+## MASTER SCHEDULE = AGGREGATOR LOCK (authoritative — do not remap)
+
+THE SCHEDULE CARRIES ALL EVENTS FROM MULTIPLE SOURCES:
+   A scheduled event for a user can originate from:
+     - LMS      (live classes)
+     - MOBILE   (group-chat scheduled events, club live meets)
+     - OTT      (e.g. Senior School club live event on OTT)
+   Which sources apply depends on what the user is SIGNED UP FOR or
+   GROUPED INTO. The schedule aggregates them ALL into one.
+
+HOME PAGE (Mobile) = THE COMBINED VIEW:
+   - Home schedule = ALL-IN-ONE: every scheduled event for that user,
+     regardless of source (LMS + OTT + group-chat events).
+
+SECTION PAGES = FILTERED SLICES OF THE SAME SCHEDULE:
+   - CLASS page schedule -> ONLY class (LMS) scheduled events
+   - HUB  page schedule  -> ONLY OTT / enrichment / club scheduled events
+   - SOCIAL page schedule-> ONLY group-chat scheduled events
+   Same underlying schedule; each page shows its filtered subset.
+
+DRIVEN BY PROFILE (from source of truth = Supabase):
+   What a user sees is determined from PROFILE info read from source of
+   truth, evaluated against the user's:
+     - REGISTRATION
+     - PLACEMENT
+     - TAGS  (which connect to PAYMENTS)
+   -> These decide enrolment/grouping -> which sources feed the schedule.
+
+STATUS: LOCKED. No free changes. Any change requires Cece's explicit OK.
+
+
+---
+
+## HOW LMS & MOBILE WORK TOGETHER LOCK (authoritative — do not remap)
+
+THE MASTER SCHEDULE IS THE PROOF OF THE RELATIONSHIP:
+
+1. LMS is the ENGINE + SOURCE OF TRUTH.
+   - Classes, subjects, times, enrolment, teachers, attendance,
+     completion/certificates all LIVE in / resolve from LMS (Supabase).
+
+2. MOBILE is a READ-MOSTLY VIEW.
+   - Mobile does NOT run the LMS engine.
+   - Mobile READS the same source of truth and PRESENTS it:
+       Home (all-in-one schedule), Class, Hub, Social, Profile.
+
+3. THE MASTER SCHEDULE is where they meet:
+   - LMS produces the scheduled events (+ OTT + group-chat feed in).
+   - Mobile AGGREGATES + FILTERS them for the user:
+       Home  = everything (all sources)
+       Class = LMS only, Hub = OTT only, Social = group-chat only
+   - Same data, one source, many views.
+
+4. WHAT A USER SEES is resolved from PROFILE (registration, placement,
+   tags->payments) read from source of truth — identical logic whether
+   surfaced on LMS or Mobile.
+
+STATUS: LOCKED. No free changes. Any change requires Cece's explicit OK.
+# ⛔ REPO LOCK — LIVE REPO IS: /Users/ce/Documents/Redhouse-website/rhproject-new — redhouse-real-web is DEAD, IGNORE IT. Every session: run pwd FIRST, confirm it ends in /rhproject-new, else STOP.

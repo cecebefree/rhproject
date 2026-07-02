@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "supabase/*"
+  - "tenants/*"
+allowBuilds:
+  '@biomejs/biome': true
+  esbuild: true
