@@ -68,3 +68,36 @@ Templates requiring updates:
 - .specify/templates/commands/*.md: ⚠ pending review for agent-specific references
 Follow-up TODOs: RATIFICATION_DATE needs historical date; command template audit pending
 -->
+---
+## LAW: Shared Types Import Uniformity (P2-001)
+
+STATUS: MANDATORY. NO EXCEPTIONS. NO LEVEL BELOW PERFECT.
+
+The generated types file lives at EXACTLY ONE path, forever:
+    packages/shared/src/database.types.ts
+Machine-generated only. Never hand-edited, duplicated, or moved.
+
+ONLY packages/shared/src/index.ts may reference that file path, verbatim:
+    export type { Database } from './database.types'
+
+EVERY file in EVERY app (web, mobile, LMS) imports types ONE way only:
+    import { Database } from '@redhouse/shared'
+FORBIDDEN everywhere except index.ts: any relative path to the types file
+(e.g. '.../database.types' or '.../types/database').
+
+HARD GUARD — CI runs all three on every push; ALL must pass or work is REJECTED:
+  1. Exactly ONE Database types file:
+     grep -rln "export type Database" --include="*.ts" . | grep -v node_modules
+     REQUIRED: 1 line.
+  2. ZERO forbidden file-path imports outside index.ts:
+     grep -rn -E "from ['\"'].*(database\.types|types/database)['\"']" \
+       --include="*.ts" --include="*.tsx" . | grep -v node_modules
+     REQUIRED: only match is index.ts.
+  3. Full-repo type check passes:
+     pnpm -r exec tsc --noEmit
+     REQUIRED: pass.
+
+ENFORCEMENT: If any check fails, task is NOT complete. STOP, report the exact
+failing line(s), fix every violation to `@redhouse/shared`, re-run all three
+from #1. "Fine" / "probably" / "likely" are REJECTED. Only "all three pass,
+verbatim" is accepted.

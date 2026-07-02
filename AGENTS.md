@@ -1,4 +1,4 @@
-# AGENTS.md — redhouse-real-web
+# AGENTS.md — rhproject-new
 
 **READ tech-stack.md FIRST** — it describes the target architecture, not the current state.
 

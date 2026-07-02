@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@vas/shared/src/types/database';
+import { Database } from '@redhouse/shared'
 
 export type LMSClient = SupabaseClient<Database>;
 
