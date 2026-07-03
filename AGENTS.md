@@ -89,6 +89,22 @@ The `specs/001-lms-core/` directory contains the LMS feature spec and plan being
 
 ---
 
+## Active Leadership (Session: 2026-07-03)
+
+**Approved by Cece:** 2026-07-03
+
+| Lead | Status | Focus |
+|------|--------|-------|
+| **Backend** | ACTIVE | Database schema, RLS policies, Supabase migrations, API services |
+| **QA** | ACTIVE | Testing, pgTAP verification, lint, typecheck, validation scenarios |
+| **DevOps** | ACTIVE | Local Supabase, types regeneration, build pipeline, migrations |
+
+**Not active this session:** COO, CTO, Frontend, Security, Data, Product Manager, Governance
+
+**Authority:** These leads operate under Cece's approval. All work follows constitution v1.0.0 and the three CI Hard Rules.
+
+---
+
 ## Gotchas
 
 - Root `src/` is the active app; `apps/web/` is being scaffolded — don't assume code there is complete
@@ -111,7 +127,7 @@ Quick map:
   standards, flags to Cece in real time, compiles the monthly report.
 - Orchestrator — routes work, convenes 2–3 relevant leads per phase, logs to
   events.jsonl.
-- 10 Leads — COO, CTO, Backend, Frontend, Security, QA, DevOps, Data, Product
+- 10 Leads — COO, CTO, Backend [ACTIVE], Frontend, Security, QA [ACTIVE], DevOps [ACTIVE], Data, Product
   Manager, Governance.
 - 17-agent swarm — builds under the leads.
 
