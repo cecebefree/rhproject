@@ -10,31 +10,31 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 
 | # | Task | Description | Owner | Dependencies | Estimate | Risk | Affected UI Screens | Status |
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
-| P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | PLANNED NOT BUILT |
-| P2-002 | Sync migrations 013-025 from rhproject-new | Copy missing migration files to current project | Backend Lead | Access to source files | 1 day | CRITICAL | ALL | PLANNED NOT BUILT |
+| P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-002 | Sync migrations 013-025 from rhproject-new | Copy missing migration files to current project | Backend Lead | Access to source files | 1 day | CRITICAL | ALL | DONE |
 | P2-003 | Set up CI/CD pipeline | Configure GitHub Actions for web, mobile, backend | DevOps Lead | GitHub repo access | 2 days | MEDIUM | DEPLOYMENT | PLANNED NOT BUILT |
 | P2-004 | Set up pgTAP testing framework | Create supabase/tests/ directory with RLS policy tests | QA Lead | Database access | 2 days | MEDIUM | ALL | PLANNED NOT BUILT |
-| P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | PLANNED NOT BUILT |
+| P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 
 ### CORE INFRASTRUCTURE PHASE (Weeks 2-3) — AUTH & COMPLIANCE
 
 | # | Task | Description | Owner | Dependencies | Estimate | Risk | Affected UI Screens | Status |
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
-| P2-006 | Implement auth flow | Login, signup, email verification, password reset | Frontend Lead | P2-001, P2-005 | 5 days | HIGH | ALL | PLANNED NOT BUILT |
-| P2-007 | Add auth hardening | Rate limiting, account lockout, MFA setup | Security Lead | P2-005 | 3 days | HIGH | ALL | PLANNED NOT BUILT |
+| P2-006 | Implement auth flow | Login, signup, email verification, password reset | Frontend Lead | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-007 | Add auth hardening | Rate limiting, account lockout, MFA setup | Security Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 | P2-008 | Seed admin/teacher/test users | Create test data for all roles across 3 tenants | Data Lead | P2-006 | 2 days | MEDIUM | ADMIN, CLASS | PLANNED NOT BUILT |
 | P2-009 | Implement COPPA/FERPA compliance | Age verification, parental consent, data retention | Product Manager | P2-006, Legal review | 5 days | HIGH | ALL | PLANNED NOT BUILT |
-| P2-010 | Implement audit logging | Log all auth events and data access changes | Backend Lead | P2-002 | 3 days | MEDIUM | ALL | PLANNED NOT BUILT |
+| P2-010 | Implement audit logging | Log all auth events and data access changes | Backend Lead | P2-002 | Sync migrations 013-025 from rhproject-new | Copy missing migration files to current project | Backend Lead | Access to source files | 1 day | CRITICAL | ALL | DONE |
 
 ### CORE FEATURES PHASE (Weeks 3-5) — STUDENT EXPERIENCE
 
 | # | Task | Description | Owner | Dependencies | Estimate | Risk | Affected UI Screens | Status |
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
 | P2-011 | Student-class assignment | Link students to classes, teachers, schedules | Data Lead | P2-008 | 4 days | MEDIUM | CLASS | PLANNED NOT BUILT |
-| P2-012 | Schedule/timetable system | Class times, rooms, teachers, recurrence patterns | Backend Lead | P2-002, P2-001 | 5 days | HIGH | HOME, CLASS | PLANNED NOT BUILT |
-| P2-013 | Payment processing | Stripe integration, course purchases, payment references | Backend Lead | P2-006, P2-001 | 6 days | HIGH | HUB, CLASS | PLANNED NOT BUILT |
-| P2-014 | Video hosting integration | Muvi service setup, course content delivery | DevOps Lead | P2-005 | 4 days | HIGH | HUB, CLASS | PLANNED NOT BUILT |
-| P2-015 | Social data structures | Posts, likes, comments, groups, contacts, chat | Backend Lead | P2-002, P2-001 | 5 days | MEDIUM | SOCIAL | PLANNED NOT BUILT |
+| P2-012 | Schedule/timetable system | Class times, rooms, teachers, recurrence patterns | Backend Lead | P2-002, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-013 | Payment processing | Stripe integration, course purchases, payment references | Backend Lead | P2-006, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-014 | Video hosting integration | Muvi service setup, course content delivery | DevOps Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
+| P2-015 | Social data structures | Posts, likes, comments, groups, contacts, chat | Backend Lead | P2-002, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 
 ### REAL-TIME & NOTIFICATIONS PHASE (Weeks 5-6) — ENGAGEMENT
 
@@ -43,17 +43,17 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 | P2-016 | Real-time subscriptions | Supabase Realtime for live updates | Backend Lead | P2-015, P2-012 | 3 days | MEDIUM | ALL | PLANNED NOT BUILT |
 | P2-017 | Notification system | Push, in-app, email notifications | Backend Lead | P2-016, P2-013 | 4 days | MEDIUM | ALL | PLANNED NOT BUILT |
 | P2-018 | Enrichment/clubs management | Clubs, extracurricular activities, memberships | Backend Lead | P2-011, P2-006 | 4 days | MEDIUM | CLASS, HUB, PROFILE | PLANNED NOT BUILT |
-| P2-019 | Admin UI | Admin dashboard for platform management | Frontend Lead | P2-006, P2-001 | 5 days | MEDIUM | ADMIN | PLANNED NOT BUILT |
-| P2-020 | Certificate issuance | Automated course completion certificates | Backend Lead | P2-005, storage | 3 days | MEDIUM | PROFILE | PLANNED NOT BUILT |
+| P2-019 | Admin UI | Admin dashboard for platform management | Frontend Lead | P2-006, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-020 | Certificate issuance | Automated course completion certificates | Backend Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 
 ### POLISH & INTEGRATION PHASE (Weeks 7-8) — COMPLETION
 
 | # | Task | Description | Owner | Dependencies | Estimate | Risk | Affected UI Screens | Status |
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
-| P2-021 | File upload system | Social features, certificate uploads, storage | DevOps Lead | P2-005 | 2 days | LOW | SOCIAL, PROFILE | PLANNED NOT BUILT |
+| P2-021 | File upload system | Social features, certificate uploads, storage | DevOps Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 | P2-022 | Booklist management | Course materials, reading lists, resources | Backend Lead | P2-011 | 2 days | LOW | PROFILE | PLANNED NOT BUILT |
 | P2-023 | Platform access control | Role-based permissions, tenant isolation | Backend Lead | P2-006, P2-013 | 3 days | MEDIUM | PROFILE | PLANNED NOT BUILT |
-| P2-024 | i18n support | Multi-language support for all screens | Frontend Lead | P2-001 | 3 days | LOW | ALL | PLANNED NOT BUILT |
+| P2-024 | i18n support | Multi-language support for all screens | Frontend Lead | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 | P2-025 | Announcements CRUD | School news, class announcements, posts | Backend Lead | P2-008 | 2 days | LOW | HOME, SOCIAL | PLANNED NOT BUILT |
 
 ### INFRASTRUCTURE MAINTENANCE (Ongoing) — QUALITY
@@ -61,10 +61,10 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 | # | Task | Description | Owner | Dependencies | Estimate | Risk | Affected UI Screens | Status |
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
 | P2-026 | Fix React Native version mismatch | Update mobile app dependencies | Mobile Lead | deferred.md D1 | 1 day | MEDIUM | MOBILE | PLANNED NOT BUILT |
-| P2-027 | Fix 103 pre-existing lint errors | Code quality cleanup | Frontend Lead | P2-001 | 3 days | MEDIUM | ALL | PLANNED NOT BUILT |
+| P2-027 | Fix 103 pre-existing lint errors | Code quality cleanup | Frontend Lead | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 | P2-028 | Add monitoring and alerting | Sentry, logging, performance monitoring | DevOps Lead | P2-003 | 2 days | LOW | DEPLOYMENT | PLANNED NOT BUILT |
-| P2-029 | Implement backup strategy | Data protection, recovery procedures | DevOps Lead | P2-005 | 2 days | MEDIUM | ALL | PLANNED NOT BUILT |
-| P2-030 | Verify mobile-backend integration | Cross-platform testing and validation | Mobile Lead | P2-001 through P2-15 | 3 days | HIGH | MOBILE | PLANNED NOT BUILT |
+| P2-029 | Implement backup strategy | Data protection, recovery procedures | DevOps Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
+| P2-030 | Verify mobile-backend integration | Cross-platform testing and validation | Mobile Lead | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 
 ## EXECUTION ORDER & DEPENDENCIES
 
@@ -205,3 +205,19 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 - **Impact:** Mobile app functionality gaps
 - **Mitigation:** P2-030 comprehensive testing, feature flags
 - **Confidence:** MEDIUM - Integration complexity
+
+---
+
+## SESSION LOG — 2026-07-03
+
+Typecheck cleared to ZERO. Real count was 7, not 66/103 (stale). Installed @types/react-dom, removed 6 unused React imports. Commit b48378c.
+
+Directory trap cleared: renamed redhouse-real-web to redhouse-real-web.DELETE. Anchored to rhproject-new, tree clean.
+
+QA OVERRIDE: QA proposed enabling P2-003 with TS errors present. Overridden by Cece — no red-baseline launch.
+
+DEVOTIONAL: standalone white-label, independent of mobile/LMS. Wrong outline corrected.
+
+React confirmed 19.2.7.
+
+STATUS: 4 commits ahead of origin/main. P2-003 ready to enable. Migration 019 NULL tenant_id fix pending.

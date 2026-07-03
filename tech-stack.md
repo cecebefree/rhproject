@@ -65,7 +65,7 @@
 | Layer | Tool | Version |
 |-------|------|---------|
 | Monorepo | pnpm + Turborepo | TODO |
-| Frontend Framework | React | 19.2.6 |
+| Frontend Framework | React | 19.2.7 |
 | Build Tool | Vite | 8.0.12 |
 | Language | TypeScript | 6.0.2 |
 | Styling | Tailwind CSS | 4.3.1 |
@@ -80,6 +80,7 @@
 | CI / CD | GitHub Actions | — |
 
 > Build-time coding via Nemotron through OpenCode (not a runtime dependency).
+> React: 19.2.7 (confirmed live on disk 2026-07-03; any earlier note assuming React 18 is superseded).
 
 ---
 
