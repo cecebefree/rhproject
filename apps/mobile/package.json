@@ -11,16 +11,17 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
+    "@redhouse/shared": "workspace:*",
     "expo": "~51.0.0",
     "expo-router": "~3.5.0",
     "react": "18.2.0",
-    "react-native": "0.74.5",
-    "@redhouse/shared": "workspace:*"
+    "react-native": "0.74.5"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
+    "@biomejs/biome": "1.9.4",
     "@types/react": "~18.2.79",
-    "typescript": "^5.6.3",
-    "@biomejs/biome": "1.9.4"
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.6.3"
   }
 }
