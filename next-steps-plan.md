@@ -61,10 +61,11 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 | # | Task | Description | Owner | Dependencies | Estimate | Risk | Affected UI Screens | Status |
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
 | P2-026 | Fix React Native version mismatch | Update mobile app dependencies | Mobile Lead | deferred.md D1 | 1 day | MEDIUM | MOBILE | PLANNED NOT BUILT |
-| P2-027 | Fix 103 pre-existing lint errors | Code quality cleanup | Frontend Lead | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-027 | Fix lint errors (2 Biome format errors in packages/shared) — DONE 2026-07-03 commit 8a91ece. Was marked DONE prematurely with 2 residual errors; now truly clean. Same work item as D11 — do not double-count. | Code quality cleanup | Frontend Lead | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 | P2-028 | Add monitoring and alerting | Sentry, logging, performance monitoring | DevOps Lead | P2-003 | 2 days | LOW | DEPLOYMENT | PLANNED NOT BUILT |
 | P2-029 | Implement backup strategy | Data protection, recovery procedures | DevOps Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 | P2-030 | Verify mobile-backend integration | Cross-platform testing and validation | Mobile Lead | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-031 | Pin @types/react-dom ~18.2 to match React 18 runtime — DONE 2026-07-03 commit 3c8e885. Origin: ad-hoc operational fix during Phase 0 blitz. Related to D1 / P2-026 (same version-pinning domain). | Version alignment | DevOps Lead | P2-026 | 1 day | LOW | NONE | DONE |
 
 ## EXECUTION ORDER & DEPENDENCIES
 

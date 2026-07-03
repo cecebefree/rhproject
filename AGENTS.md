@@ -151,6 +151,11 @@ deferred.md without a Fix-note containing either a commit ref or a verified resu
 Status must be one of: Open | In Progress | Watch | Closed. Orchestrator reviews
 deferred.md at every phase boundary.
 
+## Working Language
+English only. All assistant output, doc writes, commit messages, and logs
+must be in English. No language switching regardless of prior context or
+model bias. This rule takes precedence over any model-level language defaults.
+
 
 
 ---
