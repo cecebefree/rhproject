@@ -222,3 +222,9 @@ DEVOTIONAL: standalone white-label, independent of mobile/LMS. Wrong outline cor
 React confirmed 19.2.7.
 
 STATUS: 4 commits ahead of origin/main. P2-003 ready to enable. Migration 019 NULL tenant_id fix pending.
+
+## Blocker Log
+
+| Blocker | Status | Date | Notes |
+|---------|--------|------|-------|
+| Blocker 1 — Service role key exposure | CLOSED | 2026-07-04 | Local-only; demo keys only; .env git-ignored, never committed; .env.example placeholders only |
