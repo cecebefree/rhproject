@@ -13,7 +13,7 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 | P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 | P2-002 | Sync migrations 013-025 from rhproject-new | Copy missing migration files to current project | Backend Lead | Access to source files | 1 day | CRITICAL | ALL | DONE |
 | P2-003 | Set up CI/CD pipeline | Configure GitHub Actions for web, mobile, backend | DevOps Lead | GitHub repo access | 2 days | MEDIUM | DEPLOYMENT | PLANNED NOT BUILT |
-| P2-004 | Set up pgTAP testing framework | Create supabase/tests/ directory with RLS policy tests | QA Lead | Database access | 2 days | MEDIUM | ALL | PLANNED NOT BUILT |
+| P2-004 | Set up pgTAP testing framework | Create supabase/tests/ directory with 6 pgTAP test suites — 33/33 assertions PASS | QA Lead | Database access | 2 days | MEDIUM | ALL | DONE |
 | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 
 ### CORE INFRASTRUCTURE PHASE (Weeks 2-3) — AUTH & COMPLIANCE
@@ -228,3 +228,4 @@ STATUS: 4 commits ahead of origin/main. P2-003 ready to enable. Migration 019 NU
 | Blocker | Status | Date | Notes |
 |---------|--------|------|-------|
 | Blocker 1 — Service role key exposure | CLOSED | 2026-07-04 | Local-only; demo keys only; .env git-ignored, never committed; .env.example placeholders only |
+| Blocker 2 — Tenant Isolation phase-1 | CLOSED | 2026-07-04 | pgTAP tests added (supabase/tests/): 6 suites, 33/33 PASS. RLS/JWT/admin_all verified. D10 closed. 023 reserved for next phase.

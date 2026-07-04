@@ -17,4 +17,4 @@ data — not before.
 | Blocker | Status | Date | Notes |
 |---------|--------|------|-------|
 | Blocker 1 — Security: exposed service role key | ✅ CLOSED | 2026-07-04 | Local-only; only demo keys in .env; .env git-ignored and never committed; .env.example placeholders only; cloud keys deferred to deploy phase |
-| Blocker 2 — Tenant Isolation | 🔴 OPEN | — | Pending |
+| Blocker 2 — Tenant Isolation | ✅ CLOSED | 2026-07-04 | Phase-1 verified: 6 pgTAP test suites (33/33 PASS) assert RLS on 6 tables, profiles no-recursion, student/admin devotional isolation, admin_all bypass on 5 tenant tables, JWT hook injection. D10 closed. Migration 023 reserved for LMS tenant_id retrofit. | |
