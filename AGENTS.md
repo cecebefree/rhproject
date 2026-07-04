@@ -65,7 +65,7 @@ supabase status
 - `packages/shared` is TODO
 - Edge Functions (6) are TODO
 - pgTAP tests are TODO
-- CI guards (AI-import, platform/tenant) are TODO
+- CI guards (AI-import, cross-tenant, type-drift) are DONE
 
 ---
 
@@ -108,10 +108,11 @@ The `specs/001-lms-core/` directory contains the LMS feature spec and plan being
 ## Gotchas
 
 - Root `src/` is the active app; `apps/web/` is being scaffolded — don't assume code there is complete
-- No CI guards exist yet (the AI-import guard, platform/tenant guard, type-drift guard are all TODO)
+- CI guards are DEPLOYED (guard-ai-import.sh, guard-cross-import.sh, guard-type-drift.sh — all wired in CI.yml)
 - ESLint (not Biome) is currently used
 - `SUPABASE_SERVICE_ROLE_KEY` handling follows what tech-stack.md describes but no Edge Functions exist yet
 - This is a migration-in-progress repo; verify existence of files/dirs before assuming they're implemented
+- v2 backlog: AI-import guard — catch variable/ternary require(sdk) — statically undecidable, deferred (Security Lead 0.85)
 
 ---
 

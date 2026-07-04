@@ -41,8 +41,19 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm turbo run test
 
+  guard:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - run: bash scripts/ci/guard-ai-import.sh
+      - run: bash scripts/ci/guard-cross-import.sh
+      - run: bash scripts/ci/guard-type-drift.sh
+        continue-on-error: true
+
   build:
-    needs: [lint, typecheck, test]
+    needs: [lint, typecheck, test, guard]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
