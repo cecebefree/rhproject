@@ -281,3 +281,15 @@ Money and paperwork STAY at the Office Desk. Only verdicts cross to Supabase.
 - [ ] Confirm payment provider.
 - [ ] Confirm alumni transition (post-gate role change).
 - [ ] Confirm family-pays-once → all-children-provisioned mechanism.
+
+### P2-009 Compliance — Final Two Points
+
+**Retention:**
+Child/student data is retained for [X years] after the student leaves,
+then permanently deleted. (If not yet confirmed with legal, mark: TODO — confirm retention period with legal.)
+
+**COPPA scope:**
+Out of scope for MVP. Redhouse operates under UK Children's Code + UK GDPR only.
+(Change to "in scope" only if US under-13 users are onboarded.)
+
+Status: P2-009 CLEARED.
