@@ -284,9 +284,14 @@ Money and paperwork STAY at the Office Desk. Only verdicts cross to Supabase.
 
 ### P2-009 Compliance — Final Two Points
 
-**Retention:**
-Child/student data is retained for [X years] after the student leaves,
-then permanently deleted. (If not yet confirmed with legal, mark: TODO — confirm retention period with legal.)
+**Retention (P2-009):**
+Student/alumni records are paid and contractual and are retained long-term under the
+alumni-lifecycle justification — NOT deleted. Retention is disclosed to users.
+On alumni transition, records are retained; only contract terms change (new adult
+T&Cs require explicit consent). This is first-party education-record retention, not
+time-boxed deletion.
+Note: Gap 7 still applies — soft-delete/erasure of the erasable layer is logged in
+access_log; backups time-boxed ~30 days; the contractual spine is not deletable.
 
 **COPPA scope:**
 Out of scope for MVP. Redhouse operates under UK Children's Code + UK GDPR only.
