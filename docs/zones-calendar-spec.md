@@ -121,3 +121,35 @@ Purpose: durable proof-of-decisions for AI planning of current build work.
 
 ## Guard
 - NEVER hardcode Jan/Sep, Passover, Cambridge/IB, or Cape Town anchor as global. They are REDHOUSE VALUES, not universal law.
+
+## 12b. Slot length = class duration = teacher billing unit (TENANT-SCOPED, resolved by STAGE + DEPARTMENT/LEVEL)
+- Redhouse slot lengths:
+  * Junior school     = 30–45 min  (tentative)
+  * Senior (general)  = 60 min     (set for now, can change)
+  * A-Level Cambridge = 90 min     (specific override)
+- Slot length is resolved by STAGE + DEPARTMENT/LEVEL, not stage alone. A-Level Cambridge overrides senior's 60 to 90. Maps to class identity department + intake + stage + grade — the department+stage pair decides duration.
+- Slot length is the teacher billing input (see 12c). Session duration derives from class_session tstzrange.
+- TENANT-SCOPED: Redhouse values above; other white-labels (e.g. Sentios) differ. ENGINE (slot concept + overlap law) = white-label; CONFIG (actual minutes per stage+department) = tenant data.
+- Lives in a tenant-scoped slot_config keyed by tenant_id + stage + department (nullable = fallback), slot_minutes.
+- Belongs to SCHEDULER layer (later). NOT P2-011 / 027.
+
+## 12c. Teacher HOURS are the tracked truth (contract-agnostic)
+- Track teacher HOURS = sum of session durations taught, per period.
+- Do NOT hardcode a pay model. Contract shape is unknown (per-hour, salary, per-session — TBD).
+- DB captures accurate HOURS (from class_session tstzrange duration); PAYROLL layer applies whatever the contract turns out to be.
+- Hours = the truth; pay = an interpretation applied on top, later.
+
+## 12d. A teacher can span MULTIPLE zones across the day
+- Zones are timezone bands. A teacher's single continuous working day maps to DIFFERENT zone-labels by time of day (e.g. Teacher A morning serves Zone 1&2; Teacher B serves Zone 3&4). One teacher, one day, two zone-groups (morning vs afternoon).
+- Teacher is NOT partitioned by zone. Zone is a RENDER/PLACEMENT attribute, NOT a per-teacher clock.
+- Enforcement runs on ABSOLUTE TIME: no-double-booking (Section 12) still holds — a teacher can't teach two classes at the same absolute instant, but CAN serve different zones across the day.
+- Lives in SCHEDULER/SESSION layer, keyed on absolute time. NOT 027.
+
+## 12e. Dual display: device time + zone label (both, always)
+- Every user sees the schedule in THEIR OWN DEVICE/LOCAL TIME (absolute UTC rendered in their IANA timezone) — the actionable clock.
+- AND they see THEIR ZONE LABEL (band 1–5) as context — which cohort/band they are placed in.
+- NOT either/or: device time = functional clock; zone = contextual badge.
+- Rationale: device time → schedule is actionable, no mental math; zone label → context (why peers see different times; which group-level rollouts/social events apply).
+- Surfaces on Home Page Section A alongside greeting, stage, intake group (zone = another identity/context chip). Calendar renders in device time.
+- Consistent with: times stored UTC + rendered local; zone = render/placement attribute (now made VISIBLE to the user).
+- Data source is profiles.zone (already in the 027 plan, render-only). Display concern → mobile/render layer. NOT P2-011 / migration 027.
