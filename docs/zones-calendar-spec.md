@@ -32,11 +32,13 @@ Purpose: durable proof-of-decisions for AI planning of current build work.
 - Brazil does NOT observe DST.
 - DST switch dates are legislated / pre-known = HARD external anchors.
 
-## 4. Intakes (currently 2, extensible to 3)
-- GROUP A — January intake (SH cycle): Jan–Nov instructional, Dec break. Students: South Africa, Australia, New Zealand.
-- GROUP B — September intake (NH cycle): Sep–Jun instructional, Jul–Aug break. Students: UK, Europe, USA, Canada.
-- June intake = planned future 3rd value (NOT live yet).
-- RULE: model intake as an extensible lookup, NEVER a hardcoded enum. Adding June = one row insert, zero schema migration.
+## 4. Intakes (CURRICULUM-BOUND, not universal)
+- Intakes are keyed by tenant + curriculum + name. NOT a global list.
+- Cambridge curriculum: GROUP A — January intake (SH cycle): Jan–Nov instructional, Dec break. GROUP B — September intake (NH cycle): Sep–Jun instructional, Jul–Aug break. (SET — these two are live.)
+- IB curriculum: June/July intake (+ possibly another, tentative).
+- USA-related curriculum: TBD (future).
+- RULE: model intake as an extensible lookup, NEVER a hardcoded enum. Adding a new intake = one row insert, zero schema migration.
+- ENGINE (intake concept) = white-label; actual dates per-curriculum = tenant config.
 
 ## 5. Universal 36-Week Calendar — TEMPLATE + ANNUAL DATES
 - STRUCTURE is fixed: 36 instructional weeks, 4 universal holidays, 2 exam windows, Zone 3 = Hour 0.
