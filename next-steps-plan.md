@@ -229,3 +229,55 @@ STATUS: 4 commits ahead of origin/main. P2-003 ready to enable. Migration 019 NU
 |---------|--------|------|-------|
 | Blocker 1 — Service role key exposure | CLOSED | 2026-07-04 | Local-only; demo keys only; .env git-ignored, never committed; .env.example placeholders only |
 | Blocker 2 — Tenant Isolation phase-1 | CLOSED | 2026-07-04 | pgTAP tests added (supabase/tests/): 6 suites, 33/33 PASS. RLS/JWT/admin_all verified. D10 closed. 023 reserved for next phase.
+
+## Open Decisions
+
+### D-REG-01: Registration Flow & Data Ownership = HYBRID
+- **Date:** 2026-07-06
+- **Status:** DECIDED
+
+#### What Hybrid means here
+The system splits ownership at the REGISTRATION GATE:
+- BEFORE the gate: HubSpot owns leads/prospects (Public Desk).
+- AT the gate: payment + signed contract + children's-data consent tick = the verdict.
+- AFTER the gate: Supabase owns the registered identity. One-way — data crosses once and CRM becomes READ-ONLY for identity. CRM is only a view layer after this.
+
+#### The three desks
+- **Public Desk:** public/prospects, pre-gate, first registration (in HubSpot).
+- **School (front) Desk:** registered users, post-gate service.
+- **Office Desk:** business/finance/registration CHANGES/ops — staffed by Admin users. ("Admin" = user type, NOT the desk name.)
+
+#### What Supabase holds (source of truth)
+- Identity (student, RH-YYYY-NNNN + display name).
+- Access-state: active, 1-year expiry.
+- Entitlements: subjects/clubs/enrichment (pending/active).
+- Verdicts only: payment ✓, contract ✓, consent ✓ + timestamps.
+Money and paperwork STAY at the Office Desk. Only verdicts cross to Supabase.
+
+#### Yearly lifecycle
+- Booklist and access are PER-YEAR, built from choices PAID + SELECTED.
+- Clean roll-over (no change) = automated.
+- Any change (add/drop subject, club, roll-over adjustment) = Office Desk, via the registration form, on paid + signed. Never the Public Desk.
+
+#### Mobile profile page
+- It is the student's yearly OVERSIGHT: everything enrolled in + access for the year (course, subjects, stage, clubs, enrichment, booklist, schedule, certificates).
+- It DISPLAYS only — it never changes anything. Changes come from registration at the Office Desk.
+- Booklist derives from entitlements; Bookshelf auto-populates.
+
+#### Children's-data consent
+- The consent tick lives ON the registration form (point of collection).
+- Parent/family ticks it (child never self-consents). REQUIRED to proceed.
+- Covers education records + sub-processor interaction data + retention.
+- Satisfies UK Children's Code + UK GDPR. Owned by Office Desk (contract/registration). Supabase holds only the consent verdict + timestamp.
+
+#### Why Hybrid (rejected options)
+- Rejected X (HubSpot owns, handoff on payment): doesn't cleanly cover post-gate CHANGES.
+- Rejected Y (Supabase owns everything incl. leads): contradicts CRM = read-only view.
+- Hybrid chosen because it matches the one-way gate, Office Desk = verdicts, and Supabase = identity/access/entitlement truth.
+
+#### Downstream (leave as TODO — do NOT build now)
+- [ ] T-REG-02: Map registration-form field names to HubSpot properties (identity, family anchor, choices, consent tick, metadata/UTMs). Sits at write-path step 4 (HubSpot + Make.com webhook).
+- [ ] Confirm Make.com as the single sync conduit (verdicts only).
+- [ ] Confirm payment provider.
+- [ ] Confirm alumni transition (post-gate role change).
+- [ ] Confirm family-pays-once → all-children-provisioned mechanism.
