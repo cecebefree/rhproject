@@ -108,3 +108,16 @@ Purpose: durable proof-of-decisions for AI planning of current build work.
 - Mid-year (Jun/Jul) is the ONLY flexible break.
 - Intake extensible (June not live yet) — never hardcode enum.
 - All holiday/exam dates configurable on the per-year instance.
+
+## 11. Calendar is TENANT-SCOPED (white-label ready)
+- This entire spec describes REDHOUSE'S calendar instance (tenant #1, 00000000-0000-0000-0000-000000000001).
+- Another white-label tenant may run a DIFFERENT schedule: different intakes, holidays, exam boards, and anchor zone.
+- Split:
+  * ENGINE (white-label, shared) = template + per-year instance, fixed math year_N = f(rules, anchors), solve order, DST season-mode.
+  * CONFIG (per-tenant data) = intakes set, holiday list, exam boards, anchor zone (Hour 0), 36-week vs other length.
+- All calendar tables MUST carry tenant_id and scope by it (like every other Redhouse table).
+- Redhouse config = its OWN row(s). White-label = its own row(s).
+- Mirrors product rule: LMS/Mobile/Devotional = white-label engine; tenant data fills them. Calendar is the same.
+
+## Guard
+- NEVER hardcode Jan/Sep, Passover, Cambridge/IB, or Cape Town anchor as global. They are REDHOUSE VALUES, not universal law.
