@@ -23,13 +23,13 @@ CREATE POLICY "Students can create enrollments" ON public.enrollments
 CREATE POLICY "Students can delete their enrollments" ON public.enrollments
   FOR DELETE USING (auth.uid() = student_id);
 
--- Instructors can view enrollments for their courses
-CREATE POLICY "Instructors can view enrollments for their courses" ON public.enrollments
+-- Teachers can view enrollments for their courses
+CREATE POLICY "Teachers can view enrollments for their courses" ON public.enrollments
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM public.courses c
-      JOIN public.profiles p ON c.instructor_id = p.id
-      WHERE c.id = course_id AND p.id = auth.uid() AND p.role IN ('teacher', 'instructor', 'admin')
+      JOIN public.profiles p ON c.teacher_id = p.id
+      WHERE c.id = course_id AND p.id = auth.uid() AND p.role IN ('teacher', 'admin')
     )
   );
 

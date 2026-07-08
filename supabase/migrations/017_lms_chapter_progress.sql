@@ -22,14 +22,14 @@ CREATE POLICY "Students can mark chapters complete" ON public.chapter_progress
 CREATE POLICY "Students can delete their own progress" ON public.chapter_progress
   FOR DELETE USING (auth.uid() = student_id);
 
--- Instructors can view progress for their courses
-CREATE POLICY "Instructors can view progress for their courses" ON public.chapter_progress
+-- Teachers can view progress for their courses
+CREATE POLICY "Teachers can view progress for their courses" ON public.chapter_progress
   FOR SELECT USING (
     EXISTS (
       SELECT 1 FROM public.courses c
-      JOIN public.profiles p ON c.instructor_id = p.id
+      JOIN public.profiles p ON c.teacher_id = p.id
       JOIN public.chapters ch ON ch.course_id = c.id
-      WHERE ch.id = chapter_id AND p.id = auth.uid() AND p.role IN ('teacher', 'instructor', 'admin')
+      WHERE ch.id = chapter_id AND p.id = auth.uid() AND p.role IN ('teacher', 'admin')
     )
   );
 

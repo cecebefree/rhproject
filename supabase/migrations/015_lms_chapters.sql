@@ -20,13 +20,13 @@ CREATE POLICY "Anyone can view chapters of published courses" ON public.chapters
     EXISTS (SELECT 1 FROM public.courses WHERE id = course_id AND status = 'published')
   );
 
--- Instructors can manage chapters of their courses
-CREATE POLICY "Instructors can manage chapters of their courses" ON public.chapters
+-- Teachers can manage chapters of their courses
+CREATE POLICY "Teachers can manage chapters of their courses" ON public.chapters
   FOR ALL USING (
     EXISTS (
       SELECT 1 FROM public.courses c
-      JOIN public.profiles p ON c.instructor_id = p.id
-      WHERE c.id = course_id AND p.id = auth.uid() AND p.role IN ('teacher', 'instructor', 'admin')
+      JOIN public.profiles p ON c.teacher_id = p.id
+      WHERE c.id = course_id AND p.id = auth.uid() AND p.role IN ('teacher', 'admin')
     )
   );
 
