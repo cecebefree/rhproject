@@ -52,3 +52,30 @@ VALUES (
 ON CONFLICT (slug) DO NOTHING;
 
 COMMIT;
+
+-- ── 028 test fixtures: students + admin + teacher + enrolments ──
+insert into auth.users (id, email, aud, role)
+values
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'stud1@test.local',   'authenticated', 'authenticated'),
+  ('bb000000-0000-0000-0000-0000000000b2', 'stud2@test.local',   'authenticated', 'authenticated'),
+  ('cc000000-0000-0000-0000-0000000000c3', 'teacher1@test.local','authenticated', 'authenticated'),
+  ('dd000000-0000-0000-0000-0000000000d4', 'admin@test.local',   'authenticated', 'authenticated')
+on conflict (id) do nothing;
+
+insert into public.profiles (id, name, role, registration_status, consent_given)
+values
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'Test Student One', 'student', 'approved', true),
+  ('bb000000-0000-0000-0000-0000000000b2', 'Test Student Two', 'student', 'approved', true),
+  ('cc000000-0000-0000-0000-0000000000c3', 'Test Teacher One', 'teacher', 'approved', true),
+  ('dd000000-0000-0000-0000-0000000000d4', 'Test Admin',       'admin',   'approved', true)
+on conflict (id) do update
+  set role = excluded.role,
+      registration_status = excluded.registration_status,
+      consent_given = excluded.consent_given;
+
+insert into public.student_class (student_id, class_id)
+values
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', gen_random_uuid()),
+  ('bb000000-0000-0000-0000-0000000000b2', gen_random_uuid()),
+  ('bb000000-0000-0000-0000-0000000000b2', gen_random_uuid())
+on conflict (student_id, class_id) do nothing;
