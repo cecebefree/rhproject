@@ -53,7 +53,7 @@ ON CONFLICT (slug) DO NOTHING;
 
 COMMIT;
 
--- ── 028 test fixtures: students + admin + teacher + enrolments ──
+-- ── 028 test fixtures: students + admin + teacher + courses + enrolments ──
 insert into auth.users (id, email, aud, role)
 values
   ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'stud1@test.local',   'authenticated', 'authenticated'),
@@ -73,9 +73,15 @@ on conflict (id) do update
       registration_status = excluded.registration_status,
       consent_given = excluded.consent_given;
 
-insert into public.student_class (student_id, class_id)
+insert into public.courses (id, title, price, status, teacher_id)
 values
-  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111'),
-  ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111'),
-  ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222')
+  ('11111111-1111-1111-1111-111111111111', 'Test Course One', 0, 'published', 'cc000000-0000-0000-0000-0000000000c3'),
+  ('22222222-2222-2222-2222-222222222222', 'Test Course Two', 0, 'published', 'cc000000-0000-0000-0000-0000000000c3')
+on conflict (id) do nothing;
+
+insert into public.student_class (student_id, class_id, tenant_id)
+values
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001'),
+  ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001'),
+  ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000001')
 on conflict (student_id, class_id) do nothing;

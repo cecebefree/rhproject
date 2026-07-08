@@ -8,8 +8,8 @@ select ok(
   'RLS is enabled on student_class'
 );
 select policies_are('student_class',
-  ARRAY['sc_student_read', 'sc_admin_all'],
-  'both policies exist');
+  ARRAY['sc_student_read', 'sc_admin_all', 'sc_teacher_read'],
+  'all three policies exist');
 
 select * from finish();
 rollback;
