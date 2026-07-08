@@ -27,3 +27,4 @@ dist-ssr
 .turbo/
 
 *.BAK
+supabase/.temp/
