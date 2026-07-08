@@ -298,3 +298,22 @@ Out of scope for MVP. Redhouse operates under UK Children's Code + UK GDPR only.
 (Change to "in scope" only if US under-13 users are onboarded.)
 
 Status: P2-009 CLEARED.
+
+## PENDING CORRECTIONS — AWAITING LEADERSHIP APPROVAL (added 2026-07-08)
+
+NOTE: The PART 2 TASK LIST tables above contain (a) corrupted rows with injected boilerplate and (b) stale statuses. These are NOT yet fixed. Work from this note as the source of truth until Backend, DevOps, and QA leads approve, then reconcile the tables.
+
+### Status corrections pending (evidence-backed)
+- P2-011 (student-class enrolment): table says PLANNED NOT BUILT -> ACTUAL: DONE [migration 027]
+- P2-016 (real-time subscriptions): table says PLANNED NOT BUILT -> ACTUAL: DONE [migration 029]
+- P2-028 (monitoring/alerting): table says PLANNED NOT BUILT -> ACTUAL: PARTIAL [6-check monitor.sh live; payments dropped (not mobile); PENDING: gate-bypass, brute-force, backup-status]
+
+### Structural issue pending
+- Multiple rows in the Foundation and Core Infrastructure tables have boilerplate text spliced mid-row, breaking the 9-column format. Repair deferred until leadership approves the reconciliation pass.
+
+### Approval gate before any table edit
+- [ ] Backend Lead — confirm P2-011 (027) and P2-016 (029) live in schema
+- [ ] DevOps Lead — confirm 6-check monitor.sh deployed; P2-028 stays OPEN pending gate-bypass, brute-force, backup-status
+- [ ] QA Lead — confirm no red baseline; statuses match test evidence
+
+Until all three boxes are ticked, tables above remain AS-IS and this note governs.
