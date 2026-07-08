@@ -75,7 +75,7 @@ on conflict (id) do update
 
 insert into public.student_class (student_id, class_id)
 values
-  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', gen_random_uuid()),
-  ('bb000000-0000-0000-0000-0000000000b2', gen_random_uuid()),
-  ('bb000000-0000-0000-0000-0000000000b2', gen_random_uuid())
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111'),
+  ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111'),
+  ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222')
 on conflict (student_id, class_id) do nothing;
