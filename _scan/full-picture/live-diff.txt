@@ -1,0 +1,56 @@
+Creating shadow database...
+Initialising schema...
+Seeding globals from roles.sql...
+Applying migration 013_lms_users_profiles.sql...
+Applying migration 014_lms_courses.sql...
+Applying migration 015_lms_chapters.sql...
+Applying migration 016_lms_enrollments.sql...
+Applying migration 017_lms_chapter_progress.sql...
+Applying migration 018_lms_chapter_sequence_validation.sql...
+NOTICE (00000): trigger "check_chapter_sequence" for relation "public.chapter_progress" does not exist, skipping
+Applying migration 019_tenants.sql...
+Applying migration 020_devotional.sql...
+Applying migration 021_profiles_tenant_id_fk.sql...
+Applying migration 022_custom_access_token_hook.sql...
+Applying migration 024_backfill_and_rls.sql...
+Applying migration 025_handle_new_user_tenant_id.sql...
+Applying migration 026_crossing_gate_columns.sql...
+Applying migration 027_student_class.sql...
+A new version of Supabase CLI is available: v2.109.1 (currently installed v2.108.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+Diffing schemas: public
+Finished [36msupabase db diff[39m on branch [36mmain[39m.
+
+SET check_function_bodies = false;
+CREATE EXTENSION pgtap WITH SCHEMA public;
+CREATE FUNCTION public.check_admin_all_policy(tname text)
+ RETURNS SETOF text
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RETURN QUERY SELECT ok(
+        EXISTS (SELECT 1 FROM pg_policies
+                WHERE schemaname = 'public'
+                  AND tablename = tname
+                  AND policyname = 'admin_all_' || tname),
+        tname || ' has admin_all policy'
+    );
+
+    RETURN QUERY SELECT ok(
+        (SELECT qual::text LIKE '%auth.jwt()%app_metadata%role%admin%'
+         FROM pg_policies
+         WHERE schemaname = 'public'
+           AND tablename = tname
+           AND policyname = 'admin_all_' || tname),
+        tname || ' admin_all uses JWT role check'
+    );
+
+    RETURN QUERY SELECT ok(
+        (SELECT relrowsecurity
+         FROM pg_class
+         WHERE relname = tname),
+        tname || ' has RLS enabled'
+    );
+END;
+$function$;
+

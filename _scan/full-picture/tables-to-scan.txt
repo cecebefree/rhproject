@@ -1,0 +1,11 @@
+profiles
+courses
+chapters
+enrollments
+chapter_progress
+devotional_config
+devotional_item
+tenant_devotional
+tenant_lms
+tenant_mobile
+student_class

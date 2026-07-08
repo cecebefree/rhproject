@@ -1,0 +1,50 @@
+b3f0911 Lock access-model.md: derive + override (two-way) authorization spec + architecture cross-link
+462ab37 spec: amend intakes — curriculum-bound, not universal
+1155226 spec: add slot/billing/teacher-zone/dual-display rules (12b–12e)
+99a7128 docs: add tenant-scoped calendar section (white-label ready)
+0f3702a docs: add locked zones & universal calendar spec (planning reference)
+e88b7a7 feat(P2-028): monitoring + alerting live — dashboard active, alert rule wired, test alert fired and received, safety net verified
+7292f96 feat(P2-008): seed 8 Redhouse auth users via Admin API — 4-rule crossing gate (type, valid, approved, consent), tenant #1
+d44c5ea docs: correct P2-009 retention — contractual/alumni records retained, not deleted
+d65c48e docs: close P2-009 — retention + COPPA scope (UK Children's Code + UK GDPR)
+81932b0 Add D-REG-01: Registration Flow & Data Ownership = HYBRID decision record
+0a4c35e docs: log P2-004a complete — pgTAP scaffold verified
+43d7b4c feat: add web app + regenerate database types from live schema
+cece63a Blocker 4 CLOSED: 3 CI Hard Rule guards enforced; P2-003 done; variable-require gap logged as v2 backlog
+e2b3f88 Blocker 2: D10 pgTAP suite 66/66 pass; RLS+JWT verified; 023 reserved
+3f8af67 Blocker 1 closed: env hardening, gitignore *.BAK, PROJECT_MASTER log
+30fe25a Add Working Language (English-only) rule to AGENTS.md; log P2-027 and P2-031 as done
+3c8e885 fix(mobile): pin @types/react-dom to ~18.2 to match React 18 runtime
+8a91ece fix(shared): resolve 2 Biome format errors — P2-027/D11 lint clean
+9862de3 ci: add P2-003 CI/CD gate (lint, typecheck, test, build)
+ca4dc41 docs: 2026-07-03 session log, governance rules, React 19.2.7 correction
+b48378c fix: clear typecheck to zero — add @types/react-dom, remove unused React imports (mobile)
+a616347 Remove apps/web and apps/lms for clear-out
+2f7ca06 Clean apps/mobile: remove web/LMS junk, keep 5 screens + index.tsx
+c8da0fd Update AGENTS.md before clear-out
+9c82778 P2-001: shared types at canonical path, enforce @redhouse/shared imports
+116ad23 Backup session-2026-07-02 reports (interim, to be replaced at weekly audit)
+75fd39a Recover S-A files: migrations 021-025, verify scripts, plans; drop .turbo cache from tracking
+7c513df checkpoint: monorepo scaffold + supabase config, migrations 019/020, D12 handoff
+91cdeb3 fix: expand LMS RLS policies to teacher/instructor/admin (014-017)
+97b055f Add backend task plan (73 tasks, V0 backend)
+2a3f9ce Add Leadership Council anchor (section 9) to AGENTS.md
+e4d075e Add Leadership Council layer to tech-stack.md (additive)
+3257ad0 Merge branch 'main' of github.com:cecebefree/rhproject
+d09fab8 Add mobile scaffold and v0 import
+e9a2391 docs: set constitution ratification date (1.0.0)
+7e6de64 Save local mobile nav, LMS, and config files
+60fa2bc Add Vite config for mobile deploy
+308af21 Merge pull request #4 from cecebefree/refresh-to-localhost
+38208e1 feat: add workspaces and update dependencies in package-lock.json
+5eebc77 Add real Redhouse dashboard designs to 5 mobile screens
+bd49397 Pin mobile to Vite 5 + plugin-react 4; dev script on port 5175
+5ca5792 Add Vite config, HTML host, tsconfig; rename entry to index.tsx
+a16f81a Add starter implementations for 5 mobile screens
+634cae0 Add React 19 entry point for mobile app
+e2385b1 add placeholder mobile screens
+2db1966 Merge pull request #3 from cecebefree/v0/cecebefree-3976-873b7199
+f737fea init
+e901edd Merge pull request #2 from cecebefree/v0/cecebefree-3976-58ac388e
+0c7c6ba init
+c23e5ec Scaffold monorepo: apps/lms, apps/mobile, packages/shared
