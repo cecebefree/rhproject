@@ -46,11 +46,20 @@ importers:
         specifier: ~18.2.79
         version: 18.2.79
       '@types/react-dom':
-        specifier: ^19.2.3
-        version: 19.2.3(@types/react@18.2.79)
+        specifier: ~18.2.25
+        version: 18.2.25
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
+
+  apps/web:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.3(@types/node@26.0.1)(lightningcss@1.32.0)(terser@5.48.0)(yaml@2.9.0)
 
   packages/shared:
     dependencies:
@@ -1624,10 +1633,8 @@ packages:
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
 
-  '@types/react-dom@19.2.3':
-    resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
-    peerDependencies:
-      '@types/react': ^19.2.0
+  '@types/react-dom@18.2.25':
+    resolution: {integrity: sha512-o/V48vf4MQh7juIKZU2QGDfli6p1+OOi5oXx36Hffpc9adsHeXjVp8rHuPkjd8VT8sOJ2Zp05HR7CdpGTIUFUA==}
 
   '@types/react@18.2.79':
     resolution: {integrity: sha512-RwGAGXPl9kSXwdNTafkOEuFrTBD5SA2B3iEB96xi8+xu5ddUa/cpvyVCSNn+asgLCTHkb5ZxN8gbuibYJi4s1w==}
@@ -7003,7 +7010,7 @@ snapshots:
 
   '@types/prop-types@15.7.15': {}
 
-  '@types/react-dom@19.2.3(@types/react@18.2.79)':
+  '@types/react-dom@18.2.25':
     dependencies:
       '@types/react': 18.2.79
 
