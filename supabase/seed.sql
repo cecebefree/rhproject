@@ -85,3 +85,22 @@ values
   ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001'),
   ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000001')
 on conflict (student_id, class_id) do nothing;
+
+-- 032 access-window fixtures: Core flag + yearly window + paid enrolments
+update public.profiles
+  set has_core = true,
+      access_starts_at = now() - interval '1 day',
+      access_ends_at   = now() + interval '365 days'
+where id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e';
+
+update public.profiles
+  set has_core = false,
+      access_starts_at = now() - interval '1 day',
+      access_ends_at   = now() + interval '365 days'
+where id = 'bb000000-0000-0000-0000-0000000000b2';
+
+insert into public.enrollments (student_id, course_id, payment_reference)
+values
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111', 'seed-paid-001'),
+  ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', 'seed-paid-002')
+on conflict (student_id, course_id) do nothing;
