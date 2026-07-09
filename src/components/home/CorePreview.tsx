@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { GraduationCap, BookOpen, Home, ArrowRight } from 'lucide-react'
+import { ArrowRight, BookOpen, GraduationCap, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const pathways = [
   {
@@ -7,8 +7,13 @@ const pathways = [
     title: 'Cambridge Curriculum',
     subtitle: 'Primary → IGCSE → A-Levels',
     description:
-      'The world\'s most popular international curriculum. Rigorous, recognised by every major university, and designed for academic depth.',
-    stages: ['Primary (Years 1-6)', 'Lower Secondary (Years 7-9)', 'IGCSE (Years 10-11)', 'A-Levels (Years 12-13)'],
+      "The world's most popular international curriculum. Rigorous, recognised by every major university, and designed for academic depth.",
+    stages: [
+      'Primary (Years 1-6)',
+      'Lower Secondary (Years 7-9)',
+      'IGCSE (Years 10-11)',
+      'A-Levels (Years 12-13)',
+    ],
     cta: { label: 'View Cambridge Pathway', href: '/cambridge-curriculum' },
     color: 'burgundy',
     bgColor: 'bg-burgundy/5',
@@ -30,12 +35,17 @@ const pathways = [
     subtitle: 'Parent-Led + Teacher-Guided',
     description:
       'Accredited curriculum packs with specialist teacher support. Perfect for families wanting flexibility without compromising on quality.',
-    stages: ['Curriculum packs by grade', 'Weekly teacher check-ins', 'Assessment & reporting', 'Exam registration support'],
+    stages: [
+      'Curriculum packs by grade',
+      'Weekly teacher check-ins',
+      'Assessment & reporting',
+      'Exam registration support',
+    ],
     cta: { label: 'View Homeschool Options', href: '/homeschool' },
     color: 'navy',
     bgColor: 'bg-navy/5',
   },
-]
+];
 
 export function CorePreview() {
   return (
@@ -45,7 +55,10 @@ export function CorePreview() {
           <p className="font-display text-champagne text-heading-sm mb-4 animate-fade-up">
             Core Academics
           </p>
-          <h2 id="core-title" className="font-serif text-display-md font-semibold text-navy animate-fade-up stagger-1">
+          <h2
+            id="core-title"
+            className="font-serif text-display-md font-semibold text-navy animate-fade-up stagger-1"
+          >
             Three Pathways. One Standard of Excellence.
           </h2>
           <div className="section-divider animate-fade-up stagger-2" />
@@ -62,16 +75,28 @@ export function CorePreview() {
               className={`card relative overflow-hidden animate-fade-up ${pathway.bgColor}`}
               style={{ animationDelay: `${(index + 1) * 0.1}s` }}
             >
-              <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: `var(--${pathway.color})` }} />
+              <div
+                className="absolute top-0 left-0 right-0 h-1"
+                style={{ backgroundColor: `var(--${pathway.color})` }}
+              />
 
               <div className="p-6 md:p-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${pathway.bgColor}`}>
-                    <pathway.icon className="w-6 h-6" style={{ color: `var(--${pathway.color})` }} />
+                  <div
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center ${pathway.bgColor}`}
+                  >
+                    <pathway.icon
+                      className="w-6 h-6"
+                      style={{ color: `var(--${pathway.color})` }}
+                    />
                   </div>
                   <div>
-                    <p className="font-display text-champagne text-heading-sm">{pathway.subtitle}</p>
-                    <h3 className="font-serif text-heading-lg font-semibold text-navy">{pathway.title}</h3>
+                    <p className="font-display text-champagne text-heading-sm">
+                      {pathway.subtitle}
+                    </p>
+                    <h3 className="font-serif text-heading-lg font-semibold text-navy">
+                      {pathway.title}
+                    </h3>
                   </div>
                 </div>
 
@@ -79,8 +104,14 @@ export function CorePreview() {
 
                 <ul className="space-y-2 mb-8">
                   {pathway.stages.map((stage, i) => (
-                    <li key={i} className="flex items-center gap-2 text-body-sm text-charcoal-muted">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: `var(--${pathway.color})` }} />
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 text-body-sm text-charcoal-muted"
+                    >
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: `var(--${pathway.color})` }}
+                      />
                       <span>{stage}</span>
                     </li>
                   ))}
@@ -89,7 +120,10 @@ export function CorePreview() {
                 <Link
                   to={pathway.cta.href}
                   className="btn btn-tertiary w-full group"
-                  style={{ borderColor: `var(--${pathway.color})`, color: `var(--${pathway.color})` }}
+                  style={{
+                    borderColor: `var(--${pathway.color})`,
+                    color: `var(--${pathway.color})`,
+                  }}
                 >
                   {pathway.cta.label}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -107,5 +141,5 @@ export function CorePreview() {
         </div>
       </div>
     </section>
-  )
+  );
 }

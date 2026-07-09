@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, Users, GraduationCap, Globe } from 'lucide-react'
+import { ArrowRight, Globe, GraduationCap, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function Hero() {
   return (
@@ -32,15 +32,12 @@ export function Hero() {
             Genuine Social Community.
           </h1>
           <p className="font-sans text-body-lg text-ivory/80 mb-12 animate-fade-up stagger-2 max-w-2xl mx-auto">
-            Premium online Cambridge education with live teachers, real peer connections,
-            and university pathways that open doors worldwide.
+            Premium online Cambridge education with live teachers, real peer connections, and
+            university pathways that open doors worldwide.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-up stagger-3">
-            <Link
-              to="/registration"
-              className="btn btn-primary group w-full sm:w-auto"
-            >
+            <Link to="/registration" className="btn btn-primary group w-full sm:w-auto">
               Register Your Child
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -60,16 +57,33 @@ export function Hero() {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce" aria-hidden="true">
-        <svg className="w-6 h-6 text-ivory/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+      <div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce"
+        aria-hidden="true"
+      >
+        <svg
+          className="w-6 h-6 text-ivory/50"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          />
         </svg>
       </div>
     </section>
-  )
+  );
 }
 
-function StatCard({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>; value: string; label: string }) {
+function StatCard({
+  icon: Icon,
+  value,
+  label,
+}: { icon: React.ComponentType<{ className?: string }>; value: string; label: string }) {
   return (
     <div className="p-4">
       <div className="flex items-center justify-center gap-2 mb-2">
@@ -78,5 +92,5 @@ function StatCard({ icon: Icon, value, label }: { icon: React.ComponentType<{ cl
       <p className="font-serif text-display-sm font-semibold text-ivory">{value}</p>
       <p className="font-sans text-body-sm text-ivory/70">{label}</p>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, Users, GraduationCap, Calendar } from 'lucide-react'
+import { ArrowRight, Calendar, GraduationCap, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ctaOptions = [
   {
@@ -23,14 +23,11 @@ const ctaOptions = [
     href: '/schedule-meeting',
     primary: false,
   },
-]
+];
 
 export function FinalCTA() {
   return (
-    <section
-      className="relative py-20 md:py-32 overflow-hidden"
-      aria-labelledby="cta-title"
-    >
+    <section className="relative py-20 md:py-32 overflow-hidden" aria-labelledby="cta-title">
       <div className="absolute inset-0 z-0">
         <img
           src="https://media.base44.com/images/public/69f23a2b0bbaf081e75813b0/7f4474889_logo.png/v1/fill/w_1920,h_1080/7f4474889_logo.png"
@@ -45,7 +42,10 @@ export function FinalCTA() {
           <p className="font-display text-champagne-light text-heading-sm mb-6 animate-fade-up">
             Your Journey Starts Here
           </p>
-          <h2 id="cta-title" className="font-serif text-display-md md:text-display-lg font-semibold text-ivory mb-6 animate-fade-up stagger-1">
+          <h2
+            id="cta-title"
+            className="font-serif text-display-md md:text-display-lg font-semibold text-ivory mb-6 animate-fade-up stagger-1"
+          >
             Join the Red House Family Today
           </h2>
           <p className="font-sans text-body-lg text-ivory/80 mb-12 animate-fade-up stagger-2">
@@ -58,9 +58,7 @@ export function FinalCTA() {
                 key={option.title}
                 to={option.href}
                 className={`card p-6 md:p-8 text-center group transition-all ${
-                  option.primary
-                    ? 'bg-burgundy border-burgundy'
-                    : 'bg-navy/50 border-navy-light/50'
+                  option.primary ? 'bg-burgundy border-burgundy' : 'bg-navy/50 border-navy-light/50'
                 }`}
                 style={{
                   animationDelay: `${(index + 1) * 0.1}s`,
@@ -79,15 +77,21 @@ export function FinalCTA() {
                 <h3 className="font-serif text-heading-lg font-semibold mb-2">
                   {option.primary ? 'text-ivory' : 'text-navy'}
                 </h3>
-                <h3 className={`font-serif text-heading-lg font-semibold mb-2 ${option.primary ? 'text-ivory' : 'text-navy'}`}>
+                <h3
+                  className={`font-serif text-heading-lg font-semibold mb-2 ${option.primary ? 'text-ivory' : 'text-navy'}`}
+                >
                   {option.title}
                 </h3>
-                <p className={`text-body text-center mb-6 ${option.primary ? 'text-ivory/80' : 'text-charcoal-muted'}`}>
+                <p
+                  className={`text-body text-center mb-6 ${option.primary ? 'text-ivory/80' : 'text-charcoal-muted'}`}
+                >
                   {option.description}
                 </p>
-                <span className={`inline-flex items-center gap-2 font-medium transition-transform ${
-                  option.primary ? 'text-ivory' : 'text-burgundy'
-                }`}>
+                <span
+                  className={`inline-flex items-center gap-2 font-medium transition-transform ${
+                    option.primary ? 'text-ivory' : 'text-burgundy'
+                  }`}
+                >
                   Get Started
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
@@ -101,5 +105,5 @@ export function FinalCTA() {
         </div>
       </div>
     </section>
-  )
+  );
 }

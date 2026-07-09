@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown, ChevronRight } from 'lucide-react'
-import { MegaMenu } from './MegaMenu'
+import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { MegaMenu } from './MegaMenu';
 
 const navItems = [
   {
@@ -65,41 +65,41 @@ const navItems = [
       { label: 'Enrolment Meetings', href: '/schedule-meeting' },
     ],
   },
-]
+];
 
 export function Header() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null)
-  const headerRef = useRef<HTMLElement>(null)
-  const location = useLocation()
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
-    setMobileMenuOpen(false)
-    setActiveMegaMenu(null)
-  }, [location.pathname])
+    setMobileMenuOpen(false);
+    setActiveMegaMenu(null);
+  }, [location.pathname]);
 
   const handleMouseEnter = (key: string) => {
     if (window.innerWidth >= 1024) {
-      setActiveMegaMenu(key)
+      setActiveMegaMenu(key);
     }
-  }
+  };
 
   const handleMouseLeave = () => {
     if (window.innerWidth >= 1024) {
-      setActiveMegaMenu(null)
+      setActiveMegaMenu(null);
     }
-  }
+  };
 
-  const isActive = (key: string) => activeMegaMenu === key
+  const isActive = (key: string) => activeMegaMenu === key;
 
   return (
     <header
@@ -133,9 +133,7 @@ export function Header() {
               >
                 <button
                   className={`flex items-center gap-1.5 px-3 py-2 text-body font-medium transition-colors ${
-                    isActive(item.key)
-                      ? 'text-burgundy'
-                      : 'text-navy hover:text-burgundy'
+                    isActive(item.key) ? 'text-burgundy' : 'text-navy hover:text-burgundy'
                   }`}
                   aria-expanded={isActive(item.key)}
                   aria-haspopup="true"
@@ -144,26 +142,17 @@ export function Header() {
                   <ChevronDown className="w-4 h-4 transition-transform" />
                 </button>
                 {isActive(item.key) && (
-                  <MegaMenu
-                    items={item.children}
-                    onLeave={handleMouseLeave}
-                  />
+                  <MegaMenu items={item.children} onLeave={handleMouseLeave} />
                 )}
               </div>
             ))}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/schedule-meeting"
-              className="btn btn-secondary text-sm px-4 py-2"
-            >
+            <Link to="/schedule-meeting" className="btn btn-secondary text-sm px-4 py-2">
               Book a Visit
             </Link>
-            <Link
-              to="/registration"
-              className="btn btn-primary text-sm px-4 py-2"
-            >
+            <Link to="/registration" className="btn btn-primary text-sm px-4 py-2">
               Register
             </Link>
           </div>
@@ -180,7 +169,10 @@ export function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div id="mobile-menu" className="md:hidden py-4 border-t border-ivory-parchment animate-fade-up">
+          <div
+            id="mobile-menu"
+            className="md:hidden py-4 border-t border-ivory-parchment animate-fade-up"
+          >
             <div className="space-y-2">
               {navItems.map((item) => (
                 <MobileMenuSection
@@ -219,7 +211,7 @@ export function Header() {
         />
       )}
     </header>
-  )
+  );
 }
 
 function MobileMenuSection({
@@ -227,11 +219,11 @@ function MobileMenuSection({
   activeKey,
   onToggle,
 }: {
-  item: typeof navItems[0]
-  activeKey: string | null
-  onToggle: (key: string | null) => void
+  item: (typeof navItems)[0];
+  activeKey: string | null;
+  onToggle: (key: string | null) => void;
 }) {
-  const isOpen = activeKey === item.key
+  const isOpen = activeKey === item.key;
 
   return (
     <div className="relative">
@@ -241,9 +233,7 @@ function MobileMenuSection({
         aria-expanded={isOpen}
       >
         <span>{item.label}</span>
-        <ChevronRight
-          className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-90' : ''}`}
-        />
+        <ChevronRight className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
       </button>
       {isOpen && (
         <div className="pl-6 mt-2 space-y-2 animate-fade-up">
@@ -260,5 +250,5 @@ function MobileMenuSection({
         </div>
       )}
     </div>
-  )
+  );
 }

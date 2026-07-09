@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface PlaceholderPageProps {
-  title: string
-  description?: string
+  title: string;
+  description?: string;
 }
 
 export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
@@ -36,5 +36,5 @@ export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

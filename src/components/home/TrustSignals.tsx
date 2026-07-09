@@ -1,11 +1,15 @@
-import { GraduationCap, Star } from 'lucide-react'
+import { GraduationCap, Star } from 'lucide-react';
 
 const accreditations = [
-  { name: 'Cambridge International', logo: 'CAIE', description: 'Registered Cambridge International School' },
+  {
+    name: 'Cambridge International',
+    logo: 'CAIE',
+    description: 'Registered Cambridge International School',
+  },
   { name: 'IB World School', logo: 'IB', description: 'Authorised IB Continuum School' },
   { name: 'CIS Accredited', logo: 'CIS', description: 'Council of International Schools' },
   { name: 'ISA Member', logo: 'ISA', description: 'Independent Schools Association' },
-]
+];
 
 const universityDestinations = [
   { name: 'University of Cambridge', country: 'UK', tier: 'Top 5' },
@@ -16,31 +20,34 @@ const universityDestinations = [
   { name: 'University of Toronto', country: 'Canada', tier: 'Top 20' },
   { name: 'University of Melbourne', country: 'Australia', tier: 'Top 30' },
   { name: 'Stellenbosch University', country: 'SA', tier: 'Top Africa' },
-]
+];
 
 const testimonials = [
   {
-    quote: "Red House gave our children the academic rigour of a top British school with the warmth of a family. They're thriving at university now.",
+    quote:
+      "Red House gave our children the academic rigour of a top British school with the warmth of a family. They're thriving at university now.",
     author: 'Dr. & Mrs. van der Merwe',
     role: 'Parents of 2 Graduates (Class of 2022, 2024)',
     location: 'Cape Town, South Africa',
     stars: 5,
   },
   {
-    quote: "As expats moving between Dubai and London, Red House provided continuity. The teachers know each child personally — it's remarkable.",
+    quote:
+      "As expats moving between Dubai and London, Red House provided continuity. The teachers know each child personally — it's remarkable.",
     author: 'The Al-Rashid Family',
     role: 'Current Parents (Years 7 & 10)',
     location: 'Dubai / London',
     stars: 5,
   },
   {
-    quote: "The IB programme here is exceptional. My daughter developed critical thinking skills that set her apart in her Oxford interview.",
+    quote:
+      'The IB programme here is exceptional. My daughter developed critical thinking skills that set her apart in her Oxford interview.',
     author: 'Prof. James Mitchell',
     role: 'Parent of IB Graduate (Class of 2023)',
     location: 'Oxford, UK',
     stars: 5,
   },
-]
+];
 
 export function TrustSignals() {
   return (
@@ -50,7 +57,10 @@ export function TrustSignals() {
           <p className="font-display text-champagne text-heading-sm mb-4 animate-fade-up">
             Trusted by Families Worldwide
           </p>
-          <h2 id="trust-title" className="font-serif text-display-md font-semibold text-navy animate-fade-up stagger-1">
+          <h2
+            id="trust-title"
+            className="font-serif text-display-md font-semibold text-navy animate-fade-up stagger-1"
+          >
             Accredited. Recognised. Chosen.
           </h2>
           <div className="section-divider animate-fade-up stagger-2" />
@@ -71,7 +81,9 @@ export function TrustSignals() {
                   {acc.logo}
                 </div>
                 <p className="font-medium text-navy text-center">{acc.name}</p>
-                <p className="text-body-sm text-charcoal-muted text-center max-w-xs">{acc.description}</p>
+                <p className="text-body-sm text-charcoal-muted text-center max-w-xs">
+                  {acc.description}
+                </p>
               </div>
             ))}
           </div>
@@ -138,8 +150,18 @@ export function TrustSignals() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="/registration" className="btn btn-primary group">
               Start Registration
-              <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              <svg
+                className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
               </svg>
             </a>
             <a href="/schedule-meeting" className="btn btn-secondary">
@@ -149,5 +171,5 @@ export function TrustSignals() {
         </div>
       </div>
     </section>
-  )
+  );
 }

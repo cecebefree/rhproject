@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface MegaMenuProps {
-  items: { label: string; href: string }[]
-  onLeave: () => void
+  items: { label: string; href: string }[];
+  onLeave: () => void;
 }
 
 export function MegaMenu({ items, onLeave }: MegaMenuProps) {
@@ -31,5 +31,5 @@ export function MegaMenu({ items, onLeave }: MegaMenuProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

@@ -1,10 +1,7 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from 'tailwindcss';
 
 export default {
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -44,9 +41,9 @@ export default {
         'heading-md': ['1.25rem', { lineHeight: '1.4', letterSpacing: '0' }],
         'heading-sm': ['1.125rem', { lineHeight: '1.45', letterSpacing: '0' }],
         'body-lg': ['1.125rem', { lineHeight: '1.7', letterSpacing: '0' }],
-        'body': ['1rem', { lineHeight: '1.7', letterSpacing: '0' }],
+        body: ['1rem', { lineHeight: '1.7', letterSpacing: '0' }],
         'body-sm': ['0.875rem', { lineHeight: '1.6', letterSpacing: '0' }],
-        'caption': ['0.75rem', { lineHeight: '1.5', letterSpacing: '0.02em' }],
+        caption: ['0.75rem', { lineHeight: '1.5', letterSpacing: '0.02em' }],
       },
       spacing: {
         'space-0': '0',
@@ -81,18 +78,18 @@ export default {
         },
       },
       boxShadow: {
-        'card': '0 10px 30px rgba(26, 35, 48, 0.08)',
+        card: '0 10px 30px rgba(26, 35, 48, 0.08)',
         'card-hover': '0 20px 50px rgba(26, 35, 48, 0.12)',
-        'dropdown': '0 20px 50px rgba(26, 35, 48, 0.15)',
+        dropdown: '0 20px 50px rgba(26, 35, 48, 0.15)',
       },
       transitionDuration: {
-        'fast': '150ms',
-        'normal': '250ms',
-        'slow': '350ms',
+        fast: '150ms',
+        normal: '250ms',
+        slow: '350ms',
       },
       transitionTimingFunction: {
         'ease-out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
     },
   },
-} satisfies Config
+} satisfies Config;

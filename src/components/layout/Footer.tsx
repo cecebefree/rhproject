@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { Mail, MapPin, Phone } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const footerLinks = {
   about: [
@@ -29,7 +29,7 @@ const footerLinks = {
     { label: 'Find Us', href: '/main-contact' },
     { label: 'Zones & Calendar', href: '/zones-calendar' },
   ],
-}
+};
 
 const socialLinks = [
   {
@@ -45,7 +45,13 @@ const socialLinks = [
     href: '#',
     label: 'Instagram',
     svg: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <svg
+        className="w-5 h-5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
         <rect width="20" height="20" x="2" y="2" rx="5" ry="5" strokeWidth="2" />
         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" strokeWidth="2" />
         <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" strokeWidth="2" />
@@ -70,7 +76,7 @@ const socialLinks = [
       </svg>
     ),
   },
-]
+];
 
 export function Footer() {
   return (
@@ -86,8 +92,8 @@ export function Footer() {
               />
             </Link>
             <p className="text-body text-ivory/70 max-w-xs mb-6">
-              A world-class Cambridge education, globally connected.
-              Where academic excellence meets genuine community.
+              A world-class Cambridge education, globally connected. Where academic excellence meets
+              genuine community.
             </p>
             <div className="flex gap-4">
               {socialLinks.map(({ svg, href, label }) => (
@@ -160,13 +166,19 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 flex-shrink-0 text-champagne" />
-                <a href="tel:+27210000000" className="text-body-sm hover:text-champagne-light transition-colors">
+                <a
+                  href="tel:+27210000000"
+                  className="text-body-sm hover:text-champagne-light transition-colors"
+                >
                   +27 21 000 0000
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 flex-shrink-0 text-champagne" />
-                <a href="mailto:admissions@redhouse.school" className="text-body-sm hover:text-champagne-light transition-colors">
+                <a
+                  href="mailto:admissions@redhouse.school"
+                  className="text-body-sm hover:text-champagne-light transition-colors"
+                >
                   admissions@redhouse.school
                 </a>
               </li>
@@ -180,13 +192,19 @@ export function Footer() {
               © {new Date().getFullYear()} Red House School. All rights reserved.
             </p>
             <div className="flex items-center gap-6 text-body-sm text-ivory/50">
-              <Link to="/about" className="hover:text-champagne-light transition-colors">Privacy Policy</Link>
-              <Link to="/about" className="hover:text-champagne-light transition-colors">Terms of Use</Link>
-              <Link to="/about" className="hover:text-champagne-light transition-colors">Cookie Policy</Link>
+              <Link to="/about" className="hover:text-champagne-light transition-colors">
+                Privacy Policy
+              </Link>
+              <Link to="/about" className="hover:text-champagne-light transition-colors">
+                Terms of Use
+              </Link>
+              <Link to="/about" className="hover:text-champagne-light transition-colors">
+                Cookie Policy
+              </Link>
             </div>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }

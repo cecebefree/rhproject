@@ -1,51 +1,57 @@
-import { Link } from 'react-router-dom'
-import { Users, Music, Plane, Trophy, Heart, Palette } from 'lucide-react'
+import { Heart, Music, Palette, Plane, Trophy, Users } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const communityStats = [
   { icon: Users, value: '30+', label: 'Nationalities Represented' },
   { icon: Heart, value: '15:1', label: 'Student : Teacher Ratio' },
   { icon: Trophy, value: '100%', label: 'University Acceptance Rate' },
   { icon: Plane, value: '15+', label: 'Countries for Travel Programs' },
-]
+];
 
 const communityHighlights = [
   {
     icon: Users,
     title: 'House System & Family Life',
-    description: 'Every student joins a house — their home base for mentorship, friendship, and healthy competition.',
+    description:
+      'Every student joins a house — their home base for mentorship, friendship, and healthy competition.',
     link: '/social/families',
   },
   {
     icon: Music,
     title: 'Arts, Music & Creative Expression',
-    description: 'Orchestra, theatre, visual arts, and digital media. Annual productions showcase student talent.',
+    description:
+      'Orchestra, theatre, visual arts, and digital media. Annual productions showcase student talent.',
     link: '/sup/music-art',
   },
   {
     icon: Trophy,
     title: 'Sports & Physical Development',
-    description: 'Rowing, tennis, swimming, football, athletics. Elite coaching alongside participation for all.',
+    description:
+      'Rowing, tennis, swimming, football, athletics. Elite coaching alongside participation for all.',
     link: '/sup/clubs',
   },
   {
     icon: Plane,
     title: 'Global Travel & Cultural Exchange',
-    description: 'Annual trips to Europe, Africa, Asia. Service learning, cultural immersion, and adventure.',
+    description:
+      'Annual trips to Europe, Africa, Asia. Service learning, cultural immersion, and adventure.',
     link: '/social/travel-outings',
   },
   {
     icon: Palette,
     title: 'Student Leadership & Voice',
-    description: 'Student Council, prefects, eco-council, peer mentors. Real responsibility, real impact.',
+    description:
+      'Student Council, prefects, eco-council, peer mentors. Real responsibility, real impact.',
     link: '/social/student-council',
   },
   {
     icon: Heart,
     title: 'Service & Community Outreach',
-    description: 'Local partnerships, fundraising, environmental projects. Education that gives back.',
+    description:
+      'Local partnerships, fundraising, environmental projects. Education that gives back.',
     link: '/sup/enrichment',
   },
-]
+];
 
 export function CommunityLife() {
   return (
@@ -55,13 +61,16 @@ export function CommunityLife() {
           <p className="font-display text-champagne text-heading-sm mb-4 animate-fade-up">
             Life at Red House
           </p>
-          <h2 id="community-title" className="font-serif text-display-md font-semibold text-navy animate-fade-up stagger-1">
+          <h2
+            id="community-title"
+            className="font-serif text-display-md font-semibold text-navy animate-fade-up stagger-1"
+          >
             A Global Community That Feels Like Family
           </h2>
           <div className="section-divider animate-fade-up stagger-2" />
           <p className="font-sans text-body-lg text-charcoal-muted mt-6 animate-fade-up stagger-3">
-            Learning happens everywhere — in the dining hall, on the sports field, in the music room,
-            and on trips across continents.
+            Learning happens everywhere — in the dining hall, on the sports field, in the music
+            room, and on trips across continents.
           </p>
         </div>
 
@@ -91,15 +100,27 @@ export function CommunityLife() {
               <div className="w-12 h-12 rounded-lg bg-burgundy/10 flex items-center justify-center mb-4 group-hover:bg-burgundy group-hover:text-ivory transition-colors">
                 <highlight.icon className="w-6 h-6 text-burgundy group-hover:text-ivory transition-colors" />
               </div>
-              <h3 className="font-serif text-heading-md font-semibold text-navy mb-2">{highlight.title}</h3>
+              <h3 className="font-serif text-heading-md font-semibold text-navy mb-2">
+                {highlight.title}
+              </h3>
               <p className="text-body text-charcoal-muted mb-6">{highlight.description}</p>
               <Link
                 to={highlight.link}
                 className="inline-flex items-center gap-1.5 text-body font-medium text-burgundy hover:text-burgundy-bright transition-colors"
               >
                 Explore
-                <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <svg
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
                 </svg>
               </Link>
             </article>
@@ -107,5 +128,5 @@ export function CommunityLife() {
         </div>
       </div>
     </section>
-  )
+  );
 }
