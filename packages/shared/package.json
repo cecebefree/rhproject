@@ -9,14 +9,14 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "typescript": "^5.6.3",
     "@biomejs/biome": "1.9.4",
+    "typescript": "^5.6.3",
     "vitest": "^3.1.1"
   }
 }
