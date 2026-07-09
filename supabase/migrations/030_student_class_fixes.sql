@@ -24,3 +24,7 @@ create policy sc_teacher_read on student_class
         and c.teacher_id = auth.uid()
     )
   );
+
+-- P2-011 tenant isolation: transitive via courses.teacher_id + profiles.
+-- student_class has no direct tenant_id; scope inherited from course/profile ownership.
+-- Direct tenant_id column deferred to Mobile phase if realtime requires it.
