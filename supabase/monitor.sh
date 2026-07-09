@@ -71,5 +71,30 @@ if [ "$DISK_USAGE" -gt 80 ]; then
   send_alert "WARNING" "High Disk Usage" "Disk usage is at ${DISK_USAGE}%"
 fi
 
+
+# Check 7: Error rate (last 5 minutes)
+log "Check 7: Error rate"
+ERROR_COUNT=$(docker exec supabase_db_rhproject-new psql -U postgres -d postgres -t -c "SELECT COUNT(*) FROM auth.audit_log_entries WHERE created_at > NOW() - INTERVAL '5 minutes' AND payload->>'action' LIKE '%error%';" 2>/dev/null | tr -d ' ')
+log "  Errors in last 5 minutes: $ERROR_COUNT"
+if [ "${ERROR_COUNT:-0}" -gt 10 ]; then
+  send_alert "WARNING" "Error Rate Spike" "$ERROR_COUNT errors in the last 5 minutes"
+fi
+
+# Check 8: Crossing-gate bypass (unapproved profiles with enrollments)
+log "Check 8: Crossing-gate bypass"
+GATE_BYPASS=$(docker exec supabase_db_rhproject-new psql -U postgres -d postgres -t -c "SELECT COUNT(*) FROM profiles p JOIN enrollments e ON e.student_id = p.id WHERE p.registration_status != 'approved';" 2>/dev/null | tr -d ' ')
+log "  Unapproved profiles with enrollments: $GATE_BYPASS"
+if [ "${GATE_BYPASS:-0}" -gt 0 ]; then
+  send_alert "CRITICAL" "Crossing-Gate Bypass" "$GATE_BYPASS unapproved profiles have active enrollments"
+fi
+
+# Check 9: Backup freshness (last checkpoint within 24h)
+log "Check 9: Backup freshness"
+LAST_CKPT=$(docker exec supabase_db_rhproject-new psql -U postgres -d postgres -t -c "SELECT EXTRACT(EPOCH FROM (NOW() - checkpoint_time))::int FROM pg_control_checkpoint();" 2>/dev/null | tr -d ' ')
+log "  Seconds since last checkpoint: $LAST_CKPT"
+if [ "${LAST_CKPT:-0}" -gt 86400 ]; then
+  send_alert "WARNING" "Stale Backup" "No checkpoint/backup in over 24 hours"
+fi
+
 log "=== Redhouse Monitor Complete ==="
 log "Dashboard: http://127.0.0.1:54323"
