@@ -141,3 +141,86 @@ Redhouse-unique "line" to config-gated white-label capability.
 Devotional BACKEND remains isolated white-label #2 with own database.
 No mobile code implements this yet -- scaffold is static placeholders.
 Implementation lands with the mobile build-out phase.
+
+
+## User Types (locked, source: migration 026)
+
+8 roles, TEXT column + CHECK constraint (not a PG enum type),
+defined in 026_crossing_gate_columns.sql (superseded 013's
+3-role set):
+
+| # | Value             | Notes                                                  |
+|---|-------------------|--------------------------------------------------------|
+| 1 | student           | Core learner; auto-assigned on signup by trigger        |
+| 2 | outside_student   | Non-enrolled learner (short courses, trials)            |
+| 3 | family            | First-class role (not a guest variant)                  |
+| 4 | alumni            | Graduated; read-only access to own records              |
+| 5 | teacher           | Instructor; manages courses + chapters                  |
+| 6 | expert            | Guest specialist; time-bounded content access           |
+| 7 | guest             | Minimal read access; no enrolment, no calendar          |
+| 8 | admin             | Staffs the Office Desk; full bypass via admin_all RLS   |
+
+Build order for calendar/schedule surfaces: student + teacher
+first, then family (unique design configuration), then others.
+
+Terminology: instructor is deprecated ghost terminology; use
+teacher. family is a first-class role, not a guest variant.
+
+## Calendar & Schedule Architecture (decided 2026-07-10)
+
+Calendar = 3 layers:
+
+L1 SOURCES:
+  - class slots (migration 037: terms + schedule_slot)
+  - school events
+  - hub/OTT live events (3rd-party reference entries for now,
+    maybe native later)
+  - chat group events
+  - devotional
+
+L2 RESOLUTION:
+  - Profile in Supabase is source of truth
+  - Visibility derives from enrolment (student_class), platform
+    flags (platform_access, has_core), access windows (032),
+    contract/payment state managed by back office (admin role)
+
+L3 READ MODEL:
+  - Per-user unique calendar
+  - Mobile index page shows ALL entries
+  - Sectional calendars filter by source tag
+  - Mobile + LMS are pure READERS, zero client-side resolution
+
+Class vs event resolution differ:
+  - Classes appear via enrolment (no user choice)
+  - Hub/chat events appear via access + user attendance TOGGLE
+    (future event_attendance table: user_id, tenant_id, source,
+    event_ref, opted_at)
+
+Schedule access is AUTO-DETERMINED at placement/roll-over (same
+engine and inputs as yearly booklist): yearly core package +
+school stage (junior/senior) + subject selection + per-item
+clubs/enrichment. Engine WRITES student_class rows
+(materialization); RLS reads enrolment only -- stage/subjects
+are placement inputs, NOT read-policy conditions.
+
+Grade 7 / mod school crossover: NO separate stage; placement
+engine enrols across junior+senior course sets as needed.
+
+Onboarding flow: front desk (web) registers -> user placed into
+profile -> placement engine materializes enrolments -> calendar
+composes. School Desk uses this for registered members' full
+onboarding; NOT front-desk services.
+
+Booklist depth: booklist maps not only to subjects/courses but
+to CURRICULUM SESSIONS -- session sections and homework. Ebooks
+in the student library attach at session-section level.
+
+Two session concepts, kept separate:
+  - schedule_slot (037) = TIME (when class meets, recurrence)
+  - curriculum session = CONTENT (what is taught: sections,
+    ebooks, homework) -- future LMS lesson model
+  They join only in the read model (occurrence N of slot =
+  curriculum session N). schedule_slot stays content-free.
+
+Notifications link: 036 'schedule' type = delivery channel for
+class-start pings (pg_cron reads schedule_slot; later slot).
