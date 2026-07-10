@@ -31,7 +31,7 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 | # | Task | Description | Owner | Dependencies | Estimate | Risk | Affected UI Screens | Status |
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
 | P2-011 | Student-class assignment | Link students to classes, teachers, schedules | Data Lead | P2-008 | 4 days | MEDIUM | CLASS | PLANNED NOT BUILT |
-| P2-012 | Schedule/timetable system | Class times, rooms, teachers, recurrence patterns | Backend Lead | P2-002, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
+| P2-012 | Schedule/timetable system | terms + schedule_slot, EXCLUDE overlap guard (btree_gist/intarray/tsrange), admin-write RLS (D22), 12 pgTAP tests. BUILT/TESTED — migration 037, 96/96 PASS | Backend Lead | — | — | — | — | — | — | — | — | BUILT/TESTED |
 | P2-013 | Payment processing | Stripe integration, course purchases, payment references | Backend Lead | P2-006, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 | P2-014 | Video hosting integration | Muvi service setup, course content delivery | DevOps Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 | P2-015 | Social data structures | Posts, likes, comments, groups, contacts, chat | Backend Lead | P2-002, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
@@ -307,6 +307,7 @@ NOTE: The PART 2 TASK LIST tables above contain (a) corrupted rows with injected
 - P2-011 (student-class enrolment): table says PLANNED NOT BUILT -> ACTUAL: DONE [migration 027]
 - P2-016 (real-time subscriptions): table says PLANNED NOT BUILT -> ACTUAL: DONE [migration 029]
 - P2-028 (monitoring/alerting): table says PLANNED NOT BUILT -> ACTUAL: PARTIAL [6-check monitor.sh live; payments dropped (not mobile); PENDING: gate-bypass, brute-force, backup-status]
+- P2-012 (schedule/timetable): table said DONE (premature) -> ACTUAL: BUILT/TESTED [migration 037, 12 pgTAP tests, 96/96 PASS]
 
 ### Structural issue pending
 - Multiple rows in the Foundation and Core Infrastructure tables have boilerplate text spliced mid-row, breaking the 9-column format. Repair deferred until leadership approves the reconciliation pass.

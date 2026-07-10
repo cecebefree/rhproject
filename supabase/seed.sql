@@ -135,3 +135,48 @@ values
       where id = 'bb000000-0000-0000-0000-0000000000b2'),
    'system', 'Welcome stud2', 'Seed notification for student2')
 on conflict (id) do nothing;
+
+
+-- 037 schedule fixtures (P2-012)
+-- Term aligned with 032 access-window fixtures (student access: now()-1d to now()+365d)
+insert into public.terms (id, tenant_id, name, start_date, end_date)
+values
+  ('cccc0000-0000-0000-0000-0000000000c1',
+   '00000000-0000-0000-0000-000000000001',
+   '2024-25 Academic Year',
+   (now() - interval '1 day')::date,
+   (now() + interval '300 days')::date)
+on conflict (id) do nothing;
+
+insert into public.schedule_slot
+  (id, tenant_id, course_id, term_id, label, start_time, end_time, days_of_week)
+values
+  ('bbbb0000-0000-0000-0000-0000000000b1',
+   '00000000-0000-0000-0000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   'cccc0000-0000-0000-0000-0000000000c1',
+   'Section A',
+   '09:00', '10:00',
+   ARRAY[1,3,5]),
+  ('bbbb0000-0000-0000-0000-0000000000b2',
+   '00000000-0000-0000-0000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   'cccc0000-0000-0000-0000-0000000000c1',
+   'Section B',
+   '10:30', '11:30',
+   ARRAY[2,4])
+on conflict (id) do nothing;
+
+-- teacher2 with no courses (for test 5)
+insert into auth.users (id, email, aud, role)
+values ('eeee0000-0000-0000-0000-0000000000e5', 'teacher2@test.local', 'authenticated', 'authenticated')
+on conflict (id) do nothing;
+
+insert into public.profiles (id, name, role, registration_status, consent_given, tenant_id)
+values ('eeee0000-0000-0000-0000-0000000000e5', 'Test Teacher Two', 'teacher', 'approved', true,
+        '00000000-0000-0000-0000-000000000001')
+on conflict (id) do update
+  set role = excluded.role,
+      registration_status = excluded.registration_status,
+      consent_given = excluded.consent_given;
+
