@@ -104,3 +104,18 @@ values
   ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111', 'seed-paid-001'),
   ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', 'seed-paid-002')
 on conflict (student_id, course_id) do nothing;
+
+-- platform_access fixtures for P2-023
+-- student1 = core + enrichment open; student2 = enrichment only
+insert into public.platform_access
+  (user_id, tenant_id, platform, access_starts_at, access_ends_at)
+values
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
+   (select tenant_id from public.profiles where id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'),
+   'core', now() - interval '1 day', now() + interval '300 days'),
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
+   (select tenant_id from public.profiles where id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'),
+   'enrichment', now() - interval '1 day', now() + interval '300 days'),
+  ('bb000000-0000-0000-0000-0000000000b2',
+   (select tenant_id from public.profiles where id = 'bb000000-0000-0000-0000-0000000000b2'),
+   'enrichment', now() - interval '1 day', now() + interval '300 days');
