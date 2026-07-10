@@ -308,6 +308,7 @@ NOTE: The PART 2 TASK LIST tables above contain (a) corrupted rows with injected
 - P2-016 (real-time subscriptions): table says PLANNED NOT BUILT -> ACTUAL: DONE [migration 029]
 - P2-028 (monitoring/alerting): table says PLANNED NOT BUILT -> ACTUAL: PARTIAL [6-check monitor.sh live; payments dropped (not mobile); PENDING: gate-bypass, brute-force, backup-status]
 - P2-012 (schedule/timetable): table said DONE (premature) -> ACTUAL: BUILT/TESTED [migration 037, 12 pgTAP tests, 96/96 PASS]
+- P2-029-trim (realtime publication): new task, not on original grid -> BUILT/TESTED [migration 038, 5 pgTAP membership assertions, 101/101 PASS]
 
 ### Structural issue pending
 - Multiple rows in the Foundation and Core Infrastructure tables have boilerplate text spliced mid-row, breaking the 9-column format. Repair deferred until leadership approves the reconciliation pass.
