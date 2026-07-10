@@ -127,3 +127,17 @@ Note: `group_type` here is a MOBILE DISPLAY field, not the dropped DB enum.
 | group_name | "Entrepreneurs Club" |
 | group_type | "Club" |
 | group_lead | "Mr. Steyn" |
+
+## Tenant Mobile Config (provisional -- toggle decision 2026-07-10)
+| Field                | Type    | Notes                                        |
+|----------------------|---------|----------------------------------------------|
+| devotional_enabled   | boolean | Per-TENANT toggle (not per-user). Gates the  |
+|                      |         | devotional surface in mobile index screen.   |
+| devotional_tenant_id | text    | Which devotional DB to resolve. Default:     |
+|                      |         | 'redhouse'. Tenant #2 supplies their own.    |
+
+Decision note: Devotional mobile surface is reclassified from
+Redhouse-unique "line" to config-gated white-label capability.
+Devotional BACKEND remains isolated white-label #2 with own database.
+No mobile code implements this yet -- scaffold is static placeholders.
+Implementation lands with the mobile build-out phase.
