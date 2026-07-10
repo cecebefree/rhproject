@@ -180,3 +180,52 @@ on conflict (id) do update
       registration_status = excluded.registration_status,
       consent_given = excluded.consent_given;
 
+
+-- 039 enrichment/clubs fixtures (P2-018)
+-- Club course (teacher1 owns)
+insert into public.courses (id, title, price, status, teacher_id, type, open_to_outside)
+values ('33333333-3333-3333-3333-333333333333', 'Culinary Club', 0, 'published',
+        'cc000000-0000-0000-0000-0000000000c3', 'club', false)
+on conflict (id) do nothing;
+
+-- Enrichment course (teacher1 owns, open to outside students)
+insert into public.courses (id, title, price, status, teacher_id, type, open_to_outside)
+values ('44444444-4444-4444-4444-444444444444', 'Finance 101', 0, 'published',
+        'cc000000-0000-0000-0000-0000000000c3', 'enrichment', true)
+on conflict (id) do nothing;
+
+-- Golden student enrolled in club + enrichment
+insert into public.student_class (student_id, class_id, tenant_id)
+values
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000001'),
+  ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '44444444-4444-4444-4444-444444444444', '00000000-0000-0000-0000-000000000001')
+on conflict (student_id, class_id) do nothing;
+
+-- Enrichment meta for golden student
+insert into public.enrichment_meta
+  (tenant_id, student_class_id, pace, completed, total, note)
+values
+  ('00000000-0000-0000-0000-000000000001',
+   (select id from public.student_class where student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e' and class_id = '44444444-4444-4444-4444-444444444444'),
+   'self-paced', 3, 7, 'Starting Term 2')
+on conflict (student_class_id) do nothing;
+
+-- outside_student user
+insert into auth.users (id, email, aud, role)
+values ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'outside@test.local', 'authenticated', 'authenticated')
+on conflict (id) do nothing;
+
+insert into public.profiles (id, name, role, registration_status, consent_given, tenant_id)
+values ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'Outside Student', 'outside_student', 'approved', true,
+        '00000000-0000-0000-0000-000000000001')
+on conflict (id) do update
+  set role = excluded.role,
+      registration_status = excluded.registration_status,
+      consent_given = excluded.consent_given;
+
+-- student2 enrolled in club + enrichment (for CHECK constraint tests)
+insert into public.student_class (student_id, class_id, tenant_id)
+values
+  ('bb000000-0000-0000-0000-0000000000b2', '33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000001'),
+  ('bb000000-0000-0000-0000-0000000000b2', '44444444-4444-4444-4444-444444444444', '00000000-0000-0000-0000-000000000001')
+on conflict (student_id, class_id) do nothing;
