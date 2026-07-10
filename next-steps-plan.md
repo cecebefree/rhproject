@@ -42,7 +42,7 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
 | P2-016 | Real-time subscriptions | Supabase Realtime for live updates | Backend Lead | P2-015, P2-012 | 3 days | MEDIUM | ALL | PLANNED NOT BUILT |
 | P2-017 | Notification system | Push, in-app, email notifications | Backend Lead | P2-016, P2-013 | 4 days | MEDIUM | ALL | PLANNED NOT BUILT |
-| P2-018 | Enrichment/clubs management | Clubs, extracurricular activities, memberships | Backend Lead | P2-011, P2-006 | 4 days | MEDIUM | CLASS, HUB, PROFILE | PLANNED NOT BUILT |
+| P2-018 | Enrichment/clubs management | Clubs, extracurricular activities, memberships | Backend Lead | P2-011, P2-006 | 4 days | MEDIUM | CLASS, HUB, PROFILE | BUILT/TESTED |
 | P2-019 | Admin UI | Admin dashboard for platform management | Frontend Lead | P2-006, P2-001 | Generate shared TypeScript types | Create @redhouse/shared/types/database.ts from migrations 013-025 | Frontend Lead | Running Supabase instance | 2 days | HIGH | ALL | DONE |
 | P2-020 | Certificate issuance | Automated course completion certificates | Backend Lead | P2-005 | Establish Supabase project | Create Supabase instance with proper configuration | DevOps Lead | Environment config | 1 day | HIGH | ALL | DONE |
 
