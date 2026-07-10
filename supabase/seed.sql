@@ -119,3 +119,19 @@ values
   ('bb000000-0000-0000-0000-0000000000b2',
    (select tenant_id from public.profiles where id = 'bb000000-0000-0000-0000-0000000000b2'),
    'enrichment', now() - interval '1 day', now() + interval '300 days');
+
+-- 036 notifications fixtures (P2-017)
+-- read_at is deliberately left null (unread) -- test 4 depends on it.
+insert into public.notifications (id, user_id, tenant_id, type, title, body)
+values
+  ('aaaa0000-0000-0000-0000-0000000000a1',
+   'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
+   (select tenant_id from public.profiles
+      where id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'),
+   'announcement', 'Welcome stud1', 'Seed notification for student1'),
+  ('aaaa0000-0000-0000-0000-0000000000a2',
+   'bb000000-0000-0000-0000-0000000000b2',
+   (select tenant_id from public.profiles
+      where id = 'bb000000-0000-0000-0000-0000000000b2'),
+   'system', 'Welcome stud2', 'Seed notification for student2')
+on conflict (id) do nothing;
