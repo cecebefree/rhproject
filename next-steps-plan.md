@@ -309,6 +309,11 @@ NOTE: The PART 2 TASK LIST tables above contain (a) corrupted rows with injected
 - P2-028 (monitoring/alerting): table says PLANNED NOT BUILT -> ACTUAL: PARTIAL [6-check monitor.sh live; payments dropped (not mobile); PENDING: gate-bypass, brute-force, backup-status]
 - P2-012 (schedule/timetable): table said DONE (premature) -> ACTUAL: BUILT/TESTED [migration 037, 12 pgTAP tests, 96/96 PASS]
 - P2-029-trim (realtime publication): new task, not on original grid -> BUILT/TESTED [migration 038, 5 pgTAP membership assertions, 101/101 PASS]
+- P2-018 (enrichment/clubs): table says PLANNED NOT BUILT -> ACTUAL: BUILT/TESTED [migration 039, 17 pgTAP assertions, 118/118 PASS]
+
+### Backlog items (proposed)
+- **session_attendance**: Track per-session attendance (present/absent/excused) linked to schedule_slot + student_class. Requires new migration, RLS policies, pgTAP tests. Propose as P2-030 or fold into P2-012 follow-up.
+- **My Analytics (design-doc)**: Student-facing analytics dashboard showing progress across enrolled courses, enrichment meta (pace/completion), attendance summary. Blocked on session_attendance table + enrichment_meta data. Design-doc item, not a migration.
 
 ### Structural issue pending
 - Multiple rows in the Foundation and Core Infrastructure tables have boilerplate text spliced mid-row, breaking the 9-column format. Repair deferred until leadership approves the reconciliation pass.
