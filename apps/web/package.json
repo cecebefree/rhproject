@@ -5,13 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "^5.7.0",
     "vite": "^6.0.0"
-  }
+  },
+  "description": "PLACEHOLDER — empty shell, no app code yet. Web app will be imported from v0 export. Build script intentionally absent until then."
 }
