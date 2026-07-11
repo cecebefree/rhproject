@@ -28,3 +28,6 @@ dist-ssr
 
 *.BAK
 supabase/.temp/
+
+# Expo
+.expo/
