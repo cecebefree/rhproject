@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Redhouse Mobile",
+    "slug": "redhouse-mobile",
+    "version": "0.0.0",
+    "scheme": "redhouse-mobile",
+    "platforms": ["ios", "android", "web"],
+    "plugins": ["expo-router"]
+  }
+}
