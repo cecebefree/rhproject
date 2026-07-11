@@ -4,6 +4,15 @@
 
 Based on comprehensive analysis of all 5 leadership council groups, the Redhouse education platform requires immediate foundation work before any user-facing features can be delivered. The critical path prioritizes type safety, authentication with legal compliance, and infrastructure setup to unblock all downstream development.
 
+## Design Artifacts
+
+| Surface | Link | Status |
+|---------|------|--------|
+| v0 mobile screens | `[PASTE V0 LINK]` | PENDING — link required |
+| Lovable website (lead capture) | `[PASTE LOVABLE LINK]` | PENDING — link required |
+
+> Frontend Lead reviews against these design artifacts. Links to be provided by Cece before Frontend verdict. Once pinned, this section is a single commit — do not amend.
+
 ## PART 2 TASK LIST
 
 ### FOUNDATION PHASE (Weeks 1-2) — BLOCKS EVERYTHING
