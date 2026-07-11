@@ -1,7 +1,6 @@
 # VAS EDUTECH — Tech Stack Blueprint
 
 > **RECONCILIATION NOTE — 2026-07-11:** `ai-operations-plan.md` ships alongside this file as the governing AI-ops doctrine. Per Principal ruling: **tech-stack.md wins on stack facts; ai-operations-plan.md wins on AI-ops doctrine.** Sections overridden by the AI-ops plan are marked below. Read both files at session start.
-# VAS EDUTECH — Tech Stack Blueprint
 
 **Project:** vas-edutech (Redhouse = tenant #1)
 **Purpose:** White-label education platform — three surfaces, single Supabase backend
