@@ -138,3 +138,14 @@ Until all three boxes are ticked, tables above remain AS-IS and this note govern
 
 ## P2-028 CLOSED — 2026-07-09
 Monitoring complete. monitor.sh runs 9/9 checks green: DB, auth failures, users, consent, RLS, disk, error rate, gate-bypass, backup freshness. Live run verified 14:38. Supersedes 277c25c PARTIAL note.
+
+---
+
+## AI OPS PLAN — SESSION QUEUE (from ai-operations-plan.md)
+
+| # | Artifact | Description | Priority | Status |
+|---|----------|-------------|----------|--------|
+| AO-001 | send-rail.md | Provider choice, schema, suppression design | HIGH | PENDING |
+| AO-002 | safeguarding-pipeline.md | Detection rules, DSL routing, disclosure copy | HIGH | PENDING |
+| AO-003 | agent-registry.md | Per-agent scope, tools, kill switch, audit hooks | MEDIUM | PENDING |
+| AO-004 | gates.md | 14 human gates as implementable Edge Function checks | MEDIUM | PENDING |

@@ -1,5 +1,8 @@
 # VAS EDUTECH — Tech Stack Blueprint
 
+> **RECONCILIATION NOTE — 2026-07-11:** `ai-operations-plan.md` ships alongside this file as the governing AI-ops doctrine. Per Principal ruling: **tech-stack.md wins on stack facts; ai-operations-plan.md wins on AI-ops doctrine.** Sections overridden by the AI-ops plan are marked below. Read both files at session start.
+# VAS EDUTECH — Tech Stack Blueprint
+
 **Project:** vas-edutech (Redhouse = tenant #1)
 **Purpose:** White-label education platform — three surfaces, single Supabase backend
 **Surfaces:** Web (Cloudflare Pages), iOS (Capacitor), Desktop LMS (Tauri 2.0)
@@ -54,9 +57,9 @@
 * Mobile has ONE AI screen (AI Tutor) calling ai-tutor-proxy Edge Function
 ```
 
-**Data Flow:** All frontends → Supabase (Postgres) via `packages/shared` Supabase client. Edge Functions handle server-side logic (Turnstile, reconciliation, HubSpot sync, class pings, validation, AI proxy). External services (HubSpot, Turnstile, GA4, Zoom/Meet, Muvi) called from Edge Functions or client where appropriate.
+**Data Flow:** All frontends → Supabase (Postgres) via `packages/shared` Supabase client. Edge Functions handle server-side logic (Turnstile, reconciliation, class pings, validation, AI proxy). External services (~~HubSpot~~ *struck per ai-ops-plan §6*, Turnstile, GA4, Zoom/Meet, Muvi) called from Edge Functions or client where appropriate.
 
-**Source of Truth:** Supabase is authoritative. HubSpot is **sync-only** (outbound Supabase → HubSpot via nightly reconciliation + webhook). No inbound HubSpot → entitlements.
+**Source of Truth:** Supabase is authoritative. ~~HubSpot is **sync-only** (outbound Supabase → HubSpot via nightly reconciliation + webhook). No inbound HubSpot → entitlements.~~ **OVERRIDDEN by ai-ops-plan §6 — HubSpot struck. Leads live natively in Supabase.**
 
 ---
 
@@ -198,8 +201,8 @@ supabase gen types typescript --local > packages/shared/src/types/database.ts
 | Function | Purpose |
 |----------|---------|
 | `verify-turnstile` | Server-side Turnstile verification before any write |
-| `nightly-reconciliation` | Nightly Supabase ↔ HubSpot reconciliation (flags enrolment gaps) |
-| `hubspot-webhook` | **OUTBOUND** Supabase → HubSpot sync (scheduled push) |
+| `nightly-reconciliation` | ~~Nightly Supabase ↔ HubSpot reconciliation (flags enrolment gaps)~~ **OVERRIDDEN by ai-ops-plan §6 — HubSpot struck. Rework into Supabase-native pipeline.** |
+| `hubspot-webhook` | ~~**OUTBOUND** Supabase → HubSpot sync (scheduled push)~~ **OVERRIDDEN by ai-ops-plan §6 — HubSpot struck.** |
 | `class-start-ping` | Session-start notifications (triggered by pg_cron) |
 | `validate-toggle` | 28-char truncation (26 + ellipsis) + feature toggle validation |
 | `ai-tutor-proxy` | Content-scoped RAG calls (LMS only; enforces tenant + content scope) |
@@ -359,7 +362,11 @@ Stay in plan mode until approved, then switch to build.
 
 ---
 
-## Leadership Council (Above the Swarm)
+~~## Leadership Council (Above the Swarm)~~
+
+> **OVERRIDDEN by ai-ops-plan §2, §4 — KILLED: L4 Leadership Council swarm replaced by single weekly Analyst pipeline. No agent-to-agent negotiation swarms.**
+
+### Leadership Council (Historical Reference — Not Active)
 
 > **Cross-reference:** Quick map + hard rules (roster approval, deferred items gate) are in AGENTS.md section 9. This file has the full detail. Both must be read at session start.
 
