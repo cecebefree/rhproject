@@ -1,3 +1,5 @@
+> **SUPERSEDED by master-todo.md** — Task tables in this file contain 10+ unreconciled corrections and boilerplate-spliced rows. Lead verdicts cite master-todo.md item numbers, NOT P2-XXX numbers from this file.
+
 # COO FINAL SYNTHESIS PANEL REPORT — PART 2 BUILD PLAN
 
 ## EXECUTIVE SUMMARY
