@@ -6,6 +6,7 @@
 #
 # Exit 0 = all BACKED entries valid (pass)
 # Exit 1 = any violation
+# Exit 2 = cannot connect to database
 #
 # Usage: bash supabase/guard-field-register.sh
 
@@ -24,10 +25,16 @@ if [ ! -f "$REGISTER" ]; then
 fi
 
 if [ -z "${DATABASE_URL:-}" ]; then
-  echo "  SKIP: DATABASE_URL not set - offline check skipped"
-  echo "  WARN: run against a live database to validate field register"
+  echo "  ERROR: DATABASE_URL not set"
   echo "::endgroup::"
-  exit 0
+  exit 2
+fi
+
+echo "  Testing database connection..."
+if ! psql "$DATABASE_URL" -c "SELECT 1" > /dev/null 2>&1; then
+  echo "  ERROR: cannot connect to database"
+  echo "::endgroup::"
+  exit 2
 fi
 
 # Phase 1: Parse field-register.md
@@ -80,14 +87,14 @@ for table in $TABLE_LIST; do
   TABLES_CHECKED=$((TABLES_CHECKED + 1))
   echo ""
   echo "  TABLE: public.$table"
-  oid=$(psql "$DATABASE_URL" -t -A -c "SELECT to_regclass('public.${table}');" 2>/dev/null || echo "")
+  oid=$(psql "$DATABASE_URL" -t -A -c "SELECT to_regclass('public.${table}');")
   if [ -z "$oid" ] || [ "$oid" = "NULL" ]; then
     echo "    FAIL: public.$table does not exist - field register out of sync"
     VIOLATIONS=$((VIOLATIONS + 1))
     continue
   fi
   echo "    OK: public.$table (OID $oid)"
-  live_cols=$(psql "$DATABASE_URL" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '${table}' ORDER BY ordinal_position;" 2>/dev/null)
+  live_cols=$(psql "$DATABASE_URL" -t -A -c "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = '${table}' ORDER BY ordinal_position;")
   for col in $cols_str; do
     [ -z "$col" ] && continue
     if echo "$live_cols" | grep -qx "$col"; then
