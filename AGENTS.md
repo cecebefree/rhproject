@@ -114,6 +114,7 @@ The `specs/001-lms-core/` directory contains the LMS feature spec and plan being
 - This is a migration-in-progress repo; verify existence of files/dirs before assuming they're implemented
 - v2 backlog: AI-import guard — catch variable/ternary require(sdk) — statically undecidable, deferred (Security Lead 0.85)
 - **RLS gotcha (SELECT gating UPDATE):** PostgreSQL RLS applies to the read-phase of UPDATE: existing rows are first matched against USING expressions (same as SELECT). If no SELECT policy exists for a role, the UPDATE read-phase returns 0 rows silently — no error, no trigger, just UPDATE 0. This is general RLS behavior per PG docs 13.5.5 (Row Security Policies), not a version-specific bug. Always add a corresponding SELECT policy (or use FOR ALL) when UPDATE access is needed. See migration 052_office_report_card_select.sql for example.
+- **RLS gotcha (tenant_id scoping + JWT path):** Every RLS policy that scopes by tenant MUST verify the JWT claim path matches `custom_access_token_hook`. The hook writes tenant_id to `request.jwt.claims->>'tenant_id'`. Policies using the wrong path (e.g. `current_setting('request.jwt.tenant_id')`) silently pass but check nothing. Additionally, policies must verify `tenant_id` on the row matches the JWT tenant — omitting this clause lets any authenticated user read/write any tenant's data. See migration 053_fix_office_tenant_scoping.sql for the repair pattern.
 
 ---
 
