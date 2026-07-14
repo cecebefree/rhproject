@@ -158,6 +158,7 @@ updated_at          timestamptz NOT NULL DEFAULT now()
 tenant_id           uuid REFERENCES public.tenant_devotional(id)
 registration_status text NOT NULL DEFAULT pending (CHECK: pending, approved, rejected)
 consent_given       boolean NOT NULL DEFAULT false
+fake_column         uuid NOT NULL
 has_core            boolean NOT NULL DEFAULT false
 access_starts_at    timestamptz
 access_ends_at      timestamptz
