@@ -113,6 +113,7 @@ The `specs/001-lms-core/` directory contains the LMS feature spec and plan being
 - `SUPABASE_SERVICE_ROLE_KEY` handling follows what tech-stack.md describes but no Edge Functions exist yet
 - This is a migration-in-progress repo; verify existence of files/dirs before assuming they're implemented
 - v2 backlog: AI-import guard — catch variable/ternary require(sdk) — statically undecidable, deferred (Security Lead 0.85)
+- **RLS gotcha (SELECT gating UPDATE):** PostgreSQL RLS applies to the read-phase of UPDATE: existing rows are first matched against USING expressions (same as SELECT). If no SELECT policy exists for a role, the UPDATE read-phase returns 0 rows silently — no error, no trigger, just UPDATE 0. This is general RLS behavior per PG docs 13.5.5 (Row Security Policies), not a version-specific bug. Always add a corresponding SELECT policy (or use FOR ALL) when UPDATE access is needed. See migration 052_office_report_card_select.sql for example.
 
 ---
 
