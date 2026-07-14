@@ -46,13 +46,22 @@ jobs:
   guard:
     needs: [test]
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
+      - run: sudo apt-get install -y postgresql-client
       - run: bash scripts/ci/guard-ai-import.sh
       - run: bash scripts/ci/guard-cross-import.sh
       - run: bash scripts/ci/guard-type-drift.sh
         continue-on-error: true
+      - name: Apply migrations
+        run: |
+          for f in supabase/migrations/*.sql; do
+            echo "Applying $f"
+            psql "$DATABASE_URL" -f "$f"
+          done
       - run: bash supabase/guard-field-register.sh
 
   build:
