@@ -11,20 +11,52 @@ ALTER TABLE public.profiles ADD CONSTRAINT profiles_role_check
         'learner', 'office'
     ));
 
-INSERT INTO public.tenants (id, name, subdomain, created_at)
+INSERT INTO public.tenant_mobile (id, name, slug, created_at)
 VALUES ('e97e5c3a-1234-4321-abcd-000000000001', 'Redhouse Prep', 'demo', now())
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.profiles (id, name, role, tenant_id, registration_status, consent_given, created_at) VALUES
-('e97e5c3a-1234-4321-abcd-000000000101', 'Aria Admin',    'admin',   'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now()),
-('e97e5c3a-1234-4321-abcd-000000000102', 'Oliver Office', 'office',  'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now()),
-('e97e5c3a-1234-4321-abcd-000000000201', 'Tara Teacher',  'teacher', 'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now()),
-('e97e5c3a-1234-4321-abcd-000000000202', 'Tom Teacher',   'teacher', 'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now()),
-('e97e5c3a-1234-4321-abcd-000000000301', 'Maya Parent',   'family',  'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now()),
-('e97e5c3a-1234-4321-abcd-000000000302', 'Leo Learner',   'learner', 'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now()),
-('e97e5c3a-1234-4321-abcd-000000000303', 'Luna Learner',  'learner', 'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now()),
-('e97e5c3a-1234-4321-abcd-000000000402', 'Pip Learner',   'learner', 'e97e5c3a-1234-4321-abcd-000000000001', 'approved', true, now())
+-- Also insert tenant_devotional (profiles.tenant_id FK references tenant_devotional)
+INSERT INTO public.tenant_devotional (id, name, slug, is_active, created_at)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000001', 'Redhouse Prep', 'demo', true, now())
 ON CONFLICT (id) DO NOTHING;
+
+
+-- 3. DEMO PROFILES (8 users, 4 roles)
+-- Must insert into auth.users first (profiles FK references auth.users)
+-- handle_new_user trigger auto-creates profiles row; we then UPDATE it.
+DO $$
+DECLARE
+  uuids uuid[] := ARRAY[
+    'e97e5c3a-1234-4321-abcd-000000000101',
+    'e97e5c3a-1234-4321-abcd-000000000102',
+    'e97e5c3a-1234-4321-abcd-000000000201',
+    'e97e5c3a-1234-4321-abcd-000000000202',
+    'e97e5c3a-1234-4321-abcd-000000000301',
+    'e97e5c3a-1234-4321-abcd-000000000302',
+    'e97e5c3a-1234-4321-abcd-000000000303',
+    'e97e5c3a-1234-4321-abcd-000000000402'
+  ];
+  email_prefix text[] := ARRAY['admin','office','teacher1','teacher2','parent1','learner1','learner2','learner3'];
+  i int;
+BEGIN
+  FOR i IN 1..array_length(uuids, 1) LOOP
+    INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+    VALUES (uuids[i], '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', 'authenticated',
+            email_prefix[i] || '@demo.redhouse',
+            crypt('password', gen_salt('bf')), now(), now(), now(), now())
+    ON CONFLICT (id) DO NOTHING;
+  END LOOP;
+END;
+$$;
+
+UPDATE public.profiles SET name = 'Aria Admin',    role = 'admin',   tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000101';
+UPDATE public.profiles SET name = 'Oliver Office', role = 'office',  tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000102';
+UPDATE public.profiles SET name = 'Tara Teacher',  role = 'teacher', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000201';
+UPDATE public.profiles SET name = 'Tom Teacher',   role = 'teacher', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000202';
+UPDATE public.profiles SET name = 'Maya Parent',   role = 'family',  tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000301';
+UPDATE public.profiles SET name = 'Leo Learner',   role = 'learner', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000302';
+UPDATE public.profiles SET name = 'Luna Learner',  role = 'learner', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000303';
+UPDATE public.profiles SET name = 'Pip Learner',   role = 'learner', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001', registration_status = 'approved', consent_given = true WHERE id = 'e97e5c3a-1234-4321-abcd-000000000402';
 
 INSERT INTO public.consent_records (id, profile_id, consent_type, consent_given, given_at, ip_address, tenant_id, created_at, withdrawn_at) VALUES
 ('e97e5c3a-1234-4321-abcd-000000000501', 'e97e5c3a-1234-4321-abcd-000000000302', 'data_processing', true,  now() - interval '30 days', '192.168.1.1', 'e97e5c3a-1234-4321-abcd-000000000001', now(), NULL),
