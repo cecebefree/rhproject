@@ -57,6 +57,8 @@ jobs:
       - run: bash scripts/ci/guard-type-drift.sh
         continue-on-error: true
       - name: Apply migrations
+        env:
+          PGSSLMODE: require
         run: |
           for f in supabase/migrations/*.sql; do
             echo "Applying $f"
