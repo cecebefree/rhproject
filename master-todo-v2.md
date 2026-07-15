@@ -57,7 +57,7 @@ Changes require a DEFECT filing with evidence — no new review rounds.
 |---|------|----------|--------|
 | 31 | Verify design items against v0 links | 8 | Pending |
 | 32 | DESIGN FREEZE — fires on 31 | 31 | Pending |
-| 33 | Expo port screens, including devotional fields | 5, 32 | Pending |
+| 33 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 
 ## PHASE E — WIRING (gated by 14, 26, 27)
 

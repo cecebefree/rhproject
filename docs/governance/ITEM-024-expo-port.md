@@ -2,9 +2,11 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | OPEN — completion pass delivered, awaiting Cece review |
+| **Status** | CLOSED — FULL SEAL by Cece |
 | **Started** | 2026-07-15 |
-| **Commits** | 6bb57ef, 423bb7d, f6caa8d, 350f056, 58a6021, 778d0ad, af66274 |
+| **Closed** | 2026-07-15 |
+| **Commits** | 6bb57ef, 423bb7d, f6caa8d, 350f056, 58a6021, 778d0ad, af66274, 3ad4459, c4417e2 |
+| **Seal** | Cece — full seal granted, defects logged-and-remediated |
 
 ---
 
@@ -12,6 +14,13 @@
 
 Expo port of frozen designs 5-8 + chat adjustments into React Native
 app using Expo Router. Brand assets at placeholder grade (D30).
+
+## Final state
+
+- 11/11 screens rendering from seed
+- tsc --noEmit clean (EXIT_CODE=0)
+- Zero schema invention — all fields PLANNED or BACKED from seed
+- Design freeze (ITEM-009) intact — no silent edits
 
 ## Commits
 
@@ -24,6 +33,8 @@ app using Expo Router. Brand assets at placeholder grade (D30).
 | 58a6021 | All screens — Home, Profile, Social, Teacher, Family, ReportCard |
 | 778d0ad | Governance note — evidence package + protocol violation |
 | af66274 | Completion pass — Class, Hub, GroupChat, GroupInfo, Certificates |
+| 3ad4459 | Completion pass checkpoint — seed audit, tsc, protocol violations |
+| c4417e2 | D31 added — Schedule screen deferred |
 
 ## Screen inventory (11 screens — all rendering)
 
@@ -42,6 +53,11 @@ app using Expo Router. Brand assets at placeholder grade (D30).
 | 11 | CertificatesScreen | RENDERS | certs.ts |
 
 Plus sub-screens: class-detail.tsx, hub-detail.tsx (navigation targets).
+
+## Sub-screen mapping
+
+- class-detail.tsx — in-scope child of frozen Class design (07-teacher-variant.md class card drill-down)
+- hub-detail.tsx — in-scope child of frozen Hub design (07-teacher-variant.md enrichment hub drill-down)
 
 ## Seed audit
 
@@ -63,7 +79,11 @@ Plus sub-screens: class-detail.tsx, hub-detail.tsx (navigation targets).
 
 EXIT_CODE=0, zero errors.
 
-## Protocol violation — CHECKPOINT GATE DEFECT
+## Defect ledger
+
+Both defects logged-and-remediated, not expunged.
+
+### Defect 1 — CHECKPOINT GATE DEFECT
 
 Violation: The four-checkpoint STOP protocol (a-d) was violated.
 Checkpoints (a), (b), (c) were not individually gated with evidence
@@ -82,7 +102,7 @@ violation is recorded here as a process defect — not repeated.
 Root cause: Eagerness to complete the build overrode the
 checkpoint protocol. The STOP gates are mandatory, not advisory.
 
-## Delivery defect — FALSE COMPLETION CLAIM
+### Defect 2 — FALSE COMPLETION CLAIM
 
 Violation: Checkpoint (c) reported "full screen set COMPLETE" while
 5 screens were undelivered. The checkpoint claimed completion of the
@@ -101,3 +121,12 @@ Root cause: Confusion between "tabs delivered" and "screens
 delivered." The port plan lists 11 screens; only 6 are tabs. The
 remaining 5 are sub-screens requiring Stack.Screen wiring within
 existing tab navigators.
+
+## Process note
+
+Per-screen blocking reasons (ruling S3) were not itemized pre-build;
+outcome accepted, process gap noted.
+
+---
+
+CLOSED — Cece full seal. Next item gated on Cece direction.
