@@ -27,7 +27,7 @@ Changes require a DEFECT filing with evidence — no new review rounds.
 
 | # | Item | Gate | Status |
 |---|------|------|--------|
-| 13 | FIELD-REGISTER LOCK — CI guard script at supabase/guard-field-register.sh; wired into ci.yml; red-run demonstrated; closes only when (a) script exists, (b) wired in CI, (c) red-run passes | CI guard | Pending |
+| 13 | FIELD-REGISTER LOCK — CI guard script at supabase/guard-field-register.sh; wired into ci.yml; red-run demonstrated; closes only when (a) script exists, (b) wired in CI, (c) red-run passes | CI guard | **CLOSED** — per item-13-field-register-guard.md (2026-07-15) |
 | 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | Pending |
 | 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | Pending |
 | 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | Pending |
@@ -56,7 +56,7 @@ Changes require a DEFECT filing with evidence — no new review rounds.
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 31 | Verify design items against v0 links | 8 | Pending |
-| 32 | DESIGN FREEZE — fires on 31 | 31 | Pending |
+| 32 | DESIGN FREEZE — fires on 31 | 31 | **SEALED** — per ITEM-009-design-freeze.md (R19, fb33e14) |
 | 33 | Migration 042 consent + suppression | 13, 14 | Pending |
 
 ## PHASE E — WIRING (gated by 14, 26, 27)
