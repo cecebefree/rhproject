@@ -1,6 +1,6 @@
 # Expo Port Plan — Item 24
 
-**Status:** PROPOSAL — awaiting Cece approval before code
+**Status:** APPROVED — build in progress (Cece approved with 3 conditions)
 **Frozen designs:** 5–8 + chat (commit 4197525)
 **Brand assets:** Placeholder grade (docs/brand-assets.md)
 **Blocked on:** D1 (react-native-screens version), D19 (Expo bootstrap fix)
@@ -70,6 +70,14 @@ apps/mobile/
 | 9 | TeacherScreen | Design 7 | Group Lead controls, class roster | conversation_members (PLANNED) |
 | 10 | ReportCardScreen | Design 8 | status chain (draft/released/visible) | report_cards (BACKED) |
 | 11 | CertificatesScreen | ITEM-002 | cert_class, title, status | certificates (BACKED) |
+
+## 2a. Schedule Screen — DEFERRED (D31)
+
+The original 5-screen seed included Schedule; this port plan omits it. No frozen design covers the Schedule screen. A design + ruling (ITEM-009 scope) is required before Schedule can be built. This omission is documented here, not silent.
+
+**Status:** Parked (D31). Will be added as a separate item with its own design iteration when ruled.
+
+---
 
 ## 3. Seed Strategy
 

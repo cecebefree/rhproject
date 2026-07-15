@@ -35,6 +35,7 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 | D28 | conversations.category + conversations.media_enabled — category pins 7-value display domain (core/enrichment/club/social/school/staff/family), display/sort only, no branching. media_enabled is boolean media dial backing field per ITEM-001, demo default = text+emoji only. Both PLANNED. | When conversations table migrated | Open | PLANNED — conversations.category (display/sort, no branching); conversations.media_enabled (media dial, text+emoji default) |
 | D29 | Delivered state (double checkmark via Presence ack) — post-demo candidate. Requires Presence subscriber count per message; not in R16 or ITEM-001 scope. | Post-demo | Parked | Not in R16/ITEM-001; Needs Presence infra |
 | D30 | Final brand assets — logo (wordmark + app icon + splash), palette confirmation, typeface. Currently placeholder grade (seeds only). | Before final build / Item 24 completion | Open | TODO-FINAL-LOGO, TODO-FINAL-TYPE — placeholder seeds in docs/brand-assets.md |
+| D31 | Schedule screen — deferred, no frozen design covers it; requires a design + ruling before build. Original 5-screen seed included Schedule; 11-screen port plan omits it. | When Schedule design ruled | Parked | No frozen design; must have ITEM-009 ruling before inclusion |
 
 ---
 
@@ -46,7 +47,7 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 ## Next Session Goal
 TBD — set at next session open. D10, D11, D12, D13, D15 are Closed. Open items: D1, D3, D16, D17, D18, D19, D26, D28, D29, P2-026.
 D11 ≡ P2-027 (same lint fix) — do not double-count in progress metrics
-**Open with:** DESIGN FREEZE COMPLETE (ITEM-009). Expo port (Item 24) awaiting brand assets (Item 20).
+**Open with:** ITEM 24 Expo port — build in progress. D31 (Schedule screen) parked.
 
 ## D14 — TODO: Split locked architecture into a 3rd document (governance fix)
 
