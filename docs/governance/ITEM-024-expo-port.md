@@ -2,9 +2,9 @@
 
 | Field | Value |
 |-------|-------|
-| **Status** | OPEN — completion pass in progress |
+| **Status** | OPEN — completion pass delivered, awaiting Cece review |
 | **Started** | 2026-07-15 |
-| **Commits** | 6bb57ef, 423bb7d, f6caa8d, 350f056, 58a6021, 778d0ad |
+| **Commits** | 6bb57ef, 423bb7d, f6caa8d, 350f056, 58a6021, 778d0ad, af66274 |
 
 ---
 
@@ -23,40 +23,45 @@ app using Expo Router. Brand assets at placeholder grade (D30).
 | 350f056 | ProfileScreen with seed user + My Groups mirror |
 | 58a6021 | All screens — Home, Profile, Social, Teacher, Family, ReportCard |
 | 778d0ad | Governance note — evidence package + protocol violation |
+| af66274 | Completion pass — Class, Hub, GroupChat, GroupInfo, Certificates |
 
-## Screen inventory
+## Screen inventory (11 screens — all rendering)
 
-| # | Screen | Status | Notes |
-|---|--------|--------|-------|
-| 1 | HomeScreen | RENDERS | greeting, devotional, coming_up, news (all static/seed) |
-| 2 | ClassScreen | BUILDING | completion pass |
-| 3 | HubScreen | BUILDING | completion pass |
-| 4 | SocialScreen | RENDERS | My Groups list with seed data |
-| 5 | GroupChatScreen | BUILDING | completion pass |
-| 6 | GroupInfoScreen | BUILDING | completion pass |
-| 7 | ProfileScreen | RENDERS | User info + My Groups mirror |
-| 8 | FamilyScreen | RENDERS | Child tab + ledger (coming soon) + groups |
-| 9 | TeacherScreen | RENDERS | Lead badge + media toggle + groups |
-| 10 | ReportCardScreen | RENDERS | Visible cards only, status badge |
-| 11 | CertificatesScreen | BUILDING | completion pass |
+| # | Screen | Status | Seed source |
+|---|--------|--------|-------------|
+| 1 | HomeScreen | RENDERS | static + user.ts |
+| 2 | ClassScreen | RENDERS | classes.ts |
+| 3 | HubScreen | RENDERS | hubs.ts |
+| 4 | SocialScreen | RENDERS | groups.ts |
+| 5 | GroupChatScreen | RENDERS | messages.ts |
+| 6 | GroupInfoScreen | RENDERS | groups.ts |
+| 7 | ProfileScreen | RENDERS | user.ts + groups.ts |
+| 8 | FamilyScreen | RENDERS | user.ts + groups.ts |
+| 9 | TeacherScreen | RENDERS | user.ts + groups.ts |
+| 10 | ReportCardScreen | RENDERS | cards.ts |
+| 11 | CertificatesScreen | RENDERS | certs.ts |
 
-## Completion pass — 5 undelivered screens
-
-| # | Screen | Blocking reason | Exact wiring needed |
-|---|--------|-----------------|---------------------|
-| 2 | ClassScreen | No Stack.Screen in (tabs) layout | Add Stack.Screen to Social tab navigator; ClassScreen reads from seed/classes.ts |
-| 3 | HubScreen | No Stack.Screen in (tabs) layout | Add Stack.Screen to Hub tab navigator; HubScreen reads from seed/hubs.ts |
-| 5 | GroupChatScreen | No Stack.Screen in Social tab | Add Stack.Screen to Social tab navigator; GroupChatScreen reads from seed/messages.ts |
-| 6 | GroupInfoScreen | No Stack.Screen in Social tab | Add Stack.Screen to Social tab navigator; GroupInfoScreen reads from seed/groups.ts |
-| 11 | CertificatesScreen | No Stack.Screen in Records tab | Add Stack.Screen to Records tab navigator; CertificatesScreen reads from seed/certs.ts |
+Plus sub-screens: class-detail.tsx, hub-detail.tsx (navigation targets).
 
 ## Seed audit
 
-All screens render from seed data. PLANNED fields (conversations,
-conversation_members, messages, family_student_link, lead table)
-render from static imports. BACKED fields (profiles, report_cards,
-certificates) also render from seed — Supabase wiring is a future
-iteration.
+| Screen | PLANNED fields (seed) | BACKED fields (seed) |
+|--------|----------------------|---------------------|
+| HomeScreen | none | none (all static) |
+| ClassScreen | classes (PLANNED) | none |
+| HubScreen | hubs (PLANNED) | none |
+| SocialScreen | groups (PLANNED) | none |
+| GroupChatScreen | messages (PLANNED) | none |
+| GroupInfoScreen | groups (PLANNED) | none |
+| ProfileScreen | groups (PLANNED) | user (BACKED) |
+| FamilyScreen | groups (PLANNED), ledger (PLANNED) | user (BACKED) |
+| TeacherScreen | groups (PLANNED) | user (BACKED) |
+| ReportCardScreen | none | cards (BACKED) |
+| CertificatesScreen | none | certs (BACKED) |
+
+## tsc --noEmit
+
+EXIT_CODE=0, zero errors.
 
 ## Protocol violation — CHECKPOINT GATE DEFECT
 
