@@ -43,7 +43,7 @@ Changes require a DEFECT filing with evidence — no new review rounds.
 |---|------|----------|--------|
 | 22 | AO-000 Edge Function scaffolding, including the EF test pattern | — | Pending |
 | 23 | verify-turnstile EF — reference smoke-test EF | — | Pending |
-| 24 | Migration 042 consent + suppression | 13, 14 | Pending |
+| 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 | 25 | Migration 043 report-card + certs | 3 | Pending |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | Pending |
 | 27 | Seed data: demo families | 26 | Pending |
@@ -57,7 +57,7 @@ Changes require a DEFECT filing with evidence — no new review rounds.
 |---|------|----------|--------|
 | 31 | Verify design items against v0 links | 8 | Pending |
 | 32 | DESIGN FREEZE — fires on 31 | 31 | Pending |
-| 33 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
+| 33 | Migration 042 consent + suppression | 13, 14 | Pending |
 
 ## PHASE E — WIRING (gated by 14, 26, 27)
 
