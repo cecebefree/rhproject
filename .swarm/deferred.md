@@ -4,11 +4,11 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 
 | # | Item | Trigger | Status | Fix-note |
 |---|------|---------|--------|----------|
-| D1 | react-native-screens@4.25.2 wants RN >=0.82.0 but apps/mobile has RN 0.74.5 | Before first mobile build | Open | REVIEWED: blocks first mobile build; pin react-native-screens to ~3.x compatible with Expo 51 / RN 0.74 |
+| D1 | react-native-screens@4.25.2 wants RN >=0.82.0 but apps/mobile has RN 0.74.5 | Before first mobile build | Closed | Fixed: pinned react-native-screens ~3.31.0 in package.json (commit 6bb57ef) |
 | D2 | 3 ignored build scripts (@biomejs/biome, esbuild@0.21.5, esbuild@0.25.12) — native binaries not compiled | Before first pnpm lint — run pnpm approve-builds then | Closed | Fixed: allowBuilds added to pnpm-workspace.yaml (2026-07-01); pnpm install exits 0 |
 | D3 | v0 screen React version unknown — existing v0-cecebefree-3976-58ac388e directory may declare stale React version | When v0 screens land, verify React version before merge | Open | REVIEWED: v0 screens landing in this phase; React version must reconcile before merge |
 | D4 | 26 deprecated Expo subdependencies (old Babel proposal plugins, legacy React Navigation) | Only on Expo upgrade | Watch | No action until Expo 51 -> next major; deprecated deps are transitive and non-blocking |
-| D5 | apps/mobile: Expo package.json over web-based source (react-router-dom/react-dom); half-migrated | Own mobile session | Parked | Real design from v0; do not fix in scaffold sessions |
+| D5 | apps/mobile: Expo package.json over web-based source (react-router-dom/react-dom); half-migrated | Own mobile session | Closed | Fixed: removed react-dom, react-native-web, @types/react-dom from package.json (commit 6bb57ef) |
 | D6 | CRM grant contents | When CRM build starts | Parked | |
 | D7 | family mobile | Own mobile/family session | Parked | |
 | D8 | retention legal doc | Before data-retention policy ships | Parked | |
@@ -22,7 +22,7 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 | D16 | AI-import guard — block ai/tutor imports in web/mobile | When apps/lms/ AI folder is scaffolded | Open | REVIEWED: guard-ai-import.sh active in CI; fires when AI folder scaffolded |
 | D17 | Platform/tenant import guard — block platform code leaking into tenant folders | When >1 tenant/app folder exists | Open | REVIEWED: guard-cross-import.sh active in CI; fires when >1 tenant app exists |
 | D18 | Type-drift guard — fail CI if generated DB types drift from schema | When a generated DB types file exists | Open | REVIEWED: guard-type-drift.sh quarantined (Item 13); fails against ephemeral schema; needs own investigation |
-| D19 | apps/mobile/src/index.tsx uses react-dom createRoot (web bootstrap) inside a React Native app — should use AppRegistry.registerComponent. Web-trespasser missed in the 37-file clear-out. | Own session / folds into D5 Expo migration | Open | REVIEWED: blocks first mobile build; must fix before Expo bootstrap |
+| D19 | apps/mobile/src/index.tsx uses react-dom createRoot (web bootstrap) inside a React Native app — should use AppRegistry.registerComponent. Web-trespasser missed in the 37-file clear-out. | Own session / folds into D5 Expo migration | Closed | Already resolved: src/index.tsx removed in earlier cleanup; app uses Expo Router app/ directory (verified 2026-07-15) |
 | D20 | Language breach — CLOSED 2026-07-03. instructions field added to opencode.jsonc; .opencode/working-language.md loads English-only rule into runtime each session, highest priority. Root cause: rule was on disk but never injected into system prompt. VERIFIED LIVE — config confirmed on disk; 3/3 model outputs English (voluntary enforcement; full auto-injection proves on next session start). D20 fully closed. | — | Closed | |
 | D21 | Teacher-managed scheduling — config-gated tenant capability, per decision D22 in field-register.md. Parked by design; no toggle implemented in P2-012. schedule_slot writes are admin-only (D22 contract/payment coupling). Teacher self-service scheduling is a future tenant-level config flag, not a role widening. | When tenant config system exists | Parked | Design decision locked 2026-07-10 |
 | D22 | session_attendance — Track per-session attendance (present/absent/excused) linked to schedule_slot + student_class. Requires new migration, RLS policies, pgTAP tests. Blocks My Analytics. | When session tracking needed | Parked | Propose as P2-030 or fold into P2-012 follow-up |
