@@ -34,6 +34,7 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 | P2-026 | Mobile phase: student_class tenant_id migration + My Groups schema (conversations, conversation_members) | Phase C start | Open | |
 | D28 | conversations.category + conversations.media_enabled — category pins 7-value display domain (core/enrichment/club/social/school/staff/family), display/sort only, no branching. media_enabled is boolean media dial backing field per ITEM-001, demo default = text+emoji only. Both PLANNED. | When conversations table migrated | Open | PLANNED — conversations.category (display/sort, no branching); conversations.media_enabled (media dial, text+emoji default) |
 | D29 | Delivered state (double checkmark via Presence ack) — post-demo candidate. Requires Presence subscriber count per message; not in R16 or ITEM-001 scope. | Post-demo | Parked | Not in R16/ITEM-001; Needs Presence infra |
+| D30 | Final brand assets — logo (wordmark + app icon + splash), palette confirmation, typeface. Currently placeholder grade (seeds only). | Before final build / Item 24 completion | Open | TODO-FINAL-LOGO, TODO-FINAL-TYPE — placeholder seeds in docs/brand-assets.md |
 
 ---
 
