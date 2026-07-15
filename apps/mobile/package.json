@@ -5,7 +5,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start",
-    "build": "echo 'TODO: real Expo export build lands in Mobile phase — current noop produces dist/ for turbo' && mkdir -p dist",
+    "build": "echo 'TODO: real Expo export build lands in Mobile phase \u2014 current noop produces dist/ for turbo' && mkdir -p dist",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -13,13 +13,11 @@
   },
   "dependencies": {
     "@redhouse/shared": "workspace:*",
-    "@types/react-dom": "^19.2.3",
     "expo": "~51.0.0",
     "expo-router": "~3.5.0",
     "react": "18.2.0",
-    "react-dom": "^19.2.7",
     "react-native": "0.74.5",
-    "react-native-web": "~0.19.13"
+    "react-native-screens": "~3.31.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
