@@ -1,61 +1,92 @@
-import { Text, View, FlatList, TouchableOpacity } from 'react-native';
-
-type Group = {
-  id: string;
-  name: string;
-  category: string;
-  memberCount: number;
-  isLead: boolean;
-};
-
-const MIRROR_GROUPS: Group[] = [
-  { id: '1', name: 'Year 12 -- Cambridge Biology', category: 'Core', memberCount: 24, isLead: false },
-  { id: '2', name: 'Creative Writing Club', category: 'Club', memberCount: 12, isLead: true },
-];
-
-function GroupRow({ group }: { group: Group }) {
-  return (
-    <View style={{ paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderColor: '#f0f0f0' }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 15, fontWeight: '500' }}>{group.name}</Text>
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: 2 }}>
-            <Text style={{ fontSize: 12, color: '#666' }}>{group.category}</Text>
-            <Text style={{ fontSize: 12, color: '#666' }}>{group.memberCount} members</Text>
-            {group.isLead && <Text style={{ fontSize: 12, color: '#c0392b', fontWeight: '700' }}>Lead</Text>}
-          </View>
-        </View>
-        <Text style={{ fontSize: 12, color: '#2980b9' }}>Open</Text>
-      </View>
-    </View>
-  );
-}
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { SEED_USER } from '../../src/seed/user';
+import { SEED_GROUPS } from '../../src/seed/groups';
+import { GroupCard } from '../../src/components/GroupCard';
+import { EmptyState } from '../../src/components/EmptyState';
+import { colors } from '../../src/theme/colors';
+import { typography } from '../../src/theme/typography';
+import { spacing } from '../../src/theme/spacing';
 
 export default function ProfileScreen() {
   return (
-    <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
-      <View style={{ padding: 16, backgroundColor: 'white', borderBottomWidth: 2, borderColor: '#1a2330' }}>
-        <Text style={{ fontSize: 24, fontWeight: '700' }}>Profile</Text>
+    <ScrollView style={styles.container}>
+      {/* User info */}
+      <View style={styles.section}>
+        <Text style={styles.name}>{SEED_USER.name}</Text>
+        <Text style={styles.role}>
+          {SEED_USER.role} · {SEED_USER.curriculum} · 2026
+        </Text>
+        <Text style={styles.detail}>Grade: {SEED_USER.grade}</Text>
+        <Text style={styles.detail}>School stage: {SEED_USER.stage}</Text>
+        <Text style={styles.detail}>Intake: {SEED_USER.intake}</Text>
       </View>
-      <View style={{ padding: 16, backgroundColor: 'white', margin: 16, borderRadius: 12, overflow: 'hidden' }}>
-        <Text style={{ fontSize: 18, fontWeight: '700', marginBottom: 4 }}>Alex Rider</Text>
-        <Text style={{ fontSize: 14, color: '#666' }}>@alex.rider</Text>
-        <Text style={{ fontSize: 14, color: '#666' }}>RH-2026-00042</Text>
-        <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
-          <TouchableOpacity style={{ backgroundColor: '#1a2330', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 }}>
-            <Text style={{ color: 'white', fontSize: 13, fontWeight: '600' }}>Edit Profile</Text>
-          </TouchableOpacity>
-        </View>
+
+      {/* My Groups mirror — read-only */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>My Groups</Text>
+        {SEED_GROUPS.length > 0 ? (
+          SEED_GROUPS.map((group) => (
+            <GroupCard
+              key={group.id}
+              name={group.name}
+              category={group.category}
+              lead={group.lead}
+            />
+          ))
+        ) : (
+          <EmptyState
+            title="No groups yet"
+            message="You'll be added during onboarding"
+          />
+        )}
       </View>
-      <View style={{ backgroundColor: 'white', marginHorizontal: 16, borderRadius: 12, overflow: 'hidden' }}>
-        <Text style={{ fontSize: 16, fontWeight: '700', padding: 16, paddingBottom: 8 }}>My Groups</Text>
-        <FlatList
-          data={MIRROR_GROUPS}
-          keyExtractor={(g) => g.id}
-          renderItem={({ item }) => <GroupRow group={item} />}
-          scrollEnabled={false}
-        />
+
+      {/* Quick links */}
+      <View style={styles.section}>
+        <Text style={styles.link}>My Certificates</Text>
+        <Text style={styles.link}>View booklist</Text>
+        <Text style={styles.link}>Contact school</Text>
+        <Text style={styles.link}>Log out</Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.ivory,
+  },
+  section: {
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ivoryDark,
+  },
+  name: {
+    fontSize: typography.sizes.h2,
+    fontWeight: typography.weights.bold,
+    color: colors.charcoal,
+    marginBottom: spacing.xs,
+  },
+  role: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoalLight,
+    marginBottom: spacing.sm,
+  },
+  detail: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoalLight,
+    marginBottom: spacing.xs,
+  },
+  sectionTitle: {
+    fontSize: typography.sizes.h3,
+    fontWeight: typography.weights.semibold,
+    color: colors.charcoal,
+    marginBottom: spacing.md,
+  },
+  link: {
+    fontSize: typography.sizes.body,
+    color: colors.burgundy,
+    paddingVertical: spacing.sm,
+  },
+});
