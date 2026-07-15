@@ -1,124 +1,198 @@
-# MASTER-TODO-V2 — Build Board (Reconciled 2026-07-13)
+# MASTER-TODO-V2 — Sole Authoritative Board
 
-Canonical source: mobile-phase-plan.md (items 5-14) + master-todo-v2.md (items 15+).
-This index is the single source of truth. Old Phase A-H numbering is
-superseded by this build list.
-
----
-
-## Sealed Rulings
-
-| # | Item | File | Commit | Date |
-|---|------|------|--------|------|
-| 1 | Ruling: group chat | rulings/ITEM-001-chat.md | 019503b | 2026-07-13 |
-| 2 | Ruling: certificates | rulings/ITEM-002-certificates.md | 019503b | 2026-07-13 |
-| R16 | Demo scope: chat minimal, cert storage, report card live | rulings/BUILD-R16-R18-demo-scope.md | ed52049 | 2026-07-13 |
-| R17 | (same file as R16) | | | |
-| R18 | (same file as R16) | | | |
-| R19 | DESIGN FREEZE — frozen at 8d7ae52 | rulings/BUILD-R19-design-freeze.md | fb33e14 | 2026-07-13 |
-
-## Build Board
-
-### Phase 1 — Core Screens (COMPLETE, frozen at R19)
-
-| # | Item | Status | Notes |
-|---|------|--------|-------|
-| 5 | My Groups block (social screen) | CLOSED | Frozen at R19 |
-| 6 | Family ledger variant | CLOSED | Frozen at R19 |
-| 7 | Teacher variant | CLOSED | Frozen at R19 |
-| 8 | Report Card tab states | CLOSED | Frozen at R19 |
-| 9 | DESIGN FREEZE | SEALED | R19 (fb33e14) |
-
-### Phase 2 — Backend Spine (active phase)
-
-Build order: 10 -> 11 -> 12 -> 13 -> 14 (strict linear).
-
-| # | Item | Status | Acceptance Criteria | Gated By |
-|---|------|--------|-------------------|----------|
-| 10 | Migration 042 — consent + suppression | OPEN | Close-out: field-register CI script exists + wired (was item 13 gate, now close-out criterion per inputs-vs-evidence doctrine) | — |
-| 11 | Migration 043 — report-card + certs | OPEN | Close-out: report-card demo ruling sealed OR carried-forward evidence attached (was item 3 gate, now close-out criterion) | 10 |
-| 12 | RLS for 042/043 + no-FK tenant-scoping audit | OPEN | RLS positive AND negative cases per item 21 test bar; RLS denial cases verified | 11 |
-| 13 | Seed data: demo families | OPEN | | 12 |
-| 14 | Office Desk mutation EFs + gate contracts v1 | OPEN | | 15, 22 |
-
-### Phase 3 — Plan Hygiene
-
-| # | Item | Status | Notes |
-|---|------|--------|-------|
-| 15 | FIELD-REGISTER LOCK — CI guard | OPEN | |
-| 16 | Deferred sweep + D26 | OPEN | |
-| 17 | Reconcile P2 status mismatches | OPEN | |
-| 18 | Retire old Vite screens + root src/ | CLOSED | Phase 0.2b/c |
-| 19 | Mobile phase plan committed | CLOSED | 3cfcab8 |
-
-### Asset Drops (human-provided by Cece)
-
-| # | Item | Status | Notes |
-|---|------|--------|-------|
-| 20 | Brand assets: hex palette, logos | OPEN | Cece provides |
-| 21 | Supabase cloud URL + anon key | OPEN | Cece provides at deploy |
-| 22 | Cloudflare credentials | OPEN | Cece provides |
-
-### Remaining Items
-
-| # | Item | Status | Notes |
-|---|------|--------|-------|
-| 23 | iOS backend doc | OPEN | |
-| 24 | Test bar policy — pgTAP minimums | OPEN | |
-| 25 | AO-000 Edge Function scaffolding | OPEN | |
-| 26 | verify-turnstile EF | OPEN | |
-| 27 | AO-005 DPIA + disclosure copy | OPEN | |
-| 28 | Gate-contracts scope note | OPEN | |
-| 29 | EF/RPC inventory + Realtime audit | OPEN | |
-| 30 | Verify design against v0 links | OPEN | |
-| 31 | Expo port screens | OPEN | |
-| 32 | Wire: Home | OPEN | Phase E |
-| 33 | Wire: Classes | OPEN | |
-| 34 | Wire: Profile | OPEN | |
-| 35 | Wire: teacher screens | OPEN | |
-| 36 | Wire: Report Card | OPEN | |
-| 37 | Wire: Hub | OPEN | |
-| 38 | Lovable intake + Turnstile | OPEN | |
-| 39 | Desks consoles (Front, Office, School) | OPEN | |
-| 40 | Cloudflare deploy | OPEN | |
-| 41 | AO-001: send-rail.md | OPEN | |
-| 42 | AO-002: safeguarding-pipeline.md | OPEN | |
-| 43 | AO-003: agent-registry.md | OPEN | |
-| 44 | AO-004: gates.md | OPEN | |
-| 45 | QA adversarial RLS pass | OPEN | |
-| 46 | E2E demo + Cece sign-off | OPEN | |
+**Ratified:** 2026-07-11 — Cece final human gate.
+**Supersedes:** master-todo-v1 (archived to plans/done/).
+**Single-board ruling:** 2026-07-15 — DEFECT-002 remediation. This file is the SOLE authoritative board. All numbering matches governance notes (ITEM-001, ITEM-009, ITEM-013, ITEM-024, etc.).
+**Changes require:** DEFECT filing with evidence — no new review rounds.
 
 ---
 
-## Defect Register
+## PHASE A — CECE INPUTS (RULINGS AND ASSETS, CRITICAL PATH)
 
-| Defect | Affected Items | File | Commit |
-|--------|---------------|------|--------|
-| DEFECT-001 | Item 1 (chat) — BUILD, not BUY | defects/DEFECT-001.md | 019503b |
+| # | Item | Type | Status |
+|---|------|------|--------|
+| 1 | Ruling: group chat | Ruling | Pending |
+| 2 | Ruling: certificates | Ruling | Pending |
+| 3 | Ruling: report-card demo | Ruling | Pending |
+| 4 | Ruling: section 8 exemption — demo wave runs no agents; section 8 binds from first agent item | Ruling | Pending |
+| 5 | Ruling: Expo vs Capacitor + tech-stack.md amendment | Ruling | Pending |
+| 6 | Ruling: authority-gate doctrine text + Gate 15 amendment | Ruling | Pending |
+| 7 | Ruling: record d64bb05 | Ruling | Pending |
+| 8 | Asset: v0 mobile design links | Asset | Pending |
+| 9 | Asset: Lovable website link | Asset | Pending |
+| 10 | Asset: brand hex + logos | Asset | Pending |
+| 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | Pending |
+| 12 | Asset: Cloudflare credentials | Asset | Pending |
+
+## PHASE B — PLAN HYGIENE AND GOVERNANCE
+
+| # | Item | Gate | Status |
+|---|------|------|--------|
+| 13 | FIELD-REGISTER LOCK — CI guard script at supabase/guard-field-register.sh; wired into ci.yml; red-run demonstrated; closes only when (a) script exists, (b) wired in CI, (c) red-run passes | CI guard | **CLOSED** — per item-13-field-register-guard.md (2026-07-15) |
+| 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | Pending |
+| 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | Pending |
+| 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | Pending |
+| 17 | Reconcile 10 P2 status mismatches | Housekeeping | Pending |
+| 18 | Retire old Vite screens + root src/ migration or deletion | Cleanup | Pending |
+| 19 | Commit Mobile phase plan | Planning | Pending |
+| 20 | iOS backend doc | Docs | Pending |
+| 21 | Test bar policy — pgTAP minimums, RLS positive+negative cases, CI runtime budget | QA | Pending |
+
+## PHASE C — BACKEND FOUNDATION
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | — | Pending |
+| 23 | verify-turnstile EF — reference smoke-test EF | — | Pending |
+| 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
+| 25 | Migration 043 report-card + certs | 3 | Pending |
+| 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | Pending |
+| 27 | Seed data: demo families | 26 | Pending |
+| 28 | Office Desk mutation EFs + gate contracts v1 — scoped per 15 | 15, 22 | Pending |
+| 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | Pending |
+| 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | Pending |
+
+## PHASE D — DESIGN AND FRONTEND
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 31 | Verify design items against v0 links | 8 | Pending |
+| 32 | DESIGN FREEZE — fires on 31 | 31 | Pending |
+| 33 | Migration 042 consent + suppression | 13, 14 | Pending |
+
+## PHASE E — WIRING (gated by 14, 26, 27)
+
+| # | Item | Status |
+|---|------|--------|
+| 34 | Wire: Home | Pending |
+| 35 | Wire: Classes | Pending |
+| 36 | Wire: Profile | Pending |
+| 37 | Wire: teacher screens | Pending |
+| 38 | Wire: Report Card | Pending |
+| 39 | Wire: Hub | Pending |
+
+## PHASE F — WEB, DESKS, DEPLOY
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 40 | Lovable website intake — Turnstile via 23 mandatory | 9, 23 | Pending |
+| 41 | Front Desk, Office Desk, School Desk consoles | 28, 40 | Pending |
+| 42 | Cloudflare deploy | 11, 12 | Pending |
+
+## PHASE G — AO DOC SERIES (must complete before any agent operates, per 4)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 43 | AO-001: send-rail.md | 22 | Pending |
+| 44 | AO-002: safeguarding-pipeline.md | — | Pending |
+| 45 | AO-003: agent-registry.md | 43 | Pending |
+| 46 | AO-004: gates.md | 43, 44, 45 | Pending |
+
+## PHASE H — TERMINAL GATES
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 47 | QA adversarial RLS pass — extends 152/152 baseline | 26 | Pending |
+| 48 | E2E demo + Cece sign-off — terminal human gate | 34-46, 47 | Pending |
 
 ---
 
-## Superseded Rows (from old Phase A-H master-todo-v2.md)
+## BACKLOG (parked, not in scope)
 
-The following old index rows are superseded by this build list:
-
-| Old # | Old Title | Superseded By | Reason |
-|-------|-----------|---------------|--------|
-| 3 | Ruling: report-card demo | Item 11 close-out criterion | Converted to acceptance criterion |
-| 4 | Ruling: section 8 exemption | — | Open, unnumbered — filed under governance |
-| 5 | Ruling: Expo vs Capacitor | Item 31 | Expo chosen; tech-stack.md amendment deferred |
-| 6 | Ruling: authority-gate doctrine | — | Open, unnumbered |
-| 7 | Ruling: record d64bb05 | — | Open — consumed by mobile-phase-plan.md |
-| 8 | Asset: v0 mobile design links | Item 30 | Same work item |
-| 9 | Asset: Lovable website link | Item 38 | Same work item |
-| 10 | Asset: brand hex + logos | Item 20 | Renumbered |
-| 11 | Asset: Supabase cloud URL + anon key | Item 21 | Renumbered |
-| 12 | Asset: Cloudflare credentials | Item 22 | Renumbered |
-| 32 | DESIGN FREEZE | Item 9 | Sealed at R19 |
-| 33 | Expo port screens | Item 31 | Same work item |
+- Mobile CI re-inclusion
+- Automated E2E strategy
+- P2-030 session_attendance
+- My Analytics design doc
+- apps/lms decision
 
 ---
 
-Backlog items (parked, not in scope) per master-todo-v2.md appendix: unchanged.
+# APPENDIX A: RULINGS ATTACHED AND BINDING
 
-Signed: Cece -- final human gate. 2026-07-13.
+## Ruling 1 — Item 13 (2026-07-11)
+
+"Evidence of absence-on-disk confirms pending status; it does not constitute a plan DEFECT under the binding vocabulary."
+
+Item 13 closes only when ALL of:
+- (a) guard script exists at supabase/guard-field-register.sh (or equivalent per repo convention)
+- (b) script wired into ci.yml alongside the three existing CI Hard Rule guards
+- (c) demonstrated red run: guard fails CI on deliberate violation, then passes on fix
+
+Items 24, 25 remain hard-gated on item 13 closing under (a)-(c).
+
+## Ruling 2 — Batch 2, Revised Final (2026-07-11)
+
+16 objections split into TWO categories:
+
+**Category 1 — Execution Evidence (item-13 precedent applies):**
+QA 47, 48; Security 15, 22, 23, 24, 28, 40, 44, 46, 47;
+Frontend 34–39, 40, 41.
+
+Disposition: overruled as blockers, adopted as close-out acceptance
+criteria. Security countersignature required on each named artifact
+at item close-out, not at ratification.
+
+**Category 2 — Input Dependency (item-13 precedent does NOT apply):**
+Frontend 31, 33.
+
+Disposition: UPHELD. These depend on design REFERENCES (v0 links),
+which are inputs, not execution evidence. Inputs must pre-exist the
+items that consume them. The plan already encodes this: item 31 is
+hard-gated on item 8 (v0 links) and item 33 on items 5 and 32.
+Binding restatement: items 31 and 33 CANNOT start before item 8 is
+delivered and DESIGN FREEZE fires. Objection satisfied by existing
+gates without plan amendment.
+
+### R1 Doctrine, binding henceforth:
+- "Pending item lacks execution evidence" → summarily resolved under item-13 precedent.
+- "Pending item lacks required input" → valid only if input is ungated; gated inputs satisfy the objection by structure.
+- All future changes require DEFECT filing with evidence. No new review rounds.
+
+---
+
+# APPENDIX B: ACCEPTANCE-CRITERIA LEDGER
+
+Close-out gates added this session:
+
+| Item | Close-out Criterion | Owner |
+|------|-------------------|-------|
+| 13 | CI guard live at supabase/guard-field-register.sh + wired in ci.yml + red-run demonstrated (a)(b)(c) | Backend |
+| 15 | Security lead countersign on scope note review | Security |
+| 22 | Security lead countersign on EF scaffold + red-test | Security |
+| 23 | Security lead countersign on turnstile red-test | Security |
+| 24 | Security lead countersign on migration + RLS audit evidence | Security |
+| 28 | Security lead countersign on RLS audit evidence | Security |
+| 31 | v0 design verification against frozen references — screen-by-screen match recorded | Frontend |
+| 33 | DESIGN FREEZE (32) attestation attached | Frontend |
+| 34–39 | Per-screen wiring sign-off by Frontend lead | Frontend |
+| 40 | Security lead countersign on Turnstile enforcement proof + Frontend per-screen sign-off | Security, Frontend |
+| 41 | Frontend per-screen sign-off | Frontend |
+| 44 | Security lead countersign on doc review | Security |
+| 46 | Security lead countersign on doc review | Security |
+| 47 | Joint QA/Security sign-off on adversarial RLS pass extending 152/152 baseline with positive AND negative cases per item-21 test bar | QA, Security |
+| 48 | Live E2E demo before Cece — terminal human gate | Cece |
+
+---
+
+# SESSION CLOSEOUT — 2026-07-11
+
+RATIFICATION RECORD
+- master-todo v2 (48 items, Phases A–H + backlog) FROZEN as sole active plan.
+- Final tally: 7/7 UNANIMOUS APPROVE (PM, CTO, Backend, Frontend, QA, Security, Governance).
+- master-todo v1: closed signed, archived at plans/done/master-todo-v1.md.
+
+STATE AT CLOSE
+- Execution position: Phase A, item 1 — Ruling: group chat (NOT STARTED)
+- Critical path owner: Cece (items 1–12); item 8 (v0 links) is the binding unlock for the Phase D/E chain.
+
+---
+
+# SINGLE-BOARD RULING — 2026-07-15
+
+**DEFECT-002 remediation.** Effective 2026-07-15:
+- This file (docs/governance/MASTER-TODO-V2.md) is the SOLE authoritative board.
+- All numbering matches governance notes (ITEM-001, ITEM-009, ITEM-013, ITEM-024, etc.).
+- master-todo-v2.md at project root: replaced with pointer to this file.
+- Changes to board numbering require Cece ruling.
+
+Signed: Cece — final human gate. 2026-07-15.

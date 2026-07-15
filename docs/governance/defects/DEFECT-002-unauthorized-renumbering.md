@@ -2,18 +2,18 @@
 
 **Filed:** 2026-07-15
 **Severity:** Process
-**Status:** OPEN
+**Status:** REMEDIATED
 
 ---
 
 ## Description
 
-The project has two board files with different numbering systems:
+The project had two board files with different numbering systems:
 
-1. **Original board** (`master-todo-v2.md`): Items 1-48, Phases A-H
-2. **Reconciled board** (`docs/governance/MASTER-TODO-V2.md`): Items 5-46, reorganized structure
+1. **Original board** (master-todo-v2.md): Items 1-48, Phases A-H
+2. **Reconciled board** (docs/governance/MASTER-TODO-V2.md): Items 5-46, reorganized structure
 
-The reconciled board was created on 2026-07-13 (commits `fd6422e`, `765b470`) and states:
+The reconciled board was created on 2026-07-13 (commits fd6422e, 765b470) and stated:
 > "Canonical source: mobile-phase-plan.md (items 5-14) + master-todo-v2.md (items 15+).
 > This index is the single source of truth. Old Phase A-H numbering is
 > superseded by this build list."
@@ -27,7 +27,7 @@ Numbering mismatches between boards, governance notes, and deferred register:
 
 | Item | Governance Note | Original Board | Reconciled Board | Deferred Register |
 |------|----------------|----------------|------------------|-------------------|
-| Expo Port | ITEM-024 | Item 24 (post-fix) | Item 31 | Item 24 |
+| Expo Port | ITEM-024 | Item 24 | Item 31 | Item 24 |
 | Design Freeze | ITEM-009 | Item 32 | Item 9 | — |
 | Field Register Guard | Item 13 | Item 13 | Item 15 | — |
 | Chat Ruling | ITEM-001 | Item 1 | Item 1 | — |
@@ -36,17 +36,18 @@ Numbering mismatches between boards, governance notes, and deferred register:
 ## Renumbering Origin
 
 Git log reveals:
-- `master-todo-v2.md`: Created at `1b9f9e5` (2026-07-11), modified at `43bb752` and `6efcbdd` (board corrections)
-- `docs/governance/MASTER-TODO-V2.md`: Created at `fd6422e` (2026-07-13), modified at `765b470` (reconciliation)
+- master-todo-v2.md: Created at 1b9f9e5 (2026-07-11), modified at 43bb752 and 6efcbdd (board corrections)
+- docs/governance/MASTER-TODO-V2.md: Created at fd6422e (2026-07-13), modified at 765b470 (reconciliation)
 
 The renumbering happened when the reconciled board was created on 2026-07-13 without a ruling. The original board Items 1-48 were mapped to a new numbering scheme (Items 5-46) in the reconciled board.
 
-## Corrective Action
+## Remediation — Cece Ruling (2026-07-15)
 
-1. Log this defect (done)
-2. Board numbering is now a ruled surface — changes require a Cece ruling
-3. Until a ruling is issued, the original board (`master-todo-v2.md`) remains the authoritative source for Items 1-48
-4. The reconciled board (`docs/governance/MASTER-TODO-V2.md`) is a reference document, not a replacement
+Effective 2026-07-15:
+1. docs/governance/MASTER-TODO-V2.md is the SOLE authoritative board
+2. All numbering restored to original 1-48, matching governance notes
+3. master-todo-v2.md at project root: replaced with pointer to authoritative board
+4. Board numbering is now a ruled surface — changes require Cece ruling
 
 ## Root Cause
 
@@ -55,4 +56,4 @@ The reconciled board was created as a "canonical source" without recognizing tha
 ---
 
 Filed by: Architect
-Cece ruling required: YES — board numbering is now a ruled surface
+Remediation: Cece ruling 2026-07-15 (single-board consolidation)
