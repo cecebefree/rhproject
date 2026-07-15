@@ -1,53 +1,123 @@
-import { FlatList, Text, View, Switch } from 'react-native';
+// Teacher variant — Design 7
+// Content swap on student layout + Group Lead controls
+
+import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
+import { SEED_USER } from '../../src/seed/user';
+import { SEED_GROUPS } from '../../src/seed/groups';
+import { GroupCard } from '../../src/components/GroupCard';
+import { colors } from '../../src/theme/colors';
+import { typography } from '../../src/theme/typography';
+import { spacing } from '../../src/theme/spacing';
 import { useState } from 'react';
 
-type ClassGroup = {
-  id: string;
-  name: string;
-  studentCount: number;
-  isLead: boolean;
-  mediaEnabled: boolean;
-};
-
-const DEMO_CLASSES: ClassGroup[] = [
-  { id: '1', name: 'Year 12 — Cambridge Biology', studentCount: 24, isLead: true, mediaEnabled: false },
-  { id: '2', name: 'Year 11 — IB Chemistry', studentCount: 18, isLead: true, mediaEnabled: false },
-  { id: '3', name: 'Year 10 — Home School Maths', studentCount: 12, isLead: false, mediaEnabled: false },
-];
-
-function ClassCard({ group }: { group: ClassGroup }) {
-  const [mediaOn, setMediaOn] = useState(group.mediaEnabled);
-
-  return (
-    <View style={{ padding: 16, borderBottomWidth: 1, borderColor: '#e0e0e0' }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, fontWeight: '600' }}>{group.name}</Text>
-          <Text style={{ fontSize: 12, color: '#666', marginTop: 4 }}>{group.studentCount} students</Text>
-          {group.isLead && <Text style={{ fontSize: 12, color: '#c0392b', fontWeight: '700', marginTop: 2 }}>Group Lead</Text>}
-        </View>
-        {group.isLead && (
-          <View style={{ alignItems: 'flex-end', gap: 4 }}>
-            <Text style={{ fontSize: 12 }}>Media sharing</Text>
-            <Switch value={mediaOn} onValueChange={setMediaOn} />
-          </View>
-        )}
-      </View>
-    </View>
-  );
-}
-
 export default function TeacherScreen() {
+  const [mediaEnabled, setMediaEnabled] = useState(false);
+
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{ padding: 16, borderBottomWidth: 2, borderColor: '#1a2330' }}>
-        <Text style={{ fontSize: 24, fontWeight: '700' }}>My Classes</Text>
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Teacher</Text>
+        <Text style={styles.subtitle}>Group Lead controls</Text>
       </View>
-      <FlatList
-        data={DEMO_CLASSES}
-        keyExtractor={(g) => g.id}
-        renderItem={({ item }) => <ClassCard group={item} />}
-      />
-    </View>
+
+      {/* Lead badge */}
+      <View style={styles.section}>
+        <View style={styles.leadBadge}>
+          <Text style={styles.leadText}>Group Lead</Text>
+        </View>
+        <Text style={styles.leadName}>{SEED_USER.name}</Text>
+      </View>
+
+      {/* Media dial — lead toggle */}
+      <View style={styles.section}>
+        <View style={styles.mediaRow}>
+          <Text style={styles.mediaLabel}>Media types</Text>
+          <Text style={styles.mediaValue}>
+            {mediaEnabled ? 'All media' : 'Text + emoji'}
+          </Text>
+        </View>
+        <Switch
+          value={mediaEnabled}
+          onValueChange={setMediaEnabled}
+          trackColor={{ false: colors.charcoalLight, true: colors.burgundy }}
+        />
+      </View>
+
+      {/* My Groups with lead controls */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>My Groups</Text>
+        {SEED_GROUPS.map((group) => (
+          <GroupCard
+            key={group.id}
+            name={group.name}
+            category={group.category}
+            lead={group.lead}
+          />
+        ))}
+      </View>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.ivory,
+  },
+  header: {
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ivoryDark,
+  },
+  title: {
+    fontSize: typography.sizes.h2,
+    fontWeight: typography.weights.bold,
+    color: colors.charcoal,
+  },
+  subtitle: {
+    fontSize: typography.sizes.caption,
+    color: colors.charcoalLight,
+    marginTop: spacing.xs,
+  },
+  section: {
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ivoryDark,
+  },
+  leadBadge: {
+    backgroundColor: colors.burgundy,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+    marginBottom: spacing.sm,
+  },
+  leadText: {
+    color: '#fff',
+    fontSize: typography.sizes.badge,
+    fontWeight: typography.weights.medium,
+  },
+  leadName: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoal,
+  },
+  mediaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mediaLabel: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoal,
+  },
+  mediaValue: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoalLight,
+  },
+  sectionTitle: {
+    fontSize: typography.sizes.h3,
+    fontWeight: typography.weights.semibold,
+    color: colors.charcoal,
+    marginBottom: spacing.sm,
+  },
+});
