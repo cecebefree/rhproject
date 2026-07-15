@@ -4,9 +4,9 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 
 | # | Item | Trigger | Status | Fix-note |
 |---|------|---------|--------|----------|
-| D1 | react-native-screens@4.25.2 wants RN >=0.82.0 but apps/mobile has RN 0.74.5 | Before first mobile build | Open | Pin react-native-screens to ~3.x compatible with Expo 51 / RN 0.74 |
+| D1 | react-native-screens@4.25.2 wants RN >=0.82.0 but apps/mobile has RN 0.74.5 | Before first mobile build | Open | REVIEWED: blocks first mobile build; pin react-native-screens to ~3.x compatible with Expo 51 / RN 0.74 |
 | D2 | 3 ignored build scripts (@biomejs/biome, esbuild@0.21.5, esbuild@0.25.12) — native binaries not compiled | Before first pnpm lint — run pnpm approve-builds then | Closed | Fixed: allowBuilds added to pnpm-workspace.yaml (2026-07-01); pnpm install exits 0 |
-| D3 | v0 screen React version unknown — existing v0-cecebefree-3976-58ac388e directory may declare stale React version | When v0 screens land, verify React version before merge | Open | Inspect v0 directory package.json, reconcile with React 19 target |
+| D3 | v0 screen React version unknown — existing v0-cecebefree-3976-58ac388e directory may declare stale React version | When v0 screens land, verify React version before merge | Open | REVIEWED: v0 screens landing in this phase; React version must reconcile before merge |
 | D4 | 26 deprecated Expo subdependencies (old Babel proposal plugins, legacy React Navigation) | Only on Expo upgrade | Watch | No action until Expo 51 -> next major; deprecated deps are transitive and non-blocking |
 | D5 | apps/mobile: Expo package.json over web-based source (react-router-dom/react-dom); half-migrated | Own mobile session | Parked | Real design from v0; do not fix in scaffold sessions |
 | D6 | CRM grant contents | When CRM build starts | Parked | |
@@ -19,17 +19,17 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 | D13 | Step 7 index mismatch: plan expects idx_tenants_kind + idx_tenants_slug_active, neither exists (019 made per-table slug_key instead) | Blocks Step 7 pass | Closed | RESOLVED 2026-07-02 (see bottom): mismatch was vs superseded single-table design; actual 3-table build has pkey + slug_key each; kind index unneeded. Verdict ACCEPT, no fix. |
 | D15 | handle_new_user() does not set tenant_id — new signups get NULL | App-layer must set tenant_id on signup | Closed | Fixed: 025_handle_new_user_tenant_id.sql — function now sets tenant_id = Redhouse UUID on signup. Verified in DB. |
 | F6 | Subagent file access — subagents return empty, cannot reach disk | CTO technical decision needed | Closed | Fix B locked: orchestrator pre-loads file contents into subagent prompts. Rule in AGENTS.md:235. CTO verified live with Backend Lead audit. |
-| D16 | AI-import guard — block ai/tutor imports in web/mobile | When apps/lms/ AI folder is scaffolded | Open | grep-based CI check; nothing to guard until AI folder exists |
-| D17 | Platform/tenant import guard — block platform code leaking into tenant folders | When >1 tenant/app folder exists | Open | grep-based CI check; only apps/mobile exists today |
-| D18 | Type-drift guard — fail CI if generated DB types drift from schema | When a generated DB types file exists | Open | supabase gen types + diff vs committed file |
-| D19 | apps/mobile/src/index.tsx uses react-dom createRoot (web bootstrap) inside a React Native app — should use AppRegistry.registerComponent. Web-trespasser missed in the 37-file clear-out. | Own session / folds into D5 Expo migration | Open | |
+| D16 | AI-import guard — block ai/tutor imports in web/mobile | When apps/lms/ AI folder is scaffolded | Open | REVIEWED: guard-ai-import.sh active in CI; fires when AI folder scaffolded |
+| D17 | Platform/tenant import guard — block platform code leaking into tenant folders | When >1 tenant/app folder exists | Open | REVIEWED: guard-cross-import.sh active in CI; fires when >1 tenant app exists |
+| D18 | Type-drift guard — fail CI if generated DB types drift from schema | When a generated DB types file exists | Open | REVIEWED: guard-type-drift.sh quarantined (Item 13); fails against ephemeral schema; needs own investigation |
+| D19 | apps/mobile/src/index.tsx uses react-dom createRoot (web bootstrap) inside a React Native app — should use AppRegistry.registerComponent. Web-trespasser missed in the 37-file clear-out. | Own session / folds into D5 Expo migration | Open | REVIEWED: blocks first mobile build; must fix before Expo bootstrap |
 | D20 | Language breach — CLOSED 2026-07-03. instructions field added to opencode.jsonc; .opencode/working-language.md loads English-only rule into runtime each session, highest priority. Root cause: rule was on disk but never injected into system prompt. VERIFIED LIVE — config confirmed on disk; 3/3 model outputs English (voluntary enforcement; full auto-injection proves on next session start). D20 fully closed. | — | Closed | |
 | D21 | Teacher-managed scheduling — config-gated tenant capability, per decision D22 in field-register.md. Parked by design; no toggle implemented in P2-012. schedule_slot writes are admin-only (D22 contract/payment coupling). Teacher self-service scheduling is a future tenant-level config flag, not a role widening. | When tenant config system exists | Parked | Design decision locked 2026-07-10 |
 | D22 | session_attendance — Track per-session attendance (present/absent/excused) linked to schedule_slot + student_class. Requires new migration, RLS policies, pgTAP tests. Blocks My Analytics. | When session tracking needed | Parked | Propose as P2-030 or fold into P2-012 follow-up |
 | D23 | My Analytics (design-doc) — Student-facing analytics dashboard showing progress across enrolled courses, enrichment meta (pace/completion), attendance summary. Blocked on session_attendance table + enrichment_meta data. Design-doc item, not a migration. | When analytics dashboard scoped | Parked | |
 | D24 | Course→book mapping for auto-assignment — Enables materialization function to set book_id on booklist_item instead of NULL. Required for full 040 booklist shape. New migration needed. | When book catalog wired to courses | Parked | From P2-022 deviation: book_id nullable in 040 because no course→book mapping exists |
 | D25 | Notification bell + My Groups mirror + platform-status binding UI debt — 3 UI items across Profile, Home, Social. Register in docs/field-register.md BEFORE Stage 1 wiring. | When UI build starts | Parked | D17 items 1, 3, 4 |
-| D26 | student_class direct tenant_id column — Mobile phase requires tenant_id on student_class for direct tenant scoping without joins. New migration. | Mobile phase | Open | D26 FIRES — mobile phase begins; migration needed before conversation_members RLS |
+| D26 | student_class direct tenant_id column — Mobile phase requires tenant_id on student_class for direct tenant scoping without joins. New migration. | Mobile phase | In Progress | D26 FIRES — mobile phase begins; migration needed before conversation_members RLS |
 | D27 | Announcement→notification fan-out — When announcement published, fan out to notifications table per tenant+role. Integration task, new migration. | When notification pipeline wired | Parked | From P2-025 (041) |
 | P2-026 | Mobile phase: student_class tenant_id migration + My Groups schema (conversations, conversation_members) | Phase C start | Open | |
 
@@ -43,7 +43,7 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 ## Next Session Goal
 TBD — set at next session open. D10, D11, D12, D13, D15 are Closed. Open items: D1, D3, D16, D17, D18, D19, D26, P2-026.
 D11 ≡ P2-027 (same lint fix) — do not double-count in progress metrics
-**Open with:** write-test → leadership → leads load docs.
+**Open with:** Mobile phase (Items 5–8 design). D26 In Progress.
 
 ## D14 — TODO: Split locked architecture into a 3rd document (governance fix)
 
