@@ -32,6 +32,8 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 | D26 | student_class direct tenant_id column — Mobile phase requires tenant_id on student_class for direct tenant scoping without joins. New migration. | Mobile phase | In Progress | D26 FIRES — mobile phase begins; migration needed before conversation_members RLS |
 | D27 | Announcement→notification fan-out — When announcement published, fan out to notifications table per tenant+role. Integration task, new migration. | When notification pipeline wired | Parked | From P2-025 (041) |
 | P2-026 | Mobile phase: student_class tenant_id migration + My Groups schema (conversations, conversation_members) | Phase C start | Open | |
+| D28 | conversations.category + conversations.media_enabled — category pins 7-value display domain (core/enrichment/club/social/school/staff/family), display/sort only, no branching. media_enabled is boolean media dial backing field per ITEM-001, demo default = text+emoji only. Both PLANNED. | When conversations table migrated | Open | PLANNED — conversations.category (display/sort, no branching); conversations.media_enabled (media dial, text+emoji default) |
+| D29 | Delivered state (double checkmark via Presence ack) — post-demo candidate. Requires Presence subscriber count per message; not in R16 or ITEM-001 scope. | Post-demo | Parked | Not in R16/ITEM-001; Needs Presence infra |
 
 ---
 
@@ -41,9 +43,9 @@ Tracked open items that are known, recorded, and must be fixed before their trig
 - Orchestrator reviews this file at every phase boundary.
 
 ## Next Session Goal
-TBD — set at next session open. D10, D11, D12, D13, D15 are Closed. Open items: D1, D3, D16, D17, D18, D19, D26, P2-026.
+TBD — set at next session open. D10, D11, D12, D13, D15 are Closed. Open items: D1, D3, D16, D17, D18, D19, D26, D28, D29, P2-026.
 D11 ≡ P2-027 (same lint fix) — do not double-count in progress metrics
-**Open with:** Mobile phase (Items 5–8 design). D26 In Progress.
+**Open with:** DESIGN FREEZE COMPLETE (ITEM-009). Expo port (Item 24) awaiting brand assets (Item 20).
 
 ## D14 — TODO: Split locked architecture into a 3rd document (governance fix)
 
