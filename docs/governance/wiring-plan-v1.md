@@ -149,14 +149,14 @@ No RLS policy or Edge Function branches on `conversations.category`. The field i
 
 ### Doctrine (from AGENTS.md + migration 053)
 
-1. Every tenant-scoped policy MUST use: `current_setting('request.jwt.claims', true)::json ->> 'tenant_id'` (path from custom_access_token_hook)
-2. Row `tenant_id` must match JWT tenant: `row.tenant_id = (current_setting('request.jwt.claims', true)::json ->> 'tenant_id')::uuid`
+1. Every tenant-scoped policy MUST use: `auth.jwt() -> 'app_metadata' ->> 'tenant_id'` (path from custom_access_token_hook)
+2. Row `tenant_id` must match JWT tenant: `row.tenant_id = (auth.jwt() -> 'app_metadata' ->> 'tenant_id')::uuid`
 3. SELECT policy MUST exist wherever UPDATE exists (PG17 read-phase rule)
 4. admin_all bypass for role=admin
 
 ### Policy Matrix
 
-**Note:** "JWT" in the table below is shorthand for `(current_setting('request.jwt.claims', true)::json ->> 'tenant_id')::uuid`. The actual migration will use the full expression.
+**Note:** "JWT" in the table below is shorthand for `(auth.jwt() -> 'app_metadata' ->> 'tenant_id')::uuid`. The actual migration will use the full expression.
 
 #### conversations
 
