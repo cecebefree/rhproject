@@ -73,7 +73,7 @@ jobs:
           version: 2.108.0
       - name: Create Supabase stubs
         run: |
-          psql "$DATABASE_URL" -c "
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
             CREATE SCHEMA IF NOT EXISTS auth;
             CREATE SCHEMA IF NOT EXISTS extensions;
             CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
@@ -116,21 +116,27 @@ jobs:
               deleted_at timestamptz,
               is_anonymous boolean
             );
-            CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid AS \$\$ SELECT gen_random_uuid() \$\$ LANGUAGE sql;
-            CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb AS \$\$ SELECT '{}'::jsonb \$\$ LANGUAGE sql;
-          "
-          psql "$DATABASE_URL" -c "DO \$\$ BEGIN CREATE ROLE authenticated; EXCEPTION WHEN duplicate_object THEN END \$\$;"
-          psql "$DATABASE_URL" -c "DO \$\$ BEGIN CREATE ROLE supabase_auth_admin; EXCEPTION WHEN duplicate_object THEN END \$\$;"
-          psql "$DATABASE_URL" -c "GRANT USAGE ON SCHEMA public TO authenticated; GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;"
+            CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid AS $$ SELECT gen_random_uuid() $$ LANGUAGE sql;
+            CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb AS $$ SELECT '{}'::jsonb $$ LANGUAGE sql;
+          SQL
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+            DO $$ BEGIN CREATE ROLE authenticated; EXCEPTION WHEN duplicate_object THEN END $$;
+          SQL
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+            DO $$ BEGIN CREATE ROLE supabase_auth_admin; EXCEPTION WHEN duplicate_object THEN END $$;
+          SQL
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+            GRANT USAGE ON SCHEMA public TO authenticated; GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;
+          SQL
       - name: Bootstrap supabase_realtime publication
         run: |
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
-            DO \$\$ BEGIN
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+            DO $$ BEGIN
               IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
                 CREATE PUBLICATION supabase_realtime;
               END IF;
-            END \$\$;
-          "
+            END $$;
+          SQL
       - name: Apply migrations
         run: |
           for f in supabase/migrations/*.sql; do
