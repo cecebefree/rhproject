@@ -122,6 +122,8 @@ The `specs/001-lms-core/` directory contains the LMS feature spec and plan being
 - **supabase migration list requires a linked remote ref** (`supabase link`) — unusable against a purely local Supabase stack. To read applied-migration state locally, use `supabase db dump --local` (or inspect the `_supabase_migrations` schema) instead.
 - **Doctrine — standalone pgTAP test files MUST carry an explicit `BEGIN;`/`ROLLBACK;` envelope.** Transaction-local GUCs (`set_config(..., true)`) are invisible outside a single explicit transaction; under psql autocommit each statement is its own transaction, so a bypass GUC set on one line is gone by the next `UPDATE` and the migration-057 immutability trigger blocks it. Wrap fixture GUCs and the writes they guard inside one `BEGIN;`/`ROLLBACK;`.
 
+- **pgTAP envelope ordering:** `ROLLBACK;` must come AFTER `SELECT * FROM finish();` — finish() needs the transaction alive to report collected results, otherwise the file yields "# No tests run!" (defect found and fixed in tests/07, sealed in 5347b0d).
+
 ---
 
 ## 9. Leadership Council (Above the Swarm)
