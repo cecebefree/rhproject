@@ -1146,7 +1146,6 @@ export type Database = {
         Args: { p_caller_id: string; p_profile_id: string; p_tenant_id: string }
         Returns: undefined
       }
-      check_admin_all_policy: { Args: { tname: string }; Returns: string[] }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       get_announcements: {
         Args: never
