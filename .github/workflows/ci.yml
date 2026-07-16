@@ -75,6 +75,8 @@ jobs:
         run: |
           psql "$DATABASE_URL" -c "
             CREATE SCHEMA IF NOT EXISTS auth;
+            CREATE EXTENSION IF NOT EXISTS pgcrypto;
+            CREATE EXTENSION IF NOT EXISTS hstore;
             CREATE TABLE IF NOT EXISTS auth.users (
               id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
               instance_id uuid,
