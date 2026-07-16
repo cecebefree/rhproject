@@ -8,6 +8,12 @@ select plan(23);
 -- NULL (pending) tenant_id and no booklist row. Promote it to tenant 2 and
 -- seed exactly one booklist so test 10 ("tenant 2 user sees own 1 booklist
 -- only") has the principal it presumes. Transaction-local; ROLLBACK discards.
+-- PERMANENT POSTURE (Item 33 finish ruling): profile 22222222-... is intentionally
+-- seeded with tenant_id = NULL (R20 'pending' state) and is NOT in seed.sql's 4-UUID
+-- explicit-assignment list. This test assigns tenant 2 *locally* inside its own
+-- begin;/rollback; envelope via the bypass GUC above. Do NOT move this assignment
+-- into seed.sql — the NULL-tenant pending state for 22222222-... is the deliberate
+-- R20 posture, and the test-local assignment keeps the suite deterministic.
 SELECT set_config('app.tenant_assignment_bypass', 'true', true);
 UPDATE public.profiles
    SET tenant_id = '00000000-0000-0000-0000-000000000002'

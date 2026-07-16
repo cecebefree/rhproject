@@ -105,6 +105,14 @@ select is(
 -- Type discriminator + open_to_outside tests
 
 -- 8. outside_student blocked from core course
+-- LATENT TENANT MISMATCH (Item 33 finish, documented): the JWT claims above set
+-- tenant_id = 00000000-0000-0000-0000-000000000001 for profile fffffffff-..., but
+-- that profile's DB row (profiles.tenant_id) is 11111111-1111-1111-1111-111111111111.
+-- This is harmless under the current RESTRICTIVE policy courses_no_core_outside,
+-- which scopes on profiles.role, NOT on the claims tenant_id. If that policy (or a
+-- sibling) is ever switched to claims-tenant scoping, this mismatch would wrongly
+-- block/allow access and must be reconciled. Flag only — do not 'fix' by editing the
+-- claims, as the role-based gating is intentional and verified by tests 8-10.
 set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub":"ffffffff-ffff-ffff-ffff-ffffffffffff","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"outside_student"}}', true);
