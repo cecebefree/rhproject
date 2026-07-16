@@ -60,6 +60,7 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+          --wal-level=logical
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
     steps:
@@ -77,6 +78,7 @@ jobs:
             CREATE TABLE IF NOT EXISTS auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid());
             CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid AS \$\$ SELECT gen_random_uuid() \$\$ LANGUAGE sql;
             CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb AS \$\$ SELECT '{}'::jsonb \$\$ LANGUAGE sql;
+          CREATE PUBLICATION IF NOT EXISTS supabase_realtime;
           "
           psql "$DATABASE_URL" -c "DO \$\$ BEGIN CREATE ROLE authenticated; EXCEPTION WHEN duplicate_object THEN END \$\$;"
           psql "$DATABASE_URL" -c "DO \$\$ BEGIN CREATE ROLE supabase_auth_admin; EXCEPTION WHEN duplicate_object THEN END \$\$;"
