@@ -75,7 +75,18 @@ jobs:
         run: |
           psql "$DATABASE_URL" -c "
             CREATE SCHEMA IF NOT EXISTS auth;
-            CREATE TABLE IF NOT EXISTS auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid());
+            CREATE TABLE IF NOT EXISTS auth.users (
+              id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+              instance_id uuid,
+              aud varchar(255),
+              role varchar(255),
+              email varchar(255),
+              encrypted_password varchar(255),
+              email_confirmed_at timestamptz,
+              confirmation_sent_at timestamptz,
+              created_at timestamptz,
+              updated_at timestamptz
+            );
             CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid AS \$\$ SELECT gen_random_uuid() \$\$ LANGUAGE sql;
             CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb AS \$\$ SELECT '{}'::jsonb \$\$ LANGUAGE sql;
           "
