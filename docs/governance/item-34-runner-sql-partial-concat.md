@@ -1,7 +1,7 @@
 # runner.sql Partial-Concat Defect (ITEM-034)
 
 **Opened:** 2026-07-16 — discovered during type-drift decontamination round.
-**Status:** OPEN — remediation options pending ruling. **No fix applied in this round.**
+**Status:** CLOSED — RETIRED per R-034 (2026-07-16). **No fix applied in opening round; retirement executed in f6b4c83.**
 **Reference:** `docs/governance/type-drift-decontamination.md` (sealed baseline 214/21).
 
 ## Observation
@@ -34,6 +34,20 @@ genuine suite is `supabase test db`, which runs all 21 files and reports
    suite.
 2. **Retire `runner.sql`** and declare `supabase test db` the sole canonical runner,
    removing the misleading partial concat and its `.bak` duplicate entirely.
+
+
+## Ruling R-034 (2026-07-16) — RETIRED
+
+Grounds:
+- Zero operational references to `runner.sql` (grep across yml/sh/json/md — docs only).
+- Canonical runner `supabase test db` already covers all 21 files / 214 assertions.
+- Repair rejected: it would duplicate the canonical runner while reintroducing manual-sync risk.
+- Retirement sealed in commit `f6b4c83`.
+
+Historical docs referencing `runner.sql` remain unedited per the ruling's general clause;
+this item and the type-drift governance doc are the canonical record.
+
+Retirement corrected the baseline: 214/21 was inflated by runner.sql counting as a file and double-running 33 duplicate assertions. True canonical baseline: 181 assertions / 20 files. Zero unique coverage lost.
 
 This item is recorded for tracking only. No code, test, or migration change is made
 as part of opening it.
