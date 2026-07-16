@@ -84,7 +84,13 @@ jobs:
           psql "$DATABASE_URL" -c "GRANT USAGE ON SCHEMA public TO authenticated; GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;"
       - name: Bootstrap supabase_realtime publication
         run: |
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "CREATE PUBLICATION IF NOT EXISTS supabase_realtime;"
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "
+            DO \$\$ BEGIN
+              IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+                CREATE PUBLICATION supabase_realtime;
+              END IF;
+            END \$\$;
+          "
       - name: Apply migrations
         run: |
           for f in supabase/migrations/*.sql; do
