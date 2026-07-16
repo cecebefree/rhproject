@@ -66,6 +66,10 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - run: sudo apt-get install -y postgresql-client
+      - name: Install Supabase CLI (pinned to local version 2.108.0)
+        uses: supabase/setup-cli@v2
+        with:
+          version: 2.108.0
       - name: Create Supabase stubs
         run: |
           psql "$DATABASE_URL" -c "
@@ -85,10 +89,9 @@ jobs:
           done
       - run: bash scripts/ci/guard-ai-import.sh
       - run: bash scripts/ci/guard-cross-import.sh
-      # DISABLED pending open item: guard connects but fails against
-      # ephemeral schema ("FAIL: empty" root cause resolved; new failure
-      # under investigation). Do not re-enable without a ruling.
-      # - run: bash scripts/ci/guard-type-drift.sh
+      # guard-type-drift reactivated by operator ruling (quarantine lifted). Recipe:
+      # supabase gen types typescript --db-url "$DATABASE_URL" --schema public (CLI 2.108.0).
+      - run: bash scripts/ci/guard-type-drift.sh
       - run: bash supabase/guard-field-register.sh
 
   build:
