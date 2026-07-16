@@ -73,6 +73,22 @@ on conflict (id) do update
       registration_status = excluded.registration_status,
       consent_given = excluded.consent_given;
 
+
+-- Explicit tenant assignment for seed profiles (R20).
+-- 058 removed signup auto-assignment; 057 blocks direct updates, so use fixture bypass.
+select set_config('app.tenant_assignment_bypass', 'true', false);
+
+update public.profiles
+   set tenant_id = '00000000-0000-0000-0000-000000000001'
+ where id in (
+   'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
+   'bb000000-0000-0000-0000-0000000000b2',
+   'cc000000-0000-0000-0000-0000000000c3',
+   'dd000000-0000-0000-0000-0000000000d4'
+ );
+
+select set_config('app.tenant_assignment_bypass', 'false', false);
+
 insert into public.courses (id, title, price, status, teacher_id)
 values
   ('11111111-1111-1111-1111-111111111111', 'Test Course One', 0, 'published', 'cc000000-0000-0000-0000-0000000000c3'),

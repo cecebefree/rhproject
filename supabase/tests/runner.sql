@@ -194,10 +194,15 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Update profile created by handle_new_user trigger with our test values
+-- Fixture bypass: trigger trg_profiles_tenant_id_immutable (migration 057)
+-- blocks direct tenant_id writes; bypass is transaction-local and test runs in BEGIN/ROLLBACK
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
 UPDATE public.profiles
 SET name = 'Hook Test User', role = 'student',
     tenant_id = '00000000-0000-0000-0000-000000000001'::uuid
 WHERE id = '00000000-0000-0000-0000-000000000099'::uuid;
+
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 SELECT is(
     custom_access_token_hook('{"claims":{"sub":"00000000-0000-0000-0000-000000000099"}}'::jsonb)
