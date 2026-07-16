@@ -4,6 +4,27 @@
 begin;
 select plan(23);
 
+-- R20 fixture setup: the 058 seed rework left profile 22222222-... with a
+-- NULL (pending) tenant_id and no booklist row. Promote it to tenant 2 and
+-- seed exactly one booklist so test 10 ("tenant 2 user sees own 1 booklist
+-- only") has the principal it presumes. Transaction-local; ROLLBACK discards.
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+UPDATE public.profiles
+   SET tenant_id = '00000000-0000-0000-0000-000000000002'
+ WHERE id = '22222222-2222-2222-2222-222222222222';
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
+
+INSERT INTO public.booklist (id, tenant_id, child_id, school_year, created_at)
+VALUES (
+  'b0000000-0000-0000-0000-0000000000b9',
+  '00000000-0000-0000-0000-000000000002',
+  '22222222-2222-2222-2222-222222222222',
+  '2026-2027',
+  now()
+)
+ON CONFLICT (tenant_id, child_id, school_year) DO NOTHING;
+
+
 -- 1. RLS enabled on booklist
 select ok(
   (select relrowsecurity from pg_class where relname = 'booklist'),

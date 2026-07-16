@@ -3,6 +3,13 @@
 begin;
 select plan(17);
 
+-- R20 fixture: promote ffffffff profile to outside_student role so the
+-- courses_no_core_outside RESTRICTIVE policy (which reads profiles.role)
+-- correctly blocks core/closed-club access. Transaction-local; ROLLBACK discards.
+UPDATE public.profiles SET role = 'outside_student'
+WHERE id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+
+
 -- RLS tests
 
 -- 1. Golden student reads own enrichment_meta
