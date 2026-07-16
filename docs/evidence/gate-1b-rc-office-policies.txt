@@ -1,0 +1,10 @@
+    policyname    |  cmd   |                                                    qual                                                    
+------------------+--------+------------------------------------------------------------------------------------------------------------
+ rc_office_select | SELECT | ((tenant_id = (((auth.jwt() -> 'app_metadata'::text) ->> 'tenant_id'::text))::uuid) AND (EXISTS ( SELECT 1+
+                  |        |    FROM profiles p                                                                                        +
+                  |        |   WHERE ((p.id = auth.uid()) AND (p.role = 'office'::text)))))
+ rc_office_manage | UPDATE | ((tenant_id = (((auth.jwt() -> 'app_metadata'::text) ->> 'tenant_id'::text))::uuid) AND (EXISTS ( SELECT 1+
+                  |        |    FROM profiles p                                                                                        +
+                  |        |   WHERE ((p.id = auth.uid()) AND (p.role = 'office'::text)))))
+(2 rows)
+

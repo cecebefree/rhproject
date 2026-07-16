@@ -1,0 +1,36 @@
+         proname          |                            prosrc                            
+--------------------------+--------------------------------------------------------------
+ custom_access_token_hook |                                                             +
+                          | DECLARE                                                     +
+                          |   _user_id uuid;                                            +
+                          |   _tenant_id uuid;                                          +
+                          |   _role text;                                               +
+                          | BEGIN                                                       +
+                          |   -- Extract user ID from the event payload                 +
+                          |   _user_id := (event->'claims'->>'sub')::uuid;              +
+                          |                                                             +
+                          |   -- Look up tenant_id and role from profiles               +
+                          |   SELECT p.tenant_id, p.role                                +
+                          |     INTO _tenant_id, _role                                  +
+                          |     FROM public.profiles p                                  +
+                          |    WHERE p.id = _user_id;                                   +
+                          |                                                             +
+                          |   -- Inject into app_metadata (merged into existing claims) +
+                          |   event := jsonb_set(                                       +
+                          |     event,                                                  +
+                          |     '{claims,app_metadata}',                                +
+                          |     COALESCE(event->'claims'->'app_metadata', '{}'::jsonb)  +
+                          |       || jsonb_build_object(                                +
+                          |            'tenant_id', _tenant_id,                         +
+                          |            'role', _role                                    +
+                          |          )                                                  +
+                          |   );                                                        +
+                          |                                                             +
+                          |   RETURN event;                                             +
+                          | EXCEPTION WHEN OTHERS THEN                                  +
+                          |   -- Fail-loud: return original event so auth does not break+
+                          |   RETURN event;                                             +
+                          | END;                                                        +
+                          | 
+(1 row)
+
