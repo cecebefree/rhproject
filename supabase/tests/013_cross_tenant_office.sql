@@ -42,7 +42,7 @@ VALUES
   ('55555555-5555-5555-5555-555555555555', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learner-b@test.com', crypt('x', gen_salt('bf')), now(), now(), now(), now())
 ON CONFLICT (id) DO NOTHING;
 
--- Profiles
+-- Profiles (initial insert sets tenant_id; BEFORE UPDATE trigger does not fire on INSERT)
 INSERT INTO public.profiles (id, name, role, tenant_id, created_at)
 VALUES
   ('11111111-1111-1111-1111-111111111111', 'Office A', 'office', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', now()),
@@ -50,7 +50,7 @@ VALUES
   ('33333333-3333-3333-3333-333333333333', 'Teacher A', 'teacher', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', now()),
   ('44444444-4444-4444-4444-444444444444', 'Learner A', 'learner', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', now()),
   ('55555555-5555-5555-5555-555555555555', 'Learner B', 'learner', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', now())
-ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role, tenant_id = EXCLUDED.tenant_id;
+ON CONFLICT (id) DO NOTHING;
 
 -- Report card in tenant A (draft)
 INSERT INTO public.report_cards (id, student_id, term, subject, status, created_by, tenant_id, created_at)

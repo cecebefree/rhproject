@@ -4,6 +4,7 @@
 --   1. missing-profile: hook must RAISE (fail loud), no token minted
 --   2. null-tenant: hook must log WARNING and still mint claims
 
+BEGIN;
 SELECT plan(9);
 
 -- Ensure pgTAP functions are available
@@ -64,15 +65,20 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- Delete auto-created profile and create one with NULL tenant_id
-DELETE FROM public.profiles WHERE id = '22222222-2222-2222-2222-222222222222'::uuid;
-INSERT INTO public.profiles (id, name, role, tenant_id)
-VALUES (
-    '22222222-2222-2222-2222-222222222222'::uuid,
-    'Null Tenant User',
-    'student',
-    NULL
-);
+-- Set the auto-created profile's tenant_id to NULL using the 057 bypass.
+-- We UPDATE rather than DELETE+INSERT to avoid FK delete chains
+-- (booklist_child_id_fkey, announcement_created_by_fkey, etc. have no ON DELETE CASCADE).
+-- The bypass GUC is transaction-local; this file's pgTAP transaction discards it.
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+UPDATE public.profiles
+SET tenant_id = NULL
+WHERE id = '22222222-2222-2222-2222-222222222222'::uuid;
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
+
+-- Update non-tenant columns + ensure role/name without touching tenant_id
+UPDATE public.profiles
+SET name = 'Null Tenant User', role = 'student'
+WHERE id = '22222222-2222-2222-2222-222222222222'::uuid;
 
 -- Verify profile has NULL tenant_id
 SELECT ok(
@@ -129,9 +135,15 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Update the auto-created profile with correct values
+-- Fixture bypass: trigger trg_profiles_tenant_id_immutable (migration 057)
+-- blocks direct tenant_id writes; bypass is transaction-local and test runs in BEGIN/ROLLBACK
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+
 UPDATE public.profiles
 SET role = 'teacher', tenant_id = '00000000-0000-0000-0000-000000000001'::uuid
 WHERE id = '33333333-3333-3333-3333-333333333333'::uuid;
+
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 SELECT is(
     custom_access_token_hook('{"claims":{"sub":"33333333-3333-3333-3333-333333333333"}}'::jsonb)
@@ -148,3 +160,4 @@ SELECT is(
 );
 
 SELECT * FROM finish();
+ROLLBACK;
