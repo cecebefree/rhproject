@@ -222,4 +222,9 @@ SELECT is(
 
 
 SELECT * FROM finish();
+
+-- teardown: do not leave the test-only helper in the public schema
+-- (it is unmigrated local state that pollutes the type snapshot)
+DROP FUNCTION IF EXISTS public.check_admin_all_policy(text);
+
 ROLLBACK;
