@@ -1,0 +1,59 @@
+=== custom_access_token_hook — post-056 evidence ===
+Date: 2026-07-16
+Source: live local Supabase (docker exec supabase_db_rhproject-new)
+
+=== SECTION A: pg_get_functiondef (live) ===
+
+                                             pg_get_functiondef                                             
+------------------------------------------------------------------------------------------------------------
+ CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)                                   +
+  RETURNS jsonb                                                                                            +
+  LANGUAGE plpgsql                                                                                         +
+  SECURITY DEFINER                                                                                         +
+  SET search_path TO ''                                                                                    +
+ AS $function$                                                                                             +
+ declare                                                                                                   +
+   _user_id uuid;                                                                                          +
+   _tenant_id uuid;                                                                                        +
+   _role text;                                                                                             +
+ begin                                                                                                     +
+   _user_id := (event->'claims'->>'sub')::uuid;                                                            +
+                                                                                                           +
+   select p.tenant_id, p.role                                                                              +
+     into _tenant_id, _role                                                                                +
+     from public.profiles p                                                                                +
+    where p.id = _user_id;                                                                                 +
+                                                                                                           +
+   if not found then                                                                                       +
+     raise exception 'custom_access_token_hook: no profile row for user %', _user_id;                      +
+   end if;                                                                                                 +
+                                                                                                           +
+   if _tenant_id is null then                                                                              +
+     raise warning 'custom_access_token_hook: profile % has null tenant_id (pending assignment)', _user_id;+
+   end if;                                                                                                 +
+                                                                                                           +
+   event := jsonb_set(                                                                                     +
+     event,                                                                                                +
+     '{claims,app_metadata}',                                                                              +
+     coalesce(event->'claims'->'app_metadata', '{}'::jsonb)                                                +
+       || jsonb_build_object('tenant_id', _tenant_id, 'role', _role)                                       +
+   );                                                                                                      +
+                                                                                                           +
+   return event;                                                                                           +
+ end;                                                                                                      +
+ $function$                                                                                                +
+ 
+(1 row)
+
+
+=== SECTION B: loud-failure test (random uuid, expected ERROR) ===
+
+Command: SELECT public.custom_access_token_hook('{"claims": {"sub": "00000000-0000-0000-0000-000000000000"}}'::jsonb);
+Expected: ERROR raised — no profile row
+
+ERROR:  custom_access_token_hook: no profile row for user 00000000-0000-0000-0000-000000000000
+CONTEXT:  PL/pgSQL function public.custom_access_token_hook(jsonb) line 15 at RAISE
+
+=== SECTION C: WHEN OTHERS check ===
+
+PASS: no WHEN OTHERS handler found in function body

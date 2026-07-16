@@ -1,8 +1,9 @@
 # DEFECT: custom_access_token_hook swallows exceptions, mislabeled fail-loud
 
-**Status:** OPEN
+**Status:** CLOSED
 **Opened:** 2026-07-16
 **Severity:** Medium (contained by deny-by-default RLS, but violates loud-failure protocol)
+**Closed:** 2026-07-16
 
 ---
 
@@ -87,3 +88,21 @@ In all cases, the user receives a valid JWT with no tenant_id claim, and the sys
 
 Defect logged: 2026-07-16
 Awaiting own item assignment.
+
+---
+
+## Resolution
+
+**Migration:** `056_hook_fail_loud.sql`
+
+**Ruling applied inline:**
+- Missing profile row → `RAISE EXCEPTION 'custom_access_token_hook: no profile row for user %'` (loud failure, blocks token mint)
+- NULL tenant_id (D15 pending assignment) → mint with null claim + `RAISE WARNING` (contained by deny-by-default RLS, zero-row matches)
+- `WHEN OTHERS` swallow removed entirely — function now has no exception handler
+
+**Verified live via:**
+- `pg_get_functiondef` output: no `WHEN OTHERS` handler
+- Negative test: call with random UUID → `ERROR: custom_access_token_hook: no profile row for user 00000000-0000-0000-0000-000000000000`
+- Evidence: `docs/evidence/defect-hook-fix-source.txt`
+
+Defect closed: 2026-07-16
