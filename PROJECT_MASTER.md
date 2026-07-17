@@ -23,6 +23,6 @@ data — not before.
 **2026-07-11 — DATABASE PHASE STAMPED:** Migration chain 013–041 clean, 152/152 pgTAP assertions green, verified on PG 17.6. Phase closed; schema changes from here require a new migration + tests (042+). Gate G0 database criteria: MET.
 
 ## P2-004a COMPLETE — Week 1 Mon (read-only pgTAP scaffold check)
-- supabase/tests/: 20 pgTAP test files; canonical runner is `supabase test db` (181 assertions)
+- supabase/tests/: 21 pgTAP test files; canonical runner is `supabase test db` (199 assertions)
 - pgtap 1.3.3 available, not installed (install deferred to P2-004b)
 - stack healthy on 54321-54323
