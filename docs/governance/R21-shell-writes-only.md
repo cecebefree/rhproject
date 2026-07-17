@@ -58,8 +58,11 @@ governance references naming the path as prohibited or wrong.
 
 ## Baseline amendment (post-audit)
 
-Canonical DB test baseline is 199 assertions across 21 files under
+Canonical DB test baseline is 181 assertions across 20 files under
 `supabase test db`.
+[Superseded 2026-07-17: canonical baseline is now 199 assertions /
+21 files following 059 chat tables and the 013 fixture repair,
+sealed under 0974bba.]
 
 The prior figure (214/21) included supabase/tests/runner.sql, retired
 in commit f6b4c83 (R-034); the 33-assertion delta is fully accounted
