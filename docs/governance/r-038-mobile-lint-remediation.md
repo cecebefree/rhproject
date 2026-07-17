@@ -37,3 +37,18 @@ Residual errors: none.
 ## Arc note
 Closes the R-035 lint deferral. Lint+typecheck floor is now zero across
 shared / web / mobile.
+
+## Incident: write-tool workspace mis-anchoring
+
+- The agent native write tool resolved relative paths against a stale root
+    /Users/ce/Documents/Redhouse-website/redhouse-real-web (a neutered duplicate
+  repo that must never be used).
+- Shell operations using absolute paths were unaffected. Only the native write
+  tool drifted. The R19 five-point anchor check (all shell/git based) CANNOT
+  detect this class of mis-anchoring.
+- A stray, uncommitted copy of this governance doc was created in the wrong repo
+  by the write tool. It is flagged for manual deletion by the operator; the wrong
+  repo received NO commits from this session.
+- Remediation: R19 anchor protocol amended from five points to six (write-probe
+  added). Future sessions must be relaunched and re-anchored from
+    before any write-tool use.

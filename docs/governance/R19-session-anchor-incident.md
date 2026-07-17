@@ -28,9 +28,9 @@ This is not a hypothetical. It has happened in this project.
 
 ---
 
-## The Five-Point Anchor Check
+## The Six-Point Anchor Check
 
-Every session MUST execute the following five checks at session start, before
+Every session MUST execute the following six checks at session start, before
 any work begins. No exceptions. No shortcuts. No "I already know the path."
 
 ```bash
@@ -54,8 +54,16 @@ git log --oneline -1
 docker ps --filter "name=supabase_db_rhproject-new" --format "{{.Names}}"
 # Expected: supabase_db_rhproject-new
 ```
+# 6. Confirm the agent native write tool resolves to THIS repo root
+#     (shell anchoring does NOT prove tool anchoring)
+printf "probe" > .r19-write-probe
+cat .r19-write-probe
+rm .r19-write-probe
+# If the write tool is BLOCKED or writes elsewhere, the session is mis-anchored.
+# STOP and relaunch from the correct repo root.
 
-**All five must pass.** If any check fails, STOP. Do not proceed. Report
+
+**All six must pass.** If any check fails, STOP. Do not proceed. Report
 the failure to the human. The session is not anchored.
 
 ---
@@ -116,7 +124,8 @@ Use this checklist at the start of every session:
 [ ] git remote = git@github.com:cecebefree/rhproject.git
 [ ] git log --oneline -1 = <current HEAD verified>
 [ ] docker ps shows supabase_db_rhproject-new running
-[ ] All five checks passed? → proceed / fail → STOP
+[ ] write-probe: native write tool writes .r19-write-probe at repo root, cat shows probe
+[ ] All six checks passed? → proceed / fail → STOP
 ```
 
 ---
@@ -125,7 +134,7 @@ Use this checklist at the start of every session:
 
 Rulings are not paperwork. They are contracts between the human and the
 agent, binding on both sides. R19 exists because a real failure occurred,
-the failure was preventable, and the prevention is a five-command check
+the failure was preventable, and the prevention is a six-command check
 that takes fifteen seconds.
 
 Fifteen seconds of anchors saves hours of phantom work.

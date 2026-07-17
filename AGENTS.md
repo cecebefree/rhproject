@@ -259,7 +259,7 @@ THE MASTER SCHEDULE IS THE PROOF OF THE RELATIONSHIP:
    surfaced on LMS or Mobile.
 
 STATUS: LOCKED. No free changes. Any change requires Cece's explicit OK.
-# ⛔ REPO LOCK — LIVE REPO IS: /Users/ce/Documents/Redhouse-website/rhproject-new — redhouse-real-web is DEAD, IGNORE IT. Every session: run pwd FIRST, confirm it ends in /rhproject-new, else STOP.
+# ⛔ REPO LOCK — LIVE REPO IS: /Users/ce/dev/rhproject-new. The path /Users/ce/Documents/Redhouse-website/* is a neutered duplicate and must NEVER be used. Every session: run pwd FIRST, confirm it equals /Users/ce/dev/rhproject-new, else STOP. Every session: run pwd FIRST, confirm it ends in /rhproject-new, else STOP.
 
 
 ---
