@@ -168,10 +168,6 @@ a usable path, STOP and report before performing any operation. Historical
 incident docs and generated/quarantine files that name the stale path as the
 *wrong* path are exempt.
 
-6-AMENDED: write-probe must be EXECUTED and RECORDED at
-every session zero.
-Expected: the built-in write tool is denied for this repo.
-The fallback must succeed.
-A built-in write that was not expected signals an environment change;
-report before relying on the tool.
-Points 1-5 and 7 unchanged and mandatory.
+
+6-AMENDED (R21): write-probe must be EXECUTED and RECORDED at every session zero. Expected: native FAIL (tool condemned per R21); shell fallback (create/cat/rm) must PASS. An unexpected native PASS = environment change, report before trusting. Points 1-5 and 7 unchanged and mandatory.
+
