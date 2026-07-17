@@ -167,3 +167,11 @@ canonical root `/Users/ce/dev/rhproject-new` is a defect. If found presented as
 a usable path, STOP and report before performing any operation. Historical
 incident docs and generated/quarantine files that name the stale path as the
 *wrong* path are exempt.
+
+6-AMENDED: write-probe must be EXECUTED and RECORDED at
+every session zero.
+Expected: the built-in write tool is denied for this repo.
+The fallback must succeed.
+A built-in write that was not expected signals an environment change;
+report before relying on the tool.
+Points 1-5 and 7 unchanged and mandatory.
