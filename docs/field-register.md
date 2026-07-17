@@ -444,63 +444,62 @@ class-start pings (pg_cron reads schedule_slot; later slot).
 
 Every row below carries its own status stamp, per register convention.
 Scope traces to docs/governance/wiring-plan-v1.md, whose 054/055 numbering
-is superseded. Target migration number is 059+, assigned only at BACKED
-promotion. All chat tables are tenant-scoped (tenant_id NOT NULL, RLS per
-R20 auth-first doctrine). conversations.category is display-only per its
-existing ruling.
+is superseded. Chat tables promoted via migration 059; handle scope
+remains PLANNED. All chat tables are tenant-scoped (tenant_id NOT NULL,
+RLS per R20 auth-first doctrine). conversations.category is display-only.
 
-### Table: conversations
+### Table: conversations (migration 059)
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| id | uuid PK | Primary key | PLANNED |
-| tenant_id | uuid NOT NULL | Tenant scoping, RLS per R20 | PLANNED |
-| category | text | Display-only (existing ruling) | PLANNED |
-| created_by | uuid | Profile that opened the conversation | PLANNED |
-| created_at | timestamptz | Default now() | PLANNED |
-| updated_at | timestamptz | Default now() | PLANNED |
+| id | uuid PK | Primary key | BACKED |
+| tenant_id | uuid NOT NULL | Tenant scoping, RLS per R20 | BACKED |
+| category | text | Display-only (existing ruling) | BACKED |
+| created_by | uuid | Profile that opened the conversation | BACKED |
+| created_at | timestamptz | Default now() | BACKED |
+| updated_at | timestamptz | Default now() | BACKED |
 
-### Table: conversation_members
+### Table: conversation_members (migration 059)
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| conversation_id | uuid NOT NULL | FK conversations.id | PLANNED |
-| profile_id | uuid NOT NULL | FK profiles.id | PLANNED |
-| role | text | Member role in conversation | PLANNED |
-| joined_at | timestamptz | Default now() | PLANNED |
-| last_read_at | timestamptz | Read cursor for unread state | PLANNED |
+| conversation_id | uuid NOT NULL | FK conversations.id | BACKED |
+| profile_id | uuid NOT NULL | FK profiles.id | BACKED |
+| role | text | Member role in conversation | BACKED |
+| joined_at | timestamptz | Default now() | BACKED |
+| last_read_at | timestamptz | Read cursor for unread state | BACKED |
 
-### Table: messages
+### Table: messages (migration 059)
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| id | uuid PK | Primary key | PLANNED |
-| conversation_id | uuid NOT NULL | FK conversations.id | PLANNED |
-| sender_id | uuid NOT NULL | FK profiles.id | PLANNED |
-| body | text | Message content | PLANNED |
-| created_at | timestamptz | Default now() | PLANNED |
-| edited_at | timestamptz | Nullable | PLANNED |
-| deleted_at | timestamptz | Nullable soft-delete | PLANNED |
+| id | uuid PK | Primary key | BACKED |
+| conversation_id | uuid NOT NULL | FK conversations.id | BACKED |
+| sender_id | uuid NOT NULL | FK profiles.id | BACKED |
+| body | text | Message content | BACKED |
+| created_at | timestamptz | Default now() | BACKED |
+| edited_at | timestamptz | Nullable | BACKED |
+| deleted_at | timestamptz | Nullable soft-delete | BACKED |
 
-### Table: message_reactions
+### Table: message_reactions (migration 059)
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| message_id | uuid NOT NULL | FK messages.id | PLANNED |
-| profile_id | uuid NOT NULL | FK profiles.id | PLANNED |
-| emoji | text | Reaction glyph | PLANNED |
-| created_at | timestamptz | Default now() | PLANNED |
+| message_id | uuid NOT NULL | FK messages.id | BACKED |
+| profile_id | uuid NOT NULL | FK profiles.id | BACKED |
+| emoji | text | Reaction glyph | BACKED |
+| created_at | timestamptz | Default now() | BACKED |
 
-### Table: chat_preferences
+### Table: chat_preferences (migration 059)
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| profile_id | uuid NOT NULL | FK profiles.id | PLANNED |
-| muted_conversations | uuid[] | Muted conversation ids | PLANNED |
-| notification_level | text | Per-profile notify setting | PLANNED |
-| updated_at | timestamptz | Default now() | PLANNED |
+| profile_id | uuid NOT NULL | FK profiles.id | BACKED |
+| muted_conversations | uuid[] | Muted conversation ids | BACKED |
+| notification_level | text | Per-profile notify setting | BACKED |
+| updated_at | timestamptz | Default now() | BACKED |
 
-### Table: profiles (extension)
+### Table: profiles (extension) -- handle scope remains PLANNED
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
 | handle | text | Unique display handle | PLANNED |
 
-### Table: handle_changes
+### Table: handle_changes -- remains PLANNED
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
 | id | uuid PK | Primary key | PLANNED |
