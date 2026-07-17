@@ -1,13 +1,13 @@
 // GroupInfoScreen — Chat adjustments
 // Group info view: member list, category badge, lead, count, media-dial
 
-import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
-import { SEED_GROUPS } from '../../src/seed/groups';
-import { Badge } from '../../src/components/Badge';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
-import { spacing } from '../../src/theme/spacing';
 import { useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Badge } from '../../src/components/Badge';
+import { SEED_GROUPS } from '../../src/seed/groups';
+import { colors } from '../../src/theme/colors';
+import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function GroupInfoScreen() {
   const [mediaEnabled, setMediaEnabled] = useState(false);
@@ -34,9 +34,7 @@ export default function GroupInfoScreen() {
       <View style={styles.section}>
         <View style={styles.row}>
           <Text style={styles.label}>Media types</Text>
-          <Text style={styles.value}>
-            {mediaEnabled ? 'All media' : 'Text + emoji'}
-          </Text>
+          <Text style={styles.value}>{mediaEnabled ? 'All media' : 'Text + emoji'}</Text>
         </View>
         <Switch
           value={mediaEnabled}

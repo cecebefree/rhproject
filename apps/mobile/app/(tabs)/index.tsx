@@ -1,11 +1,11 @@
 // Home screen — Design 5 context
 // greeting, devotional, coming_up, news
 
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SEED_USER } from '../../src/seed/user';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function HomeScreen() {
   return (
@@ -24,8 +24,8 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Today's Devotional</Text>
         <Text style={styles.verse}>John 10:10 TPT</Text>
         <Text style={styles.verseText}>
-          "The thief comes to steal and kill and destroy; I came that they
-          may have life, and have it abundantly."
+          "The thief comes to steal and kill and destroy; I came that they may have life, and have
+          it abundantly."
         </Text>
       </View>
 

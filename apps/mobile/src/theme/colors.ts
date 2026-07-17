@@ -27,13 +27,13 @@ export const colors = {
 // Derivation: result = (ratio * base) + ((1 - ratio) * ivory), per channel
 // A palette swap re-derives all 7 via these mixing ratios.
 export const categoryColors = {
-  core: colors.navy,            // Direct base token
-  enrichment: colors.burgundy,  // Direct base token
-  club: colors.champagne,       // Direct base token
-  school: colors.charcoal,      // Direct base token
-  social: '#5d636b',            // blend(navy, ivory, 0.70)
-  staff: '#747474',             // blend(charcoal, ivory, 0.60)
-  family: '#b16773',            // blend(burgundy, ivory, 0.65)
+  core: colors.navy, // Direct base token
+  enrichment: colors.burgundy, // Direct base token
+  club: colors.champagne, // Direct base token
+  school: colors.charcoal, // Direct base token
+  social: '#5d636b', // blend(navy, ivory, 0.70)
+  staff: '#747474', // blend(charcoal, ivory, 0.60)
+  family: '#b16773', // blend(burgundy, ivory, 0.65)
 } as const;
 
 export type CategoryKey = keyof typeof categoryColors;

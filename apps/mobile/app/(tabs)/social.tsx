@@ -1,13 +1,13 @@
 // Social screen — My Groups list + chat entry
 // Source: frozen Design 5 + chat adjustments
 
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SEED_GROUPS } from '../../src/seed/groups';
-import { GroupCard } from '../../src/components/GroupCard';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
+import { GroupCard } from '../../src/components/GroupCard';
+import { SEED_GROUPS } from '../../src/seed/groups';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function SocialScreen() {
   return (

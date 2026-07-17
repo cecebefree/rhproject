@@ -2,12 +2,12 @@
 // Status chain: draft → released → visible
 // Released-only visibility per R18
 
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SEED_CARDS } from '../../src/seed/cards';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
+import { SEED_CARDS } from '../../src/seed/cards';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function ReportCardScreen() {
   const visibleCards = SEED_CARDS.filter((c) => c.status === 'visible');

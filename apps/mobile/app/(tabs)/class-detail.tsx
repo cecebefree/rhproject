@@ -1,11 +1,11 @@
 // ClassDetailScreen — sub-screen for individual class view
 // Reads from seed/classes.ts
 
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SEED_CLASSES } from '../../src/seed/classes';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function ClassDetailScreen() {
   const cls = SEED_CLASSES[0]; // Default to first class

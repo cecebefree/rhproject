@@ -1,14 +1,14 @@
 // GroupChatScreen — Chat adjustments
 // Chat view with send states, messages from seed
 
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity } from 'react-native';
-import { SEED_MESSAGES } from '../../src/seed/messages';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { SendIndicator } from '../../src/components/chat-ui';
+import { SEED_MESSAGES } from '../../src/seed/messages';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
-import { useState } from 'react';
+import { typography } from '../../src/theme/typography';
 
 export default function GroupChatScreen() {
   const [sendState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
@@ -23,22 +23,15 @@ export default function GroupChatScreen() {
               key={msg.id}
               style={[styles.messageBubble, msg.isOwn ? styles.ownBubble : styles.otherBubble]}
             >
-              {!msg.isOwn && (
-                <Text style={styles.senderName}>{msg.senderName}</Text>
-              )}
-              <Text style={[styles.messageText, msg.isOwn && styles.ownText]}>
-                {msg.content}
-              </Text>
+              {!msg.isOwn && <Text style={styles.senderName}>{msg.senderName}</Text>}
+              <Text style={[styles.messageText, msg.isOwn && styles.ownText]}>{msg.content}</Text>
               <Text style={[styles.timestamp, msg.isOwn && styles.ownTimestamp]}>
                 {msg.timestamp}
               </Text>
             </View>
           ))
         ) : (
-          <EmptyState
-            title="No messages yet"
-            message="Say hello!"
-          />
+          <EmptyState title="No messages yet" message="Say hello!" />
         )}
       </ScrollView>
 

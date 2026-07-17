@@ -1,11 +1,11 @@
 // HubDetailScreen — sub-screen for individual hub view
 // Reads from seed/hubs.ts
 
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SEED_HUBS } from '../../src/seed/hubs';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function HubDetailScreen() {
   const hub = SEED_HUBS[0]; // Default to first hub

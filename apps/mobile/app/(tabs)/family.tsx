@@ -1,14 +1,14 @@
 // Family variant — Design 6
 // Per-child tabs, ledger (PLANNED — seed only)
 
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SEED_USER } from '../../src/seed/user';
-import { SEED_GROUPS } from '../../src/seed/groups';
-import { GroupCard } from '../../src/components/GroupCard';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
+import { GroupCard } from '../../src/components/GroupCard';
+import { SEED_GROUPS } from '../../src/seed/groups';
+import { SEED_USER } from '../../src/seed/user';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function FamilyScreen() {
   return (
@@ -21,7 +21,9 @@ export default function FamilyScreen() {
       {/* Child tab */}
       <View style={styles.childSection}>
         <Text style={styles.childName}>{SEED_USER.name}</Text>
-        <Text style={styles.childRole}>{SEED_USER.role} · {SEED_USER.curriculum}</Text>
+        <Text style={styles.childRole}>
+          {SEED_USER.role} · {SEED_USER.curriculum}
+        </Text>
 
         {/* Ledger — PLANNED, seed only */}
         <View style={styles.ledger}>
@@ -44,12 +46,7 @@ export default function FamilyScreen() {
         {/* Groups */}
         <Text style={styles.sectionTitle}>Groups</Text>
         {SEED_GROUPS.map((group) => (
-          <GroupCard
-            key={group.id}
-            name={group.name}
-            category={group.category}
-            lead={group.lead}
-          />
+          <GroupCard key={group.id} name={group.name} category={group.category} lead={group.lead} />
         ))}
       </View>
     </ScrollView>

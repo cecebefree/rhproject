@@ -1,8 +1,8 @@
 // Category badge — 7 colors from palette
 // Source: frozen Design 5
 
-import { View, Text, StyleSheet } from 'react-native';
-import { categoryColors, CategoryKey } from '../theme/colors';
+import { StyleSheet, Text, View } from 'react-native';
+import { type CategoryKey, categoryColors } from '../theme/colors';
 import { typography } from '../theme/typography';
 
 interface BadgeProps {

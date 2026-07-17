@@ -1,12 +1,12 @@
 // HubScreen — Design 7 context
 // Enrichment courses list
 
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SEED_HUBS } from '../../src/seed/hubs';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
+import { SEED_HUBS } from '../../src/seed/hubs';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function HubScreen() {
   return (

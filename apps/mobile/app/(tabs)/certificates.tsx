@@ -1,12 +1,12 @@
 // CertificatesScreen — ITEM-002
 // Records tab: certificate list from seed
 
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SEED_CERTS } from '../../src/seed/certs';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
+import { SEED_CERTS } from '../../src/seed/certs';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function CertificatesScreen() {
   return (
@@ -30,10 +30,7 @@ export default function CertificatesScreen() {
           </View>
         ))
       ) : (
-        <EmptyState
-          title="No certificates yet"
-          message="Your certificates will appear here"
-        />
+        <EmptyState title="No certificates yet" message="Your certificates will appear here" />
       )}
     </ScrollView>
   );

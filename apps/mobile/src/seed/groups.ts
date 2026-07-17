@@ -1,7 +1,7 @@
 // Seed groups — PLANNED fields render from seed only
 // Source: frozen Design 5 + ITEM-001 seven categories
 
-import { CategoryKey } from '../theme/colors';
+import type { CategoryKey } from '../theme/colors';
 
 export interface SeedGroup {
   id: string;

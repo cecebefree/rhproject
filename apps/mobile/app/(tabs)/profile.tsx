@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SEED_USER } from '../../src/seed/user';
-import { SEED_GROUPS } from '../../src/seed/groups';
-import { GroupCard } from '../../src/components/GroupCard';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
+import { GroupCard } from '../../src/components/GroupCard';
+import { SEED_GROUPS } from '../../src/seed/groups';
+import { SEED_USER } from '../../src/seed/user';
 import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
 import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function ProfileScreen() {
   return (
@@ -34,10 +34,7 @@ export default function ProfileScreen() {
             />
           ))
         ) : (
-          <EmptyState
-            title="No groups yet"
-            message="You'll be added during onboarding"
-          />
+          <EmptyState title="No groups yet" message="You'll be added during onboarding" />
         )}
       </View>
 

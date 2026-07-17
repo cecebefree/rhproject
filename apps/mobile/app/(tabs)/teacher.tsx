@@ -1,14 +1,14 @@
 // Teacher variant — Design 7
 // Content swap on student layout + Group Lead controls
 
-import { View, Text, StyleSheet, ScrollView, Switch } from 'react-native';
-import { SEED_USER } from '../../src/seed/user';
-import { SEED_GROUPS } from '../../src/seed/groups';
-import { GroupCard } from '../../src/components/GroupCard';
-import { colors } from '../../src/theme/colors';
-import { typography } from '../../src/theme/typography';
-import { spacing } from '../../src/theme/spacing';
 import { useState } from 'react';
+import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { GroupCard } from '../../src/components/GroupCard';
+import { SEED_GROUPS } from '../../src/seed/groups';
+import { SEED_USER } from '../../src/seed/user';
+import { colors } from '../../src/theme/colors';
+import { spacing } from '../../src/theme/spacing';
+import { typography } from '../../src/theme/typography';
 
 export default function TeacherScreen() {
   const [mediaEnabled, setMediaEnabled] = useState(false);
@@ -32,9 +32,7 @@ export default function TeacherScreen() {
       <View style={styles.section}>
         <View style={styles.mediaRow}>
           <Text style={styles.mediaLabel}>Media types</Text>
-          <Text style={styles.mediaValue}>
-            {mediaEnabled ? 'All media' : 'Text + emoji'}
-          </Text>
+          <Text style={styles.mediaValue}>{mediaEnabled ? 'All media' : 'Text + emoji'}</Text>
         </View>
         <Switch
           value={mediaEnabled}
@@ -47,12 +45,7 @@ export default function TeacherScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Groups</Text>
         {SEED_GROUPS.map((group) => (
-          <GroupCard
-            key={group.id}
-            name={group.name}
-            category={group.category}
-            lead={group.lead}
-          />
+          <GroupCard key={group.id} name={group.name} category={group.category} lead={group.lead} />
         ))}
       </View>
     </ScrollView>

@@ -1,12 +1,12 @@
 // Group card — avatar + name + badge + lead
 // Source: frozen Design 5
 
-import { View, Text, StyleSheet } from 'react-native';
-import { Badge } from './Badge';
-import { CategoryKey } from '../theme/colors';
-import { typography } from '../theme/typography';
+import { StyleSheet, Text, View } from 'react-native';
+import type { CategoryKey } from '../theme/colors';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
+import { typography } from '../theme/typography';
+import { Badge } from './Badge';
 
 interface GroupCardProps {
   name: string;
@@ -23,7 +23,11 @@ export function GroupCard({ name, category, lead, lastMessage }: GroupCardProps)
         <Badge category={category} />
       </View>
       <Text style={styles.lead}>Lead: {lead}</Text>
-      {lastMessage && <Text style={styles.message} numberOfLines={1}>{lastMessage}</Text>}
+      {lastMessage && (
+        <Text style={styles.message} numberOfLines={1}>
+          {lastMessage}
+        </Text>
+      )}
     </View>
   );
 }

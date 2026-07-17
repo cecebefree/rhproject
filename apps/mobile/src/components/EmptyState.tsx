@@ -1,9 +1,9 @@
 // Reusable empty state — per-screen messages
 // Source: frozen chat adjustments
 
-import { View, Text, StyleSheet } from 'react-native';
-import { typography } from '../theme/typography';
+import { StyleSheet, Text, View } from 'react-native';
 import { colors } from '../theme/colors';
+import { typography } from '../theme/typography';
 
 interface EmptyStateProps {
   icon?: string;
