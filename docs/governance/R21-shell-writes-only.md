@@ -55,3 +55,18 @@ as a usable location. .opencode/ holds no opencode.json and its
 package.json names no stale root. All grep hits are historical or
 governance references naming the path as prohibited or wrong.
 
+
+## Baseline amendment (post-audit)
+
+Canonical DB test baseline is 181 assertions across 20 files under
+`supabase test db`.
+
+The prior figure (214/21) included supabase/tests/runner.sql, retired
+in commit f6b4c83 (R-034); the 33-assertion delta is fully accounted
+for by that retirement.
+
+Audit evidence: full-suite run with captured DB_EXIT=0, all 20 on-disk
+files executed, disk-vs-harness diff exact.
+
+Typecheck and lint: 0 errors across shared, web, mobile.
+
