@@ -150,3 +150,20 @@ Fifteen seconds of anchors saves hours of phantom work.
 - **Guard scripts:** All guard scripts (`guard-ai-import.sh`,
   `guard-cross-import.sh`, `guard-type-drift.sh`, `guard-field-register.sh`)
   execute against the repo at `cwd`. R19 ensures `cwd` is correct.
+
+
+## Point 7 — Instruction-Source Check
+
+After the six-point anchor passes, one more check before any operation:
+
+```bash
+grep -rn "Redhouse-website\|redhouse-real-web" AGENTS.md docs/governance/*R19* 2>/dev/null
+# Expected: any match names the stale path ONLY as a prohibited / historical
+# reference. A match that presents a stale path as a usable location is a DEFECT.
+```
+
+Rule: any path reference in AGENTS.md or the anchor docs other than the
+canonical root `/Users/ce/dev/rhproject-new` is a defect. If found presented as
+a usable path, STOP and report before performing any operation. Historical
+incident docs and generated/quarantine files that name the stale path as the
+*wrong* path are exempt.
