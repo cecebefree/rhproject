@@ -70,3 +70,23 @@ files executed, disk-vs-harness diff exact.
 
 Typecheck and lint: 0 errors across shared, web, mobile.
 
+
+## Migration ledger disposition (054/055)
+
+Migrations 054 and 055 never existed in any branch (verified via
+git log --all --diff-filter=AD).
+
+Planned scope per docs/governance/wiring-plan-v1.md: 054 = chat tables
+(conversations, conversation_members, messages, message_reactions,
+chat_preferences); 055 = profiles.handle + handle_changes.
+
+Neither scope was absorbed by 056-058 (R20 tenant/hook work).
+
+Ruling: 054/055 are permanently reserved gaps, like 023. The parked
+scopes may only re-enter via field-register PLANNED to BACKED
+promotion and a fresh migration number (059+). The numbering in
+wiring-plan-v1.md is superseded.
+
+Migration ledger is now fully accounted: 013-058 on disk with exactly
+three sealed reserved gaps (023, 054, 055).
+
