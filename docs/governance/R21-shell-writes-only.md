@@ -90,3 +90,11 @@ wiring-plan-v1.md is superseded.
 Migration ledger is now fully accounted: 013-058 on disk with exactly
 three sealed reserved gaps (023, 054, 055).
 
+
+## R22 — Relay discipline
+
+RELAY DISCIPLINE (binding for this block and all future blocks):
+the closing phrase is forbidden until every command's verbatim
+output appears above it. A closing phrase without preceding output
+is void and the block is treated as unexecuted.
+
