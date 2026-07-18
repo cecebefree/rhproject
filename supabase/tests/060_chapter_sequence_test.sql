@@ -1,0 +1,103 @@
+-- 060_chapter_sequence_test.sql
+-- D-CHAPSEQ: verifies the corrected chapter sequence guard
+-- (migration 060) enforces ALL predecessor chapters complete,
+-- renames the trigger to trg_chapter_progress_sequence, and
+-- fails loud on a missing chapter. R22-compliant: every denial
+-- block is paired with a positive-anchor + row-count assertion.
+BEGIN;
+SELECT plan(8);
+
+CREATE SCHEMA IF NOT EXISTS tests;
+GRANT USAGE ON SCHEMA tests TO authenticated;
+
+GRANT SELECT, INSERT ON public.chapter_progress TO authenticated;
+GRANT SELECT ON public.chapters TO authenticated;
+GRANT SELECT ON public.courses TO authenticated;
+-- Auth users (profiles are auto-created by handle_new_user trigger as role='student', tenant NULL)
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+VALUES
+  ('cccc0000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'chapseq-t@test.com', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+  ('cccc0000-0000-0000-0000-0000000000b1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'chapseq-a@test.com', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+  ('cccc0000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'chapseq-b@test.com', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Repair tenant + role via sanctioned bypass (trigger default role='student', tenant NULL)
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+INSERT INTO public.tenant_devotional (id, name, slug, is_active, created_at)
+VALUES ('cccc0000-0000-0000-0000-0000000000c0', 'CHAPSEQ Tenant', 'chapseq', true, now())
+ON CONFLICT (id) DO NOTHING;
+UPDATE public.profiles SET tenant_id = 'cccc0000-0000-0000-0000-0000000000c0'
+  WHERE id IN ('cccc0000-0000-0000-0000-0000000000a1','cccc0000-0000-0000-0000-0000000000b1','cccc0000-0000-0000-0000-0000000000b2');
+UPDATE public.profiles SET role = 'teacher' WHERE id = 'cccc0000-0000-0000-0000-0000000000a1';
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
+
+INSERT INTO public.courses (id, title, price, status, teacher_id)
+VALUES ('cccc0000-0000-0000-0000-0000000000c1', 'CHAPSEQ Course', 0, 'published', 'cccc0000-0000-0000-0000-0000000000a1')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.chapters (id, course_id, title, video_url, order_index)
+VALUES
+  ('cccc0000-0000-0000-0000-0000000000d0', 'cccc0000-0000-0000-0000-0000000000c1', 'CH0', 'https://x/0', 0),
+  ('cccc0000-0000-0000-0000-0000000000d1', 'cccc0000-0000-0000-0000-0000000000c1', 'CH1', 'https://x/1', 1),
+  ('cccc0000-0000-0000-0000-0000000000d2', 'cccc0000-0000-0000-0000-0000000000c1', 'CH2', 'https://x/2', 2)
+ON CONFLICT (id) DO NOTHING;
+
+-- c. FIRST CHAPTER positive anchor: fresh student b2 inserts progress for order_index 0
+SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
+SELECT set_config('request.jwt.claim.sub', 'cccc0000-0000-0000-0000-0000000000b2', true);
+SET ROLE authenticated;
+INSERT INTO public.chapter_progress (student_id, chapter_id)
+VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d0');
+SELECT is(
+  (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'cccc0000-0000-0000-0000-0000000000b2'),
+  1,
+  'c: first-chapter insert succeeds, row count = 1');
+
+-- a. POSITIVE ANCHOR: student b1 completes all predecessors (0 and 1) then inserts 2
+SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b1","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
+SELECT set_config('request.jwt.claim.sub', 'cccc0000-0000-0000-0000-0000000000b1', true);
+INSERT INTO public.chapter_progress (student_id, chapter_id)
+VALUES
+  ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d0'),
+  ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d1');
+INSERT INTO public.chapter_progress (student_id, chapter_id)
+VALUES ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d2');
+SELECT is(
+  (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'cccc0000-0000-0000-0000-0000000000b1'),
+  3,
+  'a: all-predecessors-complete insert succeeds, row count = 3');
+
+-- b. DENIAL (the 018 escape): student b2 has only chapter 0 complete, skips 1, inserts 2
+SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
+SELECT set_config('request.jwt.claim.sub', 'cccc0000-0000-0000-0000-0000000000b2', true);
+SELECT throws_ok(
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
+   VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d2')$$,
+  'P0001', 'Previous chapters must be completed before marking this chapter complete');
+SELECT is(
+  (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'cccc0000-0000-0000-0000-0000000000b2'),
+  1,
+  'b: skipped-predecessor insert denied, row count stays 1');
+
+-- d. FAIL-LOUD: insert referencing a non-existent chapter_id. The BEFORE INSERT guard runs first and raises P0001 (chapter not found) BEFORE the FK (23503) is enforced, so P0001 is the observed state.
+SELECT throws_ok(
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
+   VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'deadbeef-0000-0000-0000-000000000000')$$,
+  'P0001');
+
+-- e. WIRING: new trigger present, old trigger absent
+SELECT ok( EXISTS (
+  SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid
+  WHERE c.relname = 'chapter_progress' AND t.tgname = 'trg_chapter_progress_sequence' AND NOT t.tgisinternal),
+  'e: trg_chapter_progress_sequence exists');
+SELECT ok( NOT EXISTS (
+  SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid
+  WHERE c.relname = 'chapter_progress' AND t.tgname = 'check_chapter_sequence' AND NOT t.tgisinternal),
+  'e: old check_chapter_sequence trigger absent');
+
+SELECT ok( position('order_index < v_chapter_order' in
+  (SELECT pg_get_functiondef(oid) FROM pg_proc WHERE proname = 'check_chapter_sequence_completion')) > 0,
+  'e: corrected guard function present in schema');
+
+SELECT * FROM finish();
+ROLLBACK;

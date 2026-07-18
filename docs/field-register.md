@@ -358,6 +358,15 @@ When demoting a field from BACKED to PLANNED (migration rollback):
 2. Update this register status column
 3. Re-run CI -- guard will fail if the table is truly gone
 
+
+## D-CHAPSEQ — Chapter sequence guard repair (status: BACKED)
+
+- **Scope:** migration 060 replaces the chapter sequence guard originally created in migration 018.
+- **Behavior fix:** the 018 guard was vacuous (passed if at least one prior chapter was complete). 060 enforces ALL predecessor chapters in the same course must have a chapter_progress row for the student before a later chapter may be marked complete.
+- **Trigger rename:** old trigger `check_chapter_sequence` renamed to `trg_chapter_progress_sequence` to match the `trg_` convention.
+- **No schema/column changes** — behavior and trigger-name fix only.
+- **Status:** BACKED (migration 060, this arc)
+
 ## User Types (locked, source: migration 026)
 
 8 roles, TEXT column + CHECK constraint (not a PG enum type),
