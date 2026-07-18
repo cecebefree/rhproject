@@ -90,4 +90,4 @@ DB that has just run the test suite does not, until pgtap is dropped.
 
 ## Amendment (2026-07-16, R-034-A)
 
-The sealed baseline "214 assertions / 21 files" was inflated — `runner.sql` was the 21st file and its 33 assertions duplicated split-file coverage. Post-retirement canonical baseline: **181 assertions / 20 files**. The 33 retired assertions were duplicates of split-file tests, so no unique coverage was lost. (Re-baselined 2026-07-17 to **199 assertions / 21 files** after migration 059 chat tables; raw run Result: PASS, sealed under 0974bba.)
+The sealed baseline "214 assertions / 21 files" was inflated — `runner.sql` was the 21st file and its 33 assertions duplicated split-file coverage. Post-retirement canonical baseline: **181 assertions / 20 files**. The 33 retired assertions were duplicates of split-file tests, so no unique coverage was lost. (Re-baselined 2026-07-17 to 199/21 after migration 059 chat tables and the 013 fixture repair; raw run Result: PASS, sealed under 0974bba. Re-baselined 2026-07-18 to 207 assertions / 22 files after migration 060 chapter-sequence guard; D-CHAPSEQ arc sealed under a601fc7.)

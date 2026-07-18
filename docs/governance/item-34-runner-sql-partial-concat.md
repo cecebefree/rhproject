@@ -47,7 +47,7 @@ Grounds:
 Historical docs referencing `runner.sql` remain unedited per the ruling's general clause;
 this item and the type-drift governance doc are the canonical record.
 
-Retirement corrected the baseline: 214/21 was inflated by runner.sql counting as a file and double-running 33 duplicate assertions. True canonical baseline: 181 assertions / 20 files. Zero unique coverage lost. (Re-baselined 2026-07-17 to 199 assertions / 21 files after migration 059 chat tables; raw run Result: PASS, sealed under 0974bba.)
+Retirement corrected the baseline: 214/21 was inflated by runner.sql counting as a file and double-running 33 duplicate assertions. True canonical baseline: 181 assertions / 20 files. Zero unique coverage lost. (Re-baselined 2026-07-17 to 199/21 after migration 059 chat tables and the 013 fixture repair; raw run Result: PASS, sealed under 0974bba. Re-baselined 2026-07-18 to 207 assertions / 22 files after migration 060 chapter-sequence guard; D-CHAPSEQ arc sealed under a601fc7.)
 
 This item is recorded for tracking only. No code, test, or migration change is made
 as part of opening it.
