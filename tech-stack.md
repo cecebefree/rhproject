@@ -466,3 +466,13 @@ Stay in plan mode until approved, then switch to build.
 - Leadership state (active leads, open approvals, pending sharpenings) is written to
   the session handoff on close, per the Memory & Session Workflow section.
 
+
+> **Amendment (F0, 2026-07-18, HEAD 887ce98):** HubSpot is **DROPPED** project-wide
+> except for a possible Front Desk lead-table integration. All HubSpot sync/reconciliation
+> functions (nightly-reconciliation, hubspot-webhook) remain struck per ai-ops-plan §6 and
+> are to be reworked into a Supabase-native pipeline. **Lovable is the Front Desk web
+> intake form builder** — the public enrolment/intake form that feeds the Front Desk lead
+> table (per `docs/spec/front-desk-registration.md` §4) is Lovable-built, not a hand-coded
+> app. Lovable ≠ the mobile app. The Front Desk console itself (lead management, callback
+> queue, payment-mocked conversion) is a future Desk surface, not yet scaffolded. No
+> Lovable project files and no Front Desk app/screen exist in-repo as of this commit.
