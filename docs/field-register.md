@@ -460,7 +460,7 @@ class-start pings (pg_cron reads schedule_slot; later slot).
 Every row below carries its own status stamp, per register convention.
 Scope traces to docs/governance/wiring-plan-v1.md, whose 054/055 numbering
 is superseded. Chat tables promoted via migration 059; handle scope
-remains PLANNED. All chat tables are tenant-scoped (tenant_id NOT NULL,
+delivered via migration 062 (arc D-062-HANDLE). All chat tables are tenant-scoped (tenant_id NOT NULL,
 RLS per R20 auth-first doctrine). conversations.category is display-only.
 
 ### Table: conversations (migration 059)
@@ -537,6 +537,17 @@ per-tenant SELECT. NO admin_all. Optional per-tenant config may widen
 in-tenant role visibility only; tenant fence never widens. Audit rows
 written by trigger on handle change.
 **Status of arc:** BACKED (register locked, rulings R-1..R-7 ratified 2026-07-18; migration 062 + test 062_handle_system.test.sql).
+
+**Supersession note (D-054/055-REVIEW, 2026-07-18):** ex-054/055
+reservations are fully closed. 054 scope (chat tables) delivered
+under migration 059; 055 scope (handle system) delivered under
+migration 062. Deviations from wiring-plan-v1.md 055 literal
+text are ratified rulings, not gaps: per-tenant uniqueness
+(tenant_id, lower(handle)) supersedes global UNIQUE; no admin_all
+(R-2); profile_id supersedes user_id (R-1); old_handle nullable
+(R-3); blocklist expanded platform-wide (R-4). Migration numbers
+054/055 remain permanent never-created gaps per 4fb1b8f. No
+residual PLANNED scope exists from either reservation.
 
 
 ### Ledger note (D-062-HANDLE seal, 2026-07-18)
