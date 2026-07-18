@@ -512,7 +512,7 @@ RLS per R20 auth-first doctrine). conversations.category is display-only.
 ### Table: profiles (extension) -- handle scope [PLANNED -> registered, arc D-062-HANDLE]
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| handle | text | Display handle. Universal DB CHECK: 3-20 chars, no whitespace. Per-tenant format policy enforced in Edge Function (Redhouse: ^[a-z_][a-z0-9_]{2,19}$). Set only after tenant_id assigned (R20 pending state rejected). Uniqueness: UNIQUE INDEX (tenant_id, lower(handle)) — per-tenant, case-insensitive. | PLANNED |
+| handle | text | Display handle. Universal DB CHECK: 3-20 chars, no whitespace. Per-tenant format policy enforced in Edge Function (Redhouse: ^[a-z_][a-z0-9_]{2,19}$). Set only after tenant_id assigned (R20 pending state rejected). Uniqueness: UNIQUE INDEX (tenant_id, lower(handle)) — per-tenant, case-insensitive. | BACKED |
 
 **Write path (R-6/R-7):** Edge-Function-only (set_handle). No direct
 UPDATE. Per-tenant handle_mode config: admin_set (master-admin assigns)
@@ -525,16 +525,23 @@ mod, api, null, undefined, me, you, everyone, all. Enforced in Edge Function.
 ### Table: handle_changes -- arc D-062-HANDLE
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| id | uuid PK | gen_random_uuid() | PLANNED |
-| profile_id | uuid NOT NULL | FK profiles.id (register prevails over wiring-plan user_id, R-1) | PLANNED |
-| tenant_id | uuid NOT NULL | Denormalized from profiles at write time (R-2) | PLANNED |
-| old_handle | text | Nullable; NULL = initial assignment (R-3) | PLANNED |
-| new_handle | text NOT NULL | | PLANNED |
-| changed_at | timestamptz NOT NULL | DEFAULT now() | PLANNED |
+| id | uuid PK | gen_random_uuid() | BACKED |
+| profile_id | uuid NOT NULL | FK profiles.id (register prevails over wiring-plan user_id, R-1) | BACKED |
+| tenant_id | uuid NOT NULL | Denormalized from profiles at write time (R-2) | BACKED |
+| old_handle | text | Nullable; NULL = initial assignment (R-3) | BACKED |
+| new_handle | text NOT NULL | | BACKED |
+| changed_at | timestamptz NOT NULL | DEFAULT now() | BACKED |
 
 **RLS (R-2):** self_select (privacy floor, always on) + master-admin-
 per-tenant SELECT. NO admin_all. Optional per-tenant config may widen
 in-tenant role visibility only; tenant fence never widens. Audit rows
 written by trigger on handle change.
-**Status of arc:** PLANNED (register locked, rulings R-1..R-7 ratified 2026-07-18; migration not yet authored).
+**Status of arc:** BACKED (register locked, rulings R-1..R-7 ratified 2026-07-18; migration 062 + test 062_handle_system.test.sql).
 
+
+### Ledger note (D-062-HANDLE seal, 2026-07-18)
+Canonical test baseline corrected to **240 assertions / 24 files** (runner-verified
+via `supabase test db supabase/tests/`). The earlier 181-assertion / 20-file figure
+is retired as stale post-059/060/061 additions. D-062-HANDLE is BACKED:
+migration 062 (profiles.handle + handle_changes) and test file
+062_handle_system.test.sql (24 pgTAP assertions) both committed.
