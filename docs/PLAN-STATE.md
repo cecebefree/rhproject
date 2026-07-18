@@ -348,3 +348,36 @@ from spec content, a new ruling is needed before merge.
 
 *End of PLAN-STATE. F0 write-list covered items 1–4 and 6 (item 5 reserved but
 included as the headline discovery per the STOP report requirement).*
+---
+
+# PLAN-STATE REFRESH (F0 order-restoration session, 2026-07-18)
+
+## New HEAD
+6d1a38a9b78b3f8e218b15f09a87543ead66f8c7 (prior F0 commit). This session adds register S-A/S-B/S-C/S-F + this refresh; new HEAD recorded at PART 4 seal.
+
+## Register scope statuses after Part 2 (verbatim grep from field-register.md)
+582:## S-A — Group display/lead/media columns (status: PLANNED)
+601:## S-B — Class/Hub display columns (status: PLANNED)
+613:## S-C — Edge Function scopes (status: PLANNED)
+631:## S-F — Front-Desk lead tables (status: PLANNED)
+All four: PLANNED. No migrations created (register-first only, per mandate).
+
+## Baselines re-run this session (verbatin summary lines)
+Tests: Files=24, Tests=240, Result: PASS
+Typecheck @redhouse/shared: tsc --noEmit (0 errors)
+Typecheck @rhproject/web: tsc --noEmit (0 errors)
+Typecheck @rhproject/mobile: filter matches no project (workspace config gap, unchanged from prior snapshot)
+HEAD at re-run: 6d1a38a9b78b3f8e218b15f09a87543ead66f8c7
+
+## Unchanged counts
+Mobile screens: 17 total, 0 WIRED (all SCAFFOLD). Wired count unchanged from prior snapshot.
+Migrations: 013–062 (054/055 reserved gaps absent) — unchanged.
+
+## Misplaced-file status (Part 1 outcomes)
+The three stray files under /Users/ce/Documents/Redhouse-website/redhouse-real-web were overwritten with the canonical stub:
+  "MISPLACED COPY — NOT CANONICAL. Canonical location: rhproject-new. Do not read or write here."
+Files: v0-element-register.md, PLAN-STATE.md, tech-stack-amendment.md.
+chmod -R a-w on redhouse-real-web: SUCCEEDED (exit 0). All three stubs now mode -r--r--r-- (96 bytes each).
+Verification: ls -la shows -r--r--r-- for all three; cat of v0-element-register.md returns the stub text verbatim.
+Note: chmod made the whole redhouse-real-web dir read-only, which also blocked the native write tool (its cwd) — all subsequent writes this session used shell + absolute rhproject-new paths.
+

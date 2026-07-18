@@ -576,3 +576,72 @@ Computed fields are served by a mobile read-model layer (views or endpoint compo
 - club_schedule (Profile) — composed from courses
 
 Composition logic ownership: the read-model layer. No dedicated columns are added for these. Status: PLANNED (read-model design not yet ratified).
+
+---
+
+## S-A — Group display/lead/media columns (status: PLANNED)
+
+**Scope (PLANNED — no migration exists as of HEAD 6d1a38a):** three columns required by frozen designs 5/6/7 and chat-adjustments, absent from `supabase/migrations/059_chat_tables.sql`.
+
+### S-A.1 conversations.name
+- **Type:** `text` (proposed). **Nullability:** proposed `not null`. **Default:** UNKNOWN — DESIGN DECISION NEEDED (whether groups are seeded with a name at creation, or nullable until set).
+- **Actual 059 DDL (verbatim):** `create table public.conversations ( id uuid primary key default gen_random_uuid(), tenant_id uuid not null, category text not null default 'general', created_by uuid not null references public.profiles(id) on delete cascade, created_at timestamptz not null default now(), updated_at timestamptz not null default now() );` — **NO `name` column present.**
+- **RLS policies touched (derived from 059):** `conversations_tenant_read` (select; filters on tenant_id + membership/admin), `conversations_member_write` (all; filters on tenant_id + membership). A `name` column inherits both policies; no new policy required for the column itself.
+
+### S-A.2 conversations.media_enabled
+- **Type:** `boolean` (proposed). **Nullability:** proposed `not null`. **Default:** `false` (proposed — "text+emoji only" demo default per chat-adjustments).
+- **Actual 059 DDL:** NO `media_enabled` column present in `conversations`.
+- **RLS policies touched:** same table-level policies as S-A.1. Write restricted to conversation members; lead-only toggle is APP-level, NOT enforced by RLS (no `is_group_lead` column — see S-A.3). DESIGN DECISION NEEDED: whether media-dial write should be RLS-gated to leads (requires S-A.3 first).
+
+### S-A.3 conversation_members.is_group_lead
+- **Type:** `boolean` (proposed). **Nullability:** proposed `not null`. **Default:** `false`.
+- **Actual 059 DDL (verbatim):** `create table public.conversation_members ( conversation_id uuid not null references public.conversations(id) on delete cascade, profile_id uuid not null references public.profiles(id) on delete cascade, role text not null default 'member', joined_at timestamptz not null default now(), last_read_at timestamptz, primary key (conversation_id, profile_id) );` — **NO `is_group_lead` column.** Lead state implicit in `role` text (no CHECK enum, default 'member').
+- **RLS policies touched:** `conv_members_self_read` (select where profile_id=auth.uid()), `conv_members_self_write` (all where profile_id=auth.uid()). A new `is_group_lead` boolean would be self-readable; writes stay self-gated unless a new policy enforces lead-only mutation. DESIGN DECISION NEEDED: enforce lead flag via new RLS policy or promote `role` to a CHECK-constrained enum ('member','lead').
+
+## S-B — Class/Hub display columns (status: PLANNED)
+
+**Scope (PLANNED — absent from 027/039):** display columns named in expo-port-plan.md §2 (class_subject, class_teacher, class_status_time; hub_title, hub_type_meta, hub_status_time, location, stage) that the 027/039 DDL does not define.
+
+### S-B.1 student_class.class_subject / class_teacher / class_status_time
+- **Actual 027 DDL (verbatim):** `create table if not exists student_class ( id uuid primary key default gen_random_uuid(), student_id uuid not null references auth.users(id), class_id uuid not null, tenant_id uuid not null default '00000000-0000-0000-0000-000000000001', enrolled_at timestamptz not null default now(), deleted_at timestamptz, unique (student_id, class_id) );`
+- **Finding:** NONE of `class_subject`, `class_teacher`, `class_status_time` exist. The table links `student_id`↔`class_id` only; subject/teacher/time are NOT columns. They are either (a) properties of a `classes`/`courses` table referenced by `class_id` (UNKNOWN — `courses` exists per 014/034 but column mapping UNKNOWN), or (b) PLANNED display columns to be added. DESIGN DECISION NEEDED: define source table/columns for subject/teacher/schedule, or add columns to `student_class`.
+
+### S-B.2 enrichment_meta.title / location / stage
+- **Actual 039 DDL (verbatim):** `create table public.enrichment_meta ( id uuid primary key default gen_random_uuid(), tenant_id uuid not null, student_class_id uuid not null references public.student_class(id) on delete cascade, pace text not null default 'self-paced' check (pace in ('self-paced','structured')), completed int not null default 0 check (completed >= 0), total int not null default 0 check (total >= 0), note text, created_at timestamptz not null default now(), updated_at timestamptz not null default now(), check (completed <= total OR total = 0), unique (student_class_id) );`
+- **Finding:** NONE of `title`, `location`, `stage` exist. `enrichment_meta` holds only pace/completed/total/note + FKs. `hub_type_meta` and `hub_status_time` have no backing column here either. DESIGN DECISION NEEDED: add `title`/`location`/`stage` to `enrichment_meta`, or define a parent `enrichment`/`courses` table carrying them (UNKNOWN which).
+
+## S-C — Edge Function scopes (status: PLANNED)
+
+**Scope derived from spec/design docs only (no EF code exists beyond `assign_tenant`).**
+
+### S-C.1 set_handle
+- **Source (field-register.md:519, verbatim):** "Write path (R-6/R-7): Edge-Function-only (set_handle). No direct" — and `profiles.handle` column added by 062 (`ALTER TABLE public.profiles ADD COLUMN handle text;`).
+- **Scope:** EF `set_handle` sets `profiles.handle` for the calling user, enforcing the universal format CHECK (char_length(handle) BETWEEN 3 AND 20 AND handle !~ '\s') and per-tenant unique index (profiles_tenant_handle_unique). Audit rows written to `handle_changes` (NO INSERT/UPDATE/DELETE RLS — by design, EF-only).
+- **Status:** PLANNED. EF does NOT exist in `supabase/functions/` (only `assign_tenant`). DESIGN DECISION NEEDED: none — spec mandates EF-only; implementation pending.
+
+### S-C.2 report-card release (draft → released → visible)
+- **Source (08-report-card-tab.md:56-57, verbatim):** "`draft` → `released` | Office | Edge Function UPDATE | role = admin/office, tenant_id match" and "`released` → `visible` | Office | Edge Function UPDATE (same transaction) | visible_at = now()".
+- **Scope:** EF performs the two-step status advance on `report_cards` (status CHECK: draft, released, visible). Office/Admin only; tenant_id match required. `released` is transient (advance in one transaction). `rc_office_manage` RLS permits office UPDATE.
+- **Status:** PLANNED. No such EF exists. DESIGN DECISION NEEDED: none — design mandates EF; implementation pending.
+
+### S-C.3 messages client send — RLS verdict (verbatim policy)
+- **Verbatim 059 policy:** `create policy messages_member_write on public.messages for insert to authenticated with check ( exists ( select 1 from public.conversations c where c.id = messages.conversation_id and c.tenant_id = (auth.jwt() ->> 'tenant_id')::uuid ) and sender_id = auth.uid() and exists ( select 1 from public.conversation_members cm where cm.conversation_id = messages.conversation_id and cm.profile_id = auth.uid() ) );`
+- **Plain statement (quoting policy, no interpretation beyond it):** A client-side INSERT into `messages` IS already permitted by RLS for any `authenticated` user who (1) targets a conversation in their own JWT tenant, (2) sets `sender_id = auth.uid()`, and (3) is a member of that conversation (`conversation_members`). The policy is INSERT/`with check` only — it does NOT require an Edge Function. A client-side send is RLS-permitted TODAY; the missing piece is client wiring (no supabase import in any mobile screen — all 17 SCAFFOLD) and the absence of a send handler, not an RLS block.
+
+## S-F — Front-Desk lead tables (status: PLANNED)
+
+**Scope (PLANNED — no migration exists):** pre-payment lead tables owned by Front Desk, per `docs/spec/front-desk-registration.md` (RULED 2026-07-11). Columns taken ONLY from the ruled spec text; where the spec does not define a column, written UNKNOWN — DESIGN DECISION NEEDED.
+
+### S-F.1 lead table (enquiry → qualified → invoiced)
+- **Spec-defined (verbatim §1,§3,§6):** Lead records are "working objects: notes, follow-ups, callback scheduling" → implies columns for `notes`, `follow_ups`/`callback_schedule` — but spec gives NO column names/types. **UNKNOWN — DESIGN DECISION NEEDED** (names, types, nullability, defaults).
+- Stage column with values `enquiry → qualified → invoiced` (state machine). **Type:** proposed `text` with CHECK in ('enquiry','qualified','invoiced'). **Nullability/Default:** UNKNOWN — DESIGN DECISION NEEDED (nullable? default 'enquiry'?).
+- "Front Desk-OWNED lead tables" + "Lead table schema finalization (Front Desk-owned, tenant-scoped)" (§6 open item) → implies `tenant_id` (not null, repo convention) and a PK. **Exact column names/types:** UNKNOWN — DESIGN DECISION NEEDED.
+- "callback queue" with "time-zone rotated queues (USA, UK, SA, Singapore, Australia)" (§4) → implies a callback/queue column, possibly `callback_tz`/assignment — UNKNOWN — DESIGN DECISION NEEDED.
+- **No column in the spec is given a concrete name/type beyond the stage VALUES.** Every structural column (id, tenant_id, created_at, notes, follow_up, callback_schedule) is UNKNOWN — DESIGN DECISION NEEDED. Spec lists "Lead table schema finalization" as an OPEN ITEM (§6).
+- **RLS implications (spec §2 HARD RULE):** Front Desk FULL read/write on lead tables; Office reads status only; School read-only. Requires dedicated RLS per desk role — UNKNOWN — DESIGN DECISION NEEDED (policies not in spec).
+- **Write authority:** ALL core-registration status mutations go through Edge Functions (spec §2); lead-table writes are Front Desk-direct (not EF). Split authority must be encoded in RLS — UNKNOWN — DESIGN DECISION NEEDED.
+
+### S-F.2 core registration status column (post-payment, Office Desk)
+- **Spec-defined states (verbatim §1):** `pending_init → pending_review → approved → active` plus terminal `withdrawn`, `rejected`.
+- **Status:** Lives in the CORE registration table (not the lead table). Column name/type UNKNOWN — DESIGN DECISION NEEDED. Referenced by ITEM-004 as canonical data model but no migration carries it in 027–062.
+
