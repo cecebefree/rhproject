@@ -10,6 +10,13 @@ that report", or equivalent, without the accompanying raw output,
 is automatically incomplete regardless of accuracy. Origin: three
 occurrences across D-062 and D-054/055-REVIEW.
 
+Amendment (2026-07-18): reconstructed output counts as
+referencing. Any pasted artifact that git or the runner could
+not have emitted (e.g. 'index 0000000..0000000' on a non-empty
+new file, impossible hashes, hand-assembled hunks) is an AR-1
+violation even if content-accurate. Origin: occurrence four,
+D-AUDIT-RULES ratification report.
+
 ## AR-2 R22 positive-visibility rule
 Every RLS denial test must contain at least one positive-visibility
 assertion: any lives_ok wrapping an UPDATE or DELETE must be paired
@@ -33,3 +40,11 @@ Gate and seal reports cite runner-emitted counts only, never
 remembered ones. Canonical baseline is whatever the runner last
 printed on green (currently Files=24, Tests=240). Origin: 181/20
 stale-baseline retirement; "remains PLANNED" correction.
+
+## AR-6 Unsolicited re-emission
+Every report is delivered exactly once. Re-sending a previously
+delivered report absent an explicit re-request is a defect,
+regardless of the report's validity. Acknowledgment of a report
+is terminal, not an invitation to repeat. After a STOP or HALT,
+the only valid next output responds to a new directive. Origin:
+triple duplicate emission following the D-AUDIT-RULES probe.
