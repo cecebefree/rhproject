@@ -465,6 +465,16 @@ Stay in plan mode until approved, then switch to build.
 ### Session Handoff
 - Leadership state (active leads, open approvals, pending sharpenings) is written to
   the session handoff on close, per the Memory & Session Workflow section.
+- 2026-07-18 — SESSION CLOSED @ 6b743d0. Full-sweep audit +
+  write-phase reconciliation: 19 stale rows corrected, PLAN-STATE
+  hash/counts fixed, GOAL sealed, master board published,
+  origin in sync. Zero STALE baseline established.
+  Next session: EF scaffolding (row 22) + verify-turnstile (23),
+  then rows 28/29; author family-ledger + S-F migrations
+  register-first; finish R18 seed depth (27).
+  Cece off-agent: rows 10/11/12, 4h field decisions, 31->32 freeze.
+  Monday sweep reference hash: 6b743d0. Expected STALE: 0.
+
 
 
 > **Amendment (F0, 2026-07-18, HEAD 887ce98):** HubSpot is **DROPPED** project-wide
