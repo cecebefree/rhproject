@@ -11,16 +11,16 @@
 
 | # | Item | Type | Status |
 |---|------|------|--------|
-| 1 | Ruling: group chat | Ruling | Pending |
-| 2 | Ruling: certificates | Ruling | Pending |
-| 3 | Ruling: report-card demo | Ruling | Pending |
-| 4 | Ruling: section 8 exemption — demo wave runs no agents; section 8 binds from first agent item | Ruling | Pending |
-| 5 | Ruling: Expo vs Capacitor + tech-stack.md amendment | Ruling | Pending |
+| 1 | Ruling: group chat | Ruling | DONE - ITEM-001-chat.md Sealed 2026-07-13 |
+| 2 | Ruling: certificates | Ruling | DONE - ITEM-002-certificates.md Sealed 2026-07-13 |
+| 3 | Ruling: report-card demo | Ruling | DONE - BUILD-R16-R18-demo-scope.md Sealed 2026-07-13 |
+| 4 | Ruling: section 8 exemption - demo wave runs no agents; section 8 binds from first agent item | Ruling | DONE - S8 exemption per audit/deferred text |
+| 5 | Ruling: Expo vs Capacitor + tech-stack.md amendment | Ruling | DONE - ITEM-024 sealed; tech-stack.md amended (6d1a38a) |
 | 6 | Ruling: authority-gate doctrine text + Gate 15 amendment | Ruling | Pending |
-| 7 | Ruling: record d64bb05 | Ruling | Pending |
-| 8 | Asset: v0 mobile design links | Asset | Pending |
-| 9 | Asset: Lovable website link | Asset | Pending |
-| 10 | Asset: brand hex + logos | Asset | Pending |
+| 7 | Ruling: record d64bb05 | Ruling | DONE - rulings/ITEM-004-d64bb05-registration-pipeline.md Sealed |
+| 8 | Asset: v0 mobile design links | Asset | DONE - design-links.md + docs/design/05-my-groups.md,06-family-variant.md,07-teacher-variant.md,08-report-card-tab.md present |
+| 9 | Asset: Lovable website link | Asset | DONE - tech-stack.md amended (6d1a38a): Lovable = front desk intake |
+| 10 | Asset: brand hex + logos | Asset | PARTIAL - 13 hex approved, placeholder-grade; TODO-FINAL-LOGO x6 outstanding (docs/brand-assets.md) |
 | 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | Pending |
 | 12 | Asset: Cloudflare credentials | Asset | Pending |
 
@@ -31,10 +31,10 @@
 | 13 | FIELD-REGISTER LOCK — CI guard script at supabase/guard-field-register.sh; wired into ci.yml; red-run demonstrated; closes only when (a) script exists, (b) wired in CI, (c) red-run passes | CI guard | **CLOSED** — per item-13-field-register-guard.md (2026-07-15) |
 | 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | Pending |
 | 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | Pending |
-| 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | Pending |
+| 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | DONE - deferred.md D1-D31 complete incl. D26; D16/D17/D18 Open tracked |
 | 17 | Reconcile 10 P2 status mismatches | Housekeeping | Pending |
-| 18 | Retire old Vite screens + root src/ migration or deletion | Cleanup | Pending |
-| 19 | Commit Mobile phase plan | Planning | Pending |
+| 18 | Retire old Vite screens + root src/ migration or deletion | Cleanup | DONE - d7d11fb (1911 del) + e50799d (90 del) |
+| 19 | Commit Mobile phase plan | Planning | DONE - commit 3cfcab8 |
 | 20 | iOS backend doc | Docs | Pending |
 | 21 | Test bar policy — pgTAP minimums, RLS positive+negative cases, CI runtime budget | QA | Pending |
 
@@ -42,13 +42,13 @@
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | — | Pending |
-| 23 | verify-turnstile EF — reference smoke-test EF | — | Pending |
+| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | Pending |
+| 23 | verify-turnstile EF - reference smoke-test EF | - | Pending |
 | 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
-| 25 | Migration 043 report-card + certs | 3 | Pending |
-| 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | Pending |
-| 27 | Seed data: demo families | 26 | Pending |
-| 28 | Office Desk mutation EFs + gate contracts v1 — scoped per 15 | 15, 22 | Pending |
+| 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present |
+| 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle |
+| 27 | Seed data: demo families | 26 | PARTIAL - 045_seed_data.sql + supabase/seed.sql present; R18 hybrid live write->release cycle completion pending |
+| 28 | Office Desk mutation EFs + gate contracts v1 - scoped per 15 | 15, 22 | Pending |
 | 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | Pending |
 | 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | Pending |
 
@@ -58,7 +58,7 @@
 |---|------|----------|--------|
 | 31 | Verify design items against v0 links | 8 | Pending |
 | 32 | DESIGN FREEZE — fires on 31 | 31 | Pending |
-| 33 | Migration 042 consent + suppression | 13, 14 | Pending |
+| 33 | Migration 042 consent + suppression | 13, 14 | DONE - 042_consent_suppression.sql + 047_consent_guard_and_fixes.sql present |
 
 ## PHASE E — WIRING (gated by 14, 26, 27)
 

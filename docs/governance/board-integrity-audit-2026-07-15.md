@@ -141,3 +141,5 @@ The original board (`master-todo-v2.md`) and reconciled board (`docs/governance/
 Auditor: Architect
 Date: 2026-07-15
 Status: AUDIT COMPLETE — 2 mismatches found, 1 defect logged
+
+2026-07-18 full-sweep: 19 stale Pending rows corrected to disk truth @ 25a704d4aa953dff366f533ce70cc744beb5d9e4; PLAN-STATE hash + register counts fixed.

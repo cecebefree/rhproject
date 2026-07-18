@@ -1,7 +1,7 @@
 # PLAN-STATE (F0 Ground Truth Snapshot)
 
 **Generated:** read-only audit, 2026-07-18. Source: disk + git, pasted raw per AR-1.
-**Working repo:** /Users/ce/dev/rhproject-new (HEAD 887ce98).
+**Working repo:** /Users/ce/dev/rhproject-new (HEAD 25a704d4aa953dff366f533ce70cc744beb5d9e4).
 
 ---
 
@@ -107,7 +107,7 @@ conversations↔conversation_members.
 578:Composition logic ownership: the read-model layer. No dedicated columns are added for these. Status: PLANNED (read-model design not yet ratified).
 ```
 
-The register's per-row status markers (44 BACKED / 11 PLANNED) live in table cells
+The register's per-row status markers (2 BACKED / 4 PLANNED) live in table cells
 elsewhere; the only `status:`/`Status:` keyword lines are the three above. Chat (059)
 and handle (062) scopes are BACKED (confirmed via migrations + register chat-adjustments
 doc). `schedule_slot.location` + `facilitator` are PLANNED (line 578 read-model note +
@@ -381,3 +381,9 @@ chmod -R a-w on redhouse-real-web: SUCCEEDED (exit 0). All three stubs now mode 
 Verification: ls -la shows -r--r--r-- for all three; cat of v0-element-register.md returns the stub text verbatim.
 Note: chmod made the whole redhouse-real-web dir read-only, which also blocked the native write tool (its cwd) — all subsequent writes this session used shell + absolute rhproject-new paths.
 
+
+## Last reconciled
+Last reconciled: 2026-07-18 @ 25a704d4aa953dff366f533ce70cc744beb5d9e4 - full-sweep audit, 19 stale rows corrected, error direction under-reporting only.
+
+## GOAL (sealed)
+GOAL (sealed): Mid-August demo - family enquires on website, Front Desk converts to invoice, mock payment activates student, mobile app goes live for that family, teacher writes and releases a report card, it lands in family ledger and Records. Secure under adversarial RLS. This flow working = 100%. Surfaces: Expo app (Home/Classes/Hub/Feed/Profile + Menu x 3 role renders per docs/design/05-08), website + Front/School/Office Desks on Cloudflare Pages. Row 47 scope parked post-demo.
