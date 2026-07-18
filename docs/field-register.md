@@ -509,17 +509,32 @@ RLS per R20 auth-first doctrine). conversations.category is display-only.
 | notification_level | text | Per-profile notify setting | BACKED |
 | updated_at | timestamptz | Default now() | BACKED |
 
-### Table: profiles (extension) -- handle scope remains PLANNED
+### Table: profiles (extension) -- handle scope [PLANNED -> registered, arc D-062-HANDLE]
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| handle | text | Unique display handle | PLANNED |
+| handle | text | Display handle. Universal DB CHECK: 3-20 chars, no whitespace. Per-tenant format policy enforced in Edge Function (Redhouse: ^[a-z_][a-z0-9_]{2,19}$). Set only after tenant_id assigned (R20 pending state rejected). Uniqueness: UNIQUE INDEX (tenant_id, lower(handle)) — per-tenant, case-insensitive. | PLANNED |
 
-### Table: handle_changes -- remains PLANNED
+**Write path (R-6/R-7):** Edge-Function-only (set_handle). No direct
+UPDATE. Per-tenant handle_mode config: admin_set (master-admin assigns)
+or user_set (self-assign). Redhouse (tenant 1) = admin_set; may be
+switched to user_set later via config, no migration.
+**Blocklist (R-4, platform-wide, tenants may extend, never shrink):**
+admin, office, redhouse, staff, help, support, system, root, moderator,
+mod, api, null, undefined, me, you, everyone, all. Enforced in Edge Function.
+
+### Table: handle_changes -- arc D-062-HANDLE
 | Field | Type | Notes | Status |
 |-------|------|-------|--------|
-| id | uuid PK | Primary key | PLANNED |
-| profile_id | uuid NOT NULL | FK profiles.id | PLANNED |
-| old_handle | text | Prior handle value | PLANNED |
-| new_handle | text | Next handle value | PLANNED |
-| changed_at | timestamptz | Default now() | PLANNED |
+| id | uuid PK | gen_random_uuid() | PLANNED |
+| profile_id | uuid NOT NULL | FK profiles.id (register prevails over wiring-plan user_id, R-1) | PLANNED |
+| tenant_id | uuid NOT NULL | Denormalized from profiles at write time (R-2) | PLANNED |
+| old_handle | text | Nullable; NULL = initial assignment (R-3) | PLANNED |
+| new_handle | text NOT NULL | | PLANNED |
+| changed_at | timestamptz NOT NULL | DEFAULT now() | PLANNED |
+
+**RLS (R-2):** self_select (privacy floor, always on) + master-admin-
+per-tenant SELECT. NO admin_all. Optional per-tenant config may widen
+in-tenant role visibility only; tenant fence never widens. Audit rows
+written by trigger on handle change.
+**Status of arc:** PLANNED (register locked, rulings R-1..R-7 ratified 2026-07-18; migration not yet authored).
 
