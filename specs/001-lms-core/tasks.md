@@ -29,8 +29,8 @@ Based on plan.md structure:
 
 - [x] T001 Create LMS feature directory structure in apps/web/src/features/lms/
 - [x] T002 [P] Create component subdirectories: components/, pages/, hooks/, services/
-- [ ] T003 [P] Configure feature module routing in apps/web/src/routes/
-- [x] T004 Add LMS feature entry point exports in apps/web/src/features/lms/index.ts
+- [x] T003 [P] Configure feature module routing in apps/web/src/routes/ (sealed 3031379)
+- [x] T004 Add LMS feature entry point exports in apps/web/src/features/lms/index.ts (file created in 3031379 under T003; see scope-drift log occurrence one)
 
 ---
 
