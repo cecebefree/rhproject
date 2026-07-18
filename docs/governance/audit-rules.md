@@ -70,3 +70,9 @@ Occurrence one (2026-07-18, commit 3031379): T003 created apps/web/src/features/
 
 ## Index-line forensics
 "0000000..<hash>" with /dev/null pre-image is legitimate new-file output; "<hash>..0000000" with /dev/null post-image is legitimate deletion. Only "0000000..0000000" on an existing non-empty file is the fabrication signature (ref: occurrence six).
+
+## Board-state phantom-completion log
+Phantom completion — T004 marked [x] at board creation c16755f (2026-06-27), 21 days before its target file existed (created in 3031379, 2026-07-18, under T003). tasks.md has a single-commit history; all checkbox states are static since creation. T001-T002 and T005-T011 [x] marks are therefore unverified claims pending ledger matching. Corrected in a9fcfe4.
+
+## AR-9 Checkbox-seal rule
+A checkbox flips to [x] only in, or after, the commit that seals the work, and must cite that commit's hash inline. Boards created with pre-ticked entries are false board state (defect category four).
