@@ -49,7 +49,7 @@ Based on plan.md structure:
 - [x] T009 Create migration 017_lms_chapter_progress.sql with chapter_progress table and RLS policies
 - [x] T010 Run supabase migration up and verify schema (requires local Supabase)
 - [x] T011 [P] Create performance indexes per data-model.md (included in migrations)
-- [x] T012 Regenerate Supabase types: `supabase gen types typescript --local > packages/shared/src/types/database.ts` (types first-materialized against local stack 2026-07-18, schema through migration 062; sealed this commit)
+- [x] T012 Regenerate Supabase types: `supabase gen types typescript --db-url "$DATABASE_URL" --schema public` > packages/shared/src/database.types.ts (P2-001 canonical path; re-sealed this commit — path corrected from forbidden packages/shared/src/types/database.ts)
 - [x] T013 Run `make test` to verify pgTAP tests pass for new tables (pgTAP 240/240 across 24 files, BASELINE MATCH, local run 2026-07-18; sealed this commit)
 
 ### Feature Module Foundation

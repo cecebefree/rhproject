@@ -78,3 +78,6 @@ Phantom completion — T004 marked [x] at board creation c16755f (2026-06-27), 2
 A checkbox flips to [x] only in, or after, the commit that seals the work, and must cite that commit's hash inline. Boards created with pre-ticked entries are false board state (defect category four).
 
 Phantom recurrence — six phantom checkboxes T014-T019 marked [x] in the static single-commit board, zero disk evidence (apps/web/src/features/lms/ contains only index.ts; target dirs services/, types/, validation/, hooks/ nonexistent). Found by read-only scout 2026-07-18. Reconciled per AR-9: flipped to [ ] (unbuilt).
+
+## D-T012-PATH reconciliation
+Task text T012 contradicted constitution P2-001 (single canonical path packages/shared/src/database.types.ts). The 7ea2231 seal materialized the generated types at the forbidden path packages/shared/src/types/database.ts, an orphan with zero importers. Reconciled here: regenerated the canonical file via the guard script's exact recipe (`supabase gen types typescript --db-url "$DATABASE_URL" --schema public`), guard reported PASS (types in sync), deleted the orphan, and corrected the T012 text to the P2-001 path. Origin: 2026-07-18 duplicate-types forensics.
