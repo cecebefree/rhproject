@@ -76,3 +76,5 @@ Phantom completion — T004 marked [x] at board creation c16755f (2026-06-27), 2
 
 ## AR-9 Checkbox-seal rule
 A checkbox flips to [x] only in, or after, the commit that seals the work, and must cite that commit's hash inline. Boards created with pre-ticked entries are false board state (defect category four).
+
+Phantom recurrence — six phantom checkboxes T014-T019 marked [x] in the static single-commit board, zero disk evidence (apps/web/src/features/lms/ contains only index.ts; target dirs services/, types/, validation/, hooks/ nonexistent). Found by read-only scout 2026-07-18. Reconciled per AR-9: flipped to [ ] (unbuilt).

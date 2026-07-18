@@ -54,12 +54,12 @@ Based on plan.md structure:
 
 ### Feature Module Foundation
 
-- [x] T014 [P] Create Supabase client configuration for LMS feature in apps/web/src/features/lms/services/supabase.ts
-- [x] T015 [P] Create TypeScript types for LMS entities in apps/web/src/features/lms/types/
-- [x] T016 [P] Create Zod validation schemas for LMS forms in apps/web/src/features/lms/validation/schemas.ts
-- [x] T017 Create authentication hook useAuth in apps/web/src/features/lms/hooks/useAuth.ts
-- [x] T018 Create enrollment check hook useEnrollment in apps/web/src/features/lms/hooks/useEnrollment.ts
-- [x] T019 Create chapter progress hook useChapterProgress in apps/web/src/features/lms/hooks/useChapterProgress.ts
+- [ ] T014 [P] Create Supabase client configuration for LMS feature in apps/web/src/features/lms/services/supabase.ts
+- [ ] T015 [P] Create TypeScript types for LMS entities in apps/web/src/features/lms/types/
+- [ ] T016 [P] Create Zod validation schemas for LMS forms in apps/web/src/features/lms/validation/schemas.ts
+- [ ] T017 Create authentication hook useAuth in apps/web/src/features/lms/hooks/useAuth.ts
+- [ ] T018 Create enrollment check hook useEnrollment in apps/web/src/features/lms/hooks/useEnrollment.ts
+- [ ] T019 Create chapter progress hook useChapterProgress in apps/web/src/features/lms/hooks/useChapterProgress.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
