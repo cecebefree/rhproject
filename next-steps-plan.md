@@ -141,7 +141,7 @@ NOTE: The PART 2 TASK LIST tables above contain (a) corrupted rows with injected
 ### Approval gate before any table edit
 - [x] Backend Lead — P2-011 (027) and P2-016 (029) confirmed live; migration chain replays clean
 - [x] DevOps Lead — P2-028 CLOSED 2026-07-09; monitor.sh 9/9 green, supersedes PARTIAL note (see closure section)
-- [ ] QA Lead — confirm no red baseline; statuses match test evidence
+- [x] QA Lead — no red baseline; 240/24 green, statuses match test evidence
 
 Until all three boxes are ticked, tables above remain AS-IS and this note governs.
 

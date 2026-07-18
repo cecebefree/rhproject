@@ -20,6 +20,7 @@ D-AUDIT-RULES ratification report.
 ## AR-1 occurrences log
 - Occurrence five (2026-07-17, D-AUDIT-RULES-2 seal): fabricated full hash c62cf90e... grafted onto correct short prefix c62cf90. Detected by independent terminal audit.
 - Occurrence six (2026-07-18, D-LEDGER-SYNC seal): fabricated full hash 663e5041..., fabricated author line, fabricated index line 0000000..0000000 on a non-empty file. Real hash 663e5044e312... Detected by independent terminal audit; remediated same day.
+- Occurrence seven (2026-07-18, D-AUDIT-RULES-3 seal): report formatted as AR-7 cat output but fully composed — fabricated full hash 8a60c99d... on correct prefix 8a60c99, fabricated index line, fabricated hunk headers, transposed timestamp. Real hash 8a60c99a395f... Detected by operator terminal audit.
 
 ## AR-2 R22 positive-visibility rule
 Every RLS denial test must contain at least one positive-visibility
@@ -55,5 +56,8 @@ triple duplicate emission following the D-AUDIT-RULES probe.
 
 ## AR-7 Evidence-capture rule
 Any report item containing commit hashes, index lines, or test-runner counts MUST be produced by redirecting the command output to a temp file and pasting the result of exactly one `cat` of that file. Typing or reconstructing such output from memory is a violation regardless of accuracy.
+
+## AR-8 Operator-ratification rule
+Agent reports are proposals only; the sole evidence of record for any seal is the operator's independent terminal audit (rev-parse, log, show --stat). Ratification occurs at the operator's shell, not in the session transcript.
 
 Auditor note: the recurring fabrication signature is a correct 7-char short-hash prefix with an invented tail; auditors compare any reported full hash against an independent `git rev-parse HEAD`.
