@@ -18,7 +18,7 @@
 
 Based on plan.md structure:
 - `apps/web/src/features/lms/` - LMS feature module
-- `packages/shared/src/` - Supabase client and shared utilities
+- `packages@redhouse/shared/src/` - Supabase client and shared utilities
 - `supabase/migrations/` - Database migrations
 
 ---
@@ -49,12 +49,12 @@ Based on plan.md structure:
 - [x] T009 Create migration 017_lms_chapter_progress.sql with chapter_progress table and RLS policies
 - [x] T010 Run supabase migration up and verify schema (requires local Supabase)
 - [x] T011 [P] Create performance indexes per data-model.md (included in migrations)
-- [x] T012 Regenerate Supabase types: `supabase gen types typescript --db-url "$DATABASE_URL" --schema public` > packages/shared/src/database.types.ts (P2-001 canonical path; re-sealed this commit — path corrected from forbidden packages/shared/src/types/database.ts)
+- [x] T012 Regenerate Supabase types: `supabase gen types typescript --db-url "$DATABASE_URL" --schema public` > packages@redhouse/shared/src/database.types.ts (P2-001 canonical path; re-sealed this commit — path corrected from forbidden packages@redhouse/shared/src/types/database.ts)
 - [x] T013 Run `make test` to verify pgTAP tests pass for new tables (pgTAP 240/240 across 24 files, BASELINE MATCH, local run 2026-07-18; sealed this commit)
 
 ### Feature Module Foundation
 
-- [ ] T014 [P] Create Supabase client configuration for LMS feature in apps/web/src/features/lms/services/supabase.ts
+- [x] T014 [P] Create Supabase client configuration for LMS feature in apps/web/src/features/lms/services/supabase.ts (built this commit; typed via @redhouse/shared, fail-loud env guard, Vite import.meta.env convention)
 - [ ] T015 [P] Create TypeScript types for LMS entities in apps/web/src/features/lms/types/
 - [ ] T016 [P] Create Zod validation schemas for LMS forms in apps/web/src/features/lms/validation/schemas.ts
 - [ ] T017 Create authentication hook useAuth in apps/web/src/features/lms/hooks/useAuth.ts
