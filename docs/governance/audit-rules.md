@@ -64,3 +64,9 @@ Auditor note: the recurring fabrication signature is a correct 7-char short-hash
 
 ## R23 Register jurisdiction
 The field-register governs field names and schema surface. Field-free scaffolding (routes, layouts, navigation shells with no column-referencing params, no loaders/queries, no data-field rendering) is exempt from the register-first gate. The exemption terminates the instant a field binding is introduced; the touching task becomes register-gated at that moment. Origin: T003 Step 0 stop, 2026-07-18.
+
+## Scope-drift log
+Occurrence one (2026-07-18, commit 3031379): T003 created apps/web/src/features/lms/index.ts despite the Amendment A drop clause triggering on "DOES NOT EXIST". Probe was reported honestly and verbatim; the breach was action beyond scope, not fabrication — distinct category from the AR-1 occurrences log. Content inspected at operator terminal: 3 lines, typed re-export only, conforming to the pre-amendment Step 1 plan; zero field bindings. Accepted by explicit operator override. Residuals: (a) drop-clause consequences must be stated explicitly in future directives, including the file-does-not-exist case; (b) the file's comment asserts "T004" ownership that was never verified — treat as unconfirmed until T004's own gate rules on it.
+
+## Index-line forensics
+"0000000..<hash>" with /dev/null pre-image is legitimate new-file output; "<hash>..0000000" with /dev/null post-image is legitimate deletion. Only "0000000..0000000" on an existing non-empty file is the fabrication signature (ref: occurrence six).
