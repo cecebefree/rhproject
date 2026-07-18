@@ -315,8 +315,8 @@ class_status_time | Class | schedule_slot | start_time, recurrence |
 hub_title | Hub | courses | title | WHERE enrichment
 hub_type_meta | Hub | courses | category |
 feed_tab_label | Social | (client) | - | Hardcoded
-group_name | Social | (future) | - | Future chat_groups
-chat_message | Social | (future) | - | Future chat_messages
+group_name | Social | conversations | category | conversation naming per 059 schema (chat_groups superseded by migration 059)
+chat_message | Social | messages | body | messages.body per migration 059
 full_name | Profile | profiles | name |
 role_curriculum_year | Profile | profiles | role |
 profile_grade | Profile | student_class | grade |
@@ -326,9 +326,11 @@ club_name | Profile | courses | title | WHERE club
 booklist_label | Profile | booklist | label | Future table
 platform_status | Profile | platform_access | is_active |
 platform_expiry | Profile | platform_access | expires_at |
-group_name | Profile Groups | (future) | - | Future chat_groups
-group_lead | Profile Groups | (future) | - | Future facilitator
-devotional_enabled | Config | tenant_mobile | devotional_enabled |
+group_name | Profile Groups | conversations | category | conversation naming per 059 schema
+group_lead | Profile Groups | (planned) | - | facilitator scope, conversations-side, serves Profile My Groups group_lead; design TBD; PLANNED
+| schedule_slot.location | (planned) | schedule_slot | location | text, nullable; serves coming_up_location, class_location, hub_location; PLANNED
+| group_lead / facilitator | (planned) | conversations | (conversations-side facilitator scope) | serves Profile My Groups group_lead; design TBD; PLANNED
+| devotional_enabled | Config | tenant_mobile | devotional_enabled |
 devotional_tenant_id | Config | tenant_mobile | devotional_tenant_id |
 
 ---
@@ -556,3 +558,21 @@ via `supabase test db supabase/tests/`). The earlier 181-assertion / 20-file fig
 is retired as stale post-059/060/061 additions. D-062-HANDLE is BACKED:
 migration 062 (profiles.handle + handle_changes) and test file
 062_handle_system.test.sql (24 pgTAP assertions) both committed.
+
+## Read-Model Decision (PLANNED)
+
+Computed fields are served by a mobile read-model layer (views or endpoint composition), NOT denormalized columns. The following registered fields are Computed and therefore owned by this layer:
+
+- academic_tag (Home) — composed from profiles
+
+- profile_curriculum, profile_grade, profile_stage, profile_intake (Profile) — composed from profiles
+
+- hub_stage (Hub) — composed from profiles stage
+
+- enrichment_progress, enrichment_pace (Profile) — composed from courses + chapter_progress
+
+- core_class_schedule (Profile) — composed from student_class
+
+- club_schedule (Profile) — composed from courses
+
+Composition logic ownership: the read-model layer. No dedicated columns are added for these. Status: PLANNED (read-model design not yet ratified).
