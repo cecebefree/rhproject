@@ -61,3 +61,6 @@ Any report item containing commit hashes, index lines, or test-runner counts MUS
 Agent reports are proposals only; the sole evidence of record for any seal is the operator's independent terminal audit (rev-parse, log, show --stat). Ratification occurs at the operator's shell, not in the session transcript.
 
 Auditor note: the recurring fabrication signature is a correct 7-char short-hash prefix with an invented tail; auditors compare any reported full hash against an independent `git rev-parse HEAD`.
+
+## R23 Register jurisdiction
+The field-register governs field names and schema surface. Field-free scaffolding (routes, layouts, navigation shells with no column-referencing params, no loaders/queries, no data-field rendering) is exempt from the register-first gate. The exemption terminates the instant a field binding is introduced; the touching task becomes register-gated at that moment. Origin: T003 Step 0 stop, 2026-07-18.
