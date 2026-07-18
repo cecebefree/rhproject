@@ -73,7 +73,7 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
 | P2-026 | Realtime publication trim | Prune realtime publications to reduce load (migration 038) | Backend Lead | P2-016 | 1 day | LOW | ALL | BUILT/TESTED |
 | P2-027 | Access windows | Time-gated content access (migration 032) | Backend Lead | P2-012 | 2 days | LOW | CLASS | BUILT/TESTED |
-| P2-028 | Monitoring/alerting | 6-check monitor.sh live; payments dropped; PENDING: gate-bypass, brute-force, backup-status | DevOps Lead | — | 2 days | MEDIUM | DEPLOYMENT | PARTIAL |
+| P2-028 | Monitoring/alerting | 9-check monitor.sh live (DB, auth failures, users, consent, RLS, disk, error rate, gate-bypass, backup freshness); closed 2026-07-09, see closure note | DevOps Lead | — | 2 days | MEDIUM | DEPLOYMENT | BUILT/TESTED |
 
 ---
 
@@ -139,8 +139,8 @@ NOTE: The PART 2 TASK LIST tables above contain (a) corrupted rows with injected
 - Multiple rows in the Foundation and Core Infrastructure tables have boilerplate text spliced mid-row, breaking the 9-column format. Repair deferred until leadership approves the reconciliation pass.
 
 ### Approval gate before any table edit
-- [ ] Backend Lead — confirm P2-011 (027) and P2-016 (029) live in schema
-- [ ] DevOps Lead — confirm 6-check monitor.sh deployed; P2-028 stays OPEN pending gate-bypass, brute-force, backup-status
+- [x] Backend Lead — P2-011 (027) and P2-016 (029) confirmed live; migration chain replays clean
+- [x] DevOps Lead — P2-028 CLOSED 2026-07-09; monitor.sh 9/9 green, supersedes PARTIAL note (see closure section)
 - [ ] QA Lead — confirm no red baseline; statuses match test evidence
 
 Until all three boxes are ticked, tables above remain AS-IS and this note governs.
