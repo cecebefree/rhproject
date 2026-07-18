@@ -367,6 +367,12 @@ When demoting a field from BACKED to PLANNED (migration rollback):
 - **No schema/column changes** — behavior and trigger-name fix only.
 - **Status:** BACKED (migration 060, this arc)
 
+## D-060-DEL — Chapter sequence delete-guard (LIFO) (status: BACKED)
+
+- **Scope:** BEFORE DELETE guard on public.chapter_progress enforcing LIFO deletion. A student may delete a chapter_progress row ONLY if no successor chapter in the SAME COURSE has a progress row for that student. Migration 061.
+- **Status:** BACKED (migration 061 applied, test green).
+- **Accepted risk:** service-role / direct UPDATE re-point of chapter_id or student_id is outside the RLS threat model; no migration action. Recorded, no fix.
+
 ## User Types (locked, source: migration 026)
 
 8 roles, TEXT column + CHECK constraint (not a PG enum type),
