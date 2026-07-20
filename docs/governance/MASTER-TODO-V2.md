@@ -36,7 +36,7 @@
 | 18 | Retire old Vite screens + root src/ migration or deletion | Cleanup | DONE - d7d11fb (1911 del) + e50799d (90 del) |
 | 19 | Commit Mobile phase plan | Planning | DONE - commit 3cfcab8 |
 | 20 | iOS backend doc | Docs | Pending |
-| 21 | Test bar policy — pgTAP minimums, RLS positive+negative cases, CI runtime budget | QA | Pending |
+| 21 | Test bar policy — pgTAP minimums, RLS positive+negative cases, CI runtime budget | QA | DONE - docs/governance/test-bar-policy.md (240/24 floor, RLS +- cases, 30min CI budget) |
 
 ## PHASE C — BACKEND FOUNDATION
 
