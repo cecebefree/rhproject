@@ -33,8 +33,8 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 |---|------|-------------|-------|--------------|----------|------|-------------------|--------|
 | P2-006 | Implement auth flow | Login, signup, email verification, password reset | Frontend Lead | P2-001 | 5 days | HIGH | ALL | DONE |
 | P2-007 | Add auth hardening | Rate limiting, account lockout, MFA setup | Security Lead | P2-005 | 3 days | HIGH | ALL | DONE |
-| P2-008 | Seed admin/teacher/test users | Create test data for all roles across 3 tenants | Data Lead | P2-006 | 2 days | MEDIUM | ADMIN, CLASS | PLANNED NOT BUILT |
-| P2-009 | Implement COPPA/FERPA compliance | Age verification, parental consent, data retention | Product Manager | P2-006, Legal review | 5 days | HIGH | ALL | PLANNED NOT BUILT |
+| P2-008 | Seed admin/teacher/test users | Create test data for all roles across 3 tenants | Data Lead | P2-006 | 2 days | MEDIUM | ADMIN, CLASS | BUILT (evidence: 7292f96) |
+| P2-009 | Implement COPPA/FERPA compliance | Age verification, parental consent, data retention | Product Manager | P2-006, Legal review | 5 days | HIGH | ALL | DONE/CLOSED (evidence: d65c48e, d44c5ea) |
 | P2-010 | Implement audit logging | Log all auth events and data access changes | Backend Lead | P2-002 | 3 days | MEDIUM | ALL | DONE |
 
 ### CORE FEATURES PHASE (Weeks 3-5) — STUDENT EXPERIENCE
@@ -114,6 +114,8 @@ Based on comprehensive analysis of all 5 leadership council groups, the Redhouse
 **Note:** Migration 023 is explicitly RESERVED per spec §9 (tenant_id retrofit onto LMS tables 013–018). Not missing.
 
 ---
+
+[SUPERSEDED 2026-07-20 — corrections already applied in table; see row-17 enumeration. Historical record only. Not actionable.]
 
 ## PENDING CORRECTIONS — AWAITING LEADERSHIP APPROVAL
 

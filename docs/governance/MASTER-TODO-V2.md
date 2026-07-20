@@ -32,7 +32,7 @@
 | 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | Pending |
 | 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | Pending |
 | 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | DONE - deferred.md D1-D31 complete incl. D26; D16/D17/D18 Open tracked |
-| 17 | Reconcile 10 P2 status mismatches | Housekeeping | Pending |
+| 17 | Reconcile 2 (ratified) P2 status mismatches | Housekeeping | DONE - enumeration: next-steps-plan.md P2 tables, 17a session 2026-07-20, sealed at ae32461 |
 | 18 | Retire old Vite screens + root src/ migration or deletion | Cleanup | DONE - d7d11fb (1911 del) + e50799d (90 del) |
 | 19 | Commit Mobile phase plan | Planning | DONE - commit 3cfcab8 |
 | 20 | iOS backend doc | Docs | Pending |
