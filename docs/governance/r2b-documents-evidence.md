@@ -120,3 +120,53 @@ last resort after the UI-first remediation (Appendix-A step 1) fails.**
 4. Launch the app, confirm the stale entry is gone from recents and that a fresh
    session anchors at `/Users/ce/dev/rhproject-new`.
 5. Only after confirming, proceed to the folder delete + verification probe above.
+
+---
+## PROBE-VOID Entry (2026-07-20d)
+
+**Status:** R-2b remains OPEN — verification probe VOID, precondition unmet.
+
+### Verbatim evidence block (from halt report)
+
+```
+pwd                          = /Users/ce/Documents/Redhouse-website/redhouse-real-web
+ls /Users/ce/Documents/Redhouse-website = redhouse-real-web  (EXISTS)
+birth=/Users/ce/Documents/Redhouse-website = Jul 20 12:10:21 2026
+git HEAD (rhproject-new)     = 189a5a77482fab6e1bee6d0eb5351d542d47b1c8
+git status (rhproject-new)   = clean
+origin/main (rhproject-new)  = 189a5a77482fab6e1bee6d0eb5351d542d47b1c8
+this wd is git repo?         = NO
+r2b-doc found?               = NO (checked wrong tree)
+```
+
+### Verdict
+
+Probe **VOID**. The folder birth time `Jul 20 12:10:21 2026` is **UNCHANGED**
+from the original record (2026-07-20b). An unchanged birth proves the folder
+was **never deleted** -- therefore the re-seed test (folder-delete + fresh-launch)
+never ran. With no deletion, neither PATH A nor PATH B of the verification probe
+can apply. The probe's precondition (manual deletion of the folder) was not met.
+
+The `pwd` remaining anchored at the stale path
+`/Users/ce/Documents/Redhouse-website/redhouse-real-web` is consistent with the
+manual remediation step (Appendix-A step 1: in-app repoint to
+`/Users/ce/dev/rhproject-new`) not having been applied.
+
+Manual remediation steps still pending (user-side, NOT performed by agent):
+1. In-app repoint of active project to `/Users/ce/dev/rhproject-new` + forget the
+   `Redhouse-website/redhouse-real-web` recents entry.
+2. Folder delete of `/Users/ce/Documents/Redhouse-website` (after repoint).
+
+### Next step
+
+The verification probe is to be re-run **only AFTER** the user confirms both
+manual steps above are completed. Until then R-2b stays OPEN; Appendix A
+contingency remains drafted-only and unused; backup retained.
+
+### Protocol note
+
+Agent's refusal to (a) fabricate `docs/governance/r2b-documents-evidence.md` into
+the non-repo workspace at `/Users/ce/Documents/Redhouse-website/redhouse-real-web`
+and (b) commit into a directory with no `.git` was correct protocol -- the doc
+lives in `/Users/ce/dev/rhproject-new` (git repo at HEAD 189a5a7). No deletion of
+the folder was performed by the agent; that remains a user-side step.
