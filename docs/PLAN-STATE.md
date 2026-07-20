@@ -387,3 +387,25 @@ Last reconciled: 2026-07-18 @ 25a704d4aa953dff366f533ce70cc744beb5d9e4 - full-sw
 
 ## GOAL (sealed)
 GOAL (sealed): Mid-August demo - family enquires on website, Front Desk converts to invoice, mock payment activates student, mobile app goes live for that family, teacher writes and releases a report card, it lands in family ledger and Records. Secure under adversarial RLS. This flow working = 100%. Surfaces: Expo app (Home/Classes/Hub/Feed/Profile + Menu x 3 role renders per docs/design/05-08), website + Front/School/Office Desks on Cloudflare Pages. Row 47 scope parked post-demo.
+
+
+---
+
+# PLAN-STATE PHASE 1 SEAL (2026-07-20 session)
+
+## Board seal
+Board: **48 rows @ 25a704d, sealed at baseline ae32461**.
+
+- Audit HEAD (full-sweep reconciliation): 25a704d4aa953dff366f533ce70cc744beb5d9e4 (commit 6b743d0 docs: reconcile boards to full-sweep audit @ 25a704d)
+- Seal HEAD (session baseline): ae32461bef0adf731ee90b12030dde82d7043e8d (descendant of 25a704d; verified git merge-base --is-ancestor 25a704d ae32461 -> exit 0)
+
+Both HEADs traceable: audit snapshot at 25a704d (48-row board); seal anchored to live session baseline ae32461.
+
+## STEP 0 anchor gate (all green)
+[1] pwd=/Users/ce/dev/rhproject-new; [2] baseline=ae32461 (R-1); [3] toplevel=/Users/ce/dev/rhproject-new; [4] branch=main; [5] status=clean; [6] listing present
+[R-2] resolved PASS-BY-EXPLANATION: Documents/Redhouse-website stub re-seeded by runtime (birth Jul 20 12:10:21 2026, after Cece manual deletion); INERT, deferred to post-session. R-3 validated.
+
+## Standing constraints reaffirmed
+- Never read/write/resolve under /Users/ce/Documents.
+- Reborn 28K .swarm stub at that path = wrong-launch residue; report, never work there.
+(End of PHASE 1 seal)
