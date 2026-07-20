@@ -32,3 +32,5 @@ supabase/.temp/
 # Expo
 .expo/
 v0-cecebefree-*/
+
+.local-backups/
