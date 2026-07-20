@@ -85,7 +85,7 @@
 |---|------|----------|--------|
 | 43 | AO-001: send-rail.md | 22 | Pending |
 | 44 | AO-002: safeguarding-pipeline.md | — | Pending |
-| 45 | AO-003: agent-registry.md | 43 | Pending |
+| 45 | AO-003: agent-registry.md | 43 | DONE - docs/governance/agent-registry.md (registry contract; no on-disk agent defs yet, PLANNED-to-populate; AGENTS.md is SoT) |
 | 46 | AO-004: gates.md | 43, 44, 45 | Pending |
 
 ## PHASE H — TERMINAL GATES
