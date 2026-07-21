@@ -627,3 +627,11 @@ Signed: Cece — final human gate. 2026-07-15.
 - Pending / PARTIAL / DONE = item status at seal HEAD a60412f.
 - Delta rows (rows advanced in this session) are appended below with commit hash.
 (End of WRITE-PHASE seal)
+
+
+## Delta rows (2026-07-21 session)
+
+| Row | Status | Commit |
+|-----|--------|--------|
+| 26 | EXTENDED - family-ledger migration 063: rc_family_select + cert_family_select + R22 denial tests | 457f7c4 |
+| 22 | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated | 457f7c4 |

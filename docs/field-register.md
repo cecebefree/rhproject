@@ -265,13 +265,14 @@ created_at      timestamptz NOT NULL DEFAULT now()
 updated_at      timestamptz NOT NULL DEFAULT now()
 UNIQUE (student_id, term, subject)
 
-RLS (7 policies):
+RLS (8 policies):
   rc_teacher_insert    INSERT  created_by=auth.uid() AND status=draft AND role=teacher
   rc_teacher_select_own SELECT created_by=auth.uid() AND role=teacher
   rc_teacher_update_own UPDATE created_by=auth.uid() AND status=draft AND role=teacher
   rc_office_select     SELECT  role=office AND tenant_id=JWT tenant_id
   rc_office_manage     UPDATE  role=office AND tenant_id=JWT tenant_id
   rc_learner_select_visible SELECT student_id=auth.uid() AND status=visible AND role=learner
+  rc_family_select     SELECT  family_child link AND tenant_id=JWT tenant_id AND status=visible AND role=family
   rc_admin_all         ALL     tenant_id=JWT tenant_id AND role=admin
 
 ---
@@ -293,7 +294,7 @@ tenant_id         uuid NOT NULL
 created_at        timestamptz NOT NULL DEFAULT now()
 UNIQUE (user_id, cert_class, source_ref)
 
-RLS: cert_self_select, cert_admin_all
+RLS: cert_self_select, cert_family_select, cert_admin_all
 Immutability trigger: trg_cert_immutability (blocks UPDATE/DELETE on issued)
 
 ---
@@ -627,6 +628,15 @@ Composition logic ownership: the read-model layer. No dedicated columns are adde
 ### S-C.3 messages client send — RLS verdict (verbatim policy)
 - **Verbatim 059 policy:** `create policy messages_member_write on public.messages for insert to authenticated with check ( exists ( select 1 from public.conversations c where c.id = messages.conversation_id and c.tenant_id = (auth.jwt() ->> 'tenant_id')::uuid ) and sender_id = auth.uid() and exists ( select 1 from public.conversation_members cm where cm.conversation_id = messages.conversation_id and cm.profile_id = auth.uid() ) );`
 - **Plain statement (quoting policy, no interpretation beyond it):** A client-side INSERT into `messages` IS already permitted by RLS for any `authenticated` user who (1) targets a conversation in their own JWT tenant, (2) sets `sender_id = auth.uid()`, and (3) is a member of that conversation (`conversation_members`). The policy is INSERT/`with check` only — it does NOT require an Edge Function. A client-side send is RLS-permitted TODAY; the missing piece is client wiring (no supabase import in any mobile screen — all 17 SCAFFOLD) and the absence of a send handler, not an RLS block.
+
+## Family-Ledger migration (063) — rc_family_select + cert_family_select (status: BACKED)
+
+**Migration 063 adds family-role RLS policies for report_cards and certificates.**
+Family members linked via  (migration 040) can SELECT visible report cards
+and issued certificates for their linked children. Read-only; no INSERT/UPDATE/DELETE.
+Denial tests with positive-anchor assertions per R22.
+
+---
 
 ## S-F — Front-Desk lead tables (status: PLANNED)
 
