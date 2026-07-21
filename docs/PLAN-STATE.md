@@ -1,7 +1,7 @@
 # PLAN-STATE (F0 Ground Truth Snapshot)
 
 **Generated:** read-only audit, 2026-07-18. Source: disk + git, pasted raw per AR-1.
-**Working repo:** /Users/ce/dev/rhproject-new (HEAD 25a704d4aa953dff366f533ce70cc744beb5d9e4).
+**Working repo:** /Users/ce/dev/rhproject-new (HEAD ae79cce4fb31a9244ede52f1499743ec8857b617).  Updated: 2026-07-27 (board sync, audit item 10).
 
 ---
 
@@ -633,6 +633,37 @@ Signed: Cece — final human gate. 2026-07-15.
 
 | Row | Status | Commit |
 |-----|--------|--------|
+| Seal | DONE - all 6 063 test failures resolved: fixture reorder, proper JSON JWT, lives_ok for UPDATE/DELETE (rc_admin_all exists prevents 42501), learner profile fix, duplicate cert removal | e072eaa |
 | 27 | DONE - R18 demo-depth: seeded visible report card + issued certificates; family_child links | f9ce73d |
 | 26 | EXTENDED - family-ledger migration 063: rc_family_select + cert_family_select + R22 denial tests | 457f7c4 |
 | 22 | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated | 457f7c4 |
+
+---
+## Delta (board sync 2026-07-27, audit item 10)
+
+Last sealed HEAD: 25a704d. Commits landed since:
+
+```
+ae79cce audit: weekly 2026-07-27 (9 PASS, 1 FAIL: board sync)
+b5bfb87 audit: weekly 2026-07-27
+5971f90 register: seal D-ROLE-MISMATCH / 064 (fd8abae, 256/256)
+fd8abae 064: rc_learner_select_visible accepts student role (D-ROLE-MISMATCH); de-scaffold 063; R22 positive assertion
+fb0a15f governance: RG-1..RG-7 register entry standard (forward-only)
+10515df register: D-ROLE-MISMATCH (064, PLANNED) + D-ROLE-TAXONOMY (unscheduled)
+e072eaa fix(063): resolve all 6 test failures
+637b56c row-27: R18 demo-depth seeding
+f9ce73d row-26: family-ledger migration 063
+457f7c4 row-22: EF scaffolding
+9e0f749 write-phase: seal master board @ a60412f
+a60412f R-2b probe VOID
+189a5a7 R-2b causation
+44bc991 F-2: R-2b stub
+0c38793 F-1: ci.yml timeout-minutes 30
+0dc922e row-45: AO-003 agent-registry.md
+1d03c0a row-20: iOS backend doc
+b6e5650 row-21: test bar policy
+6cb09e4 row-17: reconcile P2 status mismatches
+5652c72 P1-SEAL: board 48 rows @ 25a704d
+ae32461 docs: session handoff 2026-07-18 close @ 6b743d0
+6b743d0 docs: reconcile boards to full-sweep audit @ 25a704d
+```
