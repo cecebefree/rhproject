@@ -636,6 +636,46 @@ Family members linked via  (migration 040) can SELECT visible report cards
 and issued certificates for their linked children. Read-only; no INSERT/UPDATE/DELETE.
 Denial tests with positive-anchor assertions per R22.
 
+## D-ROLE-MISMATCH / migration 064 (status: PLANNED)
+
+**SCOPE (exact, per blast-radius audit of 2026-07-21):**
+Single policy alteration. Only object affected by the 'student'/'learner'
+role mismatch: `rc_learner_select_visible` at `044_rls_for_042_043.sql:40`.
+
+- DROP `rc_learner_select_visible` ON `public.report_cards`
+- RECREATE with `p.role IN ('learner', 'student')` (was `p.role = 'learner'`)
+
+No other policy, table, constraint, trigger, or seed change.
+
+**Out of scope (explicit):**
+- `profiles_role_check` CHECK constraint — unchanged (both 'learner' and 'student' already valid).
+- `handle_new_user()` trigger — unchanged (continues to assign 'student').
+- 'learner'/'student' taxonomy consolidation — separate item D-ROLE-TAXONOMY.
+- `rc_family_select` / `cert_family_select` — correct by design; family role is admin-assigned, not signup-derived.
+
+**Acceptance criteria (seal gates):**
+1. Remove the fixture scaffold at `063_family_ledger_test.sql:43` (`UPDATE profiles SET role = 'learner'`) in the SAME commit as migration 064.
+2. `063` must pass with an UNMODIFIED trigger-created profile (role = 'student' as inserted by `handle_new_user`).
+3. Add one positive assertion: student-role user SELECTs their own visible report card, row returned (R22 positive-visibility).
+4. Full suite green; expected count = 255 + net new assertions, stated explicitly in the report.
+5. Verbatim evidence per AR-1: full diff, full 063 section, full Test Summary Report. No summaries.
+
+**Evidence basis:** blast-radius grep of 2026-07-21 confirmed sole affected object at `044_rls_for_042_043.sql:40`. All 41 other policy role-checks in the migration tree use 'admin', 'teacher', 'office', or 'family' — none assigned by `handle_new_user`.
+
+## D-ROLE-TAXONOMY (status: PLANNED — unscheduled)
+
+Consolidate the 'student'/'learner' duality. The CHECK constraint
+(`045_seed_data.sql:6-12`) permits both 'student' and 'learner';
+seeds (`045_seed_data.sql:57-59`) use 'learner';
+`handle_new_user()` (`058:13`) uses 'student'; tests
+`012_rls_denial_proofs.sql` and `013_cross_tenant_office.sql` use
+'learner' in fixture/set_jwt calls. No target date. When scheduled,
+scope covers: (a) pick one canonical role name, (b) UPDATE all existing
+'learner' or 'student' profiles to the canonical value, (c) update
+`handle_new_user()`, (d) update `rc_learner_select_visible` to match
+the canonical value (replacing the IN-list fix from 064), (e) update
+seeds and tests, (f) ratify the chosen name in the role taxonomy doc.
+
 ---
 
 ## S-F — Front-Desk lead tables (status: PLANNED)
