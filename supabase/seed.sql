@@ -449,3 +449,63 @@ values ('a1000000-0000-0000-0000-000000000006', '00000000-0000-0000-0000-0000000
         now() - interval '1 day', null, false,
         '22222222-2222-2222-2222-222222222222')
 on conflict (id) do nothing;
+
+
+-- ═══════════════════════════════════════════════
+-- R18 DEMO-DEPTH: seeded visible report card + certificate
+-- Baseline for demo walkthrough (Row 27 completion)
+-- ═══════════════════════════════════════════════
+
+-- Seeded visible report card for student1 (stud1)
+INSERT INTO public.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
+SELECT
+    'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
+    '2026 Term 1',
+    'Mathematics',
+    'A',
+    'visible',
+    'cc000000-0000-0000-0000-0000000000c3',
+    'dd000000-0000-0000-0000-0000000000d4',
+    now() - interval '2 days',
+    now() - interval '1 day',
+    '00000000-0000-0000-0000-000000000001'
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.report_cards
+    WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
+      AND term = '2026 Term 1'
+      AND subject = 'Mathematics'
+);
+
+-- Seeded issued certificate for student1
+INSERT INTO public.certificates (user_id, cert_class, title, description, signatory, status, tenant_id)
+SELECT
+    'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
+    'core_subject',
+    'Mathematics Certificate',
+    'Core subject completion — Mathematics 2026 Term 1',
+    'Head Teacher',
+    'issued',
+    '00000000-0000-0000-0000-000000000001'
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.certificates
+    WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
+      AND cert_class = 'core_subject'
+      AND title = 'Mathematics Certificate'
+);
+
+-- Seeded enrichment certificate for student1
+INSERT INTO public.certificates (user_id, cert_class, title, description, signatory, status, tenant_id)
+SELECT
+    'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
+    'enrichment',
+    'Finance 101 Completion',
+    'Enrichment course completion',
+    'Mr. Olivier',
+    'issued',
+    '00000000-0000-0000-0000-000000000001'
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.certificates
+    WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
+      AND cert_class = 'enrichment'
+      AND title = 'Finance 101 Completion'
+);
