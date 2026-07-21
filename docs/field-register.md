@@ -1,6 +1,7 @@
 # Field Register — Redhouse Mobile
 
 Status: FINAL -- sealed 2026-07-14. Schema from live migrations 013-053.
+Entry format: docs/governance/register-entry-standard.md (RG-1..RG-7, forward-only).
 Scope: Mobile app (single-page SPA, 5 views).
 Note: `group_type` here is a MOBILE DISPLAY field, not the dropped DB enum.
 
