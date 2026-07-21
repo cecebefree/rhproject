@@ -610,9 +610,9 @@ Composition logic ownership: the read-model layer. No dedicated columns are adde
 - **Actual 039 DDL (verbatim):** `create table public.enrichment_meta ( id uuid primary key default gen_random_uuid(), tenant_id uuid not null, student_class_id uuid not null references public.student_class(id) on delete cascade, pace text not null default 'self-paced' check (pace in ('self-paced','structured')), completed int not null default 0 check (completed >= 0), total int not null default 0 check (total >= 0), note text, created_at timestamptz not null default now(), updated_at timestamptz not null default now(), check (completed <= total OR total = 0), unique (student_class_id) );`
 - **Finding:** NONE of `title`, `location`, `stage` exist. `enrichment_meta` holds only pace/completed/total/note + FKs. `hub_type_meta` and `hub_status_time` have no backing column here either. DESIGN DECISION NEEDED: add `title`/`location`/`stage` to `enrichment_meta`, or define a parent `enrichment`/`courses` table carrying them (UNKNOWN which).
 
-## S-C — Edge Function scopes (status: PLANNED)
+## S-C — Edge Function scopes (status: SCAFFOLDED)
 
-**Scope derived from spec/design docs only (no EF code exists beyond `assign_tenant`).**
+**EF scaffolding (Row 22) complete: dirs + stubs for verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy. Individual implementations remain PLANNED.**
 
 ### S-C.1 set_handle
 - **Source (field-register.md:519, verbatim):** "Write path (R-6/R-7): Edge-Function-only (set_handle). No direct" — and `profiles.handle` column added by 062 (`ALTER TABLE public.profiles ADD COLUMN handle text;`).
