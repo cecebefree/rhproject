@@ -5,7 +5,7 @@
 -- Family role is SELECT-only — no UPDATE/DELETE policies exist, so no
 -- lives_ok wrapping is needed. All INSERT/UPDATE/DELETE tests are negative (throws_ok).
 BEGIN;
-SELECT plan(15);
+SELECT plan(16);
 
 -- ══════════════════════════════════════════════════════════
 -- Fixture notes (from supabase/seed.sql and supabase/tests/):
@@ -37,12 +37,6 @@ SET role = 'family',
     tenant_id = '00000000-0000-0000-0000-000000000001'
 WHERE id = 'ff000000-0000-0000-0000-0000000000f1';
 SELECT set_config('app.tenant_assignment_bypass', 'false', false);
-
--- 2b. Ensure student has role=learner
-UPDATE public.profiles
-SET role = 'learner'
-WHERE id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
-  AND role = 'student';
 
 -- 3. Link family member -> child
 reset role;
@@ -285,6 +279,13 @@ SELECT is(
   -- student sees 1 visible card (the one for stud1)
   1,
   'student sees own visible report card (rc_learner_select_visible, not rc_family_select)'
+);
+
+SELECT is(
+  (SELECT subject::text FROM public.report_cards
+    WHERE status = 'visible' LIMIT 1),
+  'Mathematics',
+  'student sees correct subject of own visible report card (R22 positive-visibility)'
 );
 
 -- ═══════════════════════════════════════════════
