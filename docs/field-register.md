@@ -637,7 +637,8 @@ Family members linked via  (migration 040) can SELECT visible report cards
 and issued certificates for their linked children. Read-only; no INSERT/UPDATE/DELETE.
 Denial tests with positive-anchor assertions per R22.
 
-## D-ROLE-MISMATCH / migration 064 (status: BACKED)
+## D-ROLE-MISMATCH / migration 064 (status: SEALED)
+Sealed: commit fd8abae, suite 256/256 PASS, 2026-07-21.
 
 **SCOPE (exact, per blast-radius audit of 2026-07-21):**
 Single policy alteration. Only object affected by the 'student'/'learner'
