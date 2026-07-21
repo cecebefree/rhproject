@@ -633,7 +633,7 @@ Signed: Cece — final human gate. 2026-07-15.
 
 | Row | Status | Commit |
 |-----|--------|--------|
-| Seal | DONE - all 6 063 test failures resolved: fixture reorder, proper JSON JWT, lives_ok for UPDATE/DELETE (rc_admin_all exists prevents 42501), learner profile fix, duplicate cert removal | e072eaa |
+| Fix (063 tests) | DONE - all 6 063 test failures resolved: fixture reorder, proper JSON JWT, lives_ok for UPDATE/DELETE (rc_admin_all exists prevents 42501), learner profile fix, duplicate cert removal | e072eaa |
 | 27 | DONE - R18 demo-depth: seeded visible report card + issued certificates; family_child links | f9ce73d |
 | 26 | EXTENDED - family-ledger migration 063: rc_family_select + cert_family_select + R22 denial tests | 457f7c4 |
 | 22 | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated | 457f7c4 |
