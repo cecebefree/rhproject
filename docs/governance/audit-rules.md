@@ -46,6 +46,21 @@ remembered ones. Canonical baseline is whatever the runner last
 printed on green (currently Files=24, Tests=240). Origin: 181/20
 stale-baseline retirement; "remains PLANNED" correction.
 
+AR-6 — Evidence-relay completeness. A session is complete only when
+every numbered evidence item in its instruction has been pasted
+verbatim in the session report. A commit hash alone closes nothing.
+A report omitting an ordered evidence item is itself a defect,
+regardless of whether the underlying work is correct.
+Basis: four consecutive relay omissions in the D-ROLE-MISMATCH arc.
+Ratified 2026-07-21.
+
+AR-7 — Clean-tree precondition. Every session that edits files must
+paste git status --short as its first action. Non-empty output halts
+the session until carryover state is dispositioned: committed under
+its own scope, stashed, or discarded with justification.
+Basis: scope leak in 97a1779 (uncommitted row swept into a scoped
+board-sync commit). Ratified 2026-07-21.
+
 ## AR-6 Unsolicited re-emission
 Every report is delivered exactly once. Re-sending a previously
 delivered report absent an explicit re-request is a defect,
