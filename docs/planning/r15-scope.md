@@ -19,9 +19,10 @@ This is a PLANNING document only. No gates change status.
 | Field | Value |
 |-------|-------|
 | Status | CLEARED (PLAN-STATE §DF-32 CLEARING RULING) |
-| Clearing hash | `ea58bcc` (PLAN-STATE.md commit) |
+| Clearing hash | `cbe2c99` |
 | Verifier | Cece (owner-only per authority-gate doctrine §3) |
-| Evidence recorded | PLAN-STATE.md §DF-32 CLEARING RULING lines 822–833 |
+| Evidence recorded | PLAN-STATE.md §DF-32 CLEARING RULING lines 822–833; ruled and committed by Cece 2026-07-22 |
+| Clearing citation | Commit `cbe2c99` added the full DF-32 CLEARING RULING text to PLAN-STATE.md: Design docs FROZEN, lifted items 3/3 complete, rows 23/28/29 and data wiring lose DF-32 gate. Owner-only clearing verified. |
 
 ### What SATISFIED requires
 
@@ -43,9 +44,10 @@ None — DF-32 is CLEARED. Record in scope note is diagnostic only.
 | Field | Value |
 |-------|-------|
 | Status | CLEARED (PLAN-STATE §SB-11 CLEARING RULING) |
-| Clearing hash | `ea58bcc` (PLAN-STATE.md commit) |
+| Clearing hash | `9273fd8` |
 | Verifier | Cece (owner-only) |
-| Evidence recorded | PLAN-STATE.md §SB-11 CLEARING RULING lines 837–845 |
+| Evidence recorded | PLAN-STATE.md §SB-11 CLEARING RULING lines 837–845; ruled and committed by Cece 2026-07-22 |
+| Clearing citation | Commit `9273fd8` added the full SB-11 CLEARING RULING text to PLAN-STATE.md: cloud Supabase project live (`ebptjjsmeltykqqvcvqo`, eu-west-1), all 3 env keys verified in .env, EFs disk-verified. Ungates rows 23/28/29/34-39. CF-12 still gates 40/42. |
 
 ### What SATISFIED requires
 
@@ -91,7 +93,7 @@ None — SB-11 is CLEARED. Record is diagnostic only.
 
 Rows 40 and 42 remain fully gated until CF-12 clears.
 
-### Open questions for Cece
+### Open questions for Cece (awaiting owner input)
 
 1. Are Cloudflare credentials managed via GitHub Actions secrets, Doppler, or another vault?
 2. What is the minimum deploy target — just `apps/web` (Vite/RR v7 site), or also Edge Functions via Cloudflare?
