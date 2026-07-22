@@ -503,7 +503,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 31 | Verify design items against v0 links | 8 | Pending |
-| 32 | DESIGN FREEZE — fires on 31 | 31 | Pending |
+| 32 | DESIGN FREEZE — fires on 31 | 31 | DONE — cleared per DF-32 CLEARING RULING 2026-07-22; blocker 31 sealed e7ed3b1 |
 | 33 | Migration 042 consent + suppression | 13, 14 | DONE - 042_consent_suppression.sql + 047_consent_guard_and_fixes.sql present |
 
 ## PHASE E — WIRING (gated by 14, 26, 27)
@@ -818,3 +818,16 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
   definitions archived to ~/dev/archive/husk-opencode-skills-
   20260724. Remaining follow-up: opencode.global.dat stale
   references.
+
+## DF-32 CLEARING RULING (2026-07-22)
+
+1. DF-32 (Design Freeze, board row 32) is CLEARED.
+2. Basis: sole blocker item 31 sealed PASS-WITH-NOTES at e7ed3b1
+   (docs/V0-DESIGN-REVIEW.md); lifted items 3/3 complete
+   (row 30 inventory, route skeleton 8bde2c4, item 31 e7ed3b1).
+3. Design docs 05-08, chat-adjustments, expo-port-plan, and the v0
+   element register are FROZEN. Changes now require a new ruling.
+4. Effect: rows 23/28/29 and data wiring lose their DF-32 gate.
+   They remain gated by SB-11 (row 11) and, where applicable, CF-12
+   (row 12) and row 22 — no work starts until SB-11 clears.
+5. Owner-only clearing satisfied: ruled and committed by Cece.
