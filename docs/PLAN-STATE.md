@@ -768,7 +768,7 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
    Row 30 transitively gated via 29 (read-only audit, no EF impl).
 4. assign_tenant EF is exempt per authority-gate-doctrine line 69.
 5. No-wiring lifted ONLY for:
-   - Route skeleton (layouts, 404, loading — no data wiring)
+   - Route skeleton (layouts, 404, loading — no data wiring) — DONE: LoadingState component added, Suspense wrappers on root and tabs layouts, named screen options on root stack; app is Expo Router file-based (not React Router v7 — board framing corrected); group-chat live-feed wiring deferred to Phase E per DF-32 partial ruling c4f76f2
    - Row 30 EF/RPC inventory (read-only audit, no implementation)
    - Item 31 (v0 design review)
 6. All data wiring, route wiring, and EF implementations (rows 23/28/29)
