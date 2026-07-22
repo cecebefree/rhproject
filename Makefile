@@ -5,7 +5,7 @@ setup:
 	@echo "Supabase local stack running"
 
 types:
-	supabase gen types typescript --local > packages/shared/src/types/database.ts
+	supabase gen types typescript --local > packages/shared/src/database.types.ts
 	@echo "Types regenerated"
 
 dev:
