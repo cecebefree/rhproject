@@ -478,11 +478,11 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | PARTIAL — draft v2 written, owner content review pending (reverted from DONE per hold order 2026-07-22) |
 | 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | Pending |
 | 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | DONE - deferred.md D1-D31 complete incl. D26; D16/D17/D18 Open tracked [pre-AR-10: no hash] |
-| 17 | Reconcile 2 (ratified) P2 status mismatches | Housekeeping | DONE - enumeration: next-steps-plan.md P2 tables, 17a session 2026-07-20, sealed at ae32461 |
+| 17 | Reconcile 2 (ratified) P2 status mismatches | Housekeeping | DONE - enumeration: next-steps-plan.md P2 tables, 17a session 2026-07-20, sealed at ae32461; governance sweep corrections sealed [ff91cca] |
 | 18 | Retire old Vite screens + root src/ migration or deletion | Cleanup | DONE - d7d11fb (1911 del) + e50799d (90 del) |
 | 19 | Commit Mobile phase plan | Planning | DONE - commit 3cfcab8 |
 | 20 | iOS backend doc | Docs | DONE - docs/planning/ios-backend-doc.md (artifact-traced; assign_tenant only EF present, rest PLANNED; RLS via AGENTS.md:116-117) [pre-AR-10: no hash] |
-| 21 | Test bar policy — pgTAP minimums, RLS positive+negative cases, CI runtime budget | QA | DONE - docs/governance/test-bar-policy.md (240/24 floor, RLS +- cases, 30min CI budget) [pre-AR-10: no hash] |
+| 21 | Test bar policy — pgTAP minimums, RLS positive+negative cases, CI runtime budget | QA | DONE - docs/governance/test-bar-policy.md (240/24 floor, RLS +- cases, 30min CI budget) [pre-AR-10: no hash]; r21 amendments approved [d5c23f0] |
 
 ## PHASE C — BACKEND FOUNDATION
 
@@ -831,6 +831,7 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
    They remain gated by SB-11 (row 11) and, where applicable, CF-12
    (row 12) and row 22 — no work starts until SB-11 clears.
 5. Owner-only clearing satisfied: ruled and committed by Cece.
+   [confirmed post-hoc 2026-07-22]
 
 ---
 
@@ -843,3 +844,4 @@ Evidence: cloud Supabase project rhproject (eu-west-1, ref ebptjjsmeltykqqvcvqo)
 Effects: rows 23, 28, 29 and Phase E wiring rows 34-39 are UNGATED with respect to SB-11. Rows 40 and 42 remain gated by CF-12 (row 12), which stays OPEN. Owner-only clearing per authority-gate doctrine; this ruling plus its commit hash constitute the clearing record.
 
 Ruled by: Cece (owner).
+[confirmed post-hoc 2026-07-22]
