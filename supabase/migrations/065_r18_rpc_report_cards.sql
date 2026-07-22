@@ -18,7 +18,7 @@ create or replace function public.create_draft_report_card(
 returns public.report_cards
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
     v_tenant_id uuid;
@@ -50,7 +50,8 @@ end;
 $$;
 
 -- release_report_card: office transitions draft -> visible in one tx
--- Sets released_at + released_by for audit trail.
+-- Two-step via trigger lifecycle: draft -> released -> visible.
+-- released_at/released_by stamped at step 1; visible_at at step 2.
 -- Rejects non-office callers per ITEM-004 §2.
 create or replace function public.release_report_card(
     p_card_id uuid
@@ -58,7 +59,7 @@ create or replace function public.release_report_card(
 returns public.report_cards
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, pg_temp
 as $$
 declare
     v_result public.report_cards;
@@ -73,25 +74,40 @@ begin
             using hint = 'caller must have role=office in profiles';
     end if;
 
+    -- Step 1: draft -> released (trigger allows this)
     update public.report_cards
-    set status = 'visible',
+    set status = 'released',
         released_at = now(),
         released_by = auth.uid(),
         updated_at  = now()
     where id = p_card_id
-      and status = 'draft'
-    returning * into v_result;
+      and status = 'draft';
 
     if not found then
         raise exception 'Report card not found or not in draft status'
             using hint = format('card_id=%s, status must be draft', p_card_id);
     end if;
 
+    -- Step 2: released -> visible (trigger allows this)
+    update public.report_cards
+    set status = 'visible',
+        visible_at = now(),
+        updated_at  = now()
+    where id = p_card_id
+      and status = 'released';
+
+    select * into v_result
+    from public.report_cards
+    where id = p_card_id;
+
     return v_result;
 end;
 $$;
 
--- Grant execution to authenticated (role check is inside the function)
+-- Revoke from PUBLIC, then grant only to authenticated
+-- (default in public schema is execute for all roles)
+revoke execute on function public.create_draft_report_card from public;
+revoke execute on function public.release_report_card from public;
 grant execute on function public.create_draft_report_card to authenticated;
 grant execute on function public.release_report_card to authenticated;
 
