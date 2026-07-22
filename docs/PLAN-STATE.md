@@ -758,3 +758,13 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
   owner input required, no fallback.
 
 (End of closeout)
+
+## ITEM 8 — v0 DESIGN LINKS (recorded 2026-07-23)
+
+- Live deployment (owner-access preview, Vercel-auth gated):
+  https://v0-redhouse-dashboard-dso7s4mj2-cecebefree-3976s-projects.vercel.app
+- Design source of truth: v0 sandbox commit af66274 — NOT yet
+  durably exported (credits exhausted). Blocker B-008 open for
+  ZIP/Publish export.
+- Item 8 status: PARTIAL — link recorded; durable export pending
+  B-008 resolution.
