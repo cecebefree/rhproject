@@ -786,3 +786,13 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
   opencode.global.dat stale references.
 - Session tally: c8e6d76 (anchor) -> bacfa3f -> 6cdacab. Tree
   clean, origin in sync.
+
+## AMENDMENT — 2026-07-24
+
+- B-008: DEFERRED. v0 export is credit-gated on the free plan;
+  ZIP route not executable at zero credits (verified by prior
+  research). Resume when credits are available. Resolution plan
+  at docs/governance/b008-resolution-plan.md remains valid.
+- Item 8 remains PARTIAL until B-008 resumes.
+- Session focus shifts to prep work: husk purge,
+  opencode.global.dat cleanup, and non-wiring critical path.
