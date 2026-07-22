@@ -488,7 +488,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | Pending |
+| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated (457f7c4) |
 | 23 | verify-turnstile EF - reference smoke-test EF | - | Pending |
 | 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present |
@@ -758,6 +758,21 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
   owner input required, no fallback.
 
 (End of closeout)
+
+## DF-32 PARTIAL RULING (2026-07-22)
+
+1. DF-32 remains OPEN. This ruling scopes its gated items.
+2. Row 22 reconciled: board Pending → DONE per 457f7c4
+   (4 stubs: verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy).
+3. Tenant-scaffold EF rows gated by DF-32: 23, 28, 29.
+   Row 30 transitively gated via 29 (read-only audit, no EF impl).
+4. assign_tenant EF is exempt per authority-gate-doctrine line 69.
+5. No-wiring lifted ONLY for:
+   - Route skeleton (layouts, 404, loading — no data wiring)
+   - Row 30 EF/RPC inventory (read-only audit, no implementation)
+   - Item 31 (v0 design review)
+6. All data wiring, route wiring, and EF implementations (rows 23/28/29)
+   remain gated behind DF-32, SB-11, CF-12 until those gates clear.
 
 ## ITEM 8 — v0 DESIGN LINKS (recorded 2026-07-23)
 
