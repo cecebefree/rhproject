@@ -738,3 +738,23 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
 - Items 11/12 (Supabase/Cloudflare creds) remain pending-at-deploy.
 - Standing: push-before-close is mandatory every session.
 (End of closeout)
+
+# SESSION CLOSEOUT — 2026-07-22 (evening)
+
+- Opened at 832a060 via AR-11 anchor gate; owner-executed, ratified.
+- Item 6 DONE: authority-gate doctrine adopted at 341e81a
+  (docs/governance/authority-gate-doctrine.md, 69 lines).
+  Gates DF-32 / SB-11 / CF-12 registered OPEN; owner-only clearing;
+  work behind an uncleared gate is void.
+- Occurrence log: AR-1/AR-10 (#4) — agent summarized STEP 0 gate
+  outputs and leaked tool-call fragments on STEP 1; owner ran gate
+  manually. Counter-note: agent then delivered two consecutive clean
+  draft/amend executions with full verbatim evidence and zero
+  unauthorized commands.
+- Standing policy: mechanical execution stays with owner in
+  Terminal; agent limited to read/draft under owner ratification.
+- No-wiring state IN FORCE per adopted doctrine (all gates OPEN).
+- NEXT SESSION: first item = Phase A item 8 (v0 design links) —
+  owner input required, no fallback.
+
+(End of closeout)
