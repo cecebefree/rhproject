@@ -770,7 +770,7 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
 5. No-wiring lifted ONLY for:
    - Route skeleton (layouts, 404, loading — no data wiring) — DONE: LoadingState component added, Suspense wrappers on root and tabs layouts, named screen options on root stack; app is Expo Router file-based (not React Router v7 — board framing corrected); group-chat live-feed wiring deferred to Phase E per DF-32 partial ruling c4f76f2
    - Row 30 EF/RPC inventory (read-only audit, no implementation)
-   - Item 31 (v0 design review)
+   - Item 31 (v0 design review) — DONE: PASS-WITH-NOTES, findings sealed in docs/V0-DESIGN-REVIEW.md, review basis was design docs and element register (v0 deployment auth-walled)
 6. All data wiring, route wiring, and EF implementations (rows 23/28/29)
    remain gated behind DF-32, SB-11, CF-12 until those gates clear.
 
