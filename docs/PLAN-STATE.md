@@ -831,3 +831,15 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
    They remain gated by SB-11 (row 11) and, where applicable, CF-12
    (row 12) and row 22 — no work starts until SB-11 clears.
 5. Owner-only clearing satisfied: ruled and committed by Cece.
+
+---
+
+## SB-11 CLEARING RULING — 2026-07-22
+
+Gate SB-11 (Hosted Supabase URL + keys, board row 11) is CLEARED.
+
+Evidence: cloud Supabase project rhproject (eu-west-1, ref ebptjjsmeltykqqvcvqo) is live and linked to this repository; .env (git-ignored) carries SUPABASE_URL, SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY in the current key format (3/3 verified, values never printed); supabase/functions/ contains assign_tenant plus 4 scaffolded EFs, disk-verified this session (row 22 DONE at 9e0f749).
+
+Effects: rows 23, 28, 29 and Phase E wiring rows 34-39 are UNGATED with respect to SB-11. Rows 40 and 42 remain gated by CF-12 (row 12), which stays OPEN. Owner-only clearing per authority-gate doctrine; this ruling plus its commit hash constitute the clearing record.
+
+Ruled by: Cece (owner).

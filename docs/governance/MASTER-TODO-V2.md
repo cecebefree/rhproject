@@ -21,7 +21,7 @@
 | 8 | Asset: v0 mobile design links | Asset | DONE - design-links.md + docs/design/05-my-groups.md,06-family-variant.md,07-teacher-variant.md,08-report-card-tab.md present |
 | 9 | Asset: Lovable website link | Asset | DONE - tech-stack.md amended (6d1a38a): Lovable = front desk intake |
 | 10 | Asset: brand hex + logos | Asset | PARTIAL - 13 hex approved, placeholder-grade; TODO-FINAL-LOGO x6 outstanding (docs/brand-assets.md) |
-| 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | Pending |
+| 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | DONE - SB-11 CLEARED per PLAN-STATE clearing ruling 2026-07-22 |
 | 12 | Asset: Cloudflare credentials | Asset | Pending |
 
 ## PHASE B — PLAN HYGIENE AND GOVERNANCE
