@@ -496,7 +496,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | 27 | Seed data: demo families | 26 | PARTIAL - 045_seed_data.sql + supabase/seed.sql present; R18 hybrid live write->release cycle completion pending |
 | 28 | Office Desk mutation EFs + gate contracts v1 - scoped per 15 | 15, 22 | Pending |
 | 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | Pending |
-| 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | Pending |
+| 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - read-only EF/RPC/Realtime audit complete, inventory at docs/EF-RPC-INVENTORY.md, per DF-32 partial ruling c4f76f2 |
 
 ## PHASE D — DESIGN AND FRONTEND
 
