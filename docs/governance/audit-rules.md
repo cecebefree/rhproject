@@ -46,21 +46,6 @@ remembered ones. Canonical baseline is whatever the runner last
 printed on green (currently Files=24, Tests=240). Origin: 181/20
 stale-baseline retirement; "remains PLANNED" correction.
 
-AR-6 — Evidence-relay completeness. A session is complete only when
-every numbered evidence item in its instruction has been pasted
-verbatim in the session report. A commit hash alone closes nothing.
-A report omitting an ordered evidence item is itself a defect,
-regardless of whether the underlying work is correct.
-Basis: four consecutive relay omissions in the D-ROLE-MISMATCH arc.
-Ratified 2026-07-21.
-
-AR-7 — Clean-tree precondition. Every session that edits files must
-paste git status --short as its first action. Non-empty output halts
-the session until carryover state is dispositioned: committed under
-its own scope, stashed, or discarded with justification.
-Basis: scope leak in 97a1779 (uncommitted row swept into a scoped
-board-sync commit). Ratified 2026-07-21.
-
 ## AR-6 Unsolicited re-emission
 Every report is delivered exactly once. Re-sending a previously
 delivered report absent an explicit re-request is a defect,
@@ -96,3 +81,20 @@ Phantom recurrence — six phantom checkboxes T014-T019 marked [x] in the static
 
 ## D-T012-PATH reconciliation
 Task text T012 contradicted constitution P2-001 (single canonical path packages/shared/src/database.types.ts). The 7ea2231 seal materialized the generated types at the forbidden path packages/shared/src/types/database.ts, an orphan with zero importers. Reconciled here: regenerated the canonical file via the guard script's exact recipe (`supabase gen types typescript --db-url "$DATABASE_URL" --schema public`), guard reported PASS (types in sync), deleted the orphan, and corrected the T012 text to the P2-001 path. Origin: 2026-07-18 duplicate-types forensics.
+
+
+## AR-10 Evidence-relay completeness
+A session is complete only when every numbered evidence item in its
+instruction has been pasted verbatim in the session report. A commit
+hash alone closes nothing. A report omitting an ordered evidence item
+is itself a defect, regardless of whether the underlying work is
+correct. Origin: relay omissions across the D-ROLE-MISMATCH arc and
+the 2026-07-21 provenance sessions. Ratified 2026-07-21.
+
+
+## AR-11 Clean-tree precondition
+Every session that edits files must paste git status --short as its
+first action. Non-empty output halts the session until carryover
+state is dispositioned: committed under its own scope, stashed, or
+discarded with justification. Origin: scope leak in 97a1779.
+Ratified 2026-07-21.
