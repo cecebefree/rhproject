@@ -98,3 +98,15 @@ first action. Non-empty output halts the session until carryover
 state is dispositioned: committed under its own scope, stashed, or
 discarded with justification. Origin: scope leak in 97a1779.
 Ratified 2026-07-21.
+
+## AR-12 History-immutability rule
+No amend, rebase, or force-push on any commit after its hash has
+been reported to the operator in a session. Fix rounds land as NEW
+commits on top of the reported hash. An amended commit whose hash
+was previously reported is a governance violation even if never
+pushed, because the operator cannot independently verify the
+reported state against the current HEAD. The remediated commit hash
+is announced as a new HEAD and the session continues from there.
+Origin: 72c307c amended into 7385720 after being reported to
+operator in the 2026-07-22 R27 fix round; detected by operator
+git log inspection. Never pushed to origin. Ratified 2026-07-22.
