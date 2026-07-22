@@ -410,7 +410,6 @@ Both HEADs traceable: audit snapshot at 25a704d (48-row board); seal anchored to
 - Reborn 28K .swarm stub at that path = wrong-launch residue; report, never work there.
 (End of PHASE 1 seal)
 
-test123
 
 
 # WRITE-PHASE SEAL — MASTER BOARD SNAPSHOT (2026-07-21 session)
@@ -419,6 +418,28 @@ test123
 Board: **48 rows @ 25a704d, sealed at commit a60412f**.
 
 Seal HEAD: `a60412f` (R-2b probe VOID: precondition unmet).
+
+
+## Scoreboard
+**DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%**
+
+## Critical path
+Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate doctrine), 11 (Supabase cloud URL + key), 12 (Cloudflare credentials) are the remaining blockers. Item 8 (v0 design links) is the binding unlock for Phase D/E wiring chain.
+
+## Governance rules (binding)
+- AR-1 through AR-11 audit rules codified in docs/governance/audit-rules.md (11 headers, verified)
+- RG-1 through RG-7 register entry standard (forward-only)
+- Single-board ruling: MASTER-TODO-V2.md is sole authoritative board
+- Changes require DEFECT filing with evidence - no new review rounds
+- AR-11 clean-tree precondition: every session that edits files must paste `git status --short` first; non-empty output halts
+
+## Cleanup plan
+- Items 14 (DPIA + disclosure), 15 (gate-contracts scope note) - pending
+- Item 10 (brand assets): placeholder-grade hex approved; TODO-FINAL-LOGO x6 outstanding in docs/brand-assets.md
+- Item 11 (Supabase cloud URL + anon key) - pending at deploy
+- Item 12 (Cloudflare credentials) - pending at deploy
+- D16 (AI-import guard), D17 (platform/tenant import guard) - tracked open
+- D26 (student_class tenant_id column) - fires on mobile phase start
 
 ## Master Board (verbatim from docs/governance/MASTER-TODO-V2.md)
 
@@ -629,10 +650,27 @@ Signed: Cece — final human gate. 2026-07-15.
 (End of WRITE-PHASE seal)
 
 
+
+
+---
+
+## Appendix: Registered Actions
+
+### D-AR-RENUMBER-2 - Audit Rules renumber (SEALED)
+
+**Status:** SEALED
+**Commit:** 9945bf39571adc7c28bb867821b0e6e857f22bd9
+**Action:** Renumbered duplicate AR-6/AR-7 entries inherited from 10d221c to AR-10/AR-11; removed duplicate block; relocated to end of docs/governance/audit-rules.md.
+**Header check:** 11 returns **11** (AR-1 through AR-11)
+**Duplicate verification:** 0 returns **0**
+
 ## Delta rows (2026-07-21 session)
 
 | Row | Status | Commit |
-|-----|--------|--------|
+| D-AR-RENUMBER-2 | SEALED - audit rules renumbered; duplicate AR-6/AR-7 moved to AR-10/AR-11 | 9945bf3 |
+|-
+
+----|--------|--------|
 | Fix (063 tests) | DONE - all 6 063 test failures resolved: fixture reorder, proper JSON JWT, lives_ok for UPDATE/DELETE (rc_admin_all exists prevents 42501), learner profile fix, duplicate cert removal | e072eaa |
 | 27 | DONE - R18 demo-depth: seeded visible report card + issued certificates; family_child links | f9ce73d |
 | 26 | EXTENDED - family-ledger migration 063: rc_family_select + cert_family_select + R22 denial tests | 457f7c4 |
