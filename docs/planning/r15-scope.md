@@ -138,4 +138,4 @@ Row 22 PENDING ─┴── blocks: 23, 28, 29, 27b (EF-to-RPC swap task)
 - [x] Security lead countersign appended (per Appendix B item 15 close-out criterion).
 - [x] Cece signs off (via batch review of 1613384 / 5bd934e / this commit).
 
-Sealed at commit-hash (governance sweep, CF-12 contract finalized).
+Sealed at ed0870f (governance sweep, CF-12 contract finalized).
