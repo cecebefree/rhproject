@@ -502,7 +502,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 31 | Verify design items against v0 links | 8 | Pending |
+| 31 | Verify design items against v0 links | 8 | DONE - PASS-WITH-NOTES, findings sealed in docs/V0-DESIGN-REVIEW.md (e7ed3b1) |
 | 32 | DESIGN FREEZE — fires on 31 | 31 | DONE — cleared per DF-32 CLEARING RULING 2026-07-22; blocker 31 sealed e7ed3b1 |
 | 33 | Migration 042 consent + suppression | 13, 14 | DONE - 042_consent_suppression.sql + 047_consent_guard_and_fixes.sql present |
 
