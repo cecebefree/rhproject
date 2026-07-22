@@ -476,7 +476,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 |---|------|------|--------|
 | 13 | FIELD-REGISTER LOCK — CI guard script at supabase/guard-field-register.sh; wired into ci.yml; red-run demonstrated; closes only when (a) script exists, (b) wired in CI, (c) red-run passes | CI guard | **CLOSED** — per item-13-field-register-guard.md (2026-07-15) [pre-AR-10: no hash] |
 | 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | PARTIAL — draft v2 written, owner content review pending (reverted from DONE per hold order 2026-07-22) |
-| 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | Pending |
+| 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | DONE — scope note finalized with CF-12 contract per Cece ruling 2026-07-22 |
 | 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | DONE - deferred.md D1-D31 complete incl. D26; D16/D17/D18 Open tracked [pre-AR-10: no hash] |
 | 17 | Reconcile 2 (ratified) P2 status mismatches | Housekeeping | DONE - enumeration: next-steps-plan.md P2 tables, 17a session 2026-07-20, sealed at ae32461; governance sweep corrections sealed [ff91cca] |
 | 18 | Retire old Vite screens + root src/ migration or deletion | Cleanup | DONE - d7d11fb (1911 del) + e50799d (90 del) |
@@ -540,6 +540,12 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 |---|------|----------|--------|
 | 47 | QA adversarial RLS pass — extends 152/152 baseline | 26 | Pending |
 | 48 | E2E demo + Cece sign-off — terminal human gate | 34-46, 47 | Pending |
+
+## PHASE I — DEPLOY AND DNS
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 49 | DNS cutover: redhouse.school → Cloudflare (near-launch) | 42 | Pending |
 
 ---
 
@@ -845,3 +851,33 @@ Effects: rows 23, 28, 29 and Phase E wiring rows 34-39 are UNGATED with respect 
 
 Ruled by: Cece (owner).
 [confirmed post-hoc 2026-07-22]
+
+---
+
+## CF-12 CONTRACT — DEFINED 2026-07-22
+
+Gate CF-12 (Cloudflare 12, board row 12) remains OPEN. This section defines the contractual evidence that flips it OPEN → SATISFIED. Per owner-quote convention, Cece's verbatim ruling text:
+
+> Q1: GitHub Actions secrets. CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_PAGES_PROJECT as GH Actions secrets for CI; local dev via git-ignored .env, same pattern as Supabase. No Doppler, no new vendors.
+>
+> Q2: Minimum deploy target is apps/web only. Supabase Edge Functions are SB-11 territory (already cleared) and are excluded from CF-12 scope explicitly.
+>
+> Q3: No live DNS change required, and dry-run proof is insufficient. CF-12 clears on a real executed deploy to the default *.pages.dev domain: evidence is raw wrangler pages deploy output plus the reachable URL, cited per AR-10/AR-13. DNS cutover of redhouse.school becomes a new separate row, scheduled near launch. Open that row now.
+>
+> Q4: Downstream. Turnstile site-key integration belongs to row 23, not CF-12. CF-12 proves the deploy pipeline; row 23 proves features on it.
+
+### CF-12 SATISFIED criteria
+
+1. `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_PROJECT` in GitHub Actions secrets (CI) and git-ignored `.env` (local).
+2. Real executed `wrangler pages deploy` to default `*.pages.dev` domain.
+3. Raw terminal output of the deploy command, plus the reachable URL, cited per AR-10/AR-13.
+4. Deploy target: `apps/web` only. Edge Functions explicitly out of scope.
+5. Turnstile site-key integration excluded — belongs to row 23.
+6. Written ruling in PLAN-STATE.md + commit hash.
+7. Verifier: Cece (owner-only).
+
+### New board row (opened per Cece 2026-07-22)
+
+| # | Item | Phase | Status |
+|---|------|-------|--------|
+| 49 | DNS cutover: redhouse.school → Cloudflare (near-launch) | Deploy + DNS | Pending |

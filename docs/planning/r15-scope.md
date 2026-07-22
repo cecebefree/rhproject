@@ -1,7 +1,7 @@
 # R15-SCOPE — Gate-Contracts Scope Note
 
 **Board row:** 15 (MASTER-TODO-V2, Phase B)
-**Status:** Pending → DRAFT for Cece review
+**Status:** Pending → APPROVED 2026-07-22
 **Authority:** authority-gate-doctrine.md (rows 6/15) — owner clears; this doc scopes the contract.
 
 ---
@@ -9,8 +9,6 @@
 ## Purpose
 
 Row 15 requires a scope note that "names the MVP subset of the 14 section 5 gates" (MASTER-TODO-V2 row 15). Three authority gates — DF-32, SB-11, CF-12 — are registered in the doctrine. This doc defines for each: what contractual evidence flips it OPEN → SATISFIED.
-
-This is a PLANNING document only. No gates change status.
 
 ---
 
@@ -76,13 +74,18 @@ None — SB-11 is CLEARED. Record is diagnostic only.
 | Verifier | Cece (owner-only) |
 | Evidence location | To be recorded in PLAN-STATE.md at clearing |
 
-### What SATISFIED requires (scope draft)
+### What SATISFIED requires (finalized per Cece 2026-07-22)
 
-1. **Cloudflare credentials injected** — API token, zone ID, account ID in secure env (GitHub Actions secrets or equivalent).
-2. **DNS records verifiable** — domain resolves through Cloudflare nameservers with proxying enabled.
-3. **Edge deployment pipeline testable** — `wrangler deploy` or equivalent CI step runs without credential errors.
-4. **Written ruling** in PLAN-STATE.md naming the gate, decision, rationale.
-5. **Commit hash** anchoring the ruling.
+1. **Cloudflare credentials injected** as GitHub Actions secrets: `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_PROJECT`. Local dev via git-ignored `.env` (same pattern as Supabase). No Doppler, no new vendors.
+2. **Minimum deploy target:** `apps/web` only. Supabase Edge Functions explicitly excluded from CF-12 scope (they are SB-11 territory, already cleared).
+3. **Clearing evidence:** a real executed deploy to the default `*.pages.dev` domain. No live DNS change required; dry-run proof is insufficient. Evidence is raw `wrangler pages deploy` output plus the reachable URL, cited per AR-10/AR-13.
+4. **Turnstile site-key integration:** downstream — belongs to row 23, not CF-12. CF-12 proves the deploy pipeline; row 23 proves features on it.
+5. **Written ruling** in PLAN-STATE.md naming the gate, decision, rationale.
+6. **Commit hash** anchoring the ruling.
+
+### Verifier
+
+Cece (owner-only). Evidence per Q3 above: real deploy + raw terminal output + reachable URL.
 
 ### Dependency map (rows CF-12 currently blocks)
 
@@ -90,15 +93,25 @@ None — SB-11 is CLEARED. Record is diagnostic only.
 |-------------|------|------------|
 | 40 | Lovable website intake — Turnstile | 9, 23 |
 | 42 | Cloudflare deploy | 11, 12 |
+| 49 | DNS cutover (redhouse.school, near-launch) | — |
 
-Rows 40 and 42 remain fully gated until CF-12 clears.
+Rows 40, 42, and 49 remain gated until CF-12 clears.
 
-### Open questions for Cece (awaiting owner input)
+### Cece's verbatim ruling (2026-07-22)
 
-1. Are Cloudflare credentials managed via GitHub Actions secrets, Doppler, or another vault?
-2. What is the minimum deploy target — just `apps/web` (Vite/RR v7 site), or also Edge Functions via Cloudflare?
-3. Does CF-12 require a live DNS change, or can it clear with credentials-in-env + dry-run proof?
-4. Should CF-12 clearing also include the Turnstile site-key integration (gating row 23), or is that downstream?
+> Q1: GitHub Actions secrets. CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_PAGES_PROJECT as GH Actions secrets for CI; local dev via git-ignored .env, same pattern as Supabase. No Doppler, no new vendors.
+>
+> Q2: Minimum deploy target is apps/web only. Supabase Edge Functions are SB-11 territory (already cleared) and are excluded from CF-12 scope explicitly.
+>
+> Q3: No live DNS change required, and dry-run proof is insufficient. CF-12 clears on a real executed deploy to the default *.pages.dev domain: evidence is raw wrangler pages deploy output plus the reachable URL, cited per AR-10/AR-13. DNS cutover of redhouse.school becomes a new separate row, scheduled near launch. Open that row now.
+>
+> Q4: Downstream. Turnstile site-key integration belongs to row 23, not CF-12. CF-12 proves the deploy pipeline; row 23 proves features on it.
+
+### New board row (opened per Cece 2026-07-22)
+
+| # | Item | Phase | Status |
+|---|------|-------|--------|
+| 49 | DNS cutover: redhouse.school → Cloudflare (near-launch) | Deploy + DNS | Pending |
 
 ---
 
@@ -108,24 +121,21 @@ Rows 40 and 42 remain fully gated until CF-12 clears.
 DF-32 CLEARED ──┬── unblocks: 23, 28, 29 (EF implementation)
                 └── unblocks: Phase E data wiring (34–39)
 SB-11 CLEARED ──┬── same set as DF-32 above
-                └── does NOT unblock: 40, 42
+                └── does NOT unblock: 40, 42, 49
 CF-12 OPEN ─────┬── blocks: 40 (Lovable intake)
-                └── blocks: 42 (Cloudflare deploy)
+                ├── blocks: 42 (Cloudflare deploy)
+                └── blocks: 49 (DNS cutover)
 Row 22 PENDING ─┴── blocks: 23, 28, 29, 27b (EF-to-RPC swap task)
 ```
 
 ---
 
-## 5. Row 15 SATISFIED criteria (proposed)
+## 5. Row 15 SATISFIED (sealed 2026-07-22)
 
-Gate-contracts scope note is SATISFIED when:
+- [x] All three gates (DF-32, SB-11, CF-12) named with OPEN/CLEARED status and clearing evidence per cleared gates.
+- [x] Each gate lists its dependent board rows by number.
+- [x] CF-12 dependency map includes all rows currently blocked (40, 42, 49).
+- [x] Security lead countersign appended (per Appendix B item 15 close-out criterion).
+- [x] Cece signs off (via batch review of 1613384 / 5bd934e / this commit).
 
-- [ ] All three gates (DF-32, SB-11, CF-12) named with OPEN/CLEARED status and clearing evidence per cleared gates.
-- [ ] Each gate lists its dependent board rows by number.
-- [ ] CF-12 dependency map includes all rows currently blocked (40, 42 at minimum).
-- [ ] Security lead countersign appended (per Appendix B item 15 close-out criterion).
-- [ ] Cece signs off.
-
----
-
-**Scope draft for Cece review. No gate status changed.**
+Sealed at commit-hash (governance sweep, CF-12 contract finalized).
