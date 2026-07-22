@@ -493,7 +493,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle |
-| 27 | Seed data: demo families | 26 | PARTIAL - 045_seed_data.sql + supabase/seed.sql present; R18 hybrid live write->release cycle completion pending |
+| 27 | Seed data: demo families | 26 | DONE - seeded visible card + family_child links [f9ce73d]; R18 live write->release RPCs, 8/8 AC pass [7385720] |
 | 28 | Office Desk mutation EFs + gate contracts v1 - scoped per 15 | 15, 22 | Pending |
 | 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | Pending |
 | 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - read-only EF/RPC/Realtime audit complete, inventory at docs/EF-RPC-INVENTORY.md, per DF-32 partial ruling c4f76f2 |
