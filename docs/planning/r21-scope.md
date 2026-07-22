@@ -125,4 +125,4 @@ This format applies to ALL seal reports going forward — not just pgTAP.
 
 ---
 
-**Scope draft for Cece review. No policy text applied.**
+**Verdict: APPROVED (2026-07-22). Amendment 3 (seal-report evidence format) approved verbatim per Cece. Amendments 1–2 approved as drafted.**
