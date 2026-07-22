@@ -796,3 +796,10 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
 - Item 8 remains PARTIAL until B-008 resumes.
 - Session focus shifts to prep work: husk purge,
   opencode.global.dat cleanup, and non-wiring critical path.
+- FOLLOW-UP CLOSED 2026-07-24: husk directory
+  /Users/ce/Documents/Redhouse-website/redhouse-real-web
+  inspected (zero project files; docs/ and supabase/ empty;
+  only stale .opencode/.swarm state) and purged. Skill
+  definitions archived to ~/dev/archive/husk-opencode-skills-
+  20260724. Remaining follow-up: opencode.global.dat stale
+  references.
