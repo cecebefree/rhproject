@@ -16,7 +16,7 @@ still gated. The gate is the lock, not the work item.
 
 | ID | Name | Blocks | Clearing evidence | Status |
 |----|------|--------|-------------------|--------|
-| DF-32 | Design Freeze 32 | Phase D/E wiring, route wiring, all tenant-scaffold EF rows | Written ruling in PLAN-STATE.md + commit hash | OPEN |
+| DF-32 | Design Freeze 32 | Phase D/E wiring, route wiring, all tenant-scaffold EF rows | Written ruling in PLAN-STATE.md + commit hash | CLEARED (2026-07-22, PLAN-STATE clearing ruling) |
 | SB-11 | Supabase 11 | Cloud URL/key injection, prod db connection | Written ruling in PLAN-STATE.md + commit hash | OPEN |
 | CF-12 | Cloudflare 12 | Credential injection, edge deployment, DNS | Written ruling in PLAN-STATE.md + commit hash | OPEN |
 
