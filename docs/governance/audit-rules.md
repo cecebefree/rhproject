@@ -99,6 +99,21 @@ state is dispositioned: committed under its own scope, stashed, or
 discarded with justification. Origin: scope leak in 97a1779.
 Ratified 2026-07-21.
 
+## AR-13 Hash-existence precondition
+No hash may be cited in any board status cell, scope document, or
+ruling unless its existence has been verified via `git show` at
+citation time. Placeholder hashes that do not resolve are forbidden.
+If the sealing commit is not yet available (e.g. awaiting merge),
+cite `[hash pending]` and state why.
+Verification: `git show --no-patch --format="%H %ai" <hash>` must
+return a non-error. A hash that does not exist must be recorded as
+a defect with the procedure used to discover the absence.
+Origin: ea58bcc, a nonexistent hash, cited as DF-32 and SB-11
+gate-clearance evidence in the r15-scope draft (2026-07-22
+governance sweep) without verification. Detected by Cece during
+batch review of 1613384. Remediated: corrected to cbe2c99 (DF-32)
+and 9273fd8 (SB-11) via verified git show. Ratified 2026-07-22.
+
 ## AR-12 History-immutability rule
 No amend, rebase, or force-push on any commit after its hash has
 been reported to the operator in a session. Fix rounds land as NEW
