@@ -705,3 +705,36 @@ b6e5650 row-21: test bar policy
 ae32461 docs: session handoff 2026-07-18 close @ 6b743d0
 6b743d0 docs: reconcile boards to full-sweep audit @ 25a704d
 ```
+
+# SESSION CLOSEOUT — 2026-07-22
+
+## Seal
+Session closed at ea5811c. Board canon on origin (48 rows @ 25a704d).
+Local arc e072eaa..c7814f1 published; audit and closeout to follow in
+final push.
+
+## Delivered this session
+- D-AR-RENUMBER-2 sealed @ 9945bf3 (AR-10/11 renumber, relocated to file end)
+- 48-row master board published as canon @ c7814f1 (amended from 9262471)
+- Defects scrubbed forward-only: stray test123 (introduced @ 9e0f749, AR-5),
+  AR-11 bullet missing command text (now names git status --short)
+- Session audit filed @ ea5811c (docs/audits/2026-07-22-session-audit.md,
+  verdict GREEN)
+
+## Occurrence log
+- AR-1: agent relayed 11 headers OK against raw count of 12
+- AR-1/AR-10: agent returned XML fragments instead of executing fix directive
+- AR-1/AR-10: agent leaked tool-call fragments on Section D; owner executed
+- AR-5: write-test residue (test123) committed @ 9e0f749 by earlier session
+
+## Scoreboard at close
+DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
+
+## Handoff — next session opens with
+- STEP 0 anchor gate per AR-11: pwd, toplevel, branch, clean tree,
+  HEAD verify, origin sync. Non-empty git status --short halts.
+- First item: Phase A item 8 (v0 design links), binding unlock for
+  Phase D/E wiring chain. Fallback: item 6 (authority-gate doctrine).
+- Items 11/12 (Supabase/Cloudflare creds) remain pending-at-deploy.
+- Standing: push-before-close is mandatory every session.
+(End of closeout)
