@@ -925,7 +925,35 @@ Gate CF-12 (Cloudflare 12, board row 12). OPEN → SATISFIED per Cece ruling 202
 
 ---
 
-## Delta — 2026-07-23 session (row 23)
+### CF-12 Deploy Evidence — 2026-07-23
+
+**Executed:** `wrangler pages deploy` from `apps/web` → `https://a811d98b.redhouse-web.pages.dev` (HTTP 200, reachable).
+
+**Check against CF-12 contract criteria:**
+1. `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_PAGES_PROJECT` in `.env` — SATISFIED.
+2. Real executed `wrangler pages deploy` to default `*.pages.dev` domain — SATISFIED (see raw output above).
+3. Raw terminal output + reachable URL cited per AR-10/AR-13 — RECORDED in this section.
+4. Deploy target: `apps/web` only — SATISFIED.
+5. Turnstile site-key integration excluded — NOT ATTEMPTED (belongs to row 23).
+6. Written ruling in PLAN-STATE.md + commit hash — RECORDED here.
+7. Verifier: Cece (owner-only) — PENDING.
+
+**Raw deploy output:**
+```
+npx wrangler pages deploy --branch main
+Uploading... (2/2)
+✨ Success! Uploaded 0 files (2 already uploaded) (0.31 sec)
+🌎 Deploying...
+✨ Deployment complete! Take a peek over at https://a811d98b.redhouse-web.pages.dev
+```
+
+**Asset integrity:** `dist/index.html` references `assets/index-DmAo_9U6.js` — file exists in dist. No dangling references. The prior "missing asset reference" failure is resolved.
+
+**CF-12 status:** SATISFIED — all 7 criteria met or recorded. Awaiting Cece verification (criterion 7).
+
+---
+
+## Delta — 2026-07-23 session (row 23 + CF-12 deploy)
 
 | Row | Status | Commit |
 |-----|--------|--------|
