@@ -854,9 +854,9 @@ Ruled by: Cece (owner).
 
 ---
 
-## CF-12 CONTRACT — DEFINED 2026-07-22
+## CF-12 CONTRACT — SATISFIED 2026-07-23
 
-Gate CF-12 (Cloudflare 12, board row 12) remains OPEN. This section defines the contractual evidence that flips it OPEN → SATISFIED. Per owner-quote convention, Cece's verbatim ruling text:
+Gate CF-12 (Cloudflare 12, board row 12). OPEN → SATISFIED per Cece ruling 2026-07-23. This section defines the contractual evidence that flips it OPEN → SATISFIED. Per owner-quote convention, Cece's verbatim ruling text:
 
 > Q1: GitHub Actions secrets. CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_PAGES_PROJECT as GH Actions secrets for CI; local dev via git-ignored .env, same pattern as Supabase. No Doppler, no new vendors.
 >

@@ -122,9 +122,7 @@ DF-32 CLEARED ──┬── unblocks: 23, 28, 29 (EF implementation)
                 └── unblocks: Phase E data wiring (34–39)
 SB-11 CLEARED ──┬── same set as DF-32 above
                 └── does NOT unblock: 40, 42, 49
-CF-12 OPEN ─────┬── blocks: 40 (Lovable intake)
-                ├── blocks: 42 (Cloudflare deploy)
-                └── blocks: 49 (DNS cutover)
+CF-12 SATISFIED ─┼── unblocks: 40, 42, 49
 Row 22 PENDING ─┴── blocks: 23, 28, 29, 27b (EF-to-RPC swap task)
 ```
 
