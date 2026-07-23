@@ -35,16 +35,16 @@ scaffold set). Delta: Schedule screen DEFERRED (D31) per expo-port-plan.md §2a 
 
 | # | Design doc | On-disk scaffold | Route | Seeded? | Source table (actual) | Status |
 |---|-----------|------------------|-------|---------|----------------------|--------|
-| 1 | Design 5 (Home) | `app/(tabs)/index.tsx` | `(tabs)/index` | SEED_USER + static | none (static) | SCAFFOLD |
+| 1 | Design 5 (Home + Profile section order) | `app/(tabs)/index.tsx` | `(tabs)/index` | SEED_USER + static | none (static) | SCAFFOLD |
 | 2 | Design 7 (Class) | `app/(tabs)/class.tsx` | `(tabs)/class` | SEED_CLASSES | `student_class` (027) | SCAFFOLD |
 | 3 | Design 7 (Hub) | `app/(tabs)/hub.tsx` | `(tabs)/hub` | SEED_HUBS | `enrichment_meta` (039) | SCAFFOLD |
 | 4 | Design 5+6 (Social/My Groups) | `app/(tabs)/social.tsx` | `(tabs)/social` | SEED_GROUPS | `conversations`+`conversation_members` (059) | SCAFFOLD |
 | 5 | Chat (GroupChat) | `app/(tabs)/group-chat.tsx` | `(tabs)/group-chat` | SEED_MESSAGES | `messages` (059) | SCAFFOLD |
 | 6 | Chat (GroupInfo) | `app/(tabs)/group-info.tsx` | `(tabs)/group-info` | SEED_GROUPS[0] | `conversations`+`conversation_members` (059) | SCAFFOLD |
-| 7 | Design 5 (Profile) | `app/(tabs)/profile.tsx` | `(tabs)/profile` | SEED_USER+SEED_GROUPS | `profiles` (BACKED) | SCAFFOLD |
+| 7 | Design 5 (Profile — amended 2026-07-23) | `app/(tabs)/profile.tsx` | `(tabs)/profile` | SEED_USER+SEED_GROUPS | `profiles` (BACKED) | SCAFFOLD |
 | 8 | Design 6 (Family — amended 2026-07-23) | `app/(tabs)/family.tsx` | `(tabs)/family` | SEED_USER+SEED_GROUPS | `family_child` (040) + lead/invoice GAP | SCAFFOLD — scaffold predates amendment; visual design deferred to row 40 |
-| 9 | Design 7 (Teacher) | `app/(tabs)/teacher.tsx` | `(tabs)/teacher` | SEED_USER+SEED_GROUPS | `conversation_members` (059) | SCAFFOLD |
-| 10 | Design 8 (ReportCard) | `app/(tabs)/report-card.tsx` | `(tabs)/report-card` | SEED_CARDS | `report_cards` (043) | SCAFFOLD |
+| 9 | Design 7 (Teacher — amended 2026-07-23) | `app/(tabs)/teacher.tsx` | `(tabs)/teacher` | SEED_USER+SEED_GROUPS | `conversation_members` (059) | SCAFFOLD — interim parallel-layout freeze; full redesign deferred |
+| 10 | Design 8 (ReportCard — amended 2026-07-23) | `app/(tabs)/report-card.tsx` | `(tabs)/report-card` | SEED_CARDS | `report_cards` (043) | SCAFFOLD — section-based authoring workflow per ruling |
 | 11 | ITEM-002 (Certificates) | `app/(tabs)/certificates.tsx` | `(tabs)/certificates` | SEED_CERTS | `certificates` (045/046) | SCAFFOLD |
 | — | Schedule (DEFERRED D31) | NOT on disk | — | — | `schedule_slot` (037, PLANNED location/facilitator) | GAP-DESIGN |
 
@@ -101,16 +101,19 @@ imports (grep confirmed: 0 matches) → every screen is SCAFFOLD, none WIRED.
   conversations.media_enabled.
 - Actions: media-dial toggle — IMPLIES UPDATE conversations.media_enabled (GAP-BACKEND).
 
-### 7. ProfileScreen (Design 5, `profile.tsx`)
-- Display: name, role (SEED_USER.role · curriculum · year), grade, school stage, intake;
-  "My Groups" mirror (GroupCard list, read-only); quick links (My Certificates, View
-  booklist, Contact school, Log out — text only, no handlers).
+### 7. ProfileScreen (Design 5 — amended 2026-07-23, `profile.tsx`)
+- Display (bottom-of-profile order):
+  1. **Records** — tabbed component: Report Card tab | Certificate tab
+  2. **My Analytics** — curated metrics (attendance, performance, classes missed; seeded until session_attendance table exists)
+  3. **Access** — standard sticker list of what is open for this user
+  4. **My Groups** — GroupCard list read-only
+- Child mirror pages (family role) inherit this order.
 - Source: profiles (BACKED). Inputs/forms: NONE. Actions: quick links unimplemented.
 
 ### 8. FamilyScreen (Design 6 — amended 2026-07-23, `family.tsx`)
 - Display (four vertical sections):
   (a) Account Activity — family's own ledger with seeded "coming soon" treatment for invoice/payment fields
-  (b) Children — list of linked children (`family_child`, BACKED); tapping a child opens their full read-only mirror page (standard profile + My Groups + Report Cards + Certificates + full Section B)
+  (b) Children — list of linked children (`family_child`, BACKED); tapping a child opens their full read-only mirror page (standard profile: Records tabs, My Analytics, Access, My Groups, full Section B — exactly what the child sees)
   (c) My Groups — family's own conversation_memberships, GroupCard list read-only
   (d) Access — standard sticker list of open items
 - **No per-child tabs inside family profile.** Child profiles open as separate full pages.
@@ -120,19 +123,28 @@ imports (grep confirmed: 0 matches) → every screen is SCAFFOLD, none WIRED.
 - Inputs/forms: NONE. Write access: NONE (SELECT only per design).
 - Home screen Section B role-scoping: family sees Verse of the Day only (no Music, Bible 365, Daily Vlog).
 
-### 9. TeacherScreen (Design 7, `teacher.tsx`)
-- Display: "Group Lead controls" header; lead badge (SEED_USER.name); media-dial
-  (Text+emoji / All media) + Switch; "My Groups" GroupCard list.
+### 9. TeacherScreen (Design 7 — amended 2026-07-23, `teacher.tsx`)
+- **Interim simplification:** Teacher profile runs PARALLEL to student profile — identical layout and section order. Full redesign deferred.
+- Profile section order: Records (Report Card | Certificate) → My Analytics → Access → My Groups.
+- Non-applicable sections BLANKED OUT (rendered empty in place).
+- Section swap: where student sees subject teacher name + contact, teacher sees OWN CLASS LIST (clickable → class nav).
 - Source: conversation_members (BACKED table, but is_group_lead column GAP-BACKEND).
 - Actions: media-dial toggle (same GAP-BACKEND as #6). Design adds: member list view,
   report queue → Office Desk (GAP-BACKEND, no Office Desk exists).
 
-### 10. ReportCardScreen (Design 8, `report-card.tsx`)
-- Display: "Released cards only" subtitle; cards filtered status==='visible' (SEED_CARDS);
-  per card: subject, status badge, term, grade.
-- Source: report_cards (043, BACKED). Status enum draft/released/visible (field-register 258).
-- Inputs/forms: NONE (learner read-only). Teacher INSERT draft / Office release → EF
-  (GAP-BACKEND: no release EF beyond assign_tenant).
+### 10. ReportCardScreen (Design 8 — amended 2026-07-23, `report-card.tsx`)
+- **Section-based authoring workflow:**
+  - Report card = custom list of sections (one per subject + General Examiner section)
+  - Section list composed per student by office/admin
+  - Teacher writes/edits ONLY their own subject section
+  - General Examiner capability (role vs flag — PARKED decision)
+  - Finalization lock: status `draft` → `sections_complete` → `finalized`; `finalized` revokes all UPDATE at RLS level (backend intent, not a migration today)
+- Display: learner sees finalized card as school-stamped PDF view in Report Card tab.
+  Family sees the same via child mirror, read-only.
+- **Certificates are OUT of this workflow** — separate document type, no sections, no teacher comments.
+- Source: report_cards (043, BACKED). New status enum: draft/sections_complete/finalized.
+- Inputs/forms: NONE (learner read-only). Teacher writes own sections / Examiner advances status
+  (GAP-BACKEND: examiner role, status advancement EF).
 
 ### 11. CertificatesScreen (ITEM-002, `certificates.tsx`)
 - Display: cards (title, status badge, class, signatory, issuedAt).
@@ -190,7 +202,12 @@ Legend: BACKED / EF / GAP-BACKEND / GAP-DESIGN (see header).
 | family↔child linkage | Family | `family_child` (040) — design uses canonical table name | BACKED (table exists; see amendment 2026-07-23) |
 | child full Section B (4 tiles) | Family (child mirror page) | deferred to parent design | GAP-DESIGN (mirror inherits child's Home layout) |
 | report card (subject/term/grade/status) | ReportCard | `report_cards` (043) | BACKED |
-| report release draft→released→visible | ReportCard | EF UPDATE `report_cards` | GAP-BACKEND (no release EF; only assign_tenant) |
+| report card status chain draft→sections_complete→finalized | ReportCard | EF UPDATE `report_cards` | GAP-BACKEND (no status-advancement EF; only assign_tenant) |
+| report card section routing (per-subject, per-teacher) | ReportCard | `report_card_sections` (PLANNED) | GAP-BACKEND — no section table or teacher routing exists |
+| General Examiner capability (role vs flag) | ReportCard | PARKED design decision | GAP-BACKEND — no examiner role/flag in schema |
+| report card finalization RLS (revoke UPDATE on finalized) | ReportCard | RLS policy (PLANNED) | GAP-BACKEND — backend intent, not a migration today |
+| My Analytics (attendance, performance, missed classes) | Profile / Teacher | `session_attendance` (PLANNED D22), `chapter_progress`, `enrichment_meta` | GAP-BACKEND — `session_attendance` table absent; seeded demo data until backend exists |
+| teacher own class list (section swap) | Teacher | `student_class` (027) | GAP-BACKEND (027 has FK linkage only; no display columns) |
 | certificate (title/class/signatory/status/issuedAt) | Certificates | `certificates` (045/046) | BACKED |
 | tenant assignment on signup | (onboarding) | EF `assign_tenant` | EF (exists) |
 | set_handle on profile | (onboarding) | EF `set_handle` (design) | GAP-BACKEND (EF does not exist) |
@@ -234,22 +251,30 @@ On-disk under `apps/mobile/src/components/` (verified present):
    (only pace/completed/total/note). Hub screen entirely seeded.
 7. `set_handle` Edge Function — design says handle set only via EF; only `assign_tenant`
    EF exists. 062 column cannot be populated by app.
-8. Report-card release Edge Function — draft→released→visible chain (Design 8) has no EF;
-   only `assign_tenant` exists. Office release cannot happen.
-9. `session_attendance` table — Parked (D22). Removed from Design 6 scope per 2026-07-23 amendment (child mirror page inherits child's screen set; attendance not yet in mobile app).
-10. Message send wiring — `messages` INSERT has no client path or EF (GroupChat send is
+8. Report-card status advancement EF — draft→sections_complete→finalized chain (Design 8) has no EF;
+   only `assign_tenant` exists. Status advancement cannot happen.
+9. `session_attendance` table — Parked (D22). Now required by My Analytics section (student/teacher profiles
+   + child mirror pages). Seeded demo data until backend table exists.
+10. `report_card_sections` table — no section table exists for per-subject, per-teacher routing (Design 8).
+11. General Examiner role/flag — parked design decision (Design 8). Whether a distinct role or a flag on a
+    staff user is unresolved.
+12. Report card finalization RLS — `finalized` status must revoke all UPDATE at RLS level (Design 8).
+    Backend intent, not a migration today.
+13. Teacher own class list columns — `student_class` display columns absent (027 only FK linkage).
+14. Message send wiring — `messages` INSERT has no client path or EF (GroupChat send is
     a no-op button).
 
 ### GAP-DESIGN (element in design docs, no scaffold + no schema + no form)
-11. Sign-up / Sign-in forms — zero onboarding UI on disk; auth assumed via nonexistent
+15. Sign-up / Sign-in forms — zero onboarding UI on disk; auth assumed via nonexistent
     `src/api/supabase.ts`.
-12. Add-student / Add-family / link-child forms — `family_child` exists but no UI to link.
-13. Consent capture form — `consent_records` table exists, no capture UI.
-14. Role/teacher claim form — `profiles.role` exists, no assignment UI.
-15. Group-creation / cupboard surface — not in design or disk.
-16. Schedule screen — deferred (D31), no design, no scaffold.
-17. Planned shared components not created: `StatusDot.tsx`, `SendButton.tsx`,
+16. Add-student / Add-family / link-child forms — `family_child` exists but no UI to link.
+17. Consent capture form — `consent_records` table exists, no capture UI.
+18. Role/teacher claim form — `profiles.role` exists, no assignment UI.
+19. Group-creation / cupboard surface — not in design or disk.
+20. Schedule screen — deferred (D31), no design, no scaffold.
+21. Planned shared components not created: `StatusDot.tsx`, `SendButton.tsx`,
     `RootNavigator.tsx`, `api/supabase.ts`, `api/queries.ts`.
+22. Teacher profile redesign — full redesign deferred from Design 7 freeze; interim parallel-layout only.
 
 ### STALE-DESIGN CORRECTIONS (design docs say PLANNED; actually BACKED)
 - `conversations`, `conversation_members`, `messages`, `chat_preferences` — design
@@ -259,11 +284,25 @@ On-disk under `apps/mobile/src/components/` (verified present):
   Canonical name is `family_child`.
 
 ### DESIGN-AMENDED (superseded by Cece ruling 2026-07-23)
+- **Design 05: Profile section re-order.** Bottom-of-profile order changed to: Records (Report Card |
+  Certificate tabs) → My Analytics → Access → My Groups. My Analytics section added (seeded metrics —
+  attendance, performance, classes missed). Access removed from tabs, becomes own section last. See
+  docs/design/05-my-groups.md.
 - **Design 06: Family variant.** Original 2026-07-15 version ("ledger + per-child records") ruled
   FAIL-AS-WRITTEN after browser walk. Superseded by new design: four-section Family Profile
   (Account Activity, Children list → full-page child mirror, My Groups, Access).
-  Per-child tabs removed. Section B role-scoping rule added. Visual design deferred to row 40.
-  See docs/design/06-family-variant.md for the amended design.
+  Per-child tabs removed. Section B role-scoping rule added. My Analytics added to child mirror page
+  (mirrors what child sees per re-order). Visual design deferred to row 40.
+  See docs/design/06-family-variant.md.
+- **Design 07: Teacher variant.** Original full-redesign scope DEFERRED. Interim freeze: teacher profile
+  runs PARALLEL to student (identical layout + section order). Non-applicable sections blanked out.
+  Teacher sees own class list in place of subject teacher listings. Full redesign recorded as deferred
+  backlog item. See docs/design/07-teacher-variant.md.
+- **Design 08: Report Card.** Status chain replaced with section-based authoring workflow. Report card =
+  custom list of sections (per subject + General Examiner). Teacher writes only own section. General
+  Examiner role/flag parked. Finalization lock via status transition (`finalized` revokes UPDATE at RLS).
+  Learner sees finalized card as PDF. Certificates explicitly OUT of this workflow.
+  See docs/design/08-report-card-tab.md.
 
 ---
 

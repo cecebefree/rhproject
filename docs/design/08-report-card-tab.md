@@ -1,57 +1,83 @@
-# Design 8 — Report Card Tab (Status Chain + Released-Only Visibility)
+# Design 8 — Report Card Tab (Section-Based Authoring Workflow)
 
-**Status:** FROZEN — ITEM-009 design freeze, 2026-07-15
-**Frozen by:** Cece (explicit approval)
+**Status:** FROZEN — Cece ruling 2026-07-23 (amended, replaces 2026-07-15 version)
+**Frozen by:** Cece (explicit approval, 2026-07-23)
 **Schema:** report_cards (field-register lines 251–276, BACKED)
+**Cross-reference:** Certificates are a SEPARATE document with a distinct workflow (see below).
 
 ---
 
-## Enum (quoted verbatim from field-register.md line 258)
+## Structure
 
-```
-status  text NOT NULL DEFAULT draft (CHECK: draft, released, visible)
-```
+A report card is a CUSTOM LIST of sections:
+- One section per subject the student takes
+- Plus one **General Examiner** section
 
-**Three-state confirmed.**
+The section list is composed per student by office/admin.
 
-## Status Chain (1:1 mapping to UI states)
+---
+
+## Teacher Scope
+
+Each subject section is routed to the teacher who gives that subject to that student. The teacher can write/edit ONLY their own section — no write access to any other section.
+
+---
+
+## General Examiner
+
+A general examiner capability adds the overall section. Whether this is a distinct role or a flag on a staff user is a **PARKED design decision** — recorded, not resolved.
+
+---
+
+## Finalization Lock
+
+Once the examiner marks the card ready to send, it is FINALIZED and IMMUTABLE — no edits by teachers, examiner, or anyone.
+
+**Intended enforcement:** Status transition (e.g. `draft` → `sections_complete` → `finalized`) where `finalized` revokes all UPDATE at RLS level. Recorded as backend intent, NOT a migration today.
+
+---
+
+## Status Chain
 
 | DB Status | UI State | Who sees it | Who sets it |
 |-----------|----------|-------------|-------------|
-| `draft` | "Draft" | Teacher (created_by = auth.uid()) | Teacher INSERT |
-| `released` | "Released" | Office (role=admin/office, tenant_id match) | Office UPDATE via Edge Function |
-| `visible` | "Visible" | Learner (student_id = auth.uid()) | Edge Function advances released → visible |
+| `draft` | "Draft" | Teacher (own sections only) + Office/Admin | Teacher writes section |
+| `sections_complete` | "Sections Complete" | Examiner + Office/Admin | Examiner sets when all sections submitted |
+| `finalized` | "Finalized" | Learner (student_id), Family (via child mirror), Teacher (read-only), Office/Admin | Examiner sets; triggers immutability — no further edits |
 
-**Transient state note:** `released` is a transient state — release and visibility advance in one Edge Function transaction; no card rests at `released`.
+---
 
-## RLS Mapping (field-register lines 269–275)
+## Delivery
 
-- `rc_teacher_insert` — teacher can INSERT draft
-- `rc_teacher_select_own` — teacher sees own drafts
-- `rc_teacher_update_own` — teacher can UPDATE own drafts
-- `rc_office_select` — office sees all in tenant
-- `rc_office_manage` — office can release (status → released → visible)
-- `rc_learner_select_visible` — learner sees only status = visible
+The student sees the finalized card as the school-stamped PDF view in the Report Card tab. Family sees the same via the child mirror, read-only.
+
+---
+
+## Certificate Distinction
+
+**Certificates are OUT of this workflow.** Points above (section-based, per-subject authorization, General Examiner, finalization lock) apply to REPORT CARDS ONLY. A certificate:
+- Is issued with the grade once the course is complete
+- Has NO per-subject sections, NO teacher comments, and NO general school comments
+- Keeps the existing frozen rule: school-stamped PDF, external file_url in V0, Supabase Storage signed URLs in V1
+- Visible in the Certificate tab and via the child mirror
+
+This distinction prevents the two document types from being conflated.
+
+---
+
+## RLS Mapping (field-register lines 269–275, amended)
+
+- `rc_teacher_insert` — teacher can INSERT draft (own section row)
+- `rc_teacher_select_own` — teacher sees own section drafts
+- `rc_teacher_update_own` — teacher can UPDATE own sections while status = draft
+- `rc_office_select` — office sees all sections in tenant
+- `rc_office_manage` — office/admin can compose section list per student
+- `rc_examiner_manage` — examiner can set sections_complete → finalized (GAP-BACKEND — no examiner role exists)
+- `rc_learner_select_finalized` — learner sees only status = finalized
 - `rc_admin_all` — admin bypass
 
-## R18 Reconciliation
-
-R18's "released-only visibility" is the **gate condition** — learner can only see cards that have passed through `released`. The `visible` state is the terminal UI state the learner sees. The two are consistent: `released` = permission grant; `visible` = display state.
+---
 
 ## Seed Demo Card
 
-status = `'visible'` (terminal state, learner sees it immediately).
-
-## Learner Query
-
-```sql
-WHERE student_id = auth.uid() AND status = 'visible'
-```
-
-## State Table (final)
-
-| Transition | Actor | Mechanism | Condition |
-|------------|-------|-----------|-----------|
-| — → `draft` | Teacher | INSERT | created_by = auth.uid(), role = teacher |
-| `draft` → `released` | Office | Edge Function UPDATE | role = admin/office, tenant_id match |
-| `released` → `visible` | Office | Edge Function UPDATE (same transaction) | visible_at = now() |
+Single-section demo card (status = `finalized`), one subject, learner sees it immediately.

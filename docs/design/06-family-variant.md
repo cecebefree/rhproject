@@ -35,11 +35,12 @@ Payment Status: Pending (sample)
 
 List of linked children via `family_child` (040, BACKED). Tapping a child opens that child's profile as a separate full-page view — a read-only MIRROR of exactly what the child sees in the mobile app. Copy-view only; family cannot edit anything. RLS: SELECT only, scoped via `family_child`.
 
-The child's mirrored page includes:
+The child's mirrored page reflects the standard student profile layout in full:
 - All standard Profile fields (name, role, curriculum, grade, stage)
+- **Records tabset** — Report Card | Certificate tabs (same as student sees)
+- **My Analytics** — child's curated metrics (attendance, performance, classes missed; seeded where backend tables absent)
+- **Access** — standard sticker list of what is open for the child
 - Child's My Groups mirror (same as Profile → My Groups, read-only)
-- Child's Report Cards (filtered to student_id = child's profile.id, status = visible only)
-- Child's Certificates (filtered to user_id = child's profile.id, status = issued only)
 - Child's full Section B (Verse of the Day, Music, Bible 365, Daily Vlog — all four tiles)
 
 No per-child tabs inside the family profile. Each child opens as its own page.
