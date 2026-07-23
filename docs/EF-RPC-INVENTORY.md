@@ -12,9 +12,9 @@
 |------|----------|-------|--------|------|
 | `assign_tenant` | `supabase/functions/assign_tenant/index.ts` | 126 | Deployed — full implementation (real Deno handler, Supabase client, CORS, tenant assignment logic) | Exempt per DF-32 §4 |
 | `verify-turnstile` | `supabase/functions/verify-turnstile/index.ts` | 48 | Full implementation — POST to Cloudflare /siteverify, CORS, fail-loud on missing secret, input validation | Row 23 — DONE (2026-07-23) |
-| `class-start-ping` | `supabase/functions/class-start-ping/index.ts` | 25 | Stub — identical scaffold pattern | Row 29, gated by DF-32 |
-| `validate-toggle` | `supabase/functions/validate-toggle/index.ts` | 25 | Stub — identical scaffold pattern | Row 29, gated by DF-32 |
-| `ai-tutor-proxy` | `supabase/functions/ai-tutor-proxy/index.ts` | 25 | Stub — identical scaffold pattern | Row 29, gated by DF-32 |
+| `class-start-ping` | `supabase/functions/class-start-ping/index.ts` | 91 | Full implementation — POST with slot_id validation, schedule_slot lookup, enrolled student notification, idempotent. Tested: 5/5 paths. | Row 29 — DONE (2026-07-23) |
+| `validate-toggle` | `supabase/functions/validate-toggle/index.ts` | 108 | Full implementation — POST with text truncation (26+ellipsis), feature toggle validation, auth required. Tested: 7/7 paths. | Row 29 — DONE (2026-07-23) |
+| `ai-tutor-proxy` | `supabase/functions/ai-tutor-proxy/index.ts` | 175 | Full implementation — POST with JWT auth, tenant+content scope enforcement, AI provider proxy via env secrets (never hardcoded). Tested: 7/7 paths. | Row 29 — DONE (2026-07-23) |
 
 ## Database Functions (RPCs) — defined in migrations, all deployed via SQL
 
