@@ -53,7 +53,7 @@ sys, sysadmin, system_admin, system_service
 - **(a) Reserved name response code:** **400** — reserved names (`admin`, `office`, `system`, `support`, `root`, `api`, `redhouse`, and variants) return **400 Bad Request** error.
 - **(b) Idempotent set behavior:** Choose **200** on repeated set with same value (documented choice); this returns the updated profile state without conflict error.
 | Target does not exist | nonexistent_id | 404 | Profile lookup miss |
-| Idempotent set | same_handle as current | 200 *or* 409 | Document choice: 200 on ok, 409 on conflict |
+| Idempotent set | same_handle as current | 200 | Idempotent per documented choice (b) above |
 
 ## Contract Provenance (binding)
 
