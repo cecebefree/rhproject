@@ -502,8 +502,8 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 31 | Verify design items against v0 links | 8 | DONE - PASS-WITH-NOTES, findings sealed in docs/V0-DESIGN-REVIEW.md (e7ed3b1) |
-| 32 | DESIGN FREEZE — fires on 31 | 31 | DONE — cleared per DF-32 CLEARING RULING 2026-07-22; blocker 31 sealed e7ed3b1 |
+| 31 | Verify design items against v0 links | 8 | DONE — human walkthrough 2026-07-23; verdicts: 05 PASS-ON-DOCS, 06 PASS-AS-AMENDED, 07 PASS-AS-AMENDED, 08 PASS-AS-AMENDED. Amendments in 94f802e, 917209c, 463d20f. Evidence chain sealed at row 32 seal commit. |
+| 32 | DESIGN FREEZE — fires on 31 | 31 | SEALED 2026-07-23 — verdict block recorded, evidence chain cited. Designs 01–08 FROZEN. See SEAL record below. |
 | 33 | Migration 042 consent + suppression | 13, 14 | DONE - 042_consent_suppression.sql [a270571] + 047_consent_guard_and_fixes.sql [1edf9ce] present |
 
 ## PHASE E — WIRING (gated by 14, 26, 27)
@@ -838,6 +838,35 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
    (row 12) and row 22 — no work starts until SB-11 clears.
 5. Owner-only clearing satisfied: ruled and committed by Cece.
    [confirmed post-hoc 2026-07-22]
+
+---
+
+## ROW 32 SEAL — DESIGN FREEZE 01–08 (2026-07-23)
+
+**Status:** SEALED.
+
+**Evidence chain:** commits 94f802e (design 06 amendment), 917209c (designs 05/07/08 amendments + gap list + element register), 463d20f (section order correction — Access last). All three hashes cited.
+
+### Final Verdicts
+
+| Design | Verdict | Detail |
+|--------|---------|--------|
+| **05** — My Groups | PASS-ON-DOCS | Visual verification deferred to Lovable intake (row 40). |
+| **06** — Family variant | PASS-AS-AMENDED | Amendments in 94f802e, 917209c, 463d20f. |
+| **07** — Teacher variant | PASS-AS-AMENDED | Interim parallel-to-student ruling; full redesign is a deferred backlog item. |
+| **08** — Report Card tab | PASS-AS-AMENDED | Sectioned authoring workflow, finalization lock; visual/PDF verification deferred to Lovable intake (row 40). |
+
+### Freeze Declaration
+
+Designs 01–08 are FROZEN as of 2026-07-23. Build work proceeds against frozen docs only. Any further design change requires a new human ruling and a new commit.
+
+### Open Backlog (carried forward — NOT blockers)
+
+- `session_attendance` table (D22)
+- General Examiner role-vs-flag design decision
+- Report card finalization RLS enforcement (backend intent)
+- Teacher profile full redesign
+- Visual checks for designs 05, 07, 08 at Lovable intake
 
 ---
 
