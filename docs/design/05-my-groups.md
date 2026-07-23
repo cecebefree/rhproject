@@ -9,10 +9,10 @@
 
 Bottom-of-profile order, applies to student and teacher roles:
 
-1. **Records** — tabbed component with two tabs: **Report Card** | **Certificate**
-2. **My Analytics** — curated metrics section (see below)
-3. **Access** — standard sticker list of what is open for this user
-4. **My Groups** — read-only group list (see below)
+1. **My Groups** — read-only group list (see below)
+2. **Records** — tabbed component with two tabs: **Report Card** | **Certificate**
+3. **My Analytics** — curated metrics section (see below)
+4. **Access** — standard sticker list of what is open for this user (LAST)
 
 Child mirror pages (family role) inherit this order.
 
@@ -24,7 +24,7 @@ A profile section on student and teacher profiles showing curated metrics — at
 
 **Seed:** Demo/placeholder data until real attendance depends on `session_attendance` backend table (blocked backlog dependency — D22). Until then the section runs on seeded data plus `chapter_progress` and `enrichment_meta`.
 
-**Placement:** Directly above Access, below Records (tabs).
+**Placement:** Below Records (tabs), directly above Access.
 
 ---
 

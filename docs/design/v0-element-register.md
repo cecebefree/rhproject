@@ -103,17 +103,17 @@ imports (grep confirmed: 0 matches) → every screen is SCAFFOLD, none WIRED.
 
 ### 7. ProfileScreen (Design 5 — amended 2026-07-23, `profile.tsx`)
 - Display (bottom-of-profile order):
-  1. **Records** — tabbed component: Report Card tab | Certificate tab
-  2. **My Analytics** — curated metrics (attendance, performance, classes missed; seeded until session_attendance table exists)
-  3. **Access** — standard sticker list of what is open for this user
-  4. **My Groups** — GroupCard list read-only
+  1. **My Groups** — GroupCard list read-only
+  2. **Records** — tabbed component: Report Card tab | Certificate tab
+  3. **My Analytics** — curated metrics (attendance, performance, classes missed; seeded until session_attendance table exists)
+  4. **Access** — standard sticker list of what is open for this user (LAST)
 - Child mirror pages (family role) inherit this order.
 - Source: profiles (BACKED). Inputs/forms: NONE. Actions: quick links unimplemented.
 
 ### 8. FamilyScreen (Design 6 — amended 2026-07-23, `family.tsx`)
 - Display (four vertical sections):
   (a) Account Activity — family's own ledger with seeded "coming soon" treatment for invoice/payment fields
-  (b) Children — list of linked children (`family_child`, BACKED); tapping a child opens their full read-only mirror page (standard profile: Records tabs, My Analytics, Access, My Groups, full Section B — exactly what the child sees)
+  (b) Children — list of linked children (`family_child`, BACKED); tapping a child opens their full read-only mirror page (standard profile: My Groups, Records tabs, My Analytics, Access, full Section B — exactly what the child sees)
   (c) My Groups — family's own conversation_memberships, GroupCard list read-only
   (d) Access — standard sticker list of open items
 - **No per-child tabs inside family profile.** Child profiles open as separate full pages.
@@ -125,7 +125,7 @@ imports (grep confirmed: 0 matches) → every screen is SCAFFOLD, none WIRED.
 
 ### 9. TeacherScreen (Design 7 — amended 2026-07-23, `teacher.tsx`)
 - **Interim simplification:** Teacher profile runs PARALLEL to student profile — identical layout and section order. Full redesign deferred.
-- Profile section order: Records (Report Card | Certificate) → My Analytics → Access → My Groups.
+- Profile section order: My Groups → Records (Report Card | Certificate) → My Analytics → Access (LAST).
 - Non-applicable sections BLANKED OUT (rendered empty in place).
 - Section swap: where student sees subject teacher name + contact, teacher sees OWN CLASS LIST (clickable → class nav).
 - Source: conversation_members (BACKED table, but is_group_lead column GAP-BACKEND).
@@ -284,8 +284,8 @@ On-disk under `apps/mobile/src/components/` (verified present):
   Canonical name is `family_child`.
 
 ### DESIGN-AMENDED (superseded by Cece ruling 2026-07-23)
-- **Design 05: Profile section re-order.** Bottom-of-profile order changed to: Records (Report Card |
-  Certificate tabs) → My Analytics → Access → My Groups. My Analytics section added (seeded metrics —
+- **Design 05: Profile section re-order.** Bottom-of-profile order changed to: My Groups → Records (Report Card |
+  Certificate tabs) → My Analytics → Access (LAST). My Analytics section added (seeded metrics —
   attendance, performance, classes missed). Access removed from tabs, becomes own section last. See
   docs/design/05-my-groups.md.
 - **Design 06: Family variant.** Original 2026-07-15 version ("ledger + per-child records") ruled

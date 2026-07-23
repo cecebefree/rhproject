@@ -37,10 +37,10 @@ List of linked children via `family_child` (040, BACKED). Tapping a child opens 
 
 The child's mirrored page reflects the standard student profile layout in full:
 - All standard Profile fields (name, role, curriculum, grade, stage)
+- Child's My Groups mirror (same as Profile → My Groups, read-only)
 - **Records tabset** — Report Card | Certificate tabs (same as student sees)
 - **My Analytics** — child's curated metrics (attendance, performance, classes missed; seeded where backend tables absent)
-- **Access** — standard sticker list of what is open for the child
-- Child's My Groups mirror (same as Profile → My Groups, read-only)
+- **Access** — standard sticker list of what is open for the child (LAST)
 - Child's full Section B (Verse of the Day, Music, Bible 365, Daily Vlog — all four tiles)
 
 No per-child tabs inside the family profile. Each child opens as its own page.

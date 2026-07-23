@@ -19,14 +19,14 @@ Teacher profile runs PARALLEL to the student profile — identical layout and se
 | **Class** | Enrolled class list | **Own teaching classes** — class_subject, class_teacher = self |
 | **Hub** | Enrolled enrichment | **Own enrichment courses** — hub_title where teacher_id = self |
 | **Social** | My Groups (member) | My Groups (member + **Group Lead badge**) |
-| **Profile** | Own info, Records tabs, My Analytics, Access, My Groups | Identical layout and section order; non-applicable sections BLANKED OUT; **own class list** in place of subject teacher listings |
+| **Profile** | Own info, My Groups, Records tabs, My Analytics, Access | Identical layout and section order; non-applicable sections BLANKED OUT; **own class list** in place of subject teacher listings |
 
 ### Profile Section Order (identical to student)
 
-1. **Records** — tabbed component: Report Card | Certificate (parallel layout; teacher sees own draft report cards, blank if no drafts)
-2. **My Analytics** — teacher's own metrics (seeded demo data; real data depends on backend)
-3. **Access** — standard sticker list
-4. **My Groups** — read-only list (same GroupCard rendering)
+1. **My Groups** — read-only list (same GroupCard rendering)
+2. **Records** — tabbed component: Report Card | Certificate (parallel layout; teacher sees own draft report cards, blank if no drafts)
+3. **My Analytics** — teacher's own metrics (seeded demo data; real data depends on backend)
+4. **Access** — standard sticker list (LAST)
 
 Sections not applicable to the teacher role are BLANKED OUT — rendered empty in place, not removed, not redesigned.
 
