@@ -556,6 +556,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 - P2-030 session_attendance
 - My Analytics design doc
 - apps/lms decision
+- Custom domain connection for redhouse-web Pages project (CF-12 debt, NOT a blocker)
 
 ---
 
@@ -949,7 +950,7 @@ Uploading... (2/2)
 
 **Asset integrity:** `dist/index.html` references `assets/index-DmAo_9U6.js` — file exists in dist. No dangling references. The prior "missing asset reference" failure is resolved.
 
-**CF-12 status:** SATISFIED — all 7 criteria met or recorded. Awaiting Cece verification (criterion 7).
+**CF-12 status:** SATISFIED — all 7 criteria met. Criterion 7 verified PASS by Cece in-browser 2026-07-23: "App shell renders: white page with Redhouse wordmark top-left. Sparse content is EXPECTED — wiring rows 34–39 are parked; the shell rendering proves the bundle executes." Gate closed.
 
 ---
 
