@@ -614,7 +614,7 @@ Composition logic ownership: the read-model layer. No dedicated columns are adde
 
 ## S-C — Edge Function scopes (status: SCAFFOLDED)
 
-**EF scaffolding (Row 22) complete: dirs + stubs for verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy. Individual implementations remain PLANNED.**
+**EF scaffolding (Row 22) complete: dirs + stubs for verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy. verify-turnstile is DONE (row 23, full implementation). Remaining three stubs are PLANNED (row 29).**
 
 ### S-C.1 set_handle
 - **Source (field-register.md:519, verbatim):** "Write path (R-6/R-7): Edge-Function-only (set_handle). No direct" — and `profiles.handle` column added by 062 (`ALTER TABLE public.profiles ADD COLUMN handle text;`).

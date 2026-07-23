@@ -43,7 +43,7 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | DONE - 4 EF stubs created (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated [9e0f749] |
-| 23 | verify-turnstile EF - reference smoke-test EF | - | Pending |
+| 23 | verify-turnstile EF - reference smoke-test EF | - | DONE - full implementation (2026-07-23) |
 | 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present [097a32d] |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle + 063_family_ledger_report_card_access.sql [457f7c4] |
