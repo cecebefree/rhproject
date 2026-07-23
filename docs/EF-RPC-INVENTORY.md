@@ -15,6 +15,7 @@
 | `class-start-ping` | `supabase/functions/class-start-ping/index.ts` | 91 | Full implementation — POST with slot_id validation, schedule_slot lookup, enrolled student notification, idempotent. Tested: 5/5 paths. | Row 29 — DONE (2026-07-23) |
 | `validate-toggle` | `supabase/functions/validate-toggle/index.ts` | 108 | Full implementation — POST with text truncation (26+ellipsis), feature toggle validation, auth required. Tested: 7/7 paths. | Row 29 — DONE (2026-07-23) |
 | `ai-tutor-proxy` | `supabase/functions/ai-tutor-proxy/index.ts` | 175 | Full implementation — POST with JWT auth, tenant+content scope enforcement, AI provider proxy via env secrets (never hardcoded). Tested: 7/7 paths. | Row 29 — DONE (2026-07-23) |
+| `release-report-card` | `supabase/functions/release-report-card/index.ts` | 183 | Full implementation — POST with role-based auth, tenant scoping, Gate contracts v1 transition rules, immutability guard. Implemented Two-step status advance (draft→released→visible). | Row 28b — DONE (2026-07-23) |
 
 ## Database Functions (RPCs) — defined in migrations, all deployed via SQL
 
