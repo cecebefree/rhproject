@@ -42,7 +42,7 @@ scaffold set). Delta: Schedule screen DEFERRED (D31) per expo-port-plan.md §2a 
 | 5 | Chat (GroupChat) | `app/(tabs)/group-chat.tsx` | `(tabs)/group-chat` | SEED_MESSAGES | `messages` (059) | SCAFFOLD |
 | 6 | Chat (GroupInfo) | `app/(tabs)/group-info.tsx` | `(tabs)/group-info` | SEED_GROUPS[0] | `conversations`+`conversation_members` (059) | SCAFFOLD |
 | 7 | Design 5 (Profile) | `app/(tabs)/profile.tsx` | `(tabs)/profile` | SEED_USER+SEED_GROUPS | `profiles` (BACKED) | SCAFFOLD |
-| 8 | Design 6 (Family) | `app/(tabs)/family.tsx` | `(tabs)/family` | SEED_USER+SEED_GROUPS | `family_child` (040) + lead/invoice GAP | SCAFFOLD |
+| 8 | Design 6 (Family — amended 2026-07-23) | `app/(tabs)/family.tsx` | `(tabs)/family` | SEED_USER+SEED_GROUPS | `family_child` (040) + lead/invoice GAP | SCAFFOLD — scaffold predates amendment; visual design deferred to row 40 |
 | 9 | Design 7 (Teacher) | `app/(tabs)/teacher.tsx` | `(tabs)/teacher` | SEED_USER+SEED_GROUPS | `conversation_members` (059) | SCAFFOLD |
 | 10 | Design 8 (ReportCard) | `app/(tabs)/report-card.tsx` | `(tabs)/report-card` | SEED_CARDS | `report_cards` (043) | SCAFFOLD |
 | 11 | ITEM-002 (Certificates) | `app/(tabs)/certificates.tsx` | `(tabs)/certificates` | SEED_CERTS | `certificates` (045/046) | SCAFFOLD |
@@ -66,6 +66,9 @@ imports (grep confirmed: 0 matches) → every screen is SCAFFOLD, none WIRED.
   verse (John 10:10 TPT, hardcoded), coming_up (subject "Mathematics", teacher "Mr. Olivier",
   LIVE badge), news (headline + recency).
 - Inputs/forms: NONE. Actions: NONE (read-only). Nav targets: none wired (tab bar only).
+- **Section B role-scoping (Design 6 amendment):** Family role sees Verse of the Day tile ONLY.
+  Student and teacher roles see all four tiles (Verse, Music, Bible 365, Daily Vlog). Children's
+  full Section B is visible inside each child's read-only mirror page.
 
 ### 2. ClassScreen (Design 7, `class.tsx`)
 - Display (per card): subject, teacher, schedule, location, LIVE badge if status==='live'.
@@ -104,13 +107,18 @@ imports (grep confirmed: 0 matches) → every screen is SCAFFOLD, none WIRED.
   booklist, Contact school, Log out — text only, no handlers).
 - Source: profiles (BACKED). Inputs/forms: NONE. Actions: quick links unimplemented.
 
-### 8. FamilyScreen (Design 6, `family.tsx`)
-- Display: "Linked children" + single child tab (SEED_USER.name, role · curriculum);
-  Ledger block (Invoice INV-2026-001 sample, Amount R 12,500 sample, Payment Pending sample,
-  "Coming soon" note); Groups (GroupCard list, read-only).
-- Source: profiles (BACKED) for child identity; ledger from PLANNED lead table (GAP-BACKEND);
-  family linkage table `family_student_link` (design) = `family_child` (040, BACKED) — NAME MISMATCH.
+### 8. FamilyScreen (Design 6 — amended 2026-07-23, `family.tsx`)
+- Display (four vertical sections):
+  (a) Account Activity — family's own ledger with seeded "coming soon" treatment for invoice/payment fields
+  (b) Children — list of linked children (`family_child`, BACKED); tapping a child opens their full read-only mirror page (standard profile + My Groups + Report Cards + Certificates + full Section B)
+  (c) My Groups — family's own conversation_memberships, GroupCard list read-only
+  (d) Access — standard sticker list of open items
+- **No per-child tabs inside family profile.** Child profiles open as separate full pages.
+- Source: `family_child` (040, BACKED) for child linkage; `profiles` (BACKED) for child identity;
+  ledger from PLANNED lead table (GAP-BACKEND).
+- Visual design: DEFERRED to Lovable intake (row 40). Frozen: structure and intent only.
 - Inputs/forms: NONE. Write access: NONE (SELECT only per design).
+- Home screen Section B role-scoping: family sees Verse of the Day only (no Music, Bible 365, Daily Vlog).
 
 ### 9. TeacherScreen (Design 7, `teacher.tsx`)
 - Display: "Group Lead controls" header; lead badge (SEED_USER.name); media-dial
@@ -177,10 +185,10 @@ Legend: BACKED / EF / GAP-BACKEND / GAP-DESIGN (see header).
 | media_enabled dial | GroupInfo/Teacher | `conversations.media_enabled` | **GAP-BACKEND** — `conversations` (059) has NO `media_enabled` column |
 | chat messages (body, sender, timestamp) | GroupChat | `messages` (059) | BACKED (body/sender_id/created_at exist) |
 | send message (write) | GroupChat | INSERT `messages` | GAP-BACKEND (no client/EF wiring; only assign_tenant EF exists) |
-| child_name / child_role / enrollment_status / core_flag / access_window | Family | `profiles.*` (name, role, registration_status, has_core, access_starts_at/ends_at) | BACKED (profiles columns) |
-| invoice_ref / invoice_amount / payment_status (ledger) | Family | lead table (PLANNED ITEM-004 §1) | **GAP-BACKEND** — no lead/invoice/payment table in 027–062 |
-| family↔child linkage | Family | `family_student_link` (design) = `family_child` (040) | BACKED (table exists; DESIGN NAME MISMATCH) |
-| attendance (per-child) | Family | `session_attendance` (D22, parked) | GAP-BACKEND (table absent) |
+| child_name / child_role / enrollment_status / core_flag / access_window | Family (child mirror page) | `profiles.*` (name, role, registration_status, has_core, access_starts_at/ends_at) | BACKED (profiles columns) |
+| invoice_ref / invoice_amount / payment_status (account activity) | Family | lead table (PLANNED ITEM-004 §1) | **GAP-BACKEND** — no lead/invoice/payment table in 027–062 |
+| family↔child linkage | Family | `family_child` (040) — design uses canonical table name | BACKED (table exists; see amendment 2026-07-23) |
+| child full Section B (4 tiles) | Family (child mirror page) | deferred to parent design | GAP-DESIGN (mirror inherits child's Home layout) |
 | report card (subject/term/grade/status) | ReportCard | `report_cards` (043) | BACKED |
 | report release draft→released→visible | ReportCard | EF UPDATE `report_cards` | GAP-BACKEND (no release EF; only assign_tenant) |
 | certificate (title/class/signatory/status/issuedAt) | Certificates | `certificates` (045/046) | BACKED |
@@ -228,7 +236,7 @@ On-disk under `apps/mobile/src/components/` (verified present):
    EF exists. 062 column cannot be populated by app.
 8. Report-card release Edge Function — draft→released→visible chain (Design 8) has no EF;
    only `assign_tenant` exists. Office release cannot happen.
-9. `session_attendance` table — Family per-child Attendance parked (D22), absent.
+9. `session_attendance` table — Parked (D22). Removed from Design 6 scope per 2026-07-23 amendment (child mirror page inherits child's screen set; attendance not yet in mobile app).
 10. Message send wiring — `messages` INSERT has no client path or EF (GroupChat send is
     a no-op button).
 
@@ -247,7 +255,15 @@ On-disk under `apps/mobile/src/components/` (verified present):
 - `conversations`, `conversation_members`, `messages`, `chat_preferences` — design
   `05-my-groups.md`/`chat-adjustments.md` say "PLANNED (D28)"; actually shipped in
   `059_chat_tables.sql`. Corrected above to BACKED (with column gaps noted).
-- `family_student_link` (design) = `family_child` (040) — name mismatch; table BACKED.
+- `family_student_link` (design) = `family_child` (040) — name mismatch; resolved in 2026-07-23 amendment.
+  Canonical name is `family_child`.
+
+### DESIGN-AMENDED (superseded by Cece ruling 2026-07-23)
+- **Design 06: Family variant.** Original 2026-07-15 version ("ledger + per-child records") ruled
+  FAIL-AS-WRITTEN after browser walk. Superseded by new design: four-section Family Profile
+  (Account Activity, Children list → full-page child mirror, My Groups, Access).
+  Per-child tabs removed. Section B role-scoping rule added. Visual design deferred to row 40.
+  See docs/design/06-family-variant.md for the amended design.
 
 ---
 

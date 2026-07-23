@@ -1,31 +1,28 @@
-# Design 6 — Family Variant (Ledger + Per-Child Records)
+# Design 6 — Family Profile (Distinct Screen, Four Sections)
 
-**Status:** FROZEN — ITEM-009 design freeze, 2026-07-15
-**Frozen by:** Cece (explicit approval)
+**Status:** FROZEN — Cece ruling 2026-07-23 (amended per FAIL-AS-WRITTEN, replaces 2026-07-15 version)
+**Frozen by:** Cece (explicit approval, 2026-07-23)
+**Amendment note:** Original 2026-07-15 version ruled FAIL-AS-WRITTEN after browser walk. This version supersedes it.
 **Role:** `family` (field-register line 372, first-class role)
+**Visual design:** DEFERRED to Lovable intake (row 40). This document freezes structure and intent only — same PASS-ON-DOCS condition as design 05.
 
 ---
 
-## Visibility Rule
+## Layout
 
-Family sees ONLY linked child's data. Linkage = `student_class` where `student_id` belongs to the family member's `profile.id` (via a future `family_student_link` table — **PLANNED**).
+Family profile is a DISTINCT screen, NOT the student/teacher tab layout. It contains four sections vertically:
 
-## Ledger Fields (sourced verbatim from registration pipeline — ITEM-004)
+### (a) Account Activity
+
+The family's own ledger and activity view.
 
 | Field | Source | Table | Status | Demo Treatment |
 |-------|--------|-------|--------|----------------|
-| `child_name` | student profile | profiles.name | **BACKED** | Live query |
-| `child_role` | student profile | profiles.role | **BACKED** | Live query |
-| `enrollment_status` | registration pipeline | profiles.registration_status | **BACKED** | Live query |
-| `invoice_ref` | Front Desk lead record | (PLANNED — lead table, ITEM-004 §1) | **PLANNED** | (a) Statically seeded, "coming soon" |
-| `invoice_amount` | Lead record | (PLANNED — lead table) | **PLANNED** | (a) Statically seeded, "coming soon" |
-| `payment_status` | Lead record | (PLANNED — lead table) | **PLANNED** | (a) Statically seeded, "coming soon" |
-| `core_flag` | student profile | profiles.has_core | **BACKED** | Live query |
-| `access_window` | student profile | profiles.access_starts_at / access_ends_at | **BACKED** | Live query |
+| `invoice_ref` | Front Desk lead record | (PLANNED — lead table, ITEM-004 §1) | **PLANNED** | Statically seeded, "coming soon" |
+| `invoice_amount` | Lead record | (PLANNED — lead table) | **PLANNED** | Statically seeded, "coming soon" |
+| `payment_status` | Lead record | (PLANNED — lead table) | **PLANNED** | Statically seeded, "coming soon" |
 
-### Demo Ledger Rendering (Option a — chosen)
-
-Statically seeded section with visible "coming soon" treatment:
+Demo rendering:
 
 ```
 Invoice:        INV-2026-001 (sample)
@@ -34,20 +31,40 @@ Payment Status: Pending (sample)
                 Coming soon — full invoice tracking in next phase
 ```
 
-The section renders, the data is seeded, the caveat is visible. Expo port does not need to guess.
+### (b) Children
 
-## Per-Child Records
+List of linked children via `family_child` (040, BACKED). Tapping a child opens that child's profile as a separate full-page view — a read-only MIRROR of exactly what the child sees in the mobile app. Copy-view only; family cannot edit anything. RLS: SELECT only, scoped via `family_child`.
 
-Family sees a tab per linked child. Each tab shows:
+The child's mirrored page includes:
+- All standard Profile fields (name, role, curriculum, grade, stage)
+- Child's My Groups mirror (same as Profile → My Groups, read-only)
+- Child's Report Cards (filtered to student_id = child's profile.id, status = visible only)
+- Child's Certificates (filtered to user_id = child's profile.id, status = issued only)
+- Child's full Section B (Verse of the Day, Music, Bible 365, Daily Vlog — all four tiles)
 
-1. **Groups** — child's conversation_memberships (same as Profile → My Groups, read-only)
-2. **Attendance** — PLANNED (D22 session_attendance table, parked)
-3. **Report Cards** — filtered to student_id = child's profile.id, status = visible only (per R18)
-4. **Certificates** — filtered to user_id = child's profile.id, status = issued only
+No per-child tabs inside the family profile. Each child opens as its own page.
+
+### (c) My Groups
+
+The family's OWN group memberships — same `conversation_members` rule as other roles. Read-only list. No interactions (mute/leave) on Profile — those live on Social page. Same GroupCard rendering as design 05.
+
+### (d) Access
+
+Standard access section (sticker list of what is open for this user). Text-only, per existing Access pattern.
+
+---
+
+## Home Screen Section B — Role Scoping
+
+**RULE:** Family role Home screen Section B shows ONLY the Verse of the Day tile. Music, Bible 365, and Daily Vlog are NOT shown to the family role. Student and teacher roles keep all four tiles.
+
+Children's full Section B (all four tiles) remains visible inside each child's read-only mirror page per (b) above.
+
+---
 
 ## Write Access
 
-None. RLS-enforced: family role has SELECT only on child's data. No INSERT/UPDATE/DELETE on any child record (per ITEM-001 §2: "broadcast + reply-to-office").
+None. RLS-enforced: family role has SELECT only on own and linked child's data. No INSERT/UPDATE/DELETE on any child record (per ITEM-001 §2: "broadcast + reply-to-office").
 
 ## Office Reply Channel
 
