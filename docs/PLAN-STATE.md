@@ -498,6 +498,21 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | DONE - full implementations, locally tested, config.toml registered [05b35ea, aaa8bb0, 121ca94, 020e964] |
 | 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - read-only EF/RPC/Realtime audit complete, inventory at docs/EF-RPC-INVENTORY.md, per DF-32 partial ruling c4f76f2 |
 
+### Row 28 Split Proposal (PROPOSED — pending Cece ratification)
+
+Row 28 ("Office Desk mutation EFs + gate contracts v1") is OVERSIZED for a single 90-min session. Proposed split:
+
+| Sub-row | Item | Est. | Dependencies | Scope |
+|---------|------|------|-------------|-------|
+| **28a** | `set_handle` EF — profile handle assignment | ≤90 min | 22, 062 migration | EF enforcing format CHECK (3-20 chars, no whitespace), per-tenant blocklist, handle_changes audit write. Admin_set mode for Redhouse. |
+| **28b** | `release-report-card` EF + gate contracts v1 | ≤90 min | 22, 15, 043/044 migrations | Two-step status advance (draft→released→visible) on report_cards. Office/admin only, tenant_id match. Gate contracts pattern: authority check + input validation + CORS + secrets binding. |
+
+**Out of row 28 scope (deferred):** Registration status transition EFs (pending_init→pending_review→approved→active) — blocked on lead/registration table schema (GAP-BACKEND per front-desk-registration spec §6).
+
+**Rationale:** Each sub-row fits a 90-min build+test window. 28a is self-contained (profiles only). 28b builds on the row 23/29 EF pattern and establishes the gate-contracts security pattern for all future Office Desk EFs.
+
+| 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - read-only EF/RPC/Realtime audit complete, inventory at docs/EF-RPC-INVENTORY.md, per DF-32 partial ruling c4f76f2 |
+
 ## PHASE D — DESIGN AND FRONTEND
 
 | # | Item | Gated By | Status |
