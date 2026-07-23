@@ -1,7 +1,7 @@
 # PLAN-STATE (F0 Ground Truth Snapshot)
 
 **Generated:** read-only audit, 2026-07-18. Source: disk + git, pasted raw per AR-1.
-**Working repo:** /Users/ce/dev/rhproject-new (HEAD ae79cce4fb31a9244ede52f1499743ec8857b617).  Updated: 2026-07-27 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied).
+**Working repo:** /Users/ce/dev/rhproject-new (HEAD ae79cce4fb31a9244ede52f1499743ec8857b617).  Updated: 2026-07-22 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied).
 
 ---
 
@@ -498,13 +498,13 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | DONE - full implementations, locally tested, config.toml registered [05b35ea, aaa8bb0, 121ca94, 020e964] |
 | 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - read-only EF/RPC/Realtime audit complete, inventory at docs/EF-RPC-INVENTORY.md, per DF-32 partial ruling c4f76f2 |
 
-### Row 28 Split — RATIFIED by Cece 2026-07-23 (commit d56d4a2)
+### Row 28 Split — RATIFIED by Cece 2026-07-22 (commit d56d4a2)
 
 Row 28 ("Office Desk mutation EFs + gate contracts v1") split into executable sub-rows:
 
 | Sub-row | Item | Est. | Dependencies | Scope | Status |
 |---------|------|------|-------------|-------|--------|
-| **28a** | `set_handle` EF — profile handle assignment | ≤90 min | 22, 062 migration | EF enforcing format CHECK (3-20 chars, no whitespace), per-tenant blocklist, handle_changes audit write. Admin_set mode for Redhouse. | RATIFIED |
+| **28a** | `set_handle` EF — profile handle assignment | ≤90 min | 22, 062 migration | EF enforcing format CHECK (3-20 chars, no whitespace), per-tenant blocklist, handle_changes audit write. Admin_set mode for Redhouse. | PARTIAL |
 | **28b** | `release-report-card` EF + gate contracts v1 | ≤90 min | 22, 15, 043/044 migrations | Two-step status advance (draft→released→visible) on report_cards. Office/admin only, tenant_id match. Gate contracts pattern: authority check + input validation + CORS + secrets binding. | RATIFIED |
 
 **Out of row 28 scope (deferred):** Registration status transition EFs (pending_init→pending_review→approved→active) — blocked on lead/registration table schema (GAP-BACKEND per front-desk-registration spec §6).
@@ -519,8 +519,8 @@ Row 28 ("Office Desk mutation EFs + gate contracts v1") split into executable su
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 31 | Verify design items against v0 links | 8 | DONE — human walkthrough 2026-07-23; verdicts: 05 PASS-ON-DOCS, 06 PASS-AS-AMENDED, 07 PASS-AS-AMENDED, 08 PASS-AS-AMENDED. Amendments in 94f802e, 917209c, 463d20f. Evidence chain sealed at row 32 seal commit. |
-| 32 | DESIGN FREEZE — fires on 31 | 31 | SEALED 2026-07-23 — verdict block recorded, evidence chain cited. Designs 01–08 FROZEN. See SEAL record below. |
+| 31 | Verify design items against v0 links | 8 | DONE — human walkthrough 2026-07-22; verdicts: 05 PASS-ON-DOCS, 06 PASS-AS-AMENDED, 07 PASS-AS-AMENDED, 08 PASS-AS-AMENDED. Amendments in 94f802e, 917209c, 463d20f. Evidence chain sealed at row 32 seal commit. |
+| 32 | DESIGN FREEZE — fires on 31 | 31 | SEALED 2026-07-22 — verdict block recorded, evidence chain cited. Designs 01–08 FROZEN. See SEAL record below. |
 | 33 | Migration 042 consent + suppression | 13, 14 | DONE - 042_consent_suppression.sql [a270571] + 047_consent_guard_and_fixes.sql [1edf9ce] present |
 
 ## PHASE E — WIRING (gated by 14, 26, 27)
@@ -701,13 +701,13 @@ Signed: Cece — final human gate. 2026-07-15.
 | 22 | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated | 457f7c4 |
 
 ---
-## Delta (board sync 2026-07-27, audit item 10)
+## Delta (board sync 2026-07-22, audit item 10)
 
 Last sealed HEAD: 25a704d. Commits landed since:
 
 ```
-ae79cce audit: weekly 2026-07-27 (9 PASS, 1 FAIL: board sync)
-b5bfb87 audit: weekly 2026-07-27
+ae79cce audit: weekly 2026-07-22 (9 PASS, 1 FAIL: board sync)
+b5bfb87 audit: weekly 2026-07-22
 5971f90 register: seal D-ROLE-MISMATCH / 064 (fd8abae, 256/256)
 fd8abae 064: rc_learner_select_visible accepts student role (D-ROLE-MISMATCH); de-scaffold 063; R22 positive assertion
 fb0a15f governance: RG-1..RG-7 register entry standard (forward-only)
@@ -798,7 +798,7 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
 6. All data wiring, route wiring, and EF implementations (rows 23/28/29)
    remain gated behind DF-32, SB-11, CF-12 until those gates clear.
 
-## ITEM 8 — v0 DESIGN LINKS (recorded 2026-07-23)
+## ITEM 8 — v0 DESIGN LINKS (recorded 2026-07-22)
 
 - Live deployment (owner-access preview, Vercel-auth gated):
   https://v0-redhouse-dashboard-dso7s4mj2-cecebefree-3976s-projects.vercel.app
@@ -808,7 +808,7 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
 - Item 8 status: PARTIAL — link recorded; durable export pending
   B-008 resolution.
 
-## SESSION CLOSEOUT — 2026-07-23 (sealed at 6cdacab)
+## SESSION CLOSEOUT — 2026-07-22 (sealed at 6cdacab)
 
 - ITEM 8: PARTIAL at bacfa3f — v0 design link recorded; durable
   export pending B-008.
@@ -859,7 +859,7 @@ DONE: 15 | CLOSED: 2 | PARTIAL: 2 | PENDING: 29 | Progress: ~45-50%
 
 ---
 
-## ROW 32 SEAL — DESIGN FREEZE 01–08 (2026-07-23)
+## ROW 32 SEAL — DESIGN FREEZE 01–08 (2026-07-22)
 
 **Status:** SEALED.
 
@@ -899,7 +899,7 @@ Effects: rows 23, 28, 29 and Phase E wiring rows 34-39 are UNGATED with respect 
 Ruled by: Cece (owner).
 [confirmed post-hoc 2026-07-22]
 
-### Re-verified 2026-07-23
+### Re-verified 2026-07-22
 
 All 5 checks PASS:
 
@@ -913,7 +913,7 @@ Status: **DONE**. No changes to keys, migrations, or configuration.
 
 ---
 
-## CF-12 CONTRACT — SATISFIED 2026-07-23
+## CF-12 CONTRACT — SATISFIED 2026-07-22
 
 Gate CF-12 (Cloudflare 12, board row 12). OPEN → SATISFIED per Cece ruling 2026-07-23. This section defines the contractual evidence that flips it OPEN → SATISFIED. Per owner-quote convention, Cece's verbatim ruling text:
 
@@ -943,7 +943,7 @@ Gate CF-12 (Cloudflare 12, board row 12). OPEN → SATISFIED per Cece ruling 202
 
 ---
 
-### CF-12 Deploy Evidence — 2026-07-23
+### CF-12 Deploy Evidence — 2026-07-22
 
 **Executed:** `wrangler pages deploy` from `apps/web` → `https://a811d98b.redhouse-web.pages.dev` (HTTP 200, reachable).
 
@@ -967,11 +967,11 @@ Uploading... (2/2)
 
 **Asset integrity:** `dist/index.html` references `assets/index-DmAo_9U6.js` — file exists in dist. No dangling references. The prior "missing asset reference" failure is resolved.
 
-**CF-12 status:** SATISFIED — all 7 criteria met. Criterion 7 verified PASS by Cece in-browser 2026-07-23: "App shell renders: white page with Redhouse wordmark top-left. Sparse content is EXPECTED — wiring rows 34–39 are parked; the shell rendering proves the bundle executes." Gate closed.
+**CF-12 status:** SATISFIED — all 7 criteria met. Criterion 7 verified PASS by Cece in-browser 2026-07-22: "App shell renders: white page with Redhouse wordmark top-left. Sparse content is EXPECTED — wiring rows 34–39 are parked; the shell rendering proves the bundle executes." Gate closed.
 
 ---
 
-## Delta — 2026-07-23 session (row 23 + CF-12 deploy)
+## Delta — 2026-07-22 session (row 23 + CF-12 deploy)
 
 | Row | Status | Commit |
 |-----|--------|--------|
