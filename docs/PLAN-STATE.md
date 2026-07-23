@@ -852,6 +852,18 @@ Effects: rows 23, 28, 29 and Phase E wiring rows 34-39 are UNGATED with respect 
 Ruled by: Cece (owner).
 [confirmed post-hoc 2026-07-22]
 
+### Re-verified 2026-07-23
+
+All 5 checks PASS:
+
+1. `.env` exists with non-empty SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY.
+2. `SUPABASE_URL=https://ebptjjsmeltykqqvcvqo.supabase.co` — correct project ref.
+3. `.env` is git-ignored (`git check-ignore .env` → `.env`).
+4. Anon key and service role key both return HTTP 200 from `GET /rest/v1/courses?limit=1` on the hosted project.
+5. `supabase link` returns `{"project_ref":"ebptjjsmeltykqqvcvqo"}`.
+
+Status: **DONE**. No changes to keys, migrations, or configuration.
+
 ---
 
 ## CF-12 CONTRACT — SATISFIED 2026-07-23
