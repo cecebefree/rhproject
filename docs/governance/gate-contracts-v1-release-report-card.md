@@ -11,7 +11,8 @@
 This document defines the transition rules and authority matrix for the `release-report-card` Edge Function, implementing the two-step status advance: `draft → released → visible`.
 
 **EXPLICITLY OUT OF SCOPE**:
-- Examiner role-vs-flag remains a PARKED DEBT. Leave a marked extension point for Examiner sign-off in v2.
+- Examiner role-vs-flag remains a PARKED DEBT. 
+  <br>  **Examiner v2 extension point:** This EF v1 covers office/admin transitions only. Examiner sign-off bridge: a new extension point with field `examiner_signoff_required: true` for Phase B and beyond, not in this v1 contract.
 - Report card RLS debt — separate row, do not touch policies beyond what the EF strictly needs.
 - 28a set_handle — separate session.
 
