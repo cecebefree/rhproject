@@ -922,3 +922,11 @@ Gate CF-12 (Cloudflare 12, board row 12). OPEN → SATISFIED per Cece ruling 202
 | # | Item | Phase | Status |
 |---|------|-------|--------|
 | 49 | DNS cutover: redhouse.school → Cloudflare (near-launch) | Deploy + DNS | Pending |
+
+---
+
+## Delta — 2026-07-23 session (row 23)
+
+| Row | Status | Commit |
+|-----|--------|--------|
+| 23 | DONE — verify-turnstile EF: full implementation (POST to Cloudflare /siteverify, CORS, fail-loud on missing secret, input validation, method enforcement). Tested locally: 4/4 paths pass (valid POST→false, missing token→400, GET→405, OPTIONS→ok). Registered in supabase/config.toml with TURNSTILE_SECRET_KEY env binding. | 216f61e |
