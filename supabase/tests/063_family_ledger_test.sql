@@ -67,7 +67,7 @@ INSERT INTO public.certificates (user_id, cert_class, title, description, signat
 VALUES (
     'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
     'core_subject',
-    'Mathematics Certificate',
+    'Mathematics Certificate (063)',
     'Core subject completion',
     'Head Teacher',
     'issued',
@@ -96,7 +96,8 @@ SELECT set_config('request.jwt.claims',
 SELECT is(
   (SELECT count(*)::int FROM public.certificates
     WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
-      AND status = 'issued'),
+      AND status = 'issued'
+      AND title = 'Mathematics Certificate (063)'),
   1,
   'R22-POS: family sees linked childs issued certificate'
 );
@@ -240,10 +241,11 @@ SELECT lives_ok(
 );
 
 SELECT is(
-  (SELECT title FROM public.certificates
-    WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e' LIMIT 1),
-  'Mathematics Certificate',
-  'title unchanged after family UPDATE attempt'
+  (SELECT count(*)::int FROM public.certificates
+    WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
+      AND title = 'Hacked'),
+  0,
+  'no certificate row was modified by family UPDATE attempt'
 );
 
 -- ═══════════════════════════════════════════════
@@ -258,7 +260,8 @@ SELECT lives_ok(
 
 SELECT is(
   (SELECT count(*)::int FROM public.certificates
-    WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'),
+    WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
+      AND title = 'Mathematics Certificate (063)'),
   1,
   'certificate still exists after family DELETE attempt'
 );
@@ -299,7 +302,7 @@ WHERE created_by = 'cc000000-0000-0000-0000-0000000000c3'
 
 DELETE FROM public.certificates
 WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
-  AND cert_class = 'core_subject';
+  AND title = 'Mathematics Certificate (063)';
 
 DELETE FROM public.family_child
 WHERE guardian_id = 'ff000000-0000-0000-0000-0000000000f1'
