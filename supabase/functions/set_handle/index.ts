@@ -64,7 +64,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    const authHeader = req.headers.get('authorization')
+    const jwt = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt)
     if (userError || !user) {
       return new Response(
         JSON.stringify({ success: false, error: 'No valid authentication token' }),
