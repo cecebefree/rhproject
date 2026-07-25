@@ -9,10 +9,6 @@ SELECT plan(10);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 GRANT USAGE ON SCHEMA tests TO authenticated;
-
-GRANT SELECT, INSERT ON public.chapter_progress TO authenticated;
-GRANT SELECT ON public.chapters TO authenticated;
-GRANT SELECT ON public.courses TO authenticated;
 -- Auth users (profiles are auto-created by handle_new_user trigger as role='student', tenant NULL)
 INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
 VALUES
