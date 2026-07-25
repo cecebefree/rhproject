@@ -153,13 +153,7 @@ serve(async (req) => {
 })
 
 function AUTHORIZED({ caller, target }) {
-  if (caller.role === 'authenticated') {
-    return caller.id === target.id && caller.tenant_id === target.tenant_id
-  }
-  if (['admin', 'office'].includes(caller.role)) {
-    return caller.tenant_id === target.tenant_id
-  }
-  return false
+  return caller.id === target.id
 }
 
 function VALIDATE({ handle, caller }) {
