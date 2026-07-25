@@ -100,8 +100,9 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 49 | DNS cutover: redhouse.school → Cloudflare (near-launch) | 42 | Pending |
-| 50 | profiles UPDATE self-policy has no WITH CHECK — user could mutate own id/tenant_id if column grants allow. Assess and harden. Ref: pg_policies evidence 2026-07-25, commit 0cb8edc context | — | Pending |
+| 50 | profiles UPDATE self-policy has no WITH CHECK — NOT EXPLOITABLE. No UPDATE grant on id/tenant_id/role; tenant_id additionally trigger-guarded (trg_profiles_tenant_id_immutable). Superseded by grant-hygiene fix 068. | — | CLOSED |
 | 51 | Verify migrations 054/055 numbering gap — confirm intentionally absent or locate missing files | — | Pending |
+| 52 | Schema-wide grant sweep — audit TRUNCATE/TRIGGER/REFERENCES (and any unused writes) for anon/authenticated across all public tables; correct ALTER DEFAULT PRIVILEGES so future tables do not inherit the same defaults. Ref: 068, table_privileges audit 2026-07-25 | — | Pending |
 
 ---
 

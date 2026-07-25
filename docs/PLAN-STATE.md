@@ -701,6 +701,7 @@ Signed: Cece — final human gate. 2026-07-15.
 | 26 | EXTENDED - family-ledger migration 063: rc_family_select + cert_family_select + R22 denial tests | 457f7c4 |
 | 22 | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated | 457f7c4 |
 | 067 | SEALED - replace unscoped admin_all_profiles (FOR ALL) with tenant-scoped admin SELECT (admin_select_tenant_profiles); privilege escalation corrected; pg_policies verified; pgTAP 264/26 PASS | 0cb8edc |
+| 068 | SEALED - revoke TRUNCATE/TRIGGER/REFERENCES on profiles from anon+authenticated; grant hygiene discovered under ITEM-50 evidence; table/column grant audits 2026-07-25; pgTAP 264/26 PASS | 32d6b79 |
 
 ---
 ## Delta (board sync 2026-07-22, audit item 10)
