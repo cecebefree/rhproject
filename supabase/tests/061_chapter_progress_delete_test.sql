@@ -5,12 +5,12 @@
 -- R22-compliant: every denial block is paired with a positive-anchor + row-count
 -- assertion; the wiring block confirms the trigger exists.
 BEGIN;
-SELECT plan(9);
+SELECT plan(11);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 GRANT USAGE ON SCHEMA tests TO authenticated;
 
-GRANT SELECT, INSERT, DELETE ON public.chapter_progress TO authenticated;
+GRANT SELECT, INSERT ON public.chapter_progress TO authenticated;
 GRANT SELECT ON public.chapters TO authenticated;
 GRANT SELECT ON public.courses TO authenticated;
 -- Auth user (profiles auto-created by handle_new_user trigger as role=student, tenant NULL)
@@ -51,6 +51,25 @@ SELECT is(
   (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'dddd0000-0000-0000-0000-0000000000a1'),
   3,
   'setup: student completed chapters 0,1,2 (row count = 3)');
+
+-- f. ROLE-BASED DENIAL: authenticated has no INSERT grant on chapter_progress
+SELECT set_config('request.jwt.claims', '{"sub":"dddd0000-0000-0000-0000-0000000000a1","tenant_id":"dddd0000-0000-0000-0000-0000000000c0"}', true);
+SET ROLE authenticated;
+SELECT throws_ok(
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
+    VALUES ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d0')$$,
+  '42501', NULL,
+  'denial: authenticated has no INSERT grant on chapter_progress');
+RESET ROLE;
+
+-- f2. ROLE-BASED DENIAL: authenticated has no DELETE grant on chapter_progress
+SELECT set_config('request.jwt.claims', '{"sub":"dddd0000-0000-0000-0000-0000000000a1","tenant_id":"dddd0000-0000-0000-0000-0000000000c0"}', true);
+SET ROLE authenticated;
+SELECT throws_ok(
+  $$DELETE FROM public.chapter_progress WHERE student_id = 'dddd0000-0000-0000-0000-0000000000a1' AND chapter_id = 'dddd0000-0000-0000-0000-0000000000d2'$$,
+  '42501', NULL,
+  'denial: authenticated has no DELETE grant on chapter_progress');
+RESET ROLE;
 
 -- c. POSITIVE ANCHOR: delete the LAST chapter (order 2) succeeds, count drops to 2.
 DELETE FROM public.chapter_progress WHERE student_id = 'dddd0000-0000-0000-0000-0000000000a1' AND chapter_id = 'dddd0000-0000-0000-0000-0000000000d2';

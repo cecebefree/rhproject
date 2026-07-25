@@ -5,7 +5,7 @@
 -- fails loud on a missing chapter. R22-compliant: every denial
 -- block is paired with a positive-anchor + row-count assertion.
 BEGIN;
-SELECT plan(8);
+SELECT plan(10);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 GRANT USAGE ON SCHEMA tests TO authenticated;
@@ -51,6 +51,26 @@ SELECT is(
   (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'cccc0000-0000-0000-0000-0000000000b2'),
   1,
   'c: first-chapter insert succeeds, row count = 1');
+
+-- f. ROLE-BASED DENIAL: authenticated has no INSERT grant on chapter_progress
+SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
+SET ROLE authenticated;
+SELECT throws_ok(
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
+    VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d0')$$,
+  '42501', NULL,
+  'denial: authenticated has no INSERT grant on chapter_progress');
+RESET ROLE;
+
+-- h. ROLE-BASED DENIAL: authenticated has no INSERT grant on enrollments
+SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
+SET ROLE authenticated;
+SELECT throws_ok(
+  $$INSERT INTO public.enrollments (student_id, course_id)
+    VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000c1')$$,
+  '42501', NULL,
+  'denial: authenticated has no INSERT grant on enrollments');
+RESET ROLE;
 
 -- a. POSITIVE ANCHOR: student b1 completes all predecessors (0 and 1) then inserts 2
 INSERT INTO public.chapter_progress (student_id, chapter_id)
