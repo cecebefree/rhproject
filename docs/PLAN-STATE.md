@@ -55,9 +55,10 @@
 060_fix_chapter_sequence_guard.sql
 061_chapter_progress_delete_guard.sql
 062_handle_system.sql
+067_admin_tenant_scope.sql
 ```
 
-Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at 062.
+Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at 067.
 
 ### Groups-related DDL (verbatim from `supabase/migrations/059_chat_tables.sql`)
 
@@ -699,6 +700,7 @@ Signed: Cece — final human gate. 2026-07-15.
 | 27 | DONE - R18 demo-depth: seeded visible report card + issued certificates; family_child links | f9ce73d |
 | 26 | EXTENDED - family-ledger migration 063: rc_family_select + cert_family_select + R22 denial tests | 457f7c4 |
 | 22 | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated | 457f7c4 |
+| 067 | SEALED - replace unscoped admin_all_profiles (FOR ALL) with tenant-scoped admin SELECT (admin_select_tenant_profiles); privilege escalation corrected; pg_policies verified; pgTAP 264/26 PASS | 0cb8edc |
 
 ---
 ## Delta (board sync 2026-07-22, audit item 10)
