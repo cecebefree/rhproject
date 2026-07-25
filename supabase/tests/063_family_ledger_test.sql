@@ -195,11 +195,13 @@ SELECT is(
 -- NEGATIVE: family DELETE on report_cards is rejected
 -- ═══════════════════════════════════════════════
 
-SELECT lives_ok(
+SELECT throws_ok(
   $$DELETE FROM public.report_cards
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'visible'$$,
-  'family DELETE on report_cards blocked by RLS (0 rows, no error)'
+  '42501',
+  NULL,
+  'family DELETE on report_cards blocked by grant revocation (permission denied)'
 );
 
 SELECT is(
@@ -252,10 +254,12 @@ SELECT is(
 -- NEGATIVE: family DELETE on certificates is rejected
 -- ═══════════════════════════════════════════════
 
-SELECT lives_ok(
+SELECT throws_ok(
   $$DELETE FROM public.certificates
     WHERE user_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'$$,
-  'family DELETE on certificates blocked by RLS (0 rows, no error)'
+  '42501',
+  NULL,
+  'family DELETE on certificates blocked by grant revocation (permission denied)'
 );
 
 SELECT is(
