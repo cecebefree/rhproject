@@ -50,6 +50,10 @@
 | 27 | Seed data: demo families | 26 | DONE - seeded visible card + family_child links [f9ce73d]; R18 live write->release RPCs, 8/8 AC pass [7385720] |
 | 28a | `set_handle` EF — profile handle assignment | 15, 22 | DONE — code + DB tests complete (062: 25/25, 062a: 17/17); HTTP matrix (OPTIONS/405/401/CORS/live paths) pending |
 | 28b | `release-report-card` EF + gate contracts v1 | 15, 22 | DONE (2026-07-22) |
+   -----
+   **Standing Verification Rule (2026-07-25):**
+   "Code isolation without DB isolation is no isolation. Worktree/stash verifications against a shared local database are VOID. Pre-existing-failure claims require supabase db reset from the tree under test."
+   **NOTE for ITEM-56:** applied inside the MASTER-TODO-V2 edit — note: "deferred - requires fix commit" only if runtime files were touched — runtime files unchanged, so ITEM-56 state remains "DONE" (row carries DONE status).
 | 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | DONE - full implementations, locally tested (4/4, 7/7, 7/7 paths), config.toml registered |
 | 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - EF/RPC inventory complete, docs/EF-RPC-INVENTORY.md present [c4f76f2] |
 
