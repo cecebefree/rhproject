@@ -43,9 +43,8 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- c. FIRST CHAPTER positive anchor: fresh student b2 inserts progress for order_index 0
-SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
-SELECT set_config('request.jwt.claim.sub', 'cccc0000-0000-0000-0000-0000000000b2', true);
-SET ROLE authenticated;
+-- Run as superuser: RLS bypass needed because INSERT policy was dropped (ITEM-56).
+-- Trigger behavior is role-independent (checks chapter sequence data, not JWT).
 INSERT INTO public.chapter_progress (student_id, chapter_id)
 VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d0');
 SELECT is(
@@ -54,8 +53,6 @@ SELECT is(
   'c: first-chapter insert succeeds, row count = 1');
 
 -- a. POSITIVE ANCHOR: student b1 completes all predecessors (0 and 1) then inserts 2
-SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b1","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
-SELECT set_config('request.jwt.claim.sub', 'cccc0000-0000-0000-0000-0000000000b1', true);
 INSERT INTO public.chapter_progress (student_id, chapter_id)
 VALUES
   ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d0'),
@@ -68,8 +65,6 @@ SELECT is(
   'a: all-predecessors-complete insert succeeds, row count = 3');
 
 -- b. DENIAL (the 018 escape): student b2 has only chapter 0 complete, skips 1, inserts 2
-SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
-SELECT set_config('request.jwt.claim.sub', 'cccc0000-0000-0000-0000-0000000000b2', true);
 SELECT throws_ok(
   $$INSERT INTO public.chapter_progress (student_id, chapter_id)
    VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d2')$$,

@@ -40,9 +40,8 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- Student fixture: complete all three chapters (order 0,1,2).
-SELECT set_config('request.jwt.claims', '{"sub":"dddd0000-0000-0000-0000-0000000000a1","tenant_id":"dddd0000-0000-0000-0000-0000000000c0"}', true);
-SELECT set_config('request.jwt.claim.sub', 'dddd0000-0000-0000-0000-0000000000a1', true);
-SET ROLE authenticated;
+-- Run as superuser: RLS bypass needed because INSERT/DELETE policies were dropped (ITEM-56).
+-- Trigger behavior is role-independent (checks chapter sequence data, not JWT).
 INSERT INTO public.chapter_progress (student_id, chapter_id)
 VALUES
   ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d0'),
