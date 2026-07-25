@@ -48,7 +48,8 @@
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present [097a32d] |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle + 063_family_ledger_report_card_access.sql [457f7c4] |
 | 27 | Seed data: demo families | 26 | DONE - seeded visible card + family_child links [f9ce73d]; R18 live write->release RPCs, 8/8 AC pass [7385720] |
-| 28 | Office Desk mutation EFs + gate contracts v1 - scoped per 15 | 15, 22 | Pending |
+| 28a | `set_handle` EF — profile handle assignment | 15, 22 | DONE — code + DB tests complete (062: 25/25, 062a: 17/17); HTTP matrix (OPTIONS/405/401/CORS/live paths) pending |
+| 28b | `release-report-card` EF + gate contracts v1 | 15, 22 | DONE (2026-07-22) |
 | 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | DONE - full implementations, locally tested (4/4, 7/7, 7/7 paths), config.toml registered |
 | 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - EF/RPC inventory complete, docs/EF-RPC-INVENTORY.md present [c4f76f2] |
 
@@ -108,6 +109,7 @@
 | 55 | Column-grant narrowing — restrict UPDATE on privileged columns for authenticated. **Three named tables:** report_cards (status, released_at, released_by), messages (sender_id, conversation_id, created_at), consent_records (given_at, ip_address). **tenant_id set (9 tables):** announcement, book, booklist, booklist_item, conversations, enrichment_meta, schedule_slot, suppression_records, terms. **Exited scope (no tenant_id, transitive isolation per P2-011 precedent):** chat_preferences, conversation_members, message_reactions. | 54 | Pending |
 | 56 | Dead-policy cleanup — chapter_progress and enrollments carry student INSERT/DELETE policies with no matching grants | 54 | Pending |
 | 61 | service_role lacks UPDATE on report_cards/messages/consent_records — verify EF write paths; review suppression_records full-CRUD for authenticated | 55 | Pending |
+| 62 | Pre-existing test failures — 012_rls_denial_proofs.sql (plan mismatch, planned 18 ran 12), 059_chat_tables_test.sql (tests 17-18, permission denied UPDATE on messages), 063_family_ledger_test.sql (test 6, permission denied UPDATE on report_cards). Shared signature: UPDATE permission denials consistent with post-grant-sweep expectations drift. Triage deferred. Evidence: DB-isolated origin/main run, session 2026-07-25. Attached design note: `changed_by` schema gap on handle_changes table (no FK to auth.users for audit attribution). Planned migration renumbered from 075 to 076 (075 consumed by CHECK constraint fix). | — | Pending |
 
 ---
 

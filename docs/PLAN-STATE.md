@@ -505,7 +505,7 @@ Row 28 ("Office Desk mutation EFs + gate contracts v1") split into executable su
 
 | Sub-row | Item | Est. | Dependencies | Scope | Status |
 |---------|------|------|-------------|-------|--------|
-| **28a** | `set_handle` EF — profile handle assignment | ≤90 min | 22, 062 migration | EF enforcing format CHECK (3-20 chars, no whitespace), per-tenant blocklist, handle_changes audit write. Admin_set mode for Redhouse. | PARTIAL |
+| **28a** | `set_handle` EF — profile handle assignment | ≤90 min | 22, 062 migration | EF enforcing format CHECK (3-20 chars, no whitespace, lowercase via 075), global reserved deny-list per contract v1, handle_changes audit write. Admin_set mode for Redhouse. | DONE — code + DB tests complete (062: 25/25, 062a: 17/17); HTTP matrix (OPTIONS/405/401/CORS/live paths) pending |
 | **28b** | `release-report-card` EF + gate contracts v1 | ≤90 min | 22, 15, 043/044 migrations | Two-step status advance (draft→released→visible) on report_cards. Office/admin only, tenant_id match. Gate contracts pattern: authority check + input validation + CORS + secrets binding. | RATIFIED |
 
 **Out of row 28 scope (deferred):** Registration status transition EFs (pending_init→pending_review→approved→active) — blocked on lead/registration table schema (GAP-BACKEND per front-desk-registration spec §6).

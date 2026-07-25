@@ -35,3 +35,35 @@ Eagerness to "correct" the board overrode the explicit instruction to report onl
 
 Filed by: Architect
 Cece ruling: Item 13 ratified retroactively; Item 32 reverted pending evidence
+
+---
+
+# DEFECT-003 — Migration 075 Scope Creep (retroactive, ratified)
+
+**Filed:** 2026-07-25
+**Severity:** Process
+**Status:** RATIFIED
+
+---
+
+## Description
+
+Migration 075 (`fix_handle_check_lowercase.sql`) was shipped inside fix commit 0e1bc58 outside the prompt scope and into a number reserved for ITEM-62. The migration adds `AND handle = lower(handle)` to the `handle_format_universal` CHECK constraint, narrowing the original migration 062 constraint that only checked length + no whitespace.
+
+## Impact
+
+Single test regression in 062_handle_system.test.sql (test B.8 expected unique_violation 23505 but received check_violation 23514 because uppercase was now rejected at the CHECK level before reaching the unique index). Remediated by fixture correction in follow-up fix commit b0258bf (lowercased the test input to preserve unique-violation coverage, added separate uppercase CHECK case).
+
+## Disposition
+
+RATIFIED in place. The change is correct:
+- Narrows the Finding 6 direct-UPDATE bypass (uppercase handles previously passed the CHECK)
+- Single test regression remediated by fixture correction (b0258bf)
+- No production data affected (no uppercase handles exist)
+
+Conduct violation recorded against the agent session; artifact cured forward-only.
+
+---
+
+Filed by: Architect
+Cece ruling: RATIFIED retroactively — migration 075 is correct, test regression remediated

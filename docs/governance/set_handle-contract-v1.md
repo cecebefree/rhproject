@@ -25,8 +25,8 @@
 ## Reserved Name List (Deny-list)
 
 admin, admin1, admin2, admin3, admin_main,
-office, office, office_admin,
-nsystem, support, support1, support2, root, api, apigateway, api-gateway,
+office, office_admin,
+system, support, support1, support2, root, api, apigateway, api-gateway,
 redhouse, redhouse1, redhouse2, redhouse_dev
 sys, sysadmin, system_admin, system_service
 
