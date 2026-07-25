@@ -5,7 +5,7 @@
 -- JWT context pattern mirrored from 059_chat_tables_test.sql
 -- (set local role authenticated + set_config request.jwt.claims).
 BEGIN;
-SELECT plan(24);
+SELECT plan(25);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 GRANT USAGE ON SCHEMA tests TO authenticated;
@@ -131,10 +131,15 @@ SELECT throws_ok(
   $$UPDATE public.profiles SET handle = 'shared_name' WHERE id = 'adad0000-0000-0000-0000-0000000000a3'$$,
   '23505');
 
--- B.8 case-variant 'Shared_Name' collides on lower() (CHECK allows uppercase).
+-- B.8 lowercase collision: a3 retrying 'shared_name' (same tenant) hits unique index.
+SELECT throws_ok(
+  $$UPDATE public.profiles SET handle = 'shared_name' WHERE id = 'adad0000-0000-0000-0000-0000000000a3'$$,
+  '23505');
+
+-- B.9 uppercase 'Shared_Name' rejected by lowercase CHECK (23514) before unique index.
 SELECT throws_ok(
   $$UPDATE public.profiles SET handle = 'Shared_Name' WHERE id = 'adad0000-0000-0000-0000-0000000000a3'$$,
-  '23505');
+  '23514');
 
 -- C.9 2-char handle violates universal CHECK.
 SELECT throws_ok(
