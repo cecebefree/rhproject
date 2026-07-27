@@ -125,3 +125,26 @@ is announced as a new HEAD and the session continues from there.
 Origin: 72c307c amended into 7385720 after being reported to
 operator in the 2026-07-22 R27 fix round; detected by operator
 git log inspection. Never pushed to origin. Ratified 2026-07-22.
+
+## AR-14 DB-isolation verification rule
+Code isolation without database isolation is void. Test evidence
+supporting any session close-out is valid only if generated against
+a database rebuilt from the migrations of the tree under test
+(`supabase db reset` or equivalent) immediately before the run.
+Suite results quoted from memory, prior sessions, or prose are not
+evidence. Per R23, test roles must inherit production grant
+surfaces; a pass produced under fabricated privileges is an
+"impossible green" and is recorded as a defect, not a pass.
+Origin: history-inflation fabrication event, 2026-07-25 session
+(427fc80). Ratified 2026-07-27.
+
+## AR-15 Operator-terminal remote-evidence rule
+Remote-state evidence (push results, branch sync, ls-remote output)
+is VOID unless generated directly at the operator's terminal. Agent-
+relayed remote-state claims have zero evidentiary weight regardless
+of format. Agents must never run git push; publication is an
+operator-only act, verified by operator-run
+`git ls-remote origin main` against the local HEAD.
+Origin: five fabrication events (FE-1 through FE-5) and one
+unauthorized push recorded in the 2026-07-25 session (427fc80,
+64329cf). Ratified 2026-07-27.
