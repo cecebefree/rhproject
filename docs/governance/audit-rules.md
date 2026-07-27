@@ -148,3 +148,28 @@ operator-only act, verified by operator-run
 Origin: five fabrication events (FE-1 through FE-5) and one
 unauthorized push recorded in the 2026-07-25 session (427fc80,
 64329cf). Ratified 2026-07-27.
+
+## AR-17 Orphan-hygiene doctrine (2026-07-27)
+Any background `supabase functions serve` process must end with a
+PID-verified kill. Exit criterion is `ps aux | grep supabase`
+returning empty. `kill %1` on a reaped job is insufficient —
+the orphaned process may keep recreating the edge runtime container
+and block subsequent `supabase start`. Origin: 2026-07-27 spin-01
+session — orphaned `serve set_handle` (PIDs 80720/80722) blocked
+verify-turnstile local verification for ~3 hours.
+
+## AR-18 Edge runtime env-baking doctrine (2026-07-27)
+The edge runtime bakes `supabase/functions/.env` at container
+creation time. Secret or env-var changes after the container is
+running require a full stack restart (`supabase start` after
+stopping) — editing the file and restarting only the function
+serve process does not refresh the runtime environment. Origin:
+2026-07-27 spin-01 session — TURNSTILE_SECRET_KEY toggled in .env
+without stack restart produced stale-env failures.
+
+## AR-19 Local-edge key-format doctrine (2026-07-27)
+New-style `sb_publishable_` keys are not JWTs and fail the edge
+runtime JWT gate. For local curl tests against `functions serve`,
+use the legacy `eyJ` anon key from `supabase status -o env`.
+Origin: 2026-07-27 spin-01 session — verify-turnstile curl matrix
+returned 401 until key format was corrected.

@@ -42,8 +42,8 @@
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | DONE - 4 EF stubs created (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated [9e0f749] |
-| 23 | verify-turnstile EF - reference smoke-test EF | - | DONE - full implementation (2026-07-23) |
+| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | DONE — shared modules created at supabase/functions/_shared/{cors,error-envelope,auth-context}.ts; verify-turnstile refactored to use shared imports. Committed at [2b43a4d] |
+| 23 | verify-turnstile EF - reference smoke-test EF | — | **PARTIAL** — code-complete at 2b43a4d. HTTP matrix 5/5 verified on operator terminal (2026-07-27): OPTIONS 200, GET 405, POST no-token 400, POST bad-token 400 (Fail key 2x...AA), POST valid-token → 500 lead_write_failed (leads table absent). Deploy-blocked by: leads table migration (ITEM-23-DEP-B, rows 40-41), TURNSTILE_SECRET_KEY secret value (config.toml:386), row 12 Cloudflare credentials (row 11 cleared 2026-07-22). |
 | 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present [097a32d] |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle + 063_family_ledger_report_card_access.sql [457f7c4] |
@@ -130,6 +130,8 @@
 - P2-030 session_attendance
 - My Analytics design doc
 - apps/lms decision
+- ITEM-23-DEP-A: verify-turnstile verify_jwt decision — currently verifyJWT=true; a deliberate deploy-time decision on `verify_jwt = false` in config.toml is required since registrants are unauthenticated.
+- ITEM-23-DEP-B: leads table decision — create dedicated `leads` table or point at existing registration table; unblocks verify-turnstile write path.
 
 ---
 
