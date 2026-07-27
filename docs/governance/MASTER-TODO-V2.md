@@ -69,8 +69,8 @@
 
 | # | Item | Status |
 |---|------|--------|
-| 34 | Wire: Home | Pending |
-| 35 | Wire: Classes | Pending |
+| 34 | Wire: Home | Pending — ITEM-59 gate lifted |
+| 35 | Wire: Classes | Pending — ITEM-59 gate lifted |
 | 36 | Wire: Profile | Pending |
 | 37 | Wire: teacher screens | Pending |
 | 38 | Wire: Report Card | Pending |
@@ -114,11 +114,12 @@
 | 56 | Dead-policy cleanup — chapter_progress and enrollments carry student INSERT/DELETE policies with no matching grants | 54 | Pending |
 | 57 | UNALLOCATED — reserved, never assigned. | — | — |
 | 58 | UNALLOCATED — reserved, never assigned. | — | — |
-| 59 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | DONE — 077_chapters_read_rpc.sql (SECURITY DEFINER). outside_student allow-list: enrichment only; clubs/music-&-art closed pending ruling. 12/12 pgTAP pass. Gates 34-35 lifted. [a1eb8be] |
+| 59 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | SEALED — 55c5d5d (2026-07-27). 077_chapters_read_rpc.sql (SECURITY DEFINER). outside_student allow-list: enrichment only; clubs/music-&-art closed pending ruling. Evidence: 18/18 pgTAP operator-run + live wall probe denial (AR-15). Gates 34-35 lifted. [55c5d5d] |
 | 60 | Dead 015 policies (ITEM-60). | — | Pending |
 | 61 | UNALLOCATED — reserved, never assigned. | — | — |
 | 62 | service_role lacks UPDATE on report_cards/messages/consent_records — verify EF write paths; review suppression_records full-CRUD for authenticated | 55 | Pending |
 | 63 | Pre-existing test failures (ITEM-62). — 012_rls_denial_proofs.sql (plan mismatch, planned 18 ran 12), 059_chat_tables_test.sql (tests 17-18, permission denied UPDATE on messages), 063_family_ledger_test.sql (test 6, permission denied UPDATE on report_cards). Shared signature: UPDATE permission denials consistent with post-grant-sweep expectations drift. Triage deferred. Evidence: DB-isolated origin/main run, session 2026-07-25. Attached design note: `changed_by` schema gap on handle_changes table (no FK to auth.users for audit attribution). Planned migration renumbered from 075 to 076 (075 consumed by CHECK constraint fix). | — | Pending |
+| 64 | Local test harness repair (ITEM-64). (i) root-cause supabase test db NOTESTS on operator host — first suspect missing host toolchain (brew install libpq && brew link --force libpq); (ii) reset-durable pgTAP provisioning via a test-setup script applied by the runner post-reset — explicitly NOT a migration; (iii) full 28-file suite re-run on the operator's terminal to re-baseline counts and formally retire all agent-era test claims. | — | Open |
 
 ---
 
