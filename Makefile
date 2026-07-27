@@ -15,7 +15,7 @@ build-all:
 	pnpm build
 
 test:
-	supabase db test
+	supabase test db
 
 lint:
 	biome check .
