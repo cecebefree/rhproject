@@ -114,7 +114,7 @@
 | 56 | Dead-policy cleanup — chapter_progress and enrollments carry student INSERT/DELETE policies with no matching grants | 54 | Pending |
 | 57 | UNALLOCATED — reserved, never assigned. | — | — |
 | 58 | UNALLOCATED — reserved, never assigned. | — | — |
-| 59 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | Pending |
+| 59 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | DONE — 077_chapters_read_rpc.sql (SECURITY DEFINER). outside_student allow-list: enrichment only; clubs/music-&-art closed pending ruling. 12/12 pgTAP pass. Gates 34-35 lifted. [COMMIT_REF] |
 | 60 | Dead 015 policies (ITEM-60). | — | Pending |
 | 61 | UNALLOCATED — reserved, never assigned. | — | — |
 | 62 | service_role lacks UPDATE on report_cards/messages/consent_records — verify EF write paths; review suppression_records full-CRUD for authenticated | 55 | Pending |
