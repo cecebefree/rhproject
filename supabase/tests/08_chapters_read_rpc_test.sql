@@ -4,7 +4,7 @@
 -- R23 rule: production grant surfaces only, no test-side GRANTs on
 -- chapters, no role fabrication. Fixtures seeded as postgres.
 BEGIN;
-SELECT plan(12);
+SELECT plan(18);
 
 -- ============================================================
 -- FIXTURE: auth users + profiles
@@ -17,7 +17,8 @@ VALUES
   ('07700000-0000-0000-0000-0000000000a4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'r23-teacher1@test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
   ('07700000-0000-0000-0000-0000000000a5', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'r23-admin@test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
   ('07700000-0000-0000-0000-0000000000a6', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'r23-outside@test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
-  ('07700000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'r23-other-t@test', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+  ('07700000-0000-0000-0000-0000000000a7', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'r23-other-t@test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+  ('07700000-0000-0000-0000-0000000000a8', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'r23-expired@test',  crypt('x', gen_salt('bf')), now(), now(), now(), now())
 ON CONFLICT (id) DO NOTHING;
 
 -- Tenant fixture (profiles.tenant_id FK references tenant_devotional)
@@ -47,6 +48,11 @@ WHERE id = '07700000-0000-0000-0000-0000000000a6';
 UPDATE public.profiles SET tenant_id = '07700000-0000-0000-0000-0000000000b0',
   role = 'teacher'
 WHERE id = '07700000-0000-0000-0000-0000000000a7';
+UPDATE public.profiles SET tenant_id = '07700000-0000-0000-0000-0000000000b0',
+  role = 'learner', has_core = false,
+  access_starts_at = now() - interval '30 days',
+  access_ends_at   = now() - interval '1 day'
+WHERE id = '07700000-0000-0000-0000-0000000000a8';
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 -- ============================================================
@@ -78,7 +84,10 @@ ON CONFLICT (id) DO NOTHING;
 INSERT INTO public.enrollments (student_id, course_id)
 VALUES
   ('07700000-0000-0000-0000-0000000000a1', '07700000-0000-0000-0000-0000000000c1'),
-  ('07700000-0000-0000-0000-0000000000a1', '07700000-0000-0000-0000-0000000000c2')
+  ('07700000-0000-0000-0000-0000000000a1', '07700000-0000-0000-0000-0000000000c2'),
+  ('07700000-0000-0000-0000-0000000000a6', '07700000-0000-0000-0000-0000000000c1'),
+  ('07700000-0000-0000-0000-0000000000a6', '07700000-0000-0000-0000-0000000000c4'),
+  ('07700000-0000-0000-0000-0000000000a8', '07700000-0000-0000-0000-0000000000c1')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
@@ -219,6 +228,62 @@ SELECT is(
   tests.chapters_read_count('07700000-0000-0000-0000-0000000000ff'),
   0,
   '12: enrolled learner gets 0 chapters for nonexistent course');
+RESET ROLE;
+
+-- ============================================================
+-- CASE 13: Enrolled learner, access window expired → empty
+-- ============================================================
+SELECT set_config('request.jwt.claims', '{"sub":"07700000-0000-0000-0000-0000000000a8"}', true);
+SET ROLE authenticated;
+SELECT is(
+  tests.chapters_read_count('07700000-0000-0000-0000-0000000000c1'),
+  0,
+  '13: enrolled learner with expired access window gets 0 chapters');
+RESET ROLE;
+
+-- ============================================================
+-- CASE 14: outside_student WITH forced enrollment on core → empty
+-- ============================================================
+SELECT set_config('request.jwt.claims', '{"sub":"07700000-0000-0000-0000-0000000000a6"}', true);
+SET ROLE authenticated;
+SELECT is(
+  (SELECT count(*)::int FROM public.enrollments
+   WHERE student_id = '07700000-0000-0000-0000-0000000000a6'
+     AND course_id  = '07700000-0000-0000-0000-0000000000c1'),
+  1,
+  '14a: enrollment row exists for outside_student on core');
+SELECT is(
+  tests.chapters_read_count('07700000-0000-0000-0000-0000000000c1'),
+  0,
+  '14: outside_student with enrollment on core gets 0 chapters');
+RESET ROLE;
+
+-- ============================================================
+-- CASE 15: outside_student WITH forced enrollment on club → empty
+-- ============================================================
+SELECT set_config('request.jwt.claims', '{"sub":"07700000-0000-0000-0000-0000000000a6"}', true);
+SET ROLE authenticated;
+SELECT is(
+  (SELECT count(*)::int FROM public.enrollments
+   WHERE student_id = '07700000-0000-0000-0000-0000000000a6'
+     AND course_id  = '07700000-0000-0000-0000-0000000000c4'),
+  1,
+  '15a: enrollment row exists for outside_student on club');
+SELECT is(
+  tests.chapters_read_count('07700000-0000-0000-0000-0000000000c4'),
+  0,
+  '15: outside_student with enrollment on club gets 0 chapters');
+RESET ROLE;
+
+-- ============================================================
+-- CASE 16: direct SELECT on chapters as authenticated → 42501
+-- ============================================================
+SELECT set_config('request.jwt.claims', '{"sub":"07700000-0000-0000-0000-0000000000a1"}', true);
+SET ROLE authenticated;
+SELECT throws_ok(
+  $$SELECT * FROM public.chapters LIMIT 1$$,
+  '42501', NULL,
+  '16: authenticated direct SELECT on chapters throws 42501');
 RESET ROLE;
 
 SELECT * FROM finish();
