@@ -48,7 +48,7 @@
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present [097a32d] |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle + 063_family_ledger_report_card_access.sql [457f7c4] |
 | 27 | Seed data: demo families | 26 | DONE - seeded visible card + family_child links [f9ce73d]; R18 live write->release RPCs, 8/8 AC pass [7385720] |
-| 28a | `set_handle` EF — profile handle assignment | 15, 22 | DONE — code + DB tests complete (062: 25/25, 062a: 17/17); HTTP matrix (OPTIONS/405/401/CORS/live paths) pending; 2026-07-25 session close sealed at 64329cf — failures 012/059/063 triaged as technical debt; remaining HTTP work governed by AR-14/AR-15 |
+| 28a | `set_handle` EF — profile handle assignment | 15, 22 | DONE — code + DB tests complete (062: 25/25, 062a: 17/17); HTTP matrix evidence-complete (8/8 cases pass: 5a self-set, 5c format-reject, 5d cross-tenant deny, 5e admin-set, 6a OPTIONS, 6b 405, 6c(i) missing-auth, 6c(ii) bad-jwt); docs/evidence/28a-http-matrix.md sealed |
 | 28b | `release-report-card` EF + gate contracts v1 | 15, 22 | DONE (2026-07-22) |
    -----
    **Standing Verification Rule (2026-07-25):**
