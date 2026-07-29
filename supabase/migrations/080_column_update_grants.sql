@@ -1,4 +1,4 @@
--- 080: restore column-scoped UPDATE for authenticated (row Chad from row 54 spec). Privileged exclusions: report_cards status, released_at, released_by; messages sender_id, conversation_id, created_at; consent_records given_at, ip_address; tenant tables tenant_id.
+-- 080: restore column-scoped UPDATE for authenticated (row 54 spec). Privileged exclusions: report_cards status, released_at, released_by; messages sender_id, conversation_id, created_at; consent_records given_at, ip_address; tenant tables tenant_id.
 
 BEGIN;
 
@@ -12,7 +12,6 @@ GRANT UPDATE (
   grade,
   created_by,
   visible_at,
-  tenant_id,
   created_at,
   updated_at
 ) ON public.report_cards TO authenticated;
@@ -33,7 +32,6 @@ GRANT UPDATE (
   profile_id,
   consent_type,
   consent_given,
-  tenant_id,
   created_at,
   updated_at,
   withdrawn_at
