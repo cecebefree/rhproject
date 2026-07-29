@@ -121,6 +121,12 @@
 | 63 | Pre-existing test failures (ITEM-62). — 012_rls_denial_proofs.sql (plan mismatch, planned 18 ran 12), 059_chat_tables_test.sql (tests 17-18, permission denied UPDATE on messages), 063_family_ledger_test.sql (test 6, permission denied UPDATE on report_cards). Shared signature: UPDATE permission denials consistent with post-grant-sweep expectations drift. Triage deferred. Evidence: DB-isolated origin/main run, session 2026-07-25. Attached design note: `changed_by` schema gap on handle_changes table (no FK to auth.users for audit attribution). Planned migration renumbered from 075 to 076 (075 consumed by CHECK constraint fix). | — | Pending |
 | 64 | Local test harness repair (ITEM-64). (i) root-cause supabase test db NOTESTS on operator host — first suspect missing host toolchain (brew install libpq && brew link --force libpq); (ii) reset-durable pgTAP provisioning via a test-setup script applied by the runner post-reset — explicitly NOT a migration; (iii) full 28-file suite re-run on the operator's terminal to re-baseline counts and formally retire all agent-era test claims. | — | Open |
 
+## submit-lead browser harness (evidence-complete)
+
+| # | Item | Gated By | Status |
+|-----------------|----------------------------|----------|------------------------|
+| 65 | submit-lead browser harness | — | DONE — 2026-07-29 (201 confirmed in browser; lead row verified in public.leads; three production-revert TODOs outstanding: SUBMIT_URL at lead-form.html:50; Turnstile sitekey 0x4AAAAAADrBMk490tYCQ_p3 at lead-form.html:42; verify_jwt = false in supabase/config.toml) |
+
 ---
 
 ## BACKLOG (parked, not in scope)

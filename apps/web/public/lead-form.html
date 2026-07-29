@@ -1,0 +1,131 @@
+<!doctype html><html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Submit Lead — Test Harness</title>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" defer></script>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      label { display: block; margin-top: 1rem; font-weight: 600; }
+      input[type="text"], input[type="email"] { display: block; width: 100%; margin-top: 0.25rem; padding: 0.5rem; }
+      button { margin-top: 1.5rem; padding: 0.6rem 1.2rem; cursor: pointer; }
+      #response { margin-top: 1.5rem; white-space: pre-wrap; font-family: monospace; font-size: 0.85rem; background: #f4f4f4; padding: 1rem; border-radius: 4px; min-height: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Submit Lead</h1>
+    <form id="leadForm">
+      <label for="name">Name *</label>
+      <input type="text" id="name" name="name" required maxlength="120" />
+
+
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required maxlength="254" />
+
+
+      <label for="tenant">Tenant (slug) *</label>
+      <input type="text" id="tenant" name="tenant" required placeholder="e.g. redhouse-devotional" />
+
+
+      <div id="turnstile-widget" style="margin-top: 1rem;"></div>
+
+
+      <button type="submit">Submit</button>
+    </form>
+
+
+    <div id="response"></div>
+
+
+    <script>
+      // OPERATOR FILLS: real sitekey from the Cloudflare Turnstile dashboard.
+      // TODO: revert to production sitekey 0x4AAAAAADrBMk490tYCQ_p3 before deploy.
+      const TURNSTILE_SITEKEY = "1x00000000000000000000AA";
+
+
+      // OPERATOR FILLS: Supabase anon key (public, safe in browser).
+      const SUPABASE_ANON_KEY = "sb_publishable_eULG7n0gs2EcsiqtRiyZfw_WPmfek1";
+
+
+      // TODO: revert to production URL before deploy.
+      const SUBMIT_URL = "http://127.0.0.1:54321/functions/v1/submit-lead";
+
+
+      let turnstileToken = null;
+
+
+      window.onTurnstileLoad = function () {
+        turnstile.render("#turnstile-widget", {
+          sitekey: TURNSTILE_SITEKEY,
+          callback: function (token) {
+            turnstileToken = token;
+          },
+          "expired-callback": function () {
+            turnstileToken = null;
+          },
+          "error-callback": function () {
+            turnstileToken = null;
+            document.getElementById("response").textContent =
+              "Turnstile error: sitekey rejected for this hostname.";
+          },
+        });
+      };
+
+
+      document.getElementById("leadForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+
+        const responseEl = document.getElementById("response");
+
+
+        if (!turnstileToken) {
+          responseEl.textContent = "Solve the Turnstile challenge first (no token yet).";
+          return;
+        }
+
+
+        responseEl.textContent = "Submitting...";
+
+
+        const payload = {
+          name: document.getElementById("name").value.trim(),
+          email: document.getElementById("email").value.trim(),
+          tenant: document.getElementById("tenant").value.trim(),
+          turnstileToken: turnstileToken,
+        };
+
+
+        try {
+          const res = await fetch(SUBMIT_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "apikey": SUPABASE_ANON_KEY,
+              "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify(payload),
+          });
+
+
+          const raw = await res.text();
+          let pretty = raw;
+          try {
+            pretty = JSON.stringify(JSON.parse(raw), null, 2);
+          } catch (_) {
+            // non-JSON body: show raw text
+          }
+          responseEl.textContent = "HTTP " + res.status + "\n\n" + pretty;
+
+
+          if (typeof turnstile !== "undefined") {
+            turnstile.reset();
+          }
+          turnstileToken = null;
+        } catch (err) {
+          responseEl.textContent = "Network error: " + err.message;
+        }
+      });
+    </script>
+  </body>
+</html>

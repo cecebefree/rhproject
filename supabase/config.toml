@@ -399,6 +399,10 @@ enabled = true
 [functions.ai-tutor-proxy]
 enabled = true
 
+[functions.submit-lead]
+enabled = true
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
