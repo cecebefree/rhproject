@@ -1,13 +1,16 @@
 -- 065_r18_rpc_test.sql — R18 RPC acceptance criteria
 -- Dependencies: seed.sql applied, migration 065 applied
 BEGIN;
-SELECT plan(8);
+SELECT plan(12);
 
 -- Grab seed user IDs as constants
 -- stud1: 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e' (role=student)
 -- teacher1: 'cc000000-0000-0000-0000-0000000000c3' (role=teacher)
 -- admin: 'dd000000-0000-0000-0000-0000000000d4' (role=admin)
 -- family: 'a0000000-0000-0000-0000-0000000000a1' (role=family)
+
+-- Fixture bypass per seed.sql pattern (057 blocks direct tenant_id writes)
+SELECT set_config('app.tenant_assignment_bypass', 'true', false);
 
 DO LANGUAGE plpgsql $$
 BEGIN
@@ -19,10 +22,27 @@ BEGIN
     INSERT INTO public.profiles (id, name, role, registration_status, consent_given, tenant_id)
     VALUES ('00000000-0000-0000-0000-0000000000ff', 'Test Office', 'office', 'approved', true,
             '00000000-0000-0000-0000-000000000001')
-    ON CONFLICT (id) DO UPDATE SET role = 'office';
+    ON CONFLICT (id) DO UPDATE SET role = excluded.role, tenant_id = excluded.tenant_id;
   END IF;
 END;
 $$;
+
+-- Seed a second-tenant office user (cross-tenant isolation tests)
+DO LANGUAGE plpgsql $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = '00000000-0000-0000-0000-0000000000fe') THEN
+    INSERT INTO auth.users (id, email, aud, role)
+    VALUES ('00000000-0000-0000-0000-0000000000fe', 'office2@test.local', 'authenticated', 'authenticated')
+    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO public.profiles (id, name, role, registration_status, consent_given, tenant_id)
+    VALUES ('00000000-0000-0000-0000-0000000000fe', 'Test Office 2', 'office', 'approved', true,
+            '00000000-0000-0000-0000-000000000002')
+    ON CONFLICT (id) DO UPDATE SET role = excluded.role, tenant_id = excluded.tenant_id;
+  END IF;
+END;
+$$;
+
+SELECT set_config('app.tenant_assignment_bypass', 'false', false);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 GRANT USAGE ON SCHEMA tests TO authenticated;
@@ -98,6 +118,30 @@ SELECT throws_ok(
   'AC-5: teacher release rejected by RPC role check'
 );
 
+-- AC-6: Cross-tenant office cannot release card in another tenant
+SELECT tests.set_jwt('00000000-0000-0000-0000-0000000000fe','office','00000000-0000-0000-0000-000000000002');
+SELECT throws_ok(
+  format('SELECT public.release_report_card(''%s'')', (SELECT id FROM draft_card)),
+  'Report card not found or not accessible',
+  'AC-6: cross-tenant office release rejected by tenant guard'
+);
+
+-- AC-7: Card state unchanged after cross-tenant attempt
+SELECT tests.set_jwt('cc000000-0000-0000-0000-0000000000c3','teacher','00000000-0000-0000-0000-000000000001');
+SELECT is(
+  (SELECT status FROM public.report_cards WHERE id = (SELECT id FROM draft_card)),
+  'draft',
+  'AC-7: card remains in draft after cross-tenant release attempt'
+);
+
+-- AC-8: No existence oracle — identical error for missing and cross-tenant cards
+SELECT tests.set_jwt('00000000-0000-0000-0000-0000000000fe','office','00000000-0000-0000-0000-000000000002');
+SELECT throws_ok(
+  'SELECT public.release_report_card(''00000000-0000-0000-0000-000000000000'')',
+  'Report card not found or not accessible',
+  'AC-8: nonexistent card returns same error as cross-tenant (no existence oracle)'
+);
+
 -- AC-2: Office releases the card (one tx, stamps released_at, lands on visible)
 SELECT tests.set_jwt('00000000-0000-0000-0000-0000000000ff','office','00000000-0000-0000-0000-000000000001');
 
@@ -128,6 +172,14 @@ SELECT is(
      AND term = '2026 Term 2'),
   1,
   'AC-3: learner sees visible card after release'
+);
+
+-- AC-9: Double-release guard — card already visible, cannot release again
+SELECT tests.set_jwt('00000000-0000-0000-0000-0000000000ff','office','00000000-0000-0000-0000-000000000001');
+SELECT throws_ok(
+  format('SELECT public.release_report_card(''%s'')', (SELECT id FROM draft_card)),
+  'Report card not in draft status',
+  'AC-9: double-release rejected (card already visible)'
 );
 
 DROP TABLE IF EXISTS draft_card;
