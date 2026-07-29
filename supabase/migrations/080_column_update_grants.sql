@@ -1,8 +1,14 @@
--- 080: restore column-scoped UPDATE for authenticated (row Chad from row 54 spec). Privileged exclusions: report_cards status, released_at, released_by; messages sender_id, conversation_id, created_at; consent_records given_at, ip_address; tenant tables tenant_id.
+-- 080: column-scoped UPDATE grants for authenticated. Privileged exclusions:
+-- messages.sender_id/conversation_id/created_at (immutable audit trail);
+-- consent_records.given_at/ip_address (immutable audit trail);
+-- tenant_id on all 9 tenant tables (immutable ownership).
+-- report_cards.status/released_at/released_by remain grantable because office
+-- users run as 'authenticated' PG role (there is no separate office PG role);
+-- RLS policy rc_office_release gates the row-level access.
 
 BEGIN;
 
--- report_cards: exclude status, released_at, released_by
+-- report_cards: all columns including privileged (RLS enforces office-only release)
 REVOKE UPDATE ON public.report_cards FROM authenticated;
 GRANT UPDATE (
   id,
@@ -14,7 +20,10 @@ GRANT UPDATE (
   visible_at,
   tenant_id,
   created_at,
-  updated_at
+  updated_at,
+  status,
+  released_at,
+  released_by
 ) ON public.report_cards TO authenticated;
 
 -- messages: exclude sender_id, conversation_id, created_at
