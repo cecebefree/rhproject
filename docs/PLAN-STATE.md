@@ -1,7 +1,7 @@
 # PLAN-STATE (F0 Ground Truth Snapshot)
 
 **Generated:** read-only audit, 2026-07-18. Source: disk + git, pasted raw per AR-1.
-**Working repo:** /Users/ce/dev/rhproject-new (HEAD ae79cce4fb31a9244ede52f1499743ec8857b617).  Updated: 2026-07-22 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied).
+**Working repo:** /Users/ce/dev/rhproject-new (HEAD ae79cce4fb31a9244ede52f1499743ec8857b617).  Updated: 2026-07-22 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied), 2026-07-27 (board sync v4, baseline 3705235).
 
 ---
 
@@ -468,8 +468,8 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | 8 | Asset: v0 mobile design links | Asset | DONE - design-links.md + docs/design/05-my-groups.md,06-family-variant.md,07-teacher-variant.md,08-report-card-tab.md present [pre-AR-10: no hash] |
 | 9 | Asset: Lovable website link | Asset | DONE - tech-stack.md amended (6d1a38a): Lovable = front desk intake |
 | 10 | Asset: brand hex + logos | Asset | PARTIAL - 13 hex approved, placeholder-grade; TODO-FINAL-LOGO x6 outstanding (docs/brand-assets.md) |
-| 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | DONE — SB-11 CLEARED per PLAN-STATE clearing ruling 2026-07-22 [9273fd8] |
-| 12 | Asset: Cloudflare credentials | Asset | Pending |
+| 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | DONE — hosted Supabase URL + keys in .env; live serve 2026-07-27 (cf-ray a21f26bf/c9/d1) [2b43a4d]; supersedes SB-11 clearing [9273fd8] |
+| 12 | Asset: Cloudflare credentials | Asset | PARTIAL — pages.dev live + Turnstile secret set 2026-07-27; custom domain OPEN |
 
 ## PHASE B — PLAN HYGIENE AND GOVERNANCE
 
@@ -489,8 +489,8 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated (457f7c4) |
-| 23 | verify-turnstile EF - reference smoke-test EF | - | DONE - full implementation: POST to Cloudflare /siteverify, CORS, fail-loud on missing secret, input validation. Tested locally (4/4 paths). |
+| 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | DONE - EF scaffolding: 4 stubs (verify-turnstile, class-start-ping, validate-toggle, ai-tutor-proxy); field-register S-C updated (457f7c4); env wiring [2b43a4d] |
+| 23 | verify-turnstile EF - reference smoke-test EF | - | DONE* - full implementation: POST to Cloudflare /siteverify, CORS, fail-loud on missing secret, input validation; local 4/4; live deploy 3/3 2026-07-27 (9542a23, 59dd6c3, 3705235); *browser-201 E2E outstanding |
 | 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present [097a32d] |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle |
@@ -541,7 +541,7 @@ Row 28 ("Office Desk mutation EFs + gate contracts v1") split into executable su
 |---|------|----------|--------|
 | 40 | Lovable website intake — Turnstile via 23 mandatory | 9, 23 | Pending |
 | 41 | Front Desk, Office Desk, School Desk consoles | 28, 40 | Pending |
-| 42 | Cloudflare deploy | 11, 12 | Pending |
+| 42 | Cloudflare deploy | 11, 12 | PARTIAL — redhouse-web.pages.dev serving; prod domain + final site OPEN |
 
 ## PHASE G — AO DOC SERIES (must complete before any agent operates, per 4)
 
