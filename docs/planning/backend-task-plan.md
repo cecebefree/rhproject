@@ -245,3 +245,22 @@ The V0 screens will NOT call these endpoints at runtime. The backend is built an
 | S6 — APIs | 23 |
 | S7 — Verification | 5 |
 | **Grand Total** | **73** |
+
+---
+
+## Devotional Section — Sealed Spec (2026-07-30)
+
+| Feature | Behavior | Key rule |
+|---|---|---|
+| Daily Verse | Date-keyed, rotates 00:00 local | One verse per calendar date |
+| Music / Gospel Charts | YouTube in-app playback + Spotify deep-link to school library | Chart entries carry video IDs |
+| Bible in 365 Days | Fixed day_n reading plan | Resets yearly, day_n never shifts |
+| Daily Vlog | Student-produced, rotates 00:00 local | One vlog per calendar date |
+
+**Schema riders (required before build):**
+- `chart.spotify_playlist_url` — text, nullable, deep-link target per chart
+- `chart_entry.youtube_video_id` — text, nullable, in-app playback source
+
+**Rollover rule:** all daily content keys on tenant-local midnight, not UTC.
+
+*Note: these are spec additions beyond the original 73-task count; task rows to be enumerated when the Devotional build is scheduled.*
