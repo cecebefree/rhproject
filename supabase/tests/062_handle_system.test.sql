@@ -10,7 +10,7 @@
 -- session-owner context. JWT claims set via set_config persist across
 -- SET ROLE for RLS visibility tests.
 BEGIN;
-SELECT plan(24);
+SELECT plan(25);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 GRANT USAGE ON SCHEMA tests TO authenticated;
