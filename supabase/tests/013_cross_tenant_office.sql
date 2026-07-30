@@ -1,7 +1,7 @@
 -- 013_cross_tenant_office.sql
 -- Proves office user in tenant A cannot read/update tenant B report_cards.
 BEGIN;
-SELECT plan(4);
+SELECT plan(5);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 GRANT USAGE ON SCHEMA tests TO authenticated;
@@ -116,12 +116,22 @@ SELECT is(
     't3: office A sees own tenant report_cards'
 );
 
--- t4: Office A CAN UPDATE own tenant report_cards (release)
+-- t4: Office A cannot directly UPDATE own tenant report_cards (column grants block authenticated)
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111','office','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
-SELECT lives_ok($$UPDATE public.report_cards
-SET status='released', released_by='11111111-1111-1111-1111-111111111111', released_at=now()
-WHERE id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' AND status='draft'$$,
-'t4: office A can release own tenant draft card');
+SELECT throws_ok(
+  $$UPDATE public.report_cards
+  SET status='released', released_by='11111111-1111-1111-1111-111111111111', released_at=now()
+  WHERE id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' AND status='draft'$$,
+  '42501',
+  'permission denied for table report_cards',
+  't4: direct UPDATE on report_cards denied (column grants block authenticated)');
+
+-- t5: Office A CAN release own tenant draft card via release_report_card RPC
+SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111','office','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+SELECT is(
+  (SELECT status FROM public.release_report_card('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')),
+  'visible',
+  't5: office A releases own tenant draft card via RPC');
 
 SELECT * FROM finish();
 ROLLBACK;
