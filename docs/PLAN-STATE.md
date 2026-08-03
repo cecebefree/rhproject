@@ -981,3 +981,26 @@ Note (2026-08-03): row 12 scope expanded to include production TURNSTILE_SECRET_
 | Row | Status | Commit |
 |-----|--------|--------|
 | 23 | DONE — verify-turnstile EF: full implementation (POST to Cloudflare /siteverify, CORS, fail-loud on missing secret, input validation, method enforcement). Tested locally: 4/4 paths pass (valid POST→false, missing token→400, GET→405, OPTIONS→ok). Registered in supabase/config.toml with TURNSTILE_SECRET_KEY env binding. | 216f61e |
+
+---
+
+# SESSION CLOSE — 2026-08-03
+
+## Delivered this session
+- Row 23: DONE* → DONE — browser-201 E2E passed (curl 201 + Playwright headless Chromium 201, real Turnstile test-widget token, leads rows verified). Spec: tests/e2e/browser-201.spec.ts.
+- Row 12: scope expanded to include production TURNSTILE_SECRET_KEY. CF-12 deploy pipeline remains SATISFIED; production secret + Cloudflare credentials open.
+- Row 10: re-slotted BLOCKED-ON-ASSET (13 hex documented, 6 final logos outstanding, owner: Cece).
+- PLAN-STATE sync hash refreshed to c4c9248 (was ae79cce from 2026-07-27).
+- CF-12 scope note appended (production TURNSTILE_SECRET_KEY remains open under row 12).
+
+## Open flags
+- Boards last fully reconciled against v3 (2026-07-22). Jul 27–Aug 02 outcomes not verified on board. Next session = read-only reconciliation audit before any build work.
+- Known Cece-owned opens: rows 31/32 FREEZE verification, R-SECTIONS, T-72, R-PUSH rulings, row 10 logos, rows 58/71 provider accounts.
+
+## Evidence chain
+| Commit | Description |
+|--------|-------------|
+| 1b0220e | test(e2e): browser-201 lead-form E2E via Playwright; row 23 DONE* -> DONE |
+| c4c9248 | docs: CF-12 scope note — production TURNSTILE_SECRET_KEY remains open under row 12 |
+| 2ee8cda | docs: row 10 re-slotted BLOCKED-ON-ASSET; PLAN-STATE sync hash refreshed to c4c9248 |
+(End of session close)
