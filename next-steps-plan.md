@@ -124,7 +124,7 @@ NOTE: The PART 2 TASK LIST tables above contain (a) corrupted rows with injected
 ### Status corrections pending (evidence-backed)
 - P2-011 (student-class enrolment): table said PLANNED NOT BUILT → ACTUAL: BUILT/TESTED [migration 027]
 - P2-016 (real-time subscriptions): table said PLANNED NOT BUILT → ACTUAL: BUILT/TESTED [migration 029]
-- P2-028 (monitoring/alerting): table said PLANNED NOT BUILT → ACTUAL: PARTIAL [6-check monitor.sh live; payments dropped; PENDING: gate-bypass, brute-force, backup-status]
+- P2-028 (monitoring/alerting): table said PLANNED NOT BUILT → ACTUAL: PARTIAL [6-check monitor.sh live; payments dropped; PENDING: gate-bypass, brute-force, backup-status] [SUPERSEDED 2026-07-09: monitor.sh expanded to 9 checks, 9/9 green, P2-028 CLOSED — see closure section]
 - P2-012 (schedule/timetable): table said DONE (premature) → ACTUAL: BUILT/TESTED [migration 037, 12 pgTAP tests, 96/96 PASS]
 - P2-026 (realtime trim): new task, not on original grid → BUILT/TESTED [migration 038, 5 pgTAP membership assertions, 101/101 PASS]
 - P2-018 (enrichment/clubs): table said PLANNED NOT BUILT → ACTUAL: BUILT/TESTED [migration 039, 17 pgTAP assertions, 118/118 PASS]
