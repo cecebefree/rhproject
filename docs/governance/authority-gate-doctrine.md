@@ -67,3 +67,23 @@ waive a gate.
 - No-wiring state: all three gates above are OPEN; therefore the
   standing no-wiring ruling remains in force. EF
   scaffolding rows (assign_tenant excepted) are gated behind DF-32.
+
+## 6. EF Seal Criteria (effective 2026-08-03)
+
+DONE for an Edge Function requires BOTH:
+
+1. **Local test evidence** — function passes `supabase functions serve`
+   tests (Deno executes TypeScript directly, no bundler step).
+2. **Hosted deploy + smoke PASS** — function deploys to hosted Supabase
+   via `supabase functions deploy` and passes smoke tests (anon + authed
+   calls, method-not-allowed, input validation).
+
+Local-only evidence seals as **DONE-LOCAL** (not DONE). Rationale:
+`supabase functions serve` runs Deno directly; hosted bundling can
+reject code that serve accepts — precedent: release-report-card
+(fe72042 → d62a5dd: bare YAML passed local serve, failed Deno bundler
+on deploy; fix was routine, not evidence fabrication).
+
+Seal language must distinguish DONE (deployed) from DONE-LOCAL
+(local-only). Board rows citing EF completion must cite the deploy
+commit hash, not just the local-test commit.
