@@ -248,7 +248,7 @@ apps/mobile/app/_layout.tsx                   :: supabase/shared imports = 0  ->
 apps/mobile/app/devotional.tsx               :: supabase/shared imports = 0  -> SCAFFOLD
 ```
 
-TOTAL: 17 `.tsx` files, 0 WIRED. The ONLY wired client in the whole repo is `apps/web/src/features/lms/services/supabase.ts` (T014, commit ea47782).
+TOTAL (superseded by v4.2.3): 3 mobile files WIRED — (tabs)/index.tsx:118, class.tsx:142, class-detail.tsx:106. Web supabase service client at apps/web/src/features/lms/services/supabase.ts (T014, ea47782) is a client module, not screen wiring; remaining 14 mobile .tsx files unwired.
 
 ---
 
