@@ -430,3 +430,20 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - Cece-owned ruling queue now EMPTY. Remaining opens are assets only
   (logos, production Turnstile secret, DPIA review, AI provider key).
 - Board unchanged: 30/46 = 65.2% flat. Next: rows 33-36.
+
+## Amendment v4.2.3 — 2026-08-03, wiring block rewritten from disk evidence
+- Rows 31-32 relabeled DONE-LOCAL(MOBILE) — canon's "(WEB)" suffix was
+  wrong. Evidence: apps/mobile/app/(tabs)/index.tsx:118 (get_today_
+  devotional), class-detail.tsx:106 and class.tsx:142 (get_teacher_name).
+  Caveat: mobile not in typecheck workspace filter; tsc unverified.
+- Rows 33-36 reverted to PENDING. Screens exist on disk (profile.tsx,
+  teacher.tsx, report-card.tsx, hub.tsx + hub-detail.tsx) with zero
+  supabase references — grep verified. Prior DONE-LOCAL(WEB) rows had
+  no evidence and are ruled phantom.
+- apps/web/src/screens does not exist. No web wiring anywhere. The
+  mobile-vs-web scope question is resolved by disk: mobile is the
+  wiring target. Ruling closed as MOBILE-BY-EVIDENCE.
+- Board arithmetic: 30/46 = 65.2% flat stands (31-32 count, 33-36 never did).
+- Migration 023 absent (022 -> 024): intentional-until-contradicted.
+- v0 dependency: none remaining post-DESIGN-FREEZE (rows 28-29);
+  credit exhaustion is a non-blocker.
