@@ -410,3 +410,13 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
   (b) agent commits use distinct author identity, not Cece's.
 - Board unchanged: 30/46 = 65.2% flat, ~68.5% with partials. Next: rows
   33-36, using 3ece873 as the wiring template.
+
+## Amendment v4.2.1 — 2026-08-03, legacy-board orphan import
+- IMPORTED from deprecated docs/PLAN-STATE.md close note (2026-08-03):
+  three Cece-owned rulings absent from canon — R-SECTIONS, T-72, R-PUSH.
+  All three: status OPEN-RULING, owner Cece, non-blocking for rows 33-36.
+  Definitions live in legacy board history (git show 8371230^:docs/PLAN-STATE.md).
+- NOTED: migration files 054 and 055 absent from supabase/migrations/
+  (sequence runs 053 -> 056). Gap ruled intentional-until-contradicted
+  (squashed/rolled back); no action required.
+- Board unchanged: 30/46 = 65.2% flat. Next: rows 33-36.
