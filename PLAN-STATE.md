@@ -286,12 +286,12 @@ TOTAL: 17 `.tsx` files, 0 WIRED. The ONLY wired client in the whole repo is `app
 | 28 | Verify design items against v0 links | DONE | PASS-WITH-NOTES, docs/V0-DESIGN-REVIEW.md |
 | 29 | DESIGN FREEZE — fires on 31 | DONE | cleared per DF-32 CLEARING RULING 2026-07-22 |
 | 30 | Migration 042 consent + suppression | DONE | 042_consent_suppression.sql [a270571] |
-| 31 | Wire: Home | DONE-LOCAL(WEB) | 082 get_today_devotional() RPC added |
-| 32 | Wire: Classes | DONE-LOCAL(WEB) | 083 get_teacher_name RPC added |
-| 33 | Wire: Profile | DONE-LOCAL(WEB) pending Cece scope ruling | Cece scope ruling pending |
-| 34 | Wire: teacher screens | DONE-LOCAL(WEB) pending Cece scope ruling | Cece scope ruling pending |
-| 35 | Wire: Report Card | DONE-LOCAL(WEB) pending Cece scope ruling | Cece scope ruling pending |
-| 36 | Wire: Hub | DONE-LOCAL(WEB) pending Cece scope ruling | Cece scope ruling pending |
+| 31 | Wire: Home | DONE-LOCAL(MOBILE) | 082 get_today_devotional() RPC added |
+| 32 | Wire: Classes | DONE-LOCAL(MOBILE) | 083 get_teacher_name RPC added |
+| 33 | Wire: Profile | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
+| 34 | Wire: teacher screens | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
+| 35 | Wire: Report Card | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
+| 36 | Wire: Hub | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
 | 37 | AO-001: send-rail.md | PENDING | gated on 22 |
 | 38 | AO-002: safeguarding-pipeline.md | PENDING | gated on nothing |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md |
