@@ -56,9 +56,27 @@
 061_chapter_progress_delete_guard.sql
 062_handle_system.sql
 067_admin_tenant_scope.sql
+068_profiles_revoke_default_grants.sql
+069_grant_sweep_default_privileges.sql
+070_revoke_client_deletes.sql
+071_default_acl_hardening.sql
+072_drop_dead_policies.sql
+073_grant_normalization.sql
+074_drop_dead_chapters_policies.sql
+075_fix_handle_check_lowercase.sql
+076_handle_grant_revocation.sql
+077_chapters_read_rpc.sql
+078_leads_table.sql
+079_leads_existing_profile_flag.sql
+080_column_update_grants.sql
+081_fix_release_tenant_guard.sql
 ```
 
-Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at 067.
+Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at 081.
+
+**Board authority:** MASTER-TODO-V2.md (docs/governance/) is the sole authoritative board per single-board ruling 2026-07-15 (DEFECT-002 remediation). v3 numbering retired. PLAN-STATE.md is a snapshot/reference, not the board.
+
+**Edge Function deploy status (all 8 EFs):** UNVERIFIED-PENDING-REMOTE-CHECK — all EFs exist on disk but deployment to hosted Supabase requires `supabase functions list` against linked remote project. Deploy IDs not retrievable locally.
 
 ### Groups-related DDL (verbatim from `supabase/migrations/059_chat_tables.sql`)
 

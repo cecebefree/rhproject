@@ -36,3 +36,4 @@ supabase/.temp/
 v0-cecebefree-*/
 
 .local-backups/
+test-results/
