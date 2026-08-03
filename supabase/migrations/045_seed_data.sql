@@ -43,7 +43,7 @@ BEGIN
     INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
     VALUES (uuids[i], '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', 'authenticated',
             email_prefix[i] || '@demo.redhouse',
-            crypt('password', gen_salt('bf')), now(), now(), now(), now())
+            extensions.crypt('password', extensions.gen_salt('bf')), now(), now(), now(), now())
     ON CONFLICT (id) DO NOTHING;
   END LOOP;
 END;
