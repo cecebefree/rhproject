@@ -377,3 +377,18 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - ❌ Multiple migration/EF implementations remain UNDEPLOYED
 
 **Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; migrations 063,078,079 present.**
+## Amendment v4.1 — 2026-08-03, post-verification
+- RETRACTION: AR-1 "guard not implemented" — supabase/guard-field-register.sh
+  exists (3,925 B, executable, Jul 14) AND is wired into CI (ci.yml:155).
+  AR-1 FULLY CLOSED.
+- RULING: migration numbers 023/054/055 never existed (no deletion commits);
+  gaps-by-omission, no data risk. CLOSED.
+- CORRECTION: @redhouse/mobile IS in pnpm workspace; prior "filter" diagnosis
+  wrong. Mobile tsc: CLEAN (0 errors). Demo screens fully type-covered.
+- Row 9: PENDING -> PARTIAL. TURNSTILE_SECRET_KEY present in .env;
+  prod-vs-test key and Supabase EF secret unconfirmed (Cece).
+- Sweep error tally: 4 retractions, all false negatives (under-reported work).
+- Open blockers remaining: Cece-gated assets only (logos row 7, prod
+  Turnstile confirm row 9, DPIA review row 11, AI key for ai-tutor-proxy).
+- Next-build order (revised): 1. Wire rows 33-36  2. AO-001/AO-002 (40-41)
+  3. Row 44 adversarial RLS QA  — no technical blockers precede step 1.
