@@ -20,7 +20,7 @@
 | 7 | Ruling: record d64bb05 | Ruling | DONE - rulings/ITEM-004-d64bb05-registration-pipeline.md Sealed [pre-AR-10: no hash] |
 | 8 | Asset: v0 mobile design links | Asset | DONE - design-links.md + docs/design/05-my-groups.md,06-family-variant.md,07-teacher-variant.md,08-report-card-tab.md present [pre-AR-10: no hash] |
 | 9 | Asset: Lovable website link | Asset | DONE - tech-stack.md amended (6d1a38a): Lovable = front desk intake |
-| 10 | Asset: brand hex + logos | Asset | PARTIAL - 13 hex approved, placeholder-grade; TODO-FINAL-LOGO x6 outstanding (docs/brand-assets.md) |
+| 10 | Asset: brand hex + logos | Asset | BLOCKED-ON-ASSET — 13 hex approved and documented (docs/brand-assets.md); 6 final logos outstanding (TODO-FINAL-LOGO x6), owner: Cece, no agent action possible. Re-slotted 2026-08-03: revisit at next weekly planning. |
 | 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | DONE — SB-11 CLEARED per PLAN-STATE clearing ruling 2026-07-22 [9273fd8] |
 | 12 | Asset: Cloudflare credentials + TURNSTILE_SECRET_KEY | Asset | Pending — includes CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_PAGES_PROJECT (CI + local .env), custom domain, and production TURNSTILE_SECRET_KEY value (E2E currently uses Cloudflare test key 1x0000000000000000000000000000000AA). |
 

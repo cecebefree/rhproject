@@ -1,7 +1,7 @@
 # PLAN-STATE (F0 Ground Truth Snapshot)
 
 **Generated:** read-only audit, 2026-07-18. Source: disk + git, pasted raw per AR-1.
-**Working repo:** /Users/ce/dev/rhproject-new (HEAD ae79cce4fb31a9244ede52f1499743ec8857b617).  Updated: 2026-07-22 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied), 2026-07-27 (board sync v4, baseline 3705235).
+**Working repo:** /Users/ce/dev/rhproject-new (HEAD c4c9248).  Updated: 2026-07-22 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied), 2026-07-27 (board sync v4, baseline 3705235), 2026-08-03 (row 10 BLOCKED-ON-ASSET, row 12 TURNSTILE_SECRET_KEY scope, row 23 DONE).
 
 ---
 
@@ -467,7 +467,7 @@ Phase A (items 1-12): Cece inputs - rulings and assets. Items 6 (authority-gate 
 | 7 | Ruling: record d64bb05 | Ruling | DONE - rulings/ITEM-004-d64bb05-registration-pipeline.md Sealed [pre-AR-10: no hash] |
 | 8 | Asset: v0 mobile design links | Asset | DONE - design-links.md + docs/design/05-my-groups.md,06-family-variant.md,07-teacher-variant.md,08-report-card-tab.md present [pre-AR-10: no hash] |
 | 9 | Asset: Lovable website link | Asset | DONE - tech-stack.md amended (6d1a38a): Lovable = front desk intake |
-| 10 | Asset: brand hex + logos | Asset | PARTIAL - 13 hex approved, placeholder-grade; TODO-FINAL-LOGO x6 outstanding (docs/brand-assets.md) |
+| 10 | Asset: brand hex + logos | Asset | BLOCKED-ON-ASSET — 13 hex approved and documented (docs/brand-assets.md); 6 final logos outstanding (TODO-FINAL-LOGO x6), owner: Cece, no agent action possible. Re-slotted 2026-08-03: revisit at next weekly planning. |
 | 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | DONE — hosted Supabase URL + keys in .env; live serve 2026-07-27 (cf-ray a21f26bf/c9/d1) [2b43a4d]; supersedes SB-11 clearing [9273fd8] |
 | 12 | Asset: Cloudflare credentials | Asset | PARTIAL — pages.dev live + Turnstile secret set 2026-07-27; custom domain OPEN |
 

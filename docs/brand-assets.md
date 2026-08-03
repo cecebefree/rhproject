@@ -1,6 +1,8 @@
 # Brand Assets — Redhouse Mobile
 
-**Status:** PLACEHOLDER GRADE — approved by Cece 2026-07-15
+**Status:** BLOCKED-ON-ASSET — 13 hex approved by Cece 2026-07-15 and documented;
+6 final logos outstanding (TODO-FINAL-LOGO x6), owner: Cece. Re-slotted 2026-08-03:
+revisit at next weekly planning.
 **All items marked REPLACEABLE / TODO-FINAL until final assets delivered.**
 **Visual references:** https://redhouse.lovable.app/ , https://v0-redhouse-dashboard-ui.vercel.app
 
