@@ -69,8 +69,8 @@
 
 | # | Item | Status |
 |---|------|--------|
-| 34 | Wire: Home | **DONE-LOCAL** — 082 get_today_devotional() RPC (SECURITY DEFINER, owner=postgres, GRANT EXECUTE TO authenticated); index.tsx wired (greeting/profiles, devotional/RPC, coming_up/schedule_slot+courses, news/get_announcements); loading/error/empty states per section; tsc clean. HOSTED GAP: 082 not yet applied (requires Dashboard SQL Editor — pooler rejects service-role key as password). Smoke pending hosted apply. |
-| 35 | Wire: Classes | Pending — ITEM-59 gate lifted |
+| 34 | Wire: Home | **DONE-LOCAL** — 082 get_today_devotional() RPC (SECURITY DEFINER, owner=postgres, GRANT EXECUTE TO authenticated); index.tsx wired (greeting/profiles, devotional/RPC, coming_up/schedule_slot+courses, news/get_announcements); loading/error/empty states per section; tsc clean. HOSTED GAP: 082 pending Cece — PGRST202 confirmed still present 2026-08-03. 083 get_teacher_name also pending (needed for teacher names in class screens). |
+| 35 | Wire: Classes | **DONE-LOCAL** — class.tsx wired (student_class→courses join, teacher→courses direct, schedule_slot, teacher names via 083 RPC); class-detail.tsx wired (course header, chapters_read RPC, schedule slots, route params). 083 get_teacher_name RPC added (SECURITY DEFINER, tenant-scoped, minimal disclosure). tsc clean, 8/8 local smoke pass. HOSTED GAP: 082 + 083 pending Dashboard apply — PGRST202 confirmed on both. |
 | 36 | Wire: Profile | Pending |
 | 37 | Wire: teacher screens | Pending |
 | 38 | Wire: Report Card | Pending |

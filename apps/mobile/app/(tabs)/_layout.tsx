@@ -24,7 +24,7 @@ export default function TabLayout() {
         <Tabs.Screen name="group-chat" options={{ title: 'Chat', href: null }} />
         <Tabs.Screen name="group-info" options={{ title: 'Group Info', href: null }} />
         <Tabs.Screen name="certificates" options={{ title: 'Certificates', href: null }} />
-        <Tabs.Screen name="class-detail" options={{ title: 'Class', href: null }} />
+        <Tabs.Screen name="class-detail" options={{ title: 'Class Detail', href: null }} />
         <Tabs.Screen name="hub-detail" options={{ title: 'Enrichment', href: null }} />
       </Tabs>
     </Suspense>
