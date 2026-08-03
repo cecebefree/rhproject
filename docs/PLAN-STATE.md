@@ -381,6 +381,9 @@ included as the headline discovery per the STOP report requirement).*
 631:## S-F — Front-Desk lead tables (status: PLANNED)
 All four: PLANNED. No migrations created (register-first only, per mandate).
 
+### S-F UPDATE (audit v5, 2026-08-03)
+Lead table schema now exists on disk: 078_leads_table.sql (commit 4eea5a3) + 079_leads_existing_profile_flag.sql (commit 3705235). S-F status: PLANNED → PARTIAL (schema built, RLS + full pipeline not yet complete).
+
 ## Baselines re-run this session (verbatin summary lines)
 Tests: Files=24, Tests=240, Result: PASS
 Typecheck @redhouse/shared: tsc --noEmit (0 errors)
