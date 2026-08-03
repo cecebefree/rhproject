@@ -399,6 +399,12 @@ enabled = true
 [functions.ai-tutor-proxy]
 enabled = true
 
+[functions.release-report-card]
+enabled = true
+
+[functions.set_handle]
+enabled = true
+
 [functions.submit-lead]
 enabled = true
 verify_jwt = false

@@ -76,7 +76,20 @@ Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at
 
 **Board authority:** MASTER-TODO-V2.md (docs/governance/) is the sole authoritative board per single-board ruling 2026-07-15 (DEFECT-002 remediation). v3 numbering retired. PLAN-STATE.md is a snapshot/reference, not the board.
 
-**Edge Function deploy status (all 8 EFs):** UNVERIFIED-PENDING-REMOTE-CHECK — all EFs exist on disk but deployment to hosted Supabase requires `supabase functions list` against linked remote project. Deploy IDs not retrievable locally.
+**Edge Function deploy status (audit v5 + remote check 2026-08-03):**
+
+| EF | On disk | Deployed | Version | verify_jwt | Smoke test |
+|----|---------|----------|---------|------------|------------|
+| submit-lead | Yes | YES | v7 | false (config) | PASS (prior E2E) |
+| class-start-ping | Yes | YES | v1 | false (deployed) | PASS* |
+| validate-toggle | Yes | YES | v1 | false (deployed) | PASS |
+| set_handle | Yes | YES | v1 | false (deployed) | PASS |
+| release-report-card | Yes | **NO** | — | — | DEPLOY-BLOCKED (syntax error index.ts:10) |
+| assign_tenant | Yes | NO (pre-existing) | — | — | DEFER (admin tool, not demo-critical) |
+| ai-tutor-proxy | Yes | NO | — | — | GATE: AI key secret not provisioned |
+| verify-turnstile | Yes | NO | — | — | RETIRE recommended (submit-lead inlines Turnstile) |
+
+\* class-start-ping 500 on empty body = pre-existing (no try-catch around req.json()).
 
 ### Groups-related DDL (verbatim from `supabase/migrations/059_chat_tables.sql`)
 

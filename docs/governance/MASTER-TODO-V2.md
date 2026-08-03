@@ -126,6 +126,7 @@
 | # | Item | Gated By | Status |
 |-----------------|----------------------------|----------|------------------------|
 | 65 | submit-lead browser harness | — | DONE — 2026-07-29 (201 confirmed in browser; lead row verified in public.leads; three production-revert TODOs outstanding: SUBMIT_URL at lead-form.html:50; Turnstile sitekey 0x4AAAAAADrBMk490tYCQ_p3 at lead-form.html:42; verify_jwt = false in supabase/config.toml) |
+| 66 | EF hosted deployment parity — all 8 EFs deployed to hosted Supabase | — | **PARTIAL** — 5/8 deployed (submit-lead v7, class-start-ping v1, validate-toggle v1, set_handle v1 + pre-existing assign_tenant). 3 pending: (a) release-report-card — DEPLOY-BLOCKED: syntax error at index.ts:10 (bare YAML text outside comment, pre-existing); (b) ai-tutor-proxy — gate: AI provider API key secret not yet provisioned; (c) verify-turnstile — RETIRE recommended (submit-lead inlines Turnstile verification); (d) assign_tenant — DEFER (admin reassignment, not needed for demo). Smoke tests: class-start-ping PASS (500 on empty body = pre-existing), validate-toggle PASS, set_handle PASS. All deployed with verify_jwt=false (functions check auth internally). |
 
 ---
 
