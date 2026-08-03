@@ -972,6 +972,8 @@ Uploading... (2/2)
 
 **CF-12 status:** SATISFIED — all 7 criteria met. Criterion 7 verified PASS by Cece in-browser 2026-07-22: "App shell renders: white page with Redhouse wordmark top-left. Sparse content is EXPECTED — wiring rows 34–39 are parked; the shell rendering proves the bundle executes." Gate closed.
 
+Note (2026-08-03): row 12 scope expanded to include production TURNSTILE_SECRET_KEY (see MASTER-TODO-V2.md row 12). CF-12 SATISFIED covers the deploy pipeline only; the production TURNSTILE_SECRET_KEY value remains open under row 12. Local/E2E currently use the Cloudflare test key.
+
 ---
 
 ## Delta — 2026-07-22 session (row 23 + CF-12 deploy)
