@@ -420,3 +420,13 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
   (sequence runs 053 -> 056). Gap ruled intentional-until-contradicted
   (squashed/rolled back); no action required.
 - Board unchanged: 30/46 = 65.2% flat. Next: rows 33-36.
+
+## Amendment v4.2.2 — 2026-08-03, orphan rulings retired
+- R-SECTIONS, T-72, R-PUSH ruled OBSOLETE-UNDEFINED. Full-history pickaxe
+  (git log -S, all branches) shows the identifiers were coined in close
+  note d90ffc8 with no definition ever committed anywhere in the repo.
+  v4 48-row board, independently constructed and triple-audited, shows no
+  gap attributable to them. Reopen only with a concrete definition.
+- Cece-owned ruling queue now EMPTY. Remaining opens are assets only
+  (logos, production Turnstile secret, DPIA review, AI provider key).
+- Board unchanged: 30/46 = 65.2% flat. Next: rows 33-36.
