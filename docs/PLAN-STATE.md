@@ -562,7 +562,7 @@ Row 28 ("Office Desk mutation EFs + gate contracts v1") split into executable su
 
 | # | Item | Status |
 |---|------|--------|
-| 34 | Wire: Home | Pending |
+| 34 | Wire: Home | Pending — ITEM-59 gate lifted |
 | 35 | Wire: Classes | Pending |
 | 36 | Wire: Profile | Pending |
 | 37 | Wire: teacher screens | Pending |
@@ -1037,4 +1037,6 @@ Note (2026-08-03): row 12 scope expanded to include production TURNSTILE_SECRET_
 | 1b0220e | test(e2e): browser-201 lead-form E2E via Playwright; row 23 DONE* -> DONE |
 | c4c9248 | docs: CF-12 scope note — production TURNSTILE_SECRET_KEY remains open under row 12 |
 | 2ee8cda | docs: row 10 re-slotted BLOCKED-ON-ASSET; PLAN-STATE sync hash refreshed to c4c9248 |
+
+**Correction (2026-08-03 session):** Prior close note said "3 commits" — actual count is 5 (1b0220e, c4c9248, 2ee8cda + 2 additional: see git log a0e00f5 -10 for full list). Amended here.
 (End of session close)

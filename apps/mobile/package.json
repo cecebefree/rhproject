@@ -5,7 +5,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "dev": "expo start",
-    "build": "echo 'TODO: real Expo export build lands in Mobile phase \u2014 current noop produces dist/ for turbo' && mkdir -p dist",
+    "build": "echo 'TODO: real Expo export build lands in Mobile phase — current noop produces dist/ for turbo' && mkdir -p dist",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@redhouse/shared": "workspace:*",
+    "@supabase/supabase-js": "^2.110.7",
     "expo": "~51.0.0",
     "expo-router": "~3.5.0",
     "react": "18.2.0",

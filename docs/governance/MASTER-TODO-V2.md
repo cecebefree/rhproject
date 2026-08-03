@@ -69,7 +69,7 @@
 
 | # | Item | Status |
 |---|------|--------|
-| 34 | Wire: Home | Pending — ITEM-59 gate lifted |
+| 34 | Wire: Home | **DONE-LOCAL** — 082 get_today_devotional() RPC (SECURITY DEFINER, owner=postgres, GRANT EXECUTE TO authenticated); index.tsx wired (greeting/profiles, devotional/RPC, coming_up/schedule_slot+courses, news/get_announcements); loading/error/empty states per section; tsc clean. HOSTED GAP: 082 not yet applied (requires Dashboard SQL Editor — pooler rejects service-role key as password). Smoke pending hosted apply. |
 | 35 | Wire: Classes | Pending — ITEM-59 gate lifted |
 | 36 | Wire: Profile | Pending |
 | 37 | Wire: teacher screens | Pending |
