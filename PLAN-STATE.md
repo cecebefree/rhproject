@@ -392,3 +392,21 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
   Turnstile confirm row 9, DPIA review row 11, AI key for ai-tutor-proxy).
 - Next-build order (revised): 1. Wire rows 33-36  2. AO-001/AO-002 (40-41)
   3. Row 44 adversarial RLS QA  — no technical blockers precede step 1.
+
+## Amendment v4.2 — 2026-08-03, table adjudication (double-verified)
+- VERDICT 3ece873: REAL (Aug 3 14:49) — wires Home (MOBILE) + RPC 082 ONLY.
+  Corroborates rows 31-32 MOBILE ruling. Attributions of 3ece873 to rows
+  33-36 are FABRICATED; rows 33-36 remain OPEN.
+- SUPERSEDED: 3ca6c20 (agent sweep, Aug 4 01:00, 379 lines into this file,
+  reconciled vs stale 25a704d, blind to b3d3002/523202a). Its board section
+  is NON-CANON in its entirety; amendments v4/v4.1/v4.2 govern.
+- CANONICAL BOARD PATH: root PLAN-STATE.md only. docs/PLAN-STATE.md
+  DEPRECATED (tombstoned this commit).
+- NUMBERING: v4 48-row scheme is sole valid numbering. Legacy numbers in
+  historical commit messages (e.g. 3ece873 "row 34" = v4 row 31) are noted,
+  not authoritative.
+- STANDING RULES: (a) agent sweeps read root PLAN-STATE.md at HEAD,
+  reconcile vs latest governance commit, never a pinned baseline;
+  (b) agent commits use distinct author identity, not Cece's.
+- Board unchanged: 30/46 = 65.2% flat, ~68.5% with partials. Next: rows
+  33-36, using 3ece873 as the wiring template.
