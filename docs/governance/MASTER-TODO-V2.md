@@ -22,7 +22,7 @@
 | 9 | Asset: Lovable website link | Asset | DONE - tech-stack.md amended (6d1a38a): Lovable = front desk intake |
 | 10 | Asset: brand hex + logos | Asset | PARTIAL - 13 hex approved, placeholder-grade; TODO-FINAL-LOGO x6 outstanding (docs/brand-assets.md) |
 | 11 | Asset: Supabase cloud URL + anon key (at deploy) | Asset | DONE — SB-11 CLEARED per PLAN-STATE clearing ruling 2026-07-22 [9273fd8] |
-| 12 | Asset: Cloudflare credentials | Asset | Pending |
+| 12 | Asset: Cloudflare credentials + TURNSTILE_SECRET_KEY | Asset | Pending — includes CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_PAGES_PROJECT (CI + local .env), custom domain, and production TURNSTILE_SECRET_KEY value (E2E currently uses Cloudflare test key 1x0000000000000000000000000000000AA). |
 
 ## PHASE B — PLAN HYGIENE AND GOVERNANCE
 
@@ -43,7 +43,7 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 22 | AO-000 Edge Function scaffolding, including the EF test pattern | - | DONE — shared modules created at supabase/functions/_shared/{cors,error-envelope,auth-context}.ts; verify-turnstile refactored to use shared imports. Committed at [2b43a4d] |
-| 23 | verify-turnstile EF - reference smoke-test EF | — | **PARTIAL** — code-complete at 2b43a4d. HTTP matrix 5/5 verified on operator terminal (2026-07-27). Leads-table blocker CLEARED 2026-07-29: public.leads exists and accepts writes (evidence: row 65 submit-lead browser harness, HTTP 201 + lead row in public.leads). Remaining blockers: valid-token path re-run (last run 500 lead_write_failed, pre-table), real-browser 201 E2E, TURNSTILE_SECRET_KEY secret value (config.toml:386), row 12 Cloudflare credentials. |
+| 23 | verify-turnstile EF - reference smoke-test EF | — | DONE - full implementation: POST to Cloudflare /siteverify, CORS, fail-loud on missing secret, input validation, method enforcement; local 4/4; live deploy 3/3 2026-07-27 (9542a23, 59dd6c3, 3705235, 216f61e); registered in supabase/config.toml with TURNSTILE_SECRET_KEY env binding; browser-201 E2E passed 2026-08-03 (test keys): curl 201 + Playwright headless Chromium 201, real Turnstile widget token, leads rows verified (e2e-2026-08-03@test.local, e2e-browser-2026-08-03@test.local). Spec: tests/e2e/browser-201.spec.ts. Production provisioning remains open under row 12: real TURNSTILE_SECRET_KEY value and Cloudflare credentials (E2E ran on Cloudflare test keys). |
 | 24 | Expo port screens, including devotional fields | 5, 32 | **CLOSED** — 11/11 screens, tsc clean, freeze intact. Governance ITEM-024 sealed by Cece. Hashes: af66274, 3ad4459, 778d0ad, c4417e2 |
 | 25 | Migration 043 report-card + certs | 3 | DONE - 043_report_cards_and_certs.sql present [097a32d] |
 | 26 | RLS for 042/043 + no-FK tenant-scoping audit of the 035 pattern | 24, 25 | DONE - 044_rls_for_042_043.sql + 050/051/052/053 office-RC lifecycle + 063_family_ledger_report_card_access.sql [457f7c4] |
