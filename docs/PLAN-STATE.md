@@ -84,10 +84,10 @@ Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at
 | class-start-ping | Yes | YES | v1 | false (deployed) | PASS* |
 | validate-toggle | Yes | YES | v1 | false (deployed) | PASS |
 | set_handle | Yes | YES | v1 | false (deployed) | PASS |
-| release-report-card | Yes | **NO** | — | — | DEPLOY-BLOCKED (syntax error index.ts:10) |
+| release-report-card | Yes | YES | v1 | false (deployed) | PASS (syntax fix: bare YAML commented, pre-existing since fe72042) |
 | assign_tenant | Yes | NO (pre-existing) | — | — | DEFER (admin tool, not demo-critical) |
 | ai-tutor-proxy | Yes | NO | — | — | GATE: AI key secret not provisioned |
-| verify-turnstile | Yes | NO | — | — | RETIRE recommended (submit-lead inlines Turnstile) |
+| verify-turnstile | **RETIRED** | NO | — | — | RETIRED — submit-lead inlines Turnstile verification (lines 48–68); directory deleted from disk |
 
 \* class-start-ping 500 on empty body = pre-existing (no try-catch around req.json()).
 

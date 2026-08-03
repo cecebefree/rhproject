@@ -7,12 +7,12 @@ const corsHeaders = {
 }
 
 // Gate contracts v1: release-report-card EF transition rules
-specifies:
-  - Status transitions: draft → released → visible (one step at a time)
-  - Authority: office/admin roles only
-  - Tenant: issuer must match JWT tenant_id
-  - Immutability: content editable only in draft state
-  version: "1.0"
+// specifies:
+//   - Status transitions: draft → released → visible (one step at a time)
+//   - Authority: office/admin roles only
+//   - Tenant: issuer must match JWT tenant_id
+//   - Immutability: content editable only in draft state
+// version: "1.0"
 
 // List of valid report card statuses for validation
 const VALID_STATUSES = ['draft', 'released', 'visible']

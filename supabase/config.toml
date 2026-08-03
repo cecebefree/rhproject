@@ -387,9 +387,6 @@ TURNSTILE_SECRET_KEY = "env(TURNSTILE_SECRET_KEY)"
 NEMOTRON_ENDPOINT = "env(NEMOTRON_ENDPOINT)"
 NEMOTRON_KEY = "env(NEMOTRON_KEY)"
 
-[functions.verify-turnstile]
-enabled = true
-
 [functions.class-start-ping]
 enabled = true
 
