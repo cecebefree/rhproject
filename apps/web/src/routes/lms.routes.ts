@@ -18,4 +18,5 @@ export const lmsRoutes: readonly LmsRouteEntry[] = [
   { path: '/lms/curriculum', name: 'lms-curriculum' },
   { path: '/lms/calendar', name: 'lms-calendar' },
   { path: '/lms/profile', name: 'lms-profile' },
+  { path: '/lms/school-desk', name: 'lms-school-desk' },
 ] as const;
