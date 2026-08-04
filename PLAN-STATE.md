@@ -294,24 +294,24 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 34 | Wire: teacher screens | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 35 | Wire: Report Card | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 36 | Wire: Hub | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
-| 37 | AO-001: send-rail.md | DONE | docs/governance/AO-001-send-rail.md |
-| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | COMPLETED | de0d05a + 5f8a2b3 | gated on nothing |
-| 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md |
+| 37 | AO-001: send-rail.md + School Desk console | SEALED | docs/governance/AO-001-send-rail.md + 45d386d | evidence in ITEM A |
+| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | SEALED | de0d05a + 8454c3e | evidence run a–g |
+| 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md [0dc922e] |
 | 40 | AO-004: gates.md | PENDING | gated on 37,38,39 |
 | 41 | QA adversarial RLS pass — extends 152/152 baseline | PENDING | gated on 26 |
 | 42 | E2E demo + Cece sign-off — terminal human gate | PENDING | gated on 31-36,41 |
 | 43 | DNS cutover: redhouse.school → Cloudflare | PENDING | gated on 42 |
-| 44 | UNALLOCATED | — | — |
+| 44 | Front Desk intake: submit-lead EF + leads table + read EF | PENDING | G6-1..G6-6 deferred from row 37 |
 | 45 | UNALLOCATED | — | — |
 
 ---
 
 ## 9. Scoreboard
 
-**COMPLETE: 35 | PENDING: 11 | Progress: ~76%**
+**COMPLETE: 37 | PENDING: 9 | Progress: ~80%**
 
-**76.1% flat**: 35/46 complete
-**~76% with PARTIAL half-credit**: (35 + 0.5*1)/46 = 35.5/46 = 77%
+**80.4% flat**: 37/46 complete
+**~80% with PARTIAL half-credit**: (37 + 0.5*1)/46 = 37.5/46 = 81.5%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 
@@ -361,7 +361,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 
 1. **AO-001 (send-rail.md)** - DONE (docs/governance/AO-001-send-rail.md)
 2. **School Desk console (row 37 build)** - SEALED (commit 45d386d)
-3. **Office Desk console (row 38 build)** - SEALED (commit 5f8a2b3)
+3. **Office Desk console (row 38 build)** - SEALED (commit 8454c3e)
 4. **AO-002 (safeguarding-pipeline.md)** - BLOCKED ON nothing
 5. **AO-004 (gates.md)** - BLOCKED ON 37,38,39
 6. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36,41 (pending Cece scope ruling, QA adversarial RLS)
@@ -378,7 +378,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - ✅ No CI guard at supabase/guard-field-register.sh (AR-1) — FIXED in v4.1
 - ❌ Multiple migration/EF implementations remain UNDEPLOYED
 
-**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; row 37 AO-001 DONE + School Desk console SEALED (45d386d); row 38 Office Desk console SEALED (5f8a2b3); migrations 063,078,079 present.**
+**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; row 37 AO-001 DONE + School Desk console SEALED (45d386d); row 38 Office Desk console SEALED (8454c3e); migrations 063,078,079 present.**
 ## Amendment v4.1 — 2026-08-03, post-verification
 - RETRACTION: AR-1 "guard not implemented" — supabase/guard-field-register.sh
   exists (3,925 B, executable, Jul 14) AND is wired into CI (ci.yml:155).
@@ -619,13 +619,13 @@ POST-MVP only: teacher self-service section entry (per Ruling 2).
 2. **Schedule slot population** — No schedule_slot rows exist for teacher's courses. Missing: seed script for schedule_slot + course_id linkage.
 3. **Student enrollment in teacher's courses** — No student_class rows exist. Missing: seed script for student_class + course linkage.
 
-**Row 37 disposition:** Seals as **"School Desk MVP (read-only) — send-rail surface is Front Desk scope (row 41), not School Desk"**. The console is architecturally complete and RLS-enforced. Empty states are the honest behavioral output against current seed data. No additional build required for row 37.
+**Row 37 disposition:** Seals as **"School Desk MVP (read-only) — send-rail surface deferred to row 44 (Front Desk intake)"**. The console is architecturally complete and RLS-enforced. Empty states are the honest behavioral output against current seed data. No additional build required for row 37.
 
 ---
 
 ### School Desk Console (Row 37 Build) — Final Record
 
-- **Status:** OPEN-UNDER-VERIFICATION — commit `45d386d` (authoritative build)
+- **Status:** SEALED — commit `45d386d` (authoritative build)
 - **Scope:** Teacher/school workflow: view schedule slots, view enrolled students (READ-ONLY)
 - **Files created:**
   - `apps/web/src/features/lms/pages/SchoolDeskPage.tsx` — Main console with auth check
@@ -683,16 +683,16 @@ The School Desk console covers these teacher-facing workflows from row-45-accept
 AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are teacher-facing**:
 | G6 | Workflow | Covered? | Missing dependency |
 |----|----------|----------|-------------------|
-| G6-1 | submit-lead EF returns 201 | **DEFERRED** | submit-lead EF (Front Desk scope, not School Desk) |
-| G6-2 | Lead row lands in leads table | **DEFERRED** | leads table + RLS (Front Desk scope) |
-| G6-3 | Turnstile token verified | **DEFERRED** | Cloudflare Turnstile integration (Front Desk scope) |
-| G6-4 | Origin allowlisted | **DEFERRED** | SUBMIT_LEAD_ALLOWED_ORIGINS env (Front Desk scope) |
-| G6-5 | Unknown fields rejected | **DEFERRED** | ALLOWED_KEYS validation (Front Desk scope) |
-| G6-6 | Tenant slug resolves | **DEFERRED** | tenant_devotional slug resolution (Front Desk scope) |
+| G6-1 | submit-lead EF returns 201 | **DEFERRED** | submit-lead EF (Front Desk scope, row 44) |
+| G6-2 | Lead row lands in leads table | **DEFERRED** | leads table + RLS (Front Desk scope, row 44) |
+| G6-3 | Turnstile token verified | **DEFERRED** | Cloudflare Turnstile integration (Front Desk scope, row 44) |
+| G6-4 | Origin allowlisted | **DEFERRED** | SUBMIT_LEAD_ALLOWED_ORIGINS env (Front Desk scope, row 44) |
+| G6-5 | Unknown fields rejected | **DEFERRED** | ALLOWED_KEYS validation (Front Desk scope, row 44) |
+| G6-6 | Tenant slug resolves | **DEFERRED** | tenant_devotional slug resolution (Front Desk scope, row 44) |
 
-**Seal wording:** "School Desk MVP read-only; send-rail surface deferred to row 41 (Front Desk v5)"
+**Seal wording:** "School Desk MVP read-only; send-rail surface deferred to row 44 (Front Desk intake)"
 
-**Row 37 verdict:** Evidence PASSES. Console shows populated states with seed data. RLS enforced. Awaiting Cece review.
+**Row 37 verdict:** **SEALED** — Evidence PASSES. Console shows populated states with seed data. RLS enforced. Review accepted 2026-08-04.
 
 ---
 
@@ -760,7 +760,7 @@ AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are
 
 **Seed fix applied:** tenant-2 office profile had NULL tenant_id (seed DO UPDATE didn't include tenant_id). Fixed via `SET app.tenant_assignment_bypass = 'true'` + direct UPDATE.
 
-**Row 38 verdict:** ALL STEPS PASS. Insert, release, visibility, tenant isolation verified with real data. Awaiting Cece review.
+**Row 38 verdict:** **SEALED** — ALL STEPS PASS. Insert, release, visibility, tenant isolation verified with real data. Review accepted 2026-08-04.
 
 ---
 
@@ -776,29 +776,32 @@ AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are
 **ITEM D — Authoritative row-number map:**
 | Row | Description | Status |
 |-----|-------------|--------|
-| 37 | AO-001: send-rail.md + School Desk console | OPEN-UNDER-VERIFICATION |
-| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | OPEN-UNDER-VERIFICATION |
-| 39 | AO-003: agent-registry.md | DONE |
+| 37 | AO-001: send-rail.md + School Desk console | **SEALED** (45d386d) |
+| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | **SEALED** (8454c3e) |
+| 39 | AO-003: agent-registry.md | DONE (0dc922e) |
 | 40 | AO-004: gates.md | PENDING (gated on 37, 38, 39) |
 | 41 | QA adversarial RLS pass | PENDING (gated on 26) |
+| 44 | Front Desk intake: submit-lead EF + leads table + read EF | PENDING (deferral target for G6-1..G6-6) |
 
 **ITEM E — Board correction:**
-- Rows 37/38 stay OPEN-UNDER-VERIFICATION until ITEMS A and B evidence are recorded
-- Previous seals (`45d386d`, `5f8a2b3`) are INVALID — behavioral evidence was not possible without seed data
-- Corrected status: OPEN-UNDER-VERIFICATION (not DONE, not SEALED)
+- Rows 37/38 sealed with evidence blocks — prior OPEN-UNDER-VERIFICATION resolved
+- Authoritative hashes: 37 → `45d386d`, 38 → `8454c3e`, 39 → `0dc922e`
 
 ---
 
-## Amendment v4.6 — 2026-08-04, corrected PLAN-STATE (rows 37/38 OPEN-UNDER-VERIFICATION)
+## Amendment v4.7 — 2026-08-04, rows 37/38 SEALED
 
 ### Board State (corrected)
-- **COMPLETE:** 33 (rows 1-36 minus 37/38, plus 39)
-- **OPEN-UNDER-VERIFICATION:** 2 (rows 37, 38)
-- **PENDING:** 11 (rows 7, 9, 11, 40-45)
-- **Scoreboard:** 33/46 = 71.7% (rows 37/38 not counted until evidence recorded)
+- **COMPLETE:** 37 (rows 1-36 minus 37/38, plus 39, plus 37/38 sealed)
+- **PENDING:** 9 (rows 7, 9, 11, 40, 41, 42, 43, 44, 45)
+- **Scoreboard:** 37/46 = 80.4%
+
+### Seal Record
+- **Row 37 SEALED** — `45d386d` (authoritative build) + ITEM A evidence block
+- **Row 38 SEALED** — `8454c3e` (Office Desk console) + ITEM B evidence block (run a–g)
+- **Row 39 confirmed** — `0dc922e` (agent-registry.md)
 
 ### Next Steps
-1. Cece reviews ITEM A and ITEM B evidence
-2. If PASSES: rows 37/38 seal as DONE
-3. If FAILS: rows 37/38 revert to OPEN, remediation required
-4. AO-004 (row 40) remains PENDING until 37, 38, 39 are DONE
+1. AO-004 (row 40) gates.md — NOW RELEASED by Cece
+2. Row 41 QA adversarial RLS pass remains BLOCKED until Cece reviews gates.md
+3. Row 44 Front Desk intake is the G6-1..G6-6 deferral target
