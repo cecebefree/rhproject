@@ -447,3 +447,19 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - Migration 023 absent (022 -> 024): intentional-until-contradicted.
 - v0 dependency: none remaining post-DESIGN-FREEZE (rows 28-29);
   credit exhaustion is a non-blocker.
+
+## OWNER SCOPE RULINGS (2026-08-03)
+
+RULING 1: AI tutor = OUT of LMS scope. ai-tutor-proxy EF complete
+(7/7 tests); deploy deferred post-launch, non-blocking on rows 44-46.
+AI key removed from launch-critical owner blockers.
+
+RULING 2: Report cards IN MVP as office-loaded per student via Office
+Desk (row 38 UI + row 25 release-report-card EF). Teacher self-service
+section entry = POST-MVP, deferred. Row 35 = read-only render of the
+loaded card in the mobile app.
+
+RULING 3: MVP = SINGLE TENANT. The one tenant seeded in row 24 serves
+launch. assign_tenant EF deferral is scope-aligned, not a gap; tenant
+#2 onboarding = post-MVP. Multi-tenant schema and RLS retained as-is;
+row 44 QA still verifies cross-tenant isolation via a test tenant.
