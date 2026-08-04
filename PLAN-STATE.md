@@ -295,7 +295,8 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 35 | Wire: Report Card | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 36 | Wire: Hub | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 37 | AO-001: send-rail.md | DONE | docs/governance/AO-001-send-rail.md |
-| 38 | AO-002: safeguarding-pipeline.md | PENDING | gated on nothing |
+| 38 | AO-002: safeguarding-pipeline.md | COMPLETED | de0d05a | gated on nothing |
+| 38 | Office Desk console (row 38 scope: rc_office_insert UI + release-report-card EF + shell) | OPEN | gated on Office Desk console build |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md |
 | 40 | AO-004: gates.md | PENDING | gated on 37,38,39 |
 | 41 | QA adversarial RLS pass — extends 152/152 baseline | PENDING | gated on 26 |
