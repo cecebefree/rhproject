@@ -64,12 +64,15 @@ function SectionEmpty({ message }: { message: string }) {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatDays(days: number[]): string {
-  return days.map((d) => DAY_NAMES[d] || '').filter(Boolean).join(', ');
+  return days
+    .map((d) => DAY_NAMES[d] || '')
+    .filter(Boolean)
+    .join(', ');
 }
 
 function formatTime(time: string): string {
   const [h, m] = time.split(':');
-  const hour = parseInt(h, 10);
+  const hour = Number.parseInt(h, 10);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
   return `${h12}:${m} ${ampm}`;
@@ -114,8 +117,7 @@ export default function HomeScreen() {
       }
 
       // 2. Devotional (RPC)
-      const { data: devoc, error: devocErr } = await supabase
-        .rpc('get_today_devotional');
+      const { data: devoc, error: devocErr } = await supabase.rpc('get_today_devotional');
 
       if (!cancelled) {
         if (devocErr) newErrors.devotional = devocErr.message;
@@ -135,8 +137,7 @@ export default function HomeScreen() {
       }
 
       // 4. Announcements (RPC)
-      const { data: ann, error: annErr } = await supabase
-        .rpc('get_announcements');
+      const { data: ann, error: annErr } = await supabase.rpc('get_announcements');
 
       if (!cancelled) {
         if (annErr) newErrors.announcements = annErr.message;
@@ -150,7 +151,9 @@ export default function HomeScreen() {
     }
 
     loadAll();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const greeting = profile?.full_name ?? 'Student';
@@ -172,7 +175,8 @@ export default function HomeScreen() {
             <Text style={styles.name}>{greeting}</Text>
             {profile?.curriculum && (
               <Text style={styles.tag}>
-                {profile.curriculum}{profile.stage ? ` · ${profile.stage}` : ''}
+                {profile.curriculum}
+                {profile.stage ? ` · ${profile.stage}` : ''}
               </Text>
             )}
           </>
@@ -213,7 +217,8 @@ export default function HomeScreen() {
                   {slot.courses?.[0]?.name ?? slot.label ?? 'Class'}
                 </Text>
                 <Text style={styles.comingUpTeacher}>
-                  {formatTime(slot.start_time)}–{formatTime(slot.end_time)} · {formatDays(slot.days_of_week)}
+                  {formatTime(slot.start_time)}–{formatTime(slot.end_time)} ·{' '}
+                  {formatDays(slot.days_of_week)}
                 </Text>
               </View>
             </View>

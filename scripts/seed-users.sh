@@ -137,7 +137,7 @@ SELECT set_config('app.tenant_assignment_bypass', 'true', false);
 
 UPDATE public.profiles SET role = 'admin',   registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$ADMIN_ID';
 UPDATE public.profiles SET role = 'teacher', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$TEACHER_ID';
-UPDATE public.profiles SET role = 'student', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$STUDENT_ID';
+UPDATE public.profiles SET role = 'student', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT', curriculum = 'Cambridge', grade = '8', stage = 'Mid School', intake = 'Group A · Jan' WHERE id = '$STUDENT_ID';
 UPDATE public.profiles SET role = 'teacher', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$TEACHER2_ID';
 UPDATE public.profiles SET role = 'outside_student', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$OUTSIDE_ID';
 UPDATE public.profiles SET role = 'family',  registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$GUARDIAN_ID';

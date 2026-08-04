@@ -1,9 +1,9 @@
 // ClassScreen — Row 35 wiring
 // Live data: enrolled/teaching classes from Supabase
 
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useRouter } from 'expo-router';
 import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
@@ -57,12 +57,15 @@ function SectionEmpty({ message }: { message: string }) {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatDays(days: number[]): string {
-  return days.map((d) => DAY_NAMES[d] || '').filter(Boolean).join(', ');
+  return days
+    .map((d) => DAY_NAMES[d] || '')
+    .filter(Boolean)
+    .join(', ');
 }
 
 function formatTime(time: string): string {
   const [h, m] = time.split(':');
-  const hour = parseInt(h, 10);
+  const hour = Number.parseInt(h, 10);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
   return `${h12}:${m} ${ampm}`;
@@ -83,12 +86,17 @@ export default function ClassScreen() {
       const newErrors: Record<string, string> = {};
 
       // 1. Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user || !cancelled) {
         if (!user) newErrors.auth = 'Not authenticated';
       }
       if (!user) {
-        if (!cancelled) { setErrors(newErrors); setLoading(false); }
+        if (!cancelled) {
+          setErrors(newErrors);
+          setLoading(false);
+        }
         return;
       }
 
@@ -119,7 +127,9 @@ export default function ClassScreen() {
         // Student: see enrolled courses via student_class
         const { data, error } = await supabase
           .from('student_class')
-          .select('class_id, courses!student_class_class_id_fkey(id, title, description, status, type, platform, teacher_id)')
+          .select(
+            'class_id, courses!student_class_class_id_fkey(id, title, description, status, type, platform, teacher_id)'
+          )
           .eq('student_id', user.id)
           .eq('is_active', true);
 
@@ -127,7 +137,7 @@ export default function ClassScreen() {
           if (error) newErrors.courses = error.message;
           else {
             courseData = (data ?? [])
-              .map((row: any) => row.courses)
+              .map((row: { courses: CourseRow[] }) => row.courses[0])
               .filter(Boolean) as CourseRow[];
           }
         }
@@ -138,8 +148,7 @@ export default function ClassScreen() {
       const teacherMap = new Map<string, string>();
 
       for (const tid of teacherIds) {
-        const { data } = await supabase
-          .rpc('get_teacher_name', { p_teacher_id: tid });
+        const { data } = await supabase.rpc('get_teacher_name', { p_teacher_id: tid });
         if (data && data.length > 0) {
           teacherMap.set(tid, data[0].name);
         }
@@ -178,12 +187,17 @@ export default function ClassScreen() {
     }
 
     loadClasses();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const navigateToDetail = useCallback((courseId: string) => {
-    router.push({ pathname: '/(tabs)/class-detail', params: { courseId } });
-  }, [router]);
+  const navigateToDetail = useCallback(
+    (courseId: string) => {
+      router.push({ pathname: '/(tabs)/class-detail', params: { courseId } });
+    },
+    [router]
+  );
 
   // Group slots by course_id for quick lookup
   const slotsByCourse = new Map<string, ScheduleRow[]>();
@@ -224,13 +238,12 @@ export default function ClassScreen() {
                 </View>
               </View>
 
-              {cls.teacher_name && (
-                <Text style={styles.teacher}>{cls.teacher_name}</Text>
-              )}
+              {cls.teacher_name && <Text style={styles.teacher}>{cls.teacher_name}</Text>}
 
               {nextSlot ? (
                 <Text style={styles.schedule}>
-                  {formatDays(nextSlot.days_of_week)} · {formatTime(nextSlot.start_time)}–{formatTime(nextSlot.end_time)}
+                  {formatDays(nextSlot.days_of_week)} · {formatTime(nextSlot.start_time)}–
+                  {formatTime(nextSlot.end_time)}
                 </Text>
               ) : (
                 <Text style={styles.schedule}>No scheduled sessions</Text>
@@ -246,9 +259,7 @@ export default function ClassScreen() {
         })
       )}
 
-      {errors.schedule && !loading && (
-        <SectionError message={errors.schedule} />
-      )}
+      {errors.schedule && !loading && <SectionError message={errors.schedule} />}
     </ScrollView>
   );
 }

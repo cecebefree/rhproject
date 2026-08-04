@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { Suspense } from 'react';
-import { colors } from '../../src/theme/colors';
 import { LoadingState } from '../../src/components/LoadingState';
+import { colors } from '../../src/theme/colors';
 
 export default function TabLayout() {
   return (

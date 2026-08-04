@@ -1,9 +1,9 @@
 // ClassDetailScreen — Row 35 wiring
 // Live data: course details + chapters via chapters_read RPC + schedule slots
 
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
@@ -64,12 +64,15 @@ function SectionEmpty({ message }: { message: string }) {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatDays(days: number[]): string {
-  return days.map((d) => DAY_NAMES[d] || '').filter(Boolean).join(', ');
+  return days
+    .map((d) => DAY_NAMES[d] || '')
+    .filter(Boolean)
+    .join(', ');
 }
 
 function formatTime(time: string): string {
   const [h, m] = time.split(':');
-  const hour = parseInt(h, 10);
+  const hour = Number.parseInt(h, 10);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
   return `${h12}:${m} ${ampm}`;
@@ -102,8 +105,9 @@ export default function ClassDetailScreen() {
         if (courseErr) newErrors.course = courseErr.message;
         else if (courseData) {
           // 2. Fetch teacher name
-          const { data: teacherData } = await supabase
-            .rpc('get_teacher_name', { p_teacher_id: courseData.teacher_id });
+          const { data: teacherData } = await supabase.rpc('get_teacher_name', {
+            p_teacher_id: courseData.teacher_id,
+          });
 
           setCourse({
             ...courseData,
@@ -113,8 +117,9 @@ export default function ClassDetailScreen() {
       }
 
       // 3. Fetch chapters via RPC
-      const { data: chapterData, error: chapterErr } = await supabase
-        .rpc('chapters_read', { p_course_id: courseId });
+      const { data: chapterData, error: chapterErr } = await supabase.rpc('chapters_read', {
+        p_course_id: courseId,
+      });
 
       if (!cancelled) {
         if (chapterErr) newErrors.chapters = chapterErr.message;
@@ -141,7 +146,9 @@ export default function ClassDetailScreen() {
     }
 
     loadDetail();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [courseId]);
 
   return (
@@ -160,12 +167,8 @@ export default function ClassDetailScreen() {
                 <Text style={styles.badgeText}>{course.type}</Text>
               </View>
             </View>
-            {course.teacher_name && (
-              <Text style={styles.teacher}>{course.teacher_name}</Text>
-            )}
-            {course.description && (
-              <Text style={styles.description}>{course.description}</Text>
-            )}
+            {course.teacher_name && <Text style={styles.teacher}>{course.teacher_name}</Text>}
+            {course.description && <Text style={styles.description}>{course.description}</Text>}
           </>
         ) : (
           <SectionEmpty message="Course not found" />
@@ -184,15 +187,11 @@ export default function ClassDetailScreen() {
         ) : (
           slots.map((slot) => (
             <View key={slot.id} style={styles.scheduleRow}>
-              <Text style={styles.scheduleDays}>
-                {formatDays(slot.days_of_week)}
-              </Text>
+              <Text style={styles.scheduleDays}>{formatDays(slot.days_of_week)}</Text>
               <Text style={styles.scheduleTime}>
                 {formatTime(slot.start_time)}–{formatTime(slot.end_time)}
               </Text>
-              {slot.label && (
-                <Text style={styles.scheduleLabel}>{slot.label}</Text>
-              )}
+              {slot.label && <Text style={styles.scheduleLabel}>{slot.label}</Text>}
             </View>
           ))
         )}

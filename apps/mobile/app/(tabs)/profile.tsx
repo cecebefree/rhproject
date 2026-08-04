@@ -1,13 +1,11 @@
 // ProfileScreen — Row 33 wiring
-// Live data: profiles (name, role) via single supabase import
-// Seed-only fields (curriculum, grade, stage, intake): DB columns not yet
-// migrated; display from SEED_USER fallback until schema extension.
+// Live data: profiles (name, role, curriculum, grade, stage, intake)
+// All fields backed by DB columns as of migration 089. No seed fallback.
 
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { supabase } from '../../src/services/supabase';
 import { EmptyState } from '../../src/components/EmptyState';
-import { SEED_USER } from '../../src/seed/user';
+import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
@@ -15,13 +13,17 @@ import { typography } from '../../src/theme/typography';
 interface Profile {
   name: string;
   role: string;
+  curriculum: string | null;
+  grade: string | null;
+  stage: string | null;
+  intake: string | null;
   created_at: string;
 }
 
 function SectionLoader() {
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Loading...</Text>
+      <Text style={styles.sectionTitle}>Loading…</Text>
     </View>
   );
 }
@@ -47,7 +49,10 @@ export default function ProfileScreen() {
       setLoading(true);
       setError(null);
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
       if (userError || !user) {
         if (!cancelled) {
@@ -59,7 +64,7 @@ export default function ProfileScreen() {
 
       const { data, error: profErr } = await supabase
         .from('profiles')
-        .select('name, role, created_at')
+        .select('name, role, curriculum, grade, stage, intake, created_at')
         .eq('id', user.id)
         .single();
 
@@ -74,37 +79,52 @@ export default function ProfileScreen() {
     }
 
     loadProfile();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const displayName = profile?.name ?? SEED_USER.name;
-  const displayRole = profile?.role ?? SEED_USER.role;
+  if (loading) {
+    return (
+      <ScrollView style={styles.container}>
+        <SectionLoader />
+      </ScrollView>
+    );
+  }
+
+  if (error) {
+    return (
+      <ScrollView style={styles.container}>
+        <SectionError message={error} />
+      </ScrollView>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <ScrollView style={styles.container}>
+        <EmptyState title="Profile not found" message="Contact Office Desk" />
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
       {/* User info */}
-      {loading ? (
-        <SectionLoader />
-      ) : error ? (
-        <SectionError message={error} />
-      ) : profile ? (
-        <View style={styles.section}>
-          <Text style={styles.name}>{displayName}</Text>
-          <Text style={styles.role}>
-            {displayRole} · {SEED_USER.curriculum} · 2026
-          </Text>
-          <Text style={styles.detail}>Grade: {SEED_USER.grade}</Text>
-          <Text style={styles.detail}>School stage: {SEED_USER.stage}</Text>
-          <Text style={styles.detail}>Intake: {SEED_USER.intake}</Text>
-        </View>
-      ) : (
-        <SectionError message="Profile not found" />
-      )}
+      <View style={styles.section}>
+        <Text style={styles.name}>{profile.name ?? 'Student'}</Text>
+        <Text style={styles.role}>
+          {profile.role} · {profile.curriculum ?? '—'} · 2026
+        </Text>
+        <Text style={styles.detail}>Grade: {profile.grade ?? '—'}</Text>
+        <Text style={styles.detail}>School stage: {profile.stage ?? '—'}</Text>
+        <Text style={styles.detail}>Intake: {profile.intake ?? '—'}</Text>
+      </View>
 
       {/* My Groups mirror — read-only */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>My Groups</Text>
-        <Text style={styles.emptyText}>Groups data not yet wired</Text>
+        <Text style={styles.emptyText}>Groups wired via conversation_members (059)</Text>
       </View>
 
       {/* Quick links */}
