@@ -187,7 +187,7 @@ conversations↔conversation_members.
 - **Design freeze:** SEALED 2026-07-22 (DF-32 CLEARING RULING)
 
 ### Rows 40-43 (AO docs, DNS cutover, Cloudflare)
-- **AO docs:** AO-001 (send-rail.md), AO-002 (safeguarding-pipeline.md), AO-004 (gates.md) are all PENDING
+- **AO docs:** AO-001 (send-rail.md) DONE; AO-002 (safeguarding-pipeline.md), AO-004 (gates.md) are PENDING
 - **DNS cutover:** row 46 (DNS cutover: redhouse.school → Cloudflare) is PENDING
 - **Cloudflare:** CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_PAGES_PROJECT in .env. CF-12 deploy executed to redhouse-web.pages.dev.
 
@@ -294,7 +294,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 34 | Wire: teacher screens | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 35 | Wire: Report Card | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 36 | Wire: Hub | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
-| 37 | AO-001: send-rail.md | PENDING | gated on 22 |
+| 37 | AO-001: send-rail.md | DONE | docs/governance/AO-001-send-rail.md |
 | 38 | AO-002: safeguarding-pipeline.md | PENDING | gated on nothing |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md |
 | 40 | AO-004: gates.md | PENDING | gated on 37,38,39 |
@@ -310,7 +310,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 
 **COMPLETE: 33 | PENDING: 13 | Progress: ~72%**
 
-**71.7% flat**: 33/46 complete
+**73.9% flat**: 34/46 complete
 **~73% with PARTIAL half-credit**: (33 + 0.5*1)/46 = 33.5/46 = 72.8%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
@@ -359,7 +359,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 
 **NEXT-BUILD ORDER:**
 
-1. **AO-001 (send-rail.md)** - BLOCKED ON nothing
+1. **AO-001 (send-rail.md)** - DONE (docs/governance/AO-001-send-rail.md)
 2. **AO-002 (safeguarding-pipeline.md)** - BLOCKED ON nothing
 3. **AO-004 (gates.md)** - BLOCKED ON 37,38,39
 4. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36,41 (pending Cece scope ruling, QA adversarial RLS)
@@ -369,14 +369,14 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 
 - ❌ CF-12 scope note added for production TURNSTILE_SECRET_KEY
 - ❌ Production TURNSTILE_SECRET_KEY remains open under row 9
-- ❌ AO docs (AO-001, AO-002, AO-004) are PENDING
+- AO-001 (send-rail.md) DONE; AO docs (AO-002, AO-004) are PENDING
 - ✅ Mobile screens: 9 WIRED (index, class, class-detail, profile, teacher, report-card, hub, hub-detail, certificates); 8 remain SCAFFOLD
 - ✅ Rows 31-36 DONE-LOCAL(MOBILE) — scope ruling CLOSED per v4.2.3/v4.3
 - ❌ Site configuration at redhouse-web.pages.dev is PARTIAL
 - ✅ No CI guard at supabase/guard-field-register.sh (AR-1) — FIXED in v4.1
 - ❌ Multiple migration/EF implementations remain UNDEPLOYED
 
-**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; migrations 063,078,079 present.**
+**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; row 37 AO-001 DONE; migrations 063,078,079 present.**
 ## Amendment v4.1 — 2026-08-03, post-verification
 - RETRACTION: AR-1 "guard not implemented" — supabase/guard-field-register.sh
   exists (3,925 B, executable, Jul 14) AND is wired into CI (ci.yml:155).
@@ -390,7 +390,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - Sweep error tally: 4 retractions, all false negatives (under-reported work).
 - Open blockers remaining: Cece-gated assets only (logos row 7, prod
   Turnstile confirm row 9, DPIA review row 11, AI key for ai-tutor-proxy).
-- Next-build order (revised): 1. Wire rows 33-36  2. AO-001/AO-002 (40-41)
+- Next-build order (revised): 1. AO-002 (safeguarding-pipeline.md, row 38) 2. AO-004 (gates.md, row 40)
   3. Row 44 adversarial RLS QA  — no technical blockers precede step 1.
 
 ## Amendment v4.2 — 2026-08-03, table adjudication (double-verified)
@@ -533,7 +533,7 @@ card → parent sees it after release.
 
 ### Board arithmetic
 - DONE-LOCAL: rows 31-36 (6 rows). COMPLETE: 30→33. PENDING: 16→13.
-- 33/46 = 71.7% flat; ~73% with PARTIAL.
+- 34/46 = 73.9% flat; ~76% with PARTIAL.
 - Scope ruling CLOSED: rows 31-36 = MOBILE-BY-EVIDENCE (v4.2.3).
 
 ### Row 37/38 Scope Correction (2026-08-04)
