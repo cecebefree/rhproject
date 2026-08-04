@@ -288,7 +288,7 @@ TOTAL (superseded by v4.2.3): 3 mobile files WIRED — (tabs)/index.tsx:118, cla
 | 30 | Migration 042 consent + suppression | DONE | 042_consent_suppression.sql [a270571] |
 | 31 | Wire: Home | DONE-LOCAL(MOBILE) | 3ece873511e2cd83d00e14ec127bceefa07c2173 |
 | 32 | Wire: Classes | DONE-LOCAL(MOBILE) | 6157426753d4efd92ac01b7565876b2e015db53e |
-| 33 | Wire: Profile | DONE-LOCAL(MOBILE) | profile.tsx: supabase import + profiles.name/role read (TBA) |
+| 33 | Wire: Profile | DONE-LOCAL(MOBILE) | eea52a003a8404bce824310f592d0f85d546a4ca |
 | 34 | Wire: teacher screens | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
 | 35 | Wire: Report Card | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
 | 36 | Wire: Hub | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
