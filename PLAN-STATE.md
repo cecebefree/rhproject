@@ -497,41 +497,51 @@ the Office Desk console. Teacher self-service section entry remains POST-MVP.
 (v4.2). Disposition confirmed: root PLAN-STATE.md is the sole canonical
 board; docs/PLAN-STATE.md remains a frozen redirect stub. No further action.
 
- 499: ### Row-45: Acceptance Checklist (canon file)
- 500: Assigned to row 45 (UNALLOCATED). Canon file:
- 501: `docs/canon/row-45-acceptance-checklist.md`. Covers: intake → three desks
- 502: (Front/Office/School) → devotional → six app sections → office loads report
- 503: card → parent sees it after release.
- 504: 
- 505: ---
- 506: 
- 507: ## Amendment v4.3 — 2026-08-04, rows 34-36 sealed + migration 089 + seed fix
- 508: 
- 509: ### Migration 089 (Option A: profile fields)
- 510: - **Status:** COMMITTED — commit `0cb8f90`
- 511: - Adds nullable `curriculum`, `grade`, `stage`, `intake` to `profiles`
- 512: - Backfills seeded student with Cambridge/8/Mid School/Group A · Jan
- 513: - Safe under 057 immutability trigger (no tenant_id UPDATE)
- 514: - profile.tsx SELECTs all four fields — verified in smoke test
- 515: 
- 516: ### Rows 34-36 (mobile screen wiring)
- 517: - **Status:** DONE-LOCAL(MOBILE) — commit `bb4c472`
- 518: - teacher.tsx: conversation_members → conversations join (059)
- 519: - report-card.tsx: report_cards with `.eq('status', 'visible')` + RLS policy rc_learner_select_visible (064:3-12)
- 520: - hub.tsx: student_class → courses with `.eq('platform', 'enrichment')` filter
- 521: - hub-detail.tsx: schedule_slot for enrichment course detail
- 522: - Seed fix f360e24: added `platform` column to course inserts (Finance 101 → enrichment)
- 523: 
- 524: ### Smoke Test — 7 sections vs row 24 seed data
- 525: - **Home:** PASS — 2 devotional items (verse + reflection) + profile (Cambridge/8/Mid School)
- 526: - **Classes:** PASS — 3 enrolled courses + 1 schedule slot (Section A, Mon/Wed/Fri 9-10am)
- 527: - **Hub:** PASS — Finance 101 (platform=enrichment) after seed fix
- 528: - **Report Card:** PASS — 1 card, Mathematics/A, status=visible (draft cards excluded)
- 529: - **Certificates:** PASS — 2 certificates (Mathematics Certificate + Finance 101 Completion)
- 530: - **Profile:** PASS — curriculum=Curriculum, grade=8, stage=Mid School, intake=Group A · Jan
- 531: - **Teacher:** 0 groups (expected — 059 conversation_members has no seed data; shows empty state)
- 532: 
- 533: ### Board arithmetic
- 534: - DONE-LOCAL: rows 31-36 (6 rows). COMPLETE: 30→33. PENDING: 16→13.
- 535: - 33/46 = 71.7% flat; ~73% with PARTIAL.
- 536: - Scope ruling CLOSED: rows 31-36 = MOBILE-BY-EVIDENCE (v4.2.3).
+### Row-45: Acceptance Checklist (canon file)
+Assigned to row 45 (UNALLOCATED). Canon file:
+`docs/canon/row-45-acceptance-checklist.md`. Covers: intake → three desks
+(Front/Office/School) → devotional → six app sections → office loads report
+card → parent sees it after release.
+
+---
+
+## Amendment v4.3 — 2026-08-04, rows 34-36 sealed + migration 089 + seed fix
+
+### Migration 089 (Option A: profile fields)
+- **Status:** COMMITTED — commit `0cb8f90`
+- Adds nullable `curriculum`, `grade`, `stage`, `intake` to `profiles`
+- Backfills seeded student with Cambridge/8/Mid School/Group A · Jan
+- Safe under 057 immutability trigger (no tenant_id UPDATE)
+- profile.tsx SELECTs all four fields — verified in smoke test
+
+### Rows 34-36 (mobile screen wiring)
+- **Status:** DONE-LOCAL(MOBILE) — commit `bb4c472`
+- teacher.tsx: conversation_members → conversations join (059)
+- report-card.tsx: report_cards with `.eq('status', 'visible')` + RLS policy rc_learner_select_visible (064:3-12)
+- hub.tsx: student_class → courses with `.eq('platform', 'enrichment')` filter
+- hub-detail.tsx: schedule_slot for enrichment course detail
+- Seed fix f360e24: added `platform` column to course inserts (Finance 101 → enrichment)
+
+### Smoke Test — 7 sections vs row 24 seed data
+- **Home:** PASS — 2 devotional items (verse + reflection) + profile (Cambridge/8/Mid School)
+- **Classes:** PASS — 3 enrolled courses + 1 schedule slot (Section A, Mon/Wed/Fri 9-10am)
+- **Hub:** PASS — Finance 101 (platform=enrichment) after seed fix
+- **Report Card:** PASS — 1 card, Mathematics/A, status=visible (draft cards excluded)
+- **Certificates:** PASS — 2 certificates (Mathematics Certificate + Finance 101 Completion)
+- **Profile:** PASS — curriculum=Cambridge, grade=8, stage=Mid School, intake=Group A · Jan
+- **Teacher:** 0 groups (expected — 059 conversation_members has no seed data; shows empty state)
+
+### Board arithmetic
+- DONE-LOCAL: rows 31-36 (6 rows). COMPLETE: 30→33. PENDING: 16→13.
+- 33/46 = 71.7% flat; ~73% with PARTIAL.
+- Scope ruling CLOSED: rows 31-36 = MOBILE-BY-EVIDENCE (v4.2.3).
+
+### Row 37/38 Scope Correction (2026-08-04)
+Ruling 2 (Office Desk report cards = MVP, not POST-MVP) re-confirmed. The
+Office Desk report-card data entry UI is **MVP scope** — it INSERTs via
+`rc_office_insert` (migration 088, FOR INSERT, status='draft') and releases
+via the `release-report-card` EF (row 25, status draft→released→visible).
+Migration 088 + EF at `supabase/functions/release-report-card/index.ts:143-229`
+enforce one-step transitions. The learner RLS `rc_learner_select_visible`
+(064:3-12) gates on status='visible' + role IN ('learner','student').
+POST-MVP only: teacher self-service section entry (per Ruling 2).
