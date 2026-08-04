@@ -168,12 +168,12 @@ WHERE id = '$OTHER_ID';
 
 echo "--- Courses ---"
 db_query "
-INSERT INTO public.courses (id, title, price, status, teacher_id, type, open_to_outside)
+INSERT INTO public.courses (id, title, price, status, teacher_id, type, platform, open_to_outside)
 VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Test Course One', 0, 'published', '$TEACHER_ID', 'core', false),
-  ('22222222-2222-2222-2222-222222222222', 'Test Course Two', 0, 'published', '$TEACHER_ID', 'core', false),
-  ('33333333-3333-3333-3333-333333333333', 'Culinary Club',  0, 'published', '$TEACHER_ID', 'club', false),
-  ('44444444-4444-4444-4444-444444444444', 'Finance 101',     0, 'published', '$TEACHER_ID', 'enrichment', true)
+  ('11111111-1111-1111-1111-111111111111', 'Test Course One', 0, 'published', '$TEACHER_ID', 'core', 'core', false),
+  ('22222222-2222-2222-2222-222222222222', 'Test Course Two', 0, 'published', '$TEACHER_ID', 'core', 'core', false),
+  ('33333333-3333-3333-3333-333333333333', 'Culinary Club',  0, 'published', '$TEACHER_ID', 'club', 'club', false),
+  ('44444444-4444-4444-4444-444444444444', 'Finance 101',     0, 'published', '$TEACHER_ID', 'enrichment', 'enrichment', true)
 ON CONFLICT (id) DO NOTHING;
 "
 
