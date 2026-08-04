@@ -286,9 +286,9 @@ TOTAL (superseded by v4.2.3): 3 mobile files WIRED — (tabs)/index.tsx:118, cla
 | 28 | Verify design items against v0 links | DONE | PASS-WITH-NOTES, docs/V0-DESIGN-REVIEW.md |
 | 29 | DESIGN FREEZE — fires on 31 | DONE | cleared per DF-32 CLEARING RULING 2026-07-22 |
 | 30 | Migration 042 consent + suppression | DONE | 042_consent_suppression.sql [a270571] |
-| 31 | Wire: Home | DONE-LOCAL(MOBILE) | 082 get_today_devotional() RPC added |
-| 32 | Wire: Classes | DONE-LOCAL(MOBILE) | 083 get_teacher_name RPC added |
-| 33 | Wire: Profile | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
+| 31 | Wire: Home | DONE-LOCAL(MOBILE) | 3ece873511e2cd83d00e14ec127bceefa07c2173 |
+| 32 | Wire: Classes | DONE-LOCAL(MOBILE) | 6157426753d4efd92ac01b7565876b2e015db53e |
+| 33 | Wire: Profile | DONE-LOCAL(MOBILE) | profile.tsx: supabase import + profiles.name/role read (TBA) |
 | 34 | Wire: teacher screens | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
 | 35 | Wire: Report Card | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
 | 36 | Wire: Hub | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
@@ -463,3 +463,42 @@ RULING 3: MVP = SINGLE TENANT. The one tenant seeded in row 24 serves
 launch. assign_tenant EF deferral is scope-aligned, not a gap; tenant
 #2 onboarding = post-MVP. Multi-tenant schema and RLS retained as-is;
 row 44 QA still verifies cross-tenant isolation via a test tenant.
+
+---
+
+## VERIFICATION PASS — 2026-08-03 (pre-wiring gates)
+
+### Q1: Office INSERT on report_cards?
+**NO.** Chain audit (043→087): only `rc_admin_all` (FOR ALL, 043:115) and
+`rc_teacher_insert` (FOR INSERT, 044:30) permit INSERT. Office has only
+`rc_office_select` (SELECT, 052/053/086) and `rc_office_manage` (UPDATE,
+051/053/086) — no INSERT policy exists. Migration **088_rc_office_insert.sql**
+written to add `rc_office_insert` (FOR INSERT) using `public.jwt_tenant_id()`
+(canonical JWT path per 086/087). Checks: tenant_id = jwt_tenant_id(),
+created_by = auth.uid(), status = 'draft', role = 'office'. No per-teacher
+section ownership (Ruling 2: section entry is POST-MVP).
+
+### Q2: Office Desk UI for entering report-card data per student?
+**NO.** The Office Desk console (v5 row 41 / v4: Office Desk scope at row 25/28b)
+specifies only the `release-report-card` EF for status transitions
+(draft→released→visible). No UI screen for ENTERING report-card data per
+student is specified anywhere. 08-report-card-tab.md (frozen 2026-07-23)
+describes a section-based teacher-entry workflow (POST-MVP per Ruling 2),
+not office data entry.
+
+**Scope ADDITION — Office Desk report-card data entry:** Office Desk must
+include a UI screen to enter report-card rows per student (term, subject,
+grade) → INSERT via `rc_office_insert` (088). This is now in scope for
+the Office Desk console. Teacher self-service section entry remains POST-MVP.
+
+### Q3: docs/PLAN-STATE.md reconciliation
+**Already tombstoned.** File is 1-line: "DEPRECATED — canonical board is
+/PLAN-STATE.md at repo root. Do not edit." Tombstoned in commit 8371230
+(v4.2). Disposition confirmed: root PLAN-STATE.md is the sole canonical
+board; docs/PLAN-STATE.md remains a frozen redirect stub. No further action.
+
+### Row-45: Acceptance Checklist (canon file)
+Assigned to row 45 (UNALLOCATED). Canon file:
+`docs/canon/row-45-acceptance-checklist.md`. Covers: intake → three desks
+(Front/Office/School) → devotional → six app sections → office loads report
+card → parent sees it after release.
