@@ -297,7 +297,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 37 | AO-001: send-rail.md + School Desk console | SEALED | docs/governance/AO-001-send-rail.md + 45d386d | evidence in ITEM A |
 | 38 | AO-002: safeguarding-pipeline.md + Office Desk console | SEALED | de0d05a + 8454c3e | evidence run a–g |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md [0dc922e] |
-| 40 | AO-004: gates.md | PENDING | gated on 37,38,39 |
+| 40 | AO-004: gates.md | DONE | docs/governance/AO-004-gates.md [G1–G11 observed-only] |
 | 41 | QA adversarial RLS pass — extends 152/152 baseline | PENDING | gated on 26 |
 | 42 | E2E demo + Cece sign-off — terminal human gate | PENDING | gated on 31-36,41 |
 | 43 | DNS cutover: redhouse.school → Cloudflare | PENDING | gated on 42 |
@@ -308,10 +308,10 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 
 ## 9. Scoreboard
 
-**COMPLETE: 37 | PENDING: 9 | Progress: ~80%**
+**COMPLETE: 38 | PENDING: 8 | Progress: ~83%**
 
-**80.4% flat**: 37/46 complete
-**~80% with PARTIAL half-credit**: (37 + 0.5*1)/46 = 37.5/46 = 81.5%
+**82.6% flat**: 38/46 complete
+**~83% with PARTIAL half-credit**: (38 + 0.5*1)/46 = 38.5/46 = 83.7%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 
@@ -792,16 +792,17 @@ AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are
 ## Amendment v4.7 — 2026-08-04, rows 37/38 SEALED
 
 ### Board State (corrected)
-- **COMPLETE:** 37 (rows 1-36 minus 37/38, plus 39, plus 37/38 sealed)
-- **PENDING:** 9 (rows 7, 9, 11, 40, 41, 42, 43, 44, 45)
-- **Scoreboard:** 37/46 = 80.4%
+- **COMPLETE:** 38 (rows 1-36, 37, 38, 39, 40 sealed)
+- **PENDING:** 8 (rows 7, 9, 11, 41, 42, 43, 44, 45)
+- **Scoreboard:** 38/46 = 82.6%
 
 ### Seal Record
 - **Row 37 SEALED** — `45d386d` (authoritative build) + ITEM A evidence block
 - **Row 38 SEALED** — `8454c3e` (Office Desk console) + ITEM B evidence block (run a–g)
 - **Row 39 confirmed** — `0dc922e` (agent-registry.md)
+- **Row 40 DONE** — `AO-004-gates.md` [G1–G11 observed-only]
 
 ### Next Steps
-1. AO-004 (row 40) gates.md — NOW RELEASED by Cece
+1. AO-004 (row 40) gates.md — DONE, commit pending
 2. Row 41 QA adversarial RLS pass remains BLOCKED until Cece reviews gates.md
 3. Row 44 Front Desk intake is the G6-1..G6-6 deferral target
