@@ -309,10 +309,10 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 
 ## 9. Scoreboard
 
-**COMPLETE: 33 | PENDING: 13 | Progress: ~72%**
+**COMPLETE: 34 | PENDING: 12 | Progress: ~74%**
 
 **73.9% flat**: 34/46 complete
-**~73% with PARTIAL half-credit**: (33 + 0.5*1)/46 = 33.5/46 = 72.8%
+**~74% with PARTIAL half-credit**: (34 + 0.5*1)/46 = 34.5/46 = 75%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 
@@ -361,10 +361,11 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 **NEXT-BUILD ORDER:**
 
 1. **AO-001 (send-rail.md)** - DONE (docs/governance/AO-001-send-rail.md)
-2. **AO-002 (safeguarding-pipeline.md)** - BLOCKED ON nothing
-3. **AO-004 (gates.md)** - BLOCKED ON 37,38,39
-4. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36,41 (pending Cece scope ruling, QA adversarial RLS)
-5. **DNS cutover (row 43)** - BLOCKED ON row 42 (E2E demo sign-off)
+2. **School Desk console (row 37 build)** - SEALED (commit 45d386d)
+3. **AO-002 (safeguarding-pipeline.md)** - BLOCKED ON nothing
+4. **AO-004 (gates.md)** - BLOCKED ON 37,38,39
+5. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36,41 (pending Cece scope ruling, QA adversarial RLS)
+6. **DNS cutover (row 43)** - BLOCKED ON row 42 (E2E demo sign-off)
 
 **CRITICAL FLAGS:**
 
@@ -377,7 +378,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - ✅ No CI guard at supabase/guard-field-register.sh (AR-1) — FIXED in v4.1
 - ❌ Multiple migration/EF implementations remain UNDEPLOYED
 
-**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; row 37 AO-001 DONE; migrations 063,078,079 present.**
+**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; row 37 AO-001 DONE + School Desk console SEALED (45d386d); migrations 063,078,079 present.**
 ## Amendment v4.1 — 2026-08-03, post-verification
 - RETRACTION: AR-1 "guard not implemented" — supabase/guard-field-register.sh
   exists (3,925 B, executable, Jul 14) AND is wired into CI (ci.yml:155).
@@ -546,3 +547,25 @@ Migration 088 + EF at `supabase/functions/release-report-card/index.ts:143-229`
 enforce one-step transitions. The learner RLS `rc_learner_select_visible`
 (064:3-12) gates on status='visible' + role IN ('learner','student').
 POST-MVP only: teacher self-service section entry (per Ruling 2).
+
+---
+
+## Amendment v4.4 — 2026-08-04, School Desk console sealed (row 37 build)
+
+### School Desk Console (Row 37 Build)
+- **Status:** SEALED — commit `45d386d`
+- **Scope:** Teacher/school workflow: view schedule slots, view enrolled students
+- **Files created:**
+  - `apps/web/src/features/lms/pages/SchoolDeskPage.tsx` — Main console with auth check
+  - `apps/web/src/features/lms/components/ScheduleSlotList.tsx` — Read-only schedule view
+  - `apps/web/src/features/lms/components/StudentList.tsx` — Enrolled students view
+  - `apps/web/src/main.tsx` — React app with router, `/lms/school-desk` route
+- **Architecture:**
+  - Auth check: teacher or admin role required
+  - Tenant scope: JWT tenant_id enforced via RLS
+  - Schedule slots: ss_teacher_read policy (course ownership)
+  - Students: student_class + profiles join
+  - READ-ONLY per D22 (schedule writes are admin-only)
+- **States implemented:** loading, error, empty, forbidden/role-denied, populated
+- **Verification:** tsc --noEmit PASS, biome check PASS
+- **Row 37 build:** SEALED — real console exists with screens and routes
