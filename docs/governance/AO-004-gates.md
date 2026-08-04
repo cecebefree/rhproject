@@ -44,7 +44,7 @@ closed by migration `090_grant_service_role_rc_update.sql`; 066 left untouched.
 
 - **Name:** G1 — School Desk role gate
 - **Precondition:** A profile exists with role `teacher`, `admin`, or `student`; user is authenticated.
-- **Pass criterion:** A non-teacher/non-admin role is denied the School Desk console (the Office Desk page renders zero schedule slots for that profile); teacher and admin reach the console.
+- **Pass criterion:** A non-teacher/non-admin role is denied the School Desk console (the School Desk page renders zero schedule slots for that profile); teacher and admin reach the console.
 - **Evidence citation:** Row 37 ITEM A — verified: teacher (`11111111-1111-1111-1111-111111111111`) reaches the console; student (`ac87ccc1-2186-4c6b-aeb2-dd966032ee0e`) renders **0 schedule slots** (data-invisibility, not a rendered denial). Commit `45d386d`.
 
 ## G2 — School Desk Schedule Visibility
