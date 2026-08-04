@@ -33,7 +33,8 @@ serve(async (req) => {
   }
 
   try {
-    const { report_card_id, target_status } = await req.json()
+    const body = await req.json()
+    const { report_card_id, target_status } = body
 
     if (!report_card_id || typeof report_card_id !== 'string') {
       return new Response(
@@ -70,7 +71,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    // Resolve caller identity from the Authorization Bearer token (not the
+    // service-role client session, which has no user).
+    const authHeader = req.headers.get('authorization')
+    const jwt = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt)
     if (userError || !user) {
       return new Response(
         JSON.stringify({ success: false, error: 'No valid authentication token' }),
@@ -99,10 +105,20 @@ serve(async (req) => {
       )
     }
 
+    // Fail-closed on NULL tenant (R20: NULL tenant_id = pending state).
+    // A pending profile must not operate any report card. The old `!==`
+    // comparison silently passed when profile.tenant_id was NULL.
+    if (!profile.tenant_id) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'D-15: caller tenant_id is null (pending state) — refusing operation' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Find the report card to validate and transition
     const { data: reportCard, error: cardError } = await supabase
       .from('report_cards')
-      .select('id, student_id, status, tenant_id, released_by')
+      .select('id, student_id, status, tenant_id, released_by, term, subject, grade')
       .eq('id', report_card_id)
       .single()
 
@@ -113,7 +129,8 @@ serve(async (req) => {
       )
     }
 
-    // Validate tenant scoping - issuer must match
+    // Validate tenant scoping - issuer must match (profile.tenant_id is
+    // guaranteed non-null here by the fail-closed guard above).
     if (reportCard.tenant_id !== profile.tenant_id) {
       return new Response(
         JSON.stringify({ success: false, error: 'Caller tenant does not match report card tenant' }),
@@ -148,8 +165,11 @@ serve(async (req) => {
       )
     }
 
-    // Enforce immutability guard - content editable only in draft state
-    if (reportCard.status !== 'draft' && target_status !== reportCard.status) {
+    // Immutability guard: content fields are editable only in draft state.
+    // This EF only performs status transitions (never content edits), so the
+    // guard must NOT block the legitimate released -> visible transition.
+    // It scopes strictly to content-field changes, which this EF never accepts.
+    if (reportCard.status !== 'draft' && (body?.term || body?.subject || body?.grade)) {
       return new Response(
         JSON.stringify({ success: false, error: 'Cannot modify report card content. Immutable beyond draft state' }),
         { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -361,7 +361,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 
 1. **AO-001 (send-rail.md)** - DONE (docs/governance/AO-001-send-rail.md)
 2. **School Desk console (row 37 build)** - SEALED (commit 45d386d)
-3. **Office Desk console (row 38 build)** - SEALED (commit 8454c3e)
+3. **Office Desk console (row 38 build)** - RE-SEAL (8454c3e + migration 090) — full EF re-run done
 4. **AO-002 (safeguarding-pipeline.md)** - BLOCKED ON nothing
 5. **AO-004 (gates.md)** - BLOCKED ON 37,38,39
 6. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36,41 (pending Cece scope ruling, QA adversarial RLS)
@@ -378,7 +378,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - ✅ No CI guard at supabase/guard-field-register.sh (AR-1) — FIXED in v4.1
 - ❌ Multiple migration/EF implementations remain UNDEPLOYED
 
-**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; row 37 AO-001 DONE + School Desk console SEALED (45d386d); row 38 Office Desk console SEALED (8454c3e); migrations 063,078,079 present.**
+**Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; row 37 AO-001 DONE + School Desk console SEALED (45d386d); row 38 Office Desk console OPEN-UNDER-VERIFICATION (8454c3e, re-seal pending); migrations 063,078,079 present.**
 ## Amendment v4.1 — 2026-08-03, post-verification
 - RETRACTION: AR-1 "guard not implemented" — supabase/guard-field-register.sh
   exists (3,925 B, executable, Jul 14) AND is wired into CI (ci.yml:155).
@@ -732,25 +732,14 @@ AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are
 - **Result:** 0 rows (rc_learner_select_visible requires `status='visible'`)
 - UI and API both return empty — draft NOT visible ✓
 
-**Step e: Release via row-25 release-report-card EF**
-- EF: `supabase/functions/release-report-card/index.ts` (241 lines)
-- EF logic: validates role (admin/office), tenant match, one-step transition (draft→released)
-- Simulated draft→released: `UPDATE report_cards SET status='released', released_by=..., released_at=now() WHERE id='...' AND status='draft'`
-- **Result:** UPDATE 1 (success)
-- **Status transition verified:** `draft` → `released` ✓
-- `released_by`: `33333333-3333-3333-3333-333333333331` ✓
-- `released_at`: `2026-08-04 17:37:24.182519+00` ✓
+**Step d2: Learner cannot see draft (simulated JWT)**
+- (Historical — pre-RE-SEAL, see RE-SEAL block below for EF-verified results)
 
-**Step f: Learner sees exactly that card**
-- After released→visible transition (admin-only per EF line 167-172):
-  - `UPDATE report_cards SET status='visible', visible_at=now() WHERE id='...' AND status='released'`
-  - **Result:** UPDATE 1 (success)
-- Set JWT: `sub=ac87ccc1..., role=student`
-- Query: `SELECT id, status, term, subject, grade FROM report_cards WHERE student_id = 'ac87ccc1...'`
-- **Result:** 1 row returned
-  - `id`: `9855986d-190c-43eb-ba54-9dbf7ef3de7e` ✓ (exactly that card)
-  - `status`: `visible` ✓
-  - `term`: `Term 1 2026`, `subject`: `Mathematics`, `grade`: `A` ✓
+**Step e: Release via row-25 release-report-card EF** — ⚠ See RE-SEAL block below.
+The pre-2026-08-04 record here was a **simulated direct SQL UPDATE** (not an EF call); migration 066 granted `report_cards` to `service_role` as `SELECT, INSERT` only. The actual EF release was impossible (500 permission denied). Replaced by step e (re-run) in the RE-SEAL block below.
+
+**Step f: Learner sees exactly that card** — ⚠ See RE-SEAL block (step f1) below.
+Pre-RE-SEAL record was a simulated `UPDATE ... SET status='visible'` + simulated JWT read; replaced by the EF-verified step f1.
 
 **Step g: Tenant-2 office user can neither see nor release**
 - Tenant-2 office: `seed-office2@second.test` (id: `33333333-3333-3333-3333-333333333332`, role: `office`, tenant: `00000000-0000-0000-0000-000000000002`)
@@ -760,7 +749,33 @@ AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are
 
 **Seed fix applied:** tenant-2 office profile had NULL tenant_id (seed DO UPDATE didn't include tenant_id). Fixed via `SET app.tenant_assignment_bypass = 'true'` + direct UPDATE.
 
-**Row 38 verdict:** **SEALED** — ALL STEPS PASS. Insert, release, visibility, tenant isolation verified with real data. Review accepted 2026-08-04.
+### RE-SEAL — 2026-08-04 (AO-004 re-verification found step e had been a simulated UPDATE, not an EF call)
+- **Root cause:** migration 066 comment claimed `report_cards: SELECT/INSERT (release-report-card EF)` but granted only `SELECT, INSERT` — never `UPDATE`. The EF's service-role write therefore returned 500 (`permission denied for table report_cards`) on every release.
+- **Fix:** migration `090_grant_service_role_rc_update.sql` — `GRANT UPDATE ON public.report_cards TO service_role;` (minimal, table+privilege-specific; 066 left untouched). Applied via `supabase db push --local` (recorded in schema_migrations).
+- **Re-run (real EF HTTP calls, office token `909ca8cb`, admin token elevated to role=admin, same account):**
+
+**Step e (re-run): Release via row-25 release-report-card EF — draft → released**
+- EF: `supabase/functions/release-report-card/index.ts`
+- `POST /functions/v1/release-report-card {report_card_id:"c1c1c1c1...","target_status":"released"}`
+- **Result:** HTTP 200 `{"success":true,"new_status":"released","released_by":"909ca8cb-52c4-49bb-a71f-644f0bcee38e"}`
+- DB: `status=released, released_by=909ca8cb..., released_at set` ✓ (one-step draft→released via EF)
+
+**Step f1 (re-run): Released → visible — admin ONLY**
+- `POST /functions/v1/release-report-card {report_card_id:"c1c1c1c1...","target_status":"visible"}` with **office** token:
+  - **Result:** HTTP 403 `{"success":false,"error":"Only admin can make report cards visible"}` ✓ (office correctly denied; card stays `released`)
+- Same call with **admin** token:
+  - **Result:** HTTP 200 `{"success":true,"new_status":"visible","visible_at":"2026-08-04T19:07:25.748Z"}` ✓
+  - DB: `status=visible, visible_at set` ✓ (admin one-step released→visible via EF)
+
+**Step f2 (two-step jump rejection — G7 clause evidence):**
+- Fresh draft card `c2c2c2c2...`; `POST ... {target_status:"visible"}` (office):
+  - **Result:** HTTP 409 `{"success":false,"error":"Invalid transition. Must advance exactly one status"}` ✓ (forward two-step jump rejected)
+
+**Step h (learner visibility after admin-release):**
+- Learner token (`sub=ac87ccc1, role=authenticated, app_metadata.role=student, tenant_id=...001`) `GET /rest/v1/report_cards?student_id=eq.ac87ccc1...`
+- **Result:** HTTP 200 — returns exactly the `visible` cards, **0 draft** cards (rc_learner_select_visible filters on `status='visible'`) ✓
+
+**Row 38 verdict:** **RE-SEAL** — ALL STEPS VERIFIED via actual EF calls (no simulated UPDATE). Insert (c), draft→released office (e, 200), released→visible admin-only (f1, 403-for-office / 200-for-admin), two-step jump rejected (f2, 409), tenant-2 isolation (g), learner sees only visible (h). Re-sealed 2026-08-04 with migration 090.
 
 ---
 
@@ -777,9 +792,9 @@ AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are
 | Row | Description | Status |
 |-----|-------------|--------|
 | 37 | AO-001: send-rail.md + School Desk console | **SEALED** (45d386d) |
-| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | **SEALED** (8454c3e) |
+| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | **RE-SEAL** (8454c3e + migration 090) — see RE-SEAL block |
 | 39 | AO-003: agent-registry.md | DONE (0dc922e) |
-| 40 | AO-004: gates.md | PENDING (gated on 37, 38, 39) |
+| 40 | AO-004: gates.md | DONE (15b92b5 v1 → v1.1 pending this commit) |
 | 41 | QA adversarial RLS pass | PENDING (gated on 26) |
 | 44 | Front Desk intake: submit-lead EF + leads table + read EF | PENDING (deferral target for G6-1..G6-6) |
 
@@ -792,17 +807,18 @@ AO-001 send-rail workflows (G6-1..G6-6) are ALL Front Desk intake — **none are
 ## Amendment v4.7 — 2026-08-04, rows 37/38 SEALED
 
 ### Board State (corrected)
-- **COMPLETE:** 38 (rows 1-36, 37, 38, 39, 40 sealed)
+- **COMPLETE:** 38 (rows 1-36, 37, 38 RE-SEAL, 39, 40 done)
 - **PENDING:** 8 (rows 7, 9, 11, 41, 42, 43, 44, 45)
 - **Scoreboard:** 38/46 = 82.6%
 
 ### Seal Record
 - **Row 37 SEALED** — `45d386d` (authoritative build) + ITEM A evidence block
-- **Row 38 SEALED** — `8454c3e` (Office Desk console) + ITEM B evidence block (run a–g)
+- **Row 38 RE-SEAL** — `8454c3e` (office console) + migration 090 + full EF re-run (steps e, f1, f2, h); 2026-08-04. Previously SEALED; reopened per AO-004 re-seal discipline (step e was a simulated UPDATE, 066 lacked service_role UPDATE grant), re-sealed after root-cause fix + genuine EF evidence.
 - **Row 39 confirmed** — `0dc922e` (agent-registry.md)
-- **Row 40 DONE** — `AO-004-gates.md` [G1–G11 observed-only]
+- **Row 40 DONE** — `AO-004-gates.md` v1.1 (g11-1/g11-2/g11-3 observed + EF fix + migration 090 hash)
 
 ### Next Steps
-1. AO-004 (row 40) gates.md — DONE, commit pending
-2. Row 41 QA adversarial RLS pass remains BLOCKED until Cece reviews gates.md
-3. Row 44 Front Desk intake is the G6-1..G6-6 deferral target
+1. **Row 41 QA adversarial RLS pass — RELEASED on Cece-acceptance of this commit's v1.1 gates.md.** Attack: G11 fail-closed-on-NULL + G7 transition rules first.
+2. Row 44 Front Desk intake is the G6-1..G6-6 deferral target
+3. Row 38 re-seal evidence complete; gates.md v1.1 cites migration 090 hash
+
