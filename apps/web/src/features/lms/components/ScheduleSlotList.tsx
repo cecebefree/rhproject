@@ -52,7 +52,8 @@ export function ScheduleSlotList({ tenantId }: ScheduleSlotListProps) {
         if (slotsError) {
           setError(slotsError.message);
         } else {
-          const mapped = (data ?? []).map((slot: Record<string, unknown>) => ({
+          // biome-ignore lint/suspicious/noExplicitAny: Supabase join query returns complex nested types
+          const mapped = (data ?? []).map((slot: any) => ({
             ...slot,
             course_title: slot.courses?.title,
           }));

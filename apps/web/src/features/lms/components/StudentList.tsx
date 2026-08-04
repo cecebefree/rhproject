@@ -50,7 +50,8 @@ export function StudentList({ tenantId }: StudentListProps) {
         if (studentsError) {
           setError(studentsError.message);
         } else {
-          const mapped = (data ?? []).map((row: Record<string, unknown>) => ({
+          // biome-ignore lint/suspicious/noExplicitAny: Supabase join query returns complex nested types
+          const mapped = (data ?? []).map((row: any) => ({
             id: row.profiles.id,
             name: row.profiles.name,
             curriculum: row.profiles.curriculum,
