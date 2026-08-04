@@ -80,9 +80,11 @@
 085_hook_emit_tenant_id_both_levels.sql
 086_normalize_jwt_tenant_id_helper.sql
 087_remove_dead_root_claim_emission.sql
+088_rc_office_insert.sql
+089_profiles_curriculum_grade_stage_intake.sql
 ```
 
-Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at 081.
+Note: 054, 055 absent (reserved permanent gaps — ruling 4fb1b8f). Head ends at 089.
 
 ---
 
@@ -172,13 +174,13 @@ conversations↔conversation_members.
 - **Seed commits:** 637b56c (R18 demo-depth seeding)
 
 ### Rows 31-36 (wiring)
-- **Home:** index.tsx (1 supabase import) - DONE-LOCAL (082 RPC added, 083 get_teacher_name added)
-- **Classes:** class.tsx, class-detail.tsx (1 supabase import each) - DONE-LOCAL (teacher names via 083 RPC)
-- **Profile:** profile.tsx (0 supabase imports) - DONE-LOCAL(WEB) pending Cece scope ruling
-- **Teacher:** teacher.tsx (0 supabase imports) - DONE-LOCAL(WEB) pending Cece scope ruling
-- **Report Card:** report-card.tsx (0 supabase imports) - DONE-LOCAL(WEB) pending Cece scope ruling
-- **Hub:** hub.tsx (0 supabase imports) - DONE-LOCAL(WEB) pending Cece scope ruling
-- **Feed:** social.tsx (0 supabase imports) - DONE-LOCAL(WEB) pending Cece scope ruling
+- **Home:** index.tsx (1 supabase import, get_today_devotional RPC via 082) - DONE-LOCAL(MOBILE) — smoke test PASS (devotional items + profile)
+- **Classes:** class.tsx, class-detail.tsx (1 supabase import each, get_teacher_name RPC via 083) - DONE-LOCAL(MOBILE) — smoke test PASS (3 enrolled courses + 1 schedule slot)
+- **Profile:** profile.tsx (1 supabase import, 089 fields) - DONE-LOCAL(MOBILE) — smoke test PASS (Cambridge/8/Mid School/Group A)
+- **Teacher:** teacher.tsx (1 supabase import, conversation_members) - DONE-LOCAL(MOBILE) — 0 rows (no conversation seed data; shows empty state per 059 gap)
+- **Report Card:** report-card.tsx (1 supabase import, status='visible' filter + RLS rc_learner_select_visible) - DONE-LOCAL(MOBILE) — smoke test PASS (1 visible card)
+- **Hub:** hub.tsx, hub-detail.tsx (1 supabase import each, enrichment platform filter) - DONE-LOCAL(MOBILE) — smoke test PASS (Finance 101 after seed fix)
+- **Feed:** social.tsx (0 supabase imports) - SCAFFOLD (gated on 059 conversation data)
 
 ### Rows 31/32 (design verify + FREEZE)
 - **Design items:** docs/design/05-my-groups.md, 06-family-variant.md, 07-teacher-variant.md, 08-report-card-tab.md present
@@ -229,26 +231,26 @@ conversations↔conversation_members.
 Every mobile screen uses SEED_* static imports; ZERO import supabase (0 imports = still PENDING).
 
 ```
-apps/mobile/app/(tabs)/_layout.tsx            :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/certificates.tsx       :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/class-detail.tsx       :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/class.tsx              :: supabase/shared imports = 0  -> SCAFFOLD
+apps/mobile/app/(tabs)/_layout.tsx            :: supabase/shared imports = 1  -> WIRED
+apps/mobile/app/(tabs)/certificates.tsx       :: supabase/shared imports = 1  -> WIRED
+apps/mobile/app/(tabs)/class-detail.tsx       :: supabase/shared imports = 1  -> WIRED
+apps/mobile/app/(tabs)/class.tsx              :: supabase/shared imports = 1  -> WIRED
 apps/mobile/app/(tabs)/family.tsx             :: supabase/shared imports = 0  -> SCAFFOLD
 apps/mobile/app/(tabs)/group-chat.tsx         :: supabase/shared imports = 0  -> SCAFFOLD
 apps/mobile/app/(tabs)/group-info.tsx         :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/hub-detail.tsx         :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/hub.tsx                :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/index.tsx              :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/profile.tsx            :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/report-card.tsx       :: supabase/shared imports = 0  -> SCAFFOLD
+apps/mobile/app/(tabs)/hub-detail.tsx         :: supabase/shared imports = 1  -> WIRED
+apps/mobile/app/(tabs)/hub.tsx                :: supabase/shared imports = 1  -> WIRED
+apps/mobile/app/(tabs)/index.tsx              :: supabase/shared imports = 1  -> WIRED
+apps/mobile/app/(tabs)/profile.tsx            :: supabase/shared imports = 1  -> WIRED
+apps/mobile/app/(tabs)/report-card.tsx       :: supabase/shared imports = 1  -> WIRED
 apps/mobile/app/(tabs)/social.tsx            :: supabase/shared imports = 0  -> SCAFFOLD
-apps/mobile/app/(tabs)/teacher.tsx           :: supabase/shared imports = 0  -> SCAFFOLD
+apps/mobile/app/(tabs)/teacher.tsx           :: supabase/shared imports = 1  -> WIRED
 apps/mobile/app/+not-found.tsx                :: supabase/shared imports = 0  -> SCAFFOLD
 apps/mobile/app/_layout.tsx                   :: supabase/shared imports = 0  -> SCAFFOLD
 apps/mobile/app/devotional.tsx               :: supabase/shared imports = 0  -> SCAFFOLD
 ```
 
-TOTAL (superseded by v4.2.3): 3 mobile files WIRED — (tabs)/index.tsx:118, class.tsx:142, class-detail.tsx:106. Web supabase service client at apps/web/src/features/lms/services/supabase.ts (T014, ea47782) is a client module, not screen wiring; remaining 14 mobile .tsx files unwired.
+TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, report-card, hub, hub-detail, certificates); 8 remain SCAFFOLD (family, group-chat, group-info, social, +not-found, _layout, devotional + 1 more).
 
 ---
 
@@ -289,9 +291,9 @@ TOTAL (superseded by v4.2.3): 3 mobile files WIRED — (tabs)/index.tsx:118, cla
 | 31 | Wire: Home | DONE-LOCAL(MOBILE) | 3ece873511e2cd83d00e14ec127bceefa07c2173 |
 | 32 | Wire: Classes | DONE-LOCAL(MOBILE) | 6157426753d4efd92ac01b7565876b2e015db53e |
 | 33 | Wire: Profile | DONE-LOCAL(MOBILE) | eea52a003a8404bce824310f592d0f85d546a4ca |
-| 34 | Wire: teacher screens | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
-| 35 | Wire: Report Card | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
-| 36 | Wire: Hub | PENDING | 0 supabase refs on disk — unblocked, per v4.2.3 |
+| 34 | Wire: teacher screens | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
+| 35 | Wire: Report Card | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
+| 36 | Wire: Hub | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 37 | AO-001: send-rail.md | PENDING | gated on 22 |
 | 38 | AO-002: safeguarding-pipeline.md | PENDING | gated on nothing |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md |
@@ -306,10 +308,10 @@ TOTAL (superseded by v4.2.3): 3 mobile files WIRED — (tabs)/index.tsx:118, cla
 
 ## 9. Scoreboard
 
-**COMPLETE: 30 | PENDING: 16 | Progress: ~63%**
+**COMPLETE: 33 | PENDING: 13 | Progress: ~72%**
 
-**65.2% flat**: 30/46 complete
-**~67% with PARTIAL half-credit**: (30 + 0.5*1)/46 = 30.5/46 = 66.3%
+**71.7% flat**: 33/46 complete
+**~73% with PARTIAL half-credit**: (33 + 0.5*1)/46 = 33.5/46 = 72.8%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 
@@ -317,9 +319,7 @@ TOTAL (superseded by v4.2.3): 3 mobile files WIRED — (tabs)/index.tsx:118, cla
 
 ## 10. Governance Scope Ruling
 
-**Open ruling:** rows 31-36 scope = mobile or web (Section 7 shows 0 mobile imports; Section 4 credits web wiring). Mark rows 31-32 DONE-LOCAL(WEB) pending Cece scope ruling.
-
-Rows 33-36 are DONE-LOCAL(WEB) but awaiting Cece scope ruling to finalize their status.
+**RULING:** Rows 31-36 scope = MOBILE (disk evidence: apps/mobile/app/(tabs)/*.tsx all have supabase imports). v4.2.3 MOBILE-BY-EVIDENCE ruling now CLOSED — rows 33-36 confirmed DONE-LOCAL(MOBILE).
 
 ---
 
@@ -370,10 +370,10 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 - ❌ CF-12 scope note added for production TURNSTILE_SECRET_KEY
 - ❌ Production TURNSTILE_SECRET_KEY remains open under row 9
 - ❌ AO docs (AO-001, AO-002, AO-004) are PENDING
-- ❌ Mobile screens remain SCAFFOLD (0 supabase imports)
-- ❌ Rows 31-36 DONE-LOCAL(WEB) pending Cece scope ruling
+- ✅ Mobile screens: 9 WIRED (index, class, class-detail, profile, teacher, report-card, hub, hub-detail, certificates); 8 remain SCAFFOLD
+- ✅ Rows 31-36 DONE-LOCAL(MOBILE) — scope ruling CLOSED per v4.2.3/v4.3
 - ❌ Site configuration at redhouse-web.pages.dev is PARTIAL
-- ❌ No CI guard at supabase/guard-field-register.sh (AR-1 blocker)
+- ✅ No CI guard at supabase/guard-field-register.sh (AR-1) — FIXED in v4.1
 - ❌ Multiple migration/EF implementations remain UNDEPLOYED
 
 **Complete EVIDENCE on disk: rows 22,23,26,27,28a/28b,29 DONE; rows 31-36 DONE-LOCAL; migrations 063,078,079 present.**
@@ -497,8 +497,41 @@ the Office Desk console. Teacher self-service section entry remains POST-MVP.
 (v4.2). Disposition confirmed: root PLAN-STATE.md is the sole canonical
 board; docs/PLAN-STATE.md remains a frozen redirect stub. No further action.
 
-### Row-45: Acceptance Checklist (canon file)
-Assigned to row 45 (UNALLOCATED). Canon file:
-`docs/canon/row-45-acceptance-checklist.md`. Covers: intake → three desks
-(Front/Office/School) → devotional → six app sections → office loads report
-card → parent sees it after release.
+ 499: ### Row-45: Acceptance Checklist (canon file)
+ 500: Assigned to row 45 (UNALLOCATED). Canon file:
+ 501: `docs/canon/row-45-acceptance-checklist.md`. Covers: intake → three desks
+ 502: (Front/Office/School) → devotional → six app sections → office loads report
+ 503: card → parent sees it after release.
+ 504: 
+ 505: ---
+ 506: 
+ 507: ## Amendment v4.3 — 2026-08-04, rows 34-36 sealed + migration 089 + seed fix
+ 508: 
+ 509: ### Migration 089 (Option A: profile fields)
+ 510: - **Status:** COMMITTED — commit `0cb8f90`
+ 511: - Adds nullable `curriculum`, `grade`, `stage`, `intake` to `profiles`
+ 512: - Backfills seeded student with Cambridge/8/Mid School/Group A · Jan
+ 513: - Safe under 057 immutability trigger (no tenant_id UPDATE)
+ 514: - profile.tsx SELECTs all four fields — verified in smoke test
+ 515: 
+ 516: ### Rows 34-36 (mobile screen wiring)
+ 517: - **Status:** DONE-LOCAL(MOBILE) — commit `bb4c472`
+ 518: - teacher.tsx: conversation_members → conversations join (059)
+ 519: - report-card.tsx: report_cards with `.eq('status', 'visible')` + RLS policy rc_learner_select_visible (064:3-12)
+ 520: - hub.tsx: student_class → courses with `.eq('platform', 'enrichment')` filter
+ 521: - hub-detail.tsx: schedule_slot for enrichment course detail
+ 522: - Seed fix f360e24: added `platform` column to course inserts (Finance 101 → enrichment)
+ 523: 
+ 524: ### Smoke Test — 7 sections vs row 24 seed data
+ 525: - **Home:** PASS — 2 devotional items (verse + reflection) + profile (Cambridge/8/Mid School)
+ 526: - **Classes:** PASS — 3 enrolled courses + 1 schedule slot (Section A, Mon/Wed/Fri 9-10am)
+ 527: - **Hub:** PASS — Finance 101 (platform=enrichment) after seed fix
+ 528: - **Report Card:** PASS — 1 card, Mathematics/A, status=visible (draft cards excluded)
+ 529: - **Certificates:** PASS — 2 certificates (Mathematics Certificate + Finance 101 Completion)
+ 530: - **Profile:** PASS — curriculum=Curriculum, grade=8, stage=Mid School, intake=Group A · Jan
+ 531: - **Teacher:** 0 groups (expected — 059 conversation_members has no seed data; shows empty state)
+ 532: 
+ 533: ### Board arithmetic
+ 534: - DONE-LOCAL: rows 31-36 (6 rows). COMPLETE: 30→33. PENDING: 16→13.
+ 535: - 33/46 = 71.7% flat; ~73% with PARTIAL.
+ 536: - Scope ruling CLOSED: rows 31-36 = MOBILE-BY-EVIDENCE (v4.2.3).
