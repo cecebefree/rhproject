@@ -409,6 +409,29 @@ WHERE NOT EXISTS (
     SELECT 1 FROM public.certificates
     WHERE user_id = '$STUDENT_ID' AND cert_class = 'enrichment' AND title = 'Finance 101 Completion'
 );
+
+-- Draft card (invisible to learner; visible only after release via EF)
+INSERT INTO public.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
+SELECT '$STUDENT_ID', '2026 Term 1', 'Science', 'B', 'draft',
+       '$TEACHER_ID', NULL, NULL, NULL, '$REDHOUSE_TENANT'
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.report_cards
+    WHERE student_id = '$STUDENT_ID' AND term = '2026 Term 1' AND subject = 'Science'
+);
+"
+
+# ── 17. CONVERSATIONS + MEMBERS (059) ────────────────────────────────
+
+echo ""
+echo "--- Conversations + members ---"
+db_query "
+INSERT INTO public.conversations (id, tenant_id, category, created_by, created_at, updated_at)
+VALUES ('e0000000-0000-0000-0000-000000000001', '$REDHOUSE_TENANT', 'general', '$TEACHER_ID', now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.conversation_members (conversation_id, profile_id, role, joined_at)
+VALUES ('e0000000-0000-0000-0000-000000000001', '$TEACHER_ID', 'lead', now())
+ON CONFLICT (conversation_id, profile_id) DO NOTHING;
 "
 
 echo ""
