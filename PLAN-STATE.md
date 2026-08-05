@@ -298,7 +298,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 38 | AO-002: safeguarding-pipeline.md + Office Desk console | SEALED | de0d05a + 8454c3e | evidence run a–g |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md [0dc922e] |
 | 40 | AO-004: gates.md | DONE | docs/governance/AO-004-gates.md [G1–G11 observed-only] |
-| 41 | QA adversarial RLS pass — extends 152/152 baseline | PENDING | gated on 26 |
+| 41 | QA adversarial RLS pass — extends 152/152 baseline | BLOCKED (41a-7 false positive, 41a-3 open) | gated on 26 |
 | 42 | E2E demo + Cece sign-off — terminal human gate | PENDING | gated on 31-36,41 |
 | 43 | DNS cutover: redhouse.school → Cloudflare | PENDING | gated on 42 |
 | 44 | Front Desk intake: submit-lead EF + leads table + read EF | PENDING | G6-1..G6-6 deferred from row 37 |
@@ -795,7 +795,7 @@ Pre-RE-SEAL record was a simulated `UPDATE ... SET status='visible'` + simulated
 | 38 | AO-002: safeguarding-pipeline.md + Office Desk console | **RE-SEAL** (8454c3e + migration 090) — see RE-SEAL block |
 | 39 | AO-003: agent-registry.md | DONE (0dc922e) |
 | 40 | AO-004: gates.md | DONE (15b92b5 v1 → v1.1 pending this commit) |
-| 41 | QA adversarial RLS pass | **BLOCKED** (41a-3: courses cross-tenant SELECT, 41a-7: NULL-tenant UPDATE on report_cards — root cause pending) |
+| 41 | QA adversarial RLS pass | **BLOCKED** (41a-7: false positive, 41a-3: courses cross-tenant SELECT — root cause pending) |
 | 44 | Front Desk intake: submit-lead EF + leads table + read EF | PENDING (deferral target for G6-1..G6-6) |
 
 **ITEM E — Board correction:**
@@ -804,9 +804,9 @@ Pre-RE-SEAL record was a simulated `UPDATE ... SET status='visible'` + simulated
 
 ---
 
-### ROW 41 — QA ADVERSARIAL RLS PASS (BLOCKED — 2 findings pending root cause)
+### ROW 41 — QA ADVERSARIAL RLS PASS (BLOCKED — 1 finding pending root cause)
 
-**Status:** BLOCKED — 2 findings pending root cause (41a-3, 41a-7). Do not mark released, do not mark resolved.
+**Status:** BLOCKED — 1 finding pending root cause (41a-3 only). 41a-7 closed as false positive (test methodology defect). Do not mark released, do not mark resolved.
 
 **Attack date:** 2026-08-04
 **Attack script:** `.swarm/r41-attack-a.sh` (NULL-tenant office user attacks tenant-scoped tables + release EF)
@@ -843,14 +843,15 @@ Pre-RE-SEAL record was a simulated `UPDATE ... SET status='visible'` + simulated
 - `Authorization: Bearer $TOK` (NULL-tenant office)
 - **Result:** HTTP 403 `new row violates row-level security policy for table "report_cards"` — RLS correctly blocks write ✓
 
-#### 41a-7: NULL-tenant UPDATE a draft card via REST → 204 (FINDING)
+#### 41a-7: NULL-tenant UPDATE a draft card via REST → 204 (FALSE POSITIVE — test methodology defect)
 - `PATCH /rest/v1/report_cards?id=eq.025b1210-26cb-448d-aa81-cd0a035952aa` with `{"grade":"Z"}`
 - `Authorization: Bearer $TOK` (NULL-tenant office)
 - `Prefer: return=minimal`
-- **Result:** HTTP 204 (success) — NULL-tenant office user can UPDATE draft report cards
-- **Expected:** 403 (RLS deny — NULL-tenant user should not be able to modify any report cards)
-- **Root cause:** `rc_office_manage` policy uses `tenant_id = jwt_tenant_id()`. For NULL-tenant user, `jwt_tenant_id()` returns NULL. Under standard SQL NULL semantics, `NULL = NULL` evaluates to NULL (not TRUE), so the policy should deny. Observed UPDATE succeeded regardless. Root cause not yet determined — possibly `jwt_tenant_id()` GUC not set, or policy evaluates differently at runtime.
-- **Severity:** HIGH — NULL-tenant user can modify report cards belonging to any tenant.
+- **Result:** HTTP 204 — initially reported as "success", but 204 with `return=minimal` is indistinguishable from a zero-row RLS-filtered match
+- **Confirming evidence:** Superuser read (bypasses RLS) showed `grade='B'` (unchanged from pre-attack value) and `updated_at='2026-08-04 09:49:30'` (predates attack run). No mutation occurred.
+- **Root cause of false positive:** Attack script used `Prefer: return=minimal`, which returns HTTP 204 for both a real 1-row update and a zero-row RLS-filtered match. The 204 gave no way to distinguish the two. The `rc_office_manage` USING clause (`tenant_id = jwt_tenant_id()`) correctly evaluates to NULL for this caller (NULL-tenant user), and the combined permissive UPDATE policy logic (OR across rc_admin_all, rc_office_manage, rc_teacher_update_own) correctly evaluates to NULL — no row is visible to the UPDATE. RLS denied the update; zero rows were affected; PostgREST returned 204 because `return=minimal` omits the response body.
+- **Classification:** Test methodology defect — false positive. No schema or policy fix required.
+- **Script fix:** Change `Prefer: return=minimal` to `Prefer: return=representation` in all mutation-attempt tests; add explicit check for empty response body `[]`.
 
 #### 41a-8: NULL-tenant release EF → 403 D-15 (PASS)
 - `POST /functions/v1/release-report-card` with `{"report_card_id":"025b1210...","target_status":"released"}`
@@ -863,7 +864,7 @@ Pre-RE-SEAL record was a simulated `UPDATE ... SET status='visible'` + simulated
 - **Action needed:** Fix the inline Python bytes bug in the attack script, regenerate forged token, re-run this test.
 - **Status:** Tooling defect only, not a security finding.
 
-#### Row 41 verdict (41a pass): **BLOCKED — 2 findings (41a-3, 41a-7) pending root cause analysis.** Remaining attacks (41b G7 transitions, 41c role gates, 41d lifecycle bypass) not executed pending resolution.
+#### Row 41 verdict (41a pass): **BLOCKED — 1 finding (41a-3: courses cross-tenant SELECT) pending root cause.** 41a-7 closed as false positive (return=minimal produced unverifiable 204; superuser read confirmed zero mutation). Remaining attacks (41b G7 transitions, 41c role gates, 41d lifecycle bypass) not executed pending resolution.
 
 ---
 
