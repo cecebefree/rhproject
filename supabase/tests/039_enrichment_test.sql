@@ -15,7 +15,7 @@ WHERE id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 -- 1. Golden student reads own enrichment_meta
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.enrichment_meta),
@@ -25,7 +25,7 @@ select is(
 
 -- 2. Student cannot read other students enrichment_meta
 select set_config('request.jwt.claims',
-  '{"sub":"bb000000-0000-0000-0000-0000000000b2","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"bb000000-0000-0000-0000-0000000000b2","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.enrichment_meta),
@@ -35,7 +35,7 @@ select is(
 
 -- 3. Teacher reads enrolled students enrichment_meta
 select set_config('request.jwt.claims',
-  '{"sub":"cc000000-0000-0000-0000-0000000000c3","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.enrichment_meta),
@@ -45,7 +45,7 @@ select is(
 
 -- 4. Teacher cannot read non-enrolled students enrichment_meta
 select set_config('request.jwt.claims',
-  '{"sub":"eeee0000-0000-0000-0000-0000000000e5","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"eeee0000-0000-0000-0000-0000000000e5","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.enrichment_meta),
@@ -55,7 +55,7 @@ select is(
 
 -- 5. Teacher cannot write another teachers course enrichment_meta
 select set_config('request.jwt.claims',
-  '{"sub":"eeee0000-0000-0000-0000-0000000000e5","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"eeee0000-0000-0000-0000-0000000000e5","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 update public.enrichment_meta set pace = 'structured'
   where student_class_id = (select id from public.student_class
@@ -63,7 +63,7 @@ update public.enrichment_meta set pace = 'structured'
     and class_id = '44444444-4444-4444-4444-444444444444');
 
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select pace from public.enrichment_meta
@@ -83,7 +83,7 @@ select is(
 
 -- 7. Student UPDATE blocked (RLS: no teacher_write policy for students)
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 update public.enrichment_meta set pace = 'structured'
   where student_class_id = (select id from public.student_class
@@ -91,7 +91,7 @@ update public.enrichment_meta set pace = 'structured'
     and class_id = '44444444-4444-4444-4444-444444444444');
 
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select pace from public.enrichment_meta
@@ -115,7 +115,7 @@ select is(
 -- claims, as the role-based gating is intentional and verified by tests 8-10.
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ffffffff-ffff-ffff-ffff-ffffffffffff","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"outside_student"}}', true);
+  '{"sub":"ffffffff-ffff-ffff-ffff-ffffffffffff","role":"authenticated","app_metadata":{"role":"outside_student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.courses where type = 'core'),
@@ -142,7 +142,7 @@ select is(
 -- CHECK constraint tests (admin context)
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 -- 11. CHECK pace rejects invalid value
 select throws_ok(
@@ -205,7 +205,7 @@ select ok(
 -- 16. Regression: student course visibility unchanged by restrictive policy
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.courses where type = 'core'),
@@ -215,7 +215,7 @@ select is(
 
 -- 17. Regression: teacher course visibility unchanged by restrictive policy
 select set_config('request.jwt.claims',
-  '{"sub":"cc000000-0000-0000-0000-0000000000c3","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.courses),

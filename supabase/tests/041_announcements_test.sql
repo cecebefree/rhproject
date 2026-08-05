@@ -13,7 +13,7 @@ select ok(
 -- 2. Student sees everyone + pinned (2 rows)
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.announcement),
@@ -31,7 +31,7 @@ select is(
 
 -- 4. Teacher sees everyone + teacher-only + pinned (3 rows)
 select set_config('request.jwt.claims',
-  '{"sub":"cc000000-0000-0000-0000-0000000000c3","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.announcement),
@@ -41,7 +41,7 @@ select is(
 
 -- 5. Future-dated row invisible to non-admin student
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.announcement
@@ -60,7 +60,7 @@ select is(
 
 -- 7. Admin sees all 5 tenant-1 rows (including future and expired)
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.announcement),
@@ -70,7 +70,7 @@ select is(
 
 -- 8. Cross-tenant leak: tenant 2 user sees only their 1 row
 select set_config('request.jwt.claims',
-  '{"sub":"22222222-2222-2222-2222-222222222222","tenant_id":"00000000-0000-0000-0000-000000000002"}', true);
+  '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000002"}}', true);
 
 select is(
   (select count(*)::int from public.announcement),
@@ -80,7 +80,7 @@ select is(
 
 -- 9. Non-admin (student) insert rejected
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select throws_ok(
   $$insert into public.announcement (tenant_id, title, body, created_by)
@@ -99,7 +99,7 @@ select is(
 
 -- 11. CHECK constraint rejects expires_at <= publish_at (admin context)
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","tenant_id":"00000000-0000-0000-0000-000000000001"}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select throws_ok(
   $$insert into public.announcement (tenant_id, title, body, created_by, publish_at, expires_at)
