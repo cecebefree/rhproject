@@ -1,7 +1,7 @@
 # PLAN-STATE (F0 Ground Truth Snapshot)
 
 **Generated:** Full-sweep audit 2026-08-03. Source: disk + git, pasted raw per AR-1.
-**Working repo:** /Users/ce/dev/rhproject-new (HEAD c4c9248). Updated: 2026-07-22 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied), 2026-07-27 (board sync v4, baseline 3705235), 2026-08-03 (row 10 BLOCKED-ON-ASSET, row 12 TURNSTILE_SECRET_KEY scope, row 23 DONE).
+**Working repo:** /Users/ce/dev/rhproject-new (HEAD 015e516). Updated: 2026-07-22 (board sync, audit item 10), 2026-07-22 (governance sweep: r17 corrections applied), 2026-07-27 (board sync v4, baseline 3705235), 2026-08-03 (row 10 BLOCKED-ON-ASSET, row 12 TURNSTILE_SECRET_KEY scope, row 23 DONE), 2026-08-06 (Gate D: pgTAP 371/371 PASS re-seal, 093+094 remediation, PLAN-STATE sync + Q3 duplicate reconciliation).
 
 ---
 
@@ -215,10 +215,20 @@ conversations↔conversation_members.
 
 - **pgTAP (Supabase db tests):**
   ```
-  Files=24, Tests=240,  1 wallclock secs ( 0.03 usr  0.02 sys + 0.09 cusr 0.03 csys = 0.17 CPU)
+  Files=32, Tests=371,  1 wallclock secs ( 0.04 usr  0.04 sys + 0.14 cusr 0.06 csys = 0.28 CPU)
   Result: PASS
   ```
-  Baseline committed at HEAD **887ce98**.
+  Baseline re-sealed at HEAD **015e516** (Gate D remediation: 093 teacher→office write-path fix, 094 DR-2d JWT path fix).
+
+  **Gate D Remediation Record (2026-08-06):**
+  | Fix | Commit | Type | Description |
+  |-----|--------|------|-------------|
+  | Fix 1 | 779ce52 | SETUP-CASCADE | 000_pgtap_setup: extensions.* → public.* schema qualification |
+  | Fix 2 | bae638c | REGRESSION | Migration 093: create_draft_report_card role teacher→office; drop rc_teacher_insert/update RLS |
+  | Fix 3 | f29e2c3 | STALE-TEST | 065 rewrite: office-ALLOW / teacher-DENY per report-card ruling |
+  | Fix 4 | f7d2270 | STALE-TEST | 012: fixture consent_type collision ('research'→'data_processing') |
+  | Fix 5 | f23c0b3 | SEED-DATA | 040: added missing Science course fixture (3-item materialization) |
+  | Fix 6 | 015e516 | REGRESSION | 094 DR-2d: get_announcements tenant_id JWT path (auth.jwt()->app_metadata) |
 
 - **Typecheck @redhouse/shared:** tsc --noEmit → 0 errors.
 - **Typecheck @rhproject/web:** tsc --noEmit → 0 errors.
@@ -295,7 +305,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 35 | Wire: Report Card | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 36 | Wire: Hub | DONE-LOCAL(MOBILE) | bb4c472219d470dbb23130a79204b5b6259fc046 |
 | 37 | AO-001: send-rail.md + School Desk console | SEALED | docs/governance/AO-001-send-rail.md + 45d386d | evidence in ITEM A |
-| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | SEALED | de0d05a + 8454c3e | evidence run a–g |
+| 38 | AO-002: safeguarding-pipeline.md + Office Desk console | RE-SEAL | 8454c3e + migration 090 | evidence run a–g, re-sealed 2026-08-04 |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md [0dc922e] |
 | 40 | AO-004: gates.md | DONE | docs/governance/AO-004-gates.md [G1–G11 observed-only] |
 | 41 | QA adversarial RLS pass — extends 152/152 baseline | BLOCKED (41a-7 false positive, 41a-3 open) | gated on 26 |
@@ -331,7 +341,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 
 ## 12. Commit Verification
 
-**WARNING:** DONE-LOCAL rows (31-36) cannot be counted if unpushed. Repository HEAD is at c4c9248; verify these changes are present:
+**WARNING:** DONE-LOCAL rows (31-36) cannot be counted if unpushed. Repository HEAD is at 015e516; verify these changes are present:
 
 Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exist in HEAD.
 
