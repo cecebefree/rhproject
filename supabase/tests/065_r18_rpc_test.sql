@@ -1,7 +1,9 @@
--- 065_r18_rpc_test.sql — R18 RPC acceptance criteria
--- Dependencies: seed.sql applied, migration 065 applied
+-- 065_r18_rpc_test.sql — R18 RPC acceptance criteria (REWRITTEN)
+-- Per ruling: office-loaded, read-only in app; teachers have NO write path.
+-- Office can create drafts; teachers/students/parents are DENIED.
+-- Dependencies: seed.sql applied, migration 065 + 093 applied
 BEGIN;
-SELECT plan(12);
+SELECT plan(13);
 
 -- Grab seed user IDs as constants
 -- stud1: 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e' (role=student)
@@ -42,6 +44,36 @@ BEGIN
 END;
 $$;
 
+-- Create a teacher test user if not present (for DENY tests)
+DO LANGUAGE plpgsql $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = 'cc000000-0000-0000-0000-0000000000c3') THEN
+    INSERT INTO auth.users (id, email, aud, role)
+    VALUES ('cc000000-0000-0000-0000-0000000000c3', 'teacher@test.local', 'authenticated', 'authenticated')
+    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO public.profiles (id, name, role, registration_status, consent_given, tenant_id)
+    VALUES ('cc000000-0000-0000-0000-0000000000c3', 'Test Teacher', 'teacher', 'approved', true,
+            '00000000-0000-0000-0000-000000000001')
+    ON CONFLICT (id) DO UPDATE SET role = excluded.role, tenant_id = excluded.tenant_id;
+  END IF;
+END;
+$$;
+
+-- Create student fixture (required for FK on report_cards.student_id)
+DO LANGUAGE plpgsql $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e') THEN
+    INSERT INTO auth.users (id, email, aud, role)
+    VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'student@test.local', 'authenticated', 'authenticated')
+    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO public.profiles (id, name, role, registration_status, consent_given, tenant_id)
+    VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'Test Student', 'learner', 'approved', true,
+            '00000000-0000-0000-0000-000000000001')
+    ON CONFLICT (id) DO UPDATE SET role = excluded.role, tenant_id = excluded.tenant_id;
+  END IF;
+END;
+$$;
+
 SELECT set_config('app.tenant_assignment_bypass', 'false', false);
 
 CREATE SCHEMA IF NOT EXISTS tests;
@@ -68,8 +100,8 @@ $func$;
 -- ─────────────────────────────────────────────
 SET ROLE authenticated;
 
--- AC-1: Teacher creates draft report card
-SELECT tests.set_jwt('cc000000-0000-0000-0000-0000000000c3','teacher','00000000-0000-0000-0000-000000000001');
+-- AC-1: Office creates draft report card (ALLOW)
+SELECT tests.set_jwt('00000000-0000-0000-0000-0000000000ff','office','00000000-0000-0000-0000-000000000001');
 SELECT is(
   (SELECT status FROM public.create_draft_report_card(
     'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
@@ -78,10 +110,10 @@ SELECT is(
     'B'
   )),
   'draft',
-  'AC-1: teacher creates draft report card'
+  'AC-1: office creates draft report card'
 );
 
--- Verify draft exists
+-- Verify draft exists and capture ID (must be done before role switch)
 SELECT is(
   (SELECT count(*)::int FROM public.report_cards
    WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
@@ -89,6 +121,21 @@ SELECT is(
      AND term = '2026 Term 2'),
   1,
   'AC-1b: draft row exists in report_cards'
+);
+
+-- Capture draft card ID (office role can see draft via rc_office_select)
+SELECT id INTO TEMP TABLE draft_card FROM public.report_cards
+WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
+  AND term = '2026 Term 2'
+  AND status = 'draft'
+LIMIT 1;
+
+-- AC-1c: Teacher CANNOT create draft (DENY per ruling)
+SELECT tests.set_jwt('cc000000-0000-0000-0000-0000000000c3','teacher','00000000-0000-0000-0000-000000000001');
+SELECT throws_ok(
+  'SELECT public.create_draft_report_card(''ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'', ''2026 Term 2'', ''Math'', ''A'')',
+  'Only office desk can create draft report cards',
+  'AC-1c: teacher create denied (report-card ruling: teachers have NO write path)'
 );
 
 -- AC-4: Learner cannot see draft card (before release)
@@ -105,13 +152,6 @@ SELECT is(
 -- AC-5: Teacher cannot release (non-office caller rejected by RPC)
 SELECT tests.set_jwt('cc000000-0000-0000-0000-0000000000c3','teacher','00000000-0000-0000-0000-000000000001');
 
--- Get the draft card id
-SELECT id INTO TEMP TABLE draft_card FROM public.report_cards
-WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
-  AND term = '2026 Term 2'
-  AND status = 'draft'
-LIMIT 1;
-
 SELECT throws_ok(
   format('SELECT public.release_report_card(''%s'')', (SELECT id FROM draft_card)),
   'Only Office Desk can release report cards',
@@ -127,7 +167,8 @@ SELECT throws_ok(
 );
 
 -- AC-7: Card state unchanged after cross-tenant attempt
-SELECT tests.set_jwt('cc000000-0000-0000-0000-0000000000c3','teacher','00000000-0000-0000-0000-000000000001');
+-- Switch back to office role to query the card (cross-tenant JWT blocks RLS)
+SELECT tests.set_jwt('00000000-0000-0000-0000-0000000000ff','office','00000000-0000-0000-0000-000000000001');
 SELECT is(
   (SELECT status FROM public.report_cards WHERE id = (SELECT id FROM draft_card)),
   'draft',
