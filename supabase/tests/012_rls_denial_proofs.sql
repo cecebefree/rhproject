@@ -67,7 +67,7 @@ SELECT set_config('app.tenant_assignment_bypass', 'false', false);
 
 -- Consent records for learner1
 INSERT INTO public.consent_records (id, profile_id, consent_type, consent_given, given_at, ip_address, tenant_id, created_at)
-VALUES ('e97e5c3a-1234-4321-abcd-000000000501', 'e97e5c3a-1234-4321-abcd-000000000302', 'research', true, now(), '10.0.0.1', 'e97e5c3a-1234-4321-abcd-000000000001', now())
+VALUES ('e97e5c3a-1234-4321-abcd-000000000501', 'e97e5c3a-1234-4321-abcd-000000000302', 'data_processing', true, now(), '10.0.0.1', 'e97e5c3a-1234-4321-abcd-000000000001', now())
 ON CONFLICT (id) DO NOTHING;
 
 -- Suppression records for learner1
