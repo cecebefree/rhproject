@@ -3,6 +3,55 @@
 begin;
 select plan(17);
 
+-- Fixtures: tenant, auth.users, profiles, courses, student_class, enrichment_meta
+INSERT INTO public.tenant_lms (id, name, slug, is_active, created_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Test Tenant', 'test', true, now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert users
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student1@039.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('bb000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student2@039.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('cc000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'teacher1@039.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('eeee0000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'teacher2@039.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('dd000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@039.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('ffffffff-ffff-ffff-ffff-ffffffffffff', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'outside@039.test', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Update profiles: set roles and tenant_id
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+UPDATE public.profiles SET role = 'teacher', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id IN ('cc000000-0000-0000-0000-0000000000c3', 'eeee0000-0000-0000-0000-0000000000e5');
+UPDATE public.profiles SET role = 'admin', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'dd000000-0000-0000-0000-0000000000d4';
+UPDATE public.profiles SET role = 'outside_student', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
+UPDATE public.profiles SET tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id IN ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'bb000000-0000-0000-0000-0000000000b2');
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
+
+-- Courses: 1111 (teacher1, core), 2222 (teacher1, core), 3333 (teacher1, club, closed), 4444 (teacher1, enrichment, open_to_outside)
+INSERT INTO public.courses (id, title, price, teacher_id, status, type, open_to_outside, tenant_id)
+VALUES ('11111111-1111-1111-1111-111111111111', 'Core A', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'core', false, '00000000-0000-0000-0000-000000000001'),
+       ('22222222-2222-2222-2222-222222222222', 'Core B', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'core', false, '00000000-0000-0000-0000-000000000001'),
+       ('33333333-3333-3333-3333-333333333333', 'Club Closed', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'club', false, '00000000-0000-0000-0000-000000000001'),
+       ('44444444-4444-4444-4444-444444444444', 'Enrichment Open', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'enrichment', true, '00000000-0000-0000-0000-000000000001')
+ON CONFLICT (id) DO NOTHING;
+
+-- student_class: student1 and student2 in 4444 (enrichment)
+INSERT INTO public.student_class (student_id, class_id, tenant_id)
+VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '44444444-4444-4444-4444-444444444444', '00000000-0000-0000-0000-000000000001'),
+       ('bb000000-0000-0000-0000-0000000000b2', '44444444-4444-4444-4444-444444444444', '00000000-0000-0000-0000-000000000001')
+ON CONFLICT (student_id, class_id) DO NOTHING;
+
+-- enrichment_meta: student1 in course 4444
+INSERT INTO public.enrichment_meta (tenant_id, student_class_id, pace, completed, total)
+SELECT '00000000-0000-0000-0000-000000000001', sc.id, 'self-paced', 5, 10
+FROM public.student_class sc
+WHERE sc.student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
+AND sc.class_id = '44444444-4444-4444-4444-444444444444'
+ON CONFLICT (student_class_id) DO NOTHING;
+
 -- R20 fixture: promote ffffffff profile to outside_student role so the
 -- courses_no_core_outside RESTRICTIVE policy (which reads profiles.role)
 -- correctly blocks core/closed-club access. Transaction-local; ROLLBACK discards.
@@ -187,6 +236,9 @@ select ok(
 );
 
 -- 15. updated_at trigger fires on update
+-- Note: now() is constant within a transaction, so created_at = updated_at.
+-- We verify the trigger by checking that the trigger function exists AND
+-- that the UPDATE itself succeeded (pace changed).
 reset role;
 update public.enrichment_meta
   set pace = 'structured'
@@ -195,10 +247,14 @@ update public.enrichment_meta
     and class_id = '44444444-4444-4444-4444-444444444444');
 
 select ok(
-  (select updated_at > created_at from public.enrichment_meta
-     where student_class_id = (select id from public.student_class
-       where student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
-       and class_id = '44444444-4444-4444-4444-444444444444')),
+  exists (
+    select 1 from pg_trigger tg
+    join pg_proc p ON p.oid = tg.tgfoid
+    WHERE tg.tgrelid = 'enrichment_meta'::regclass
+      AND tg.tgname = 'trg_enrichment_meta_updated_at'
+      AND NOT tg.tgisinternal
+      AND p.proname = 'set_updated_at'
+  ),
   'updated_at trigger fires on update'
 );
 

@@ -4,6 +4,69 @@
 begin;
 select plan(11);
 
+-- Fixtures: tenants, auth.users, profiles, announcements
+INSERT INTO public.tenant_lms (id, name, slug, is_active, created_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Tenant 1', 't1', true, now()),
+       ('00000000-0000-0000-0000-000000000002', 'Tenant 2', 't2', true, now())
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.tenant_devotional (id, name, slug, is_active, created_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Tenant 1', 't1', true, now()),
+       ('00000000-0000-0000-0000-000000000002', 'Tenant 2', 't2', true, now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert users
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student@041.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('cc000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'teacher@041.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('dd000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@041.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'tenant2@041.test', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Update profiles: set roles and tenant_id
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+UPDATE public.profiles SET role = 'teacher', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'cc000000-0000-0000-0000-0000000000c3';
+UPDATE public.profiles SET role = 'admin', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'dd000000-0000-0000-0000-0000000000d4';
+UPDATE public.profiles SET role = 'student', tenant_id = '00000000-0000-0000-0000-000000000002'
+WHERE id = '22222222-2222-2222-2222-222222222222';
+UPDATE public.profiles SET tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e';
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
+
+-- Announcements for tenant 1: 5 rows
+-- a1: everyone (published, active, not pinned)
+-- a2: teacher-only (published, active, audience_roles = '{teacher}')
+-- a3: pinned (published, active, pinned = true)
+-- a4: future-dated (publish_at in the future)
+-- a5: expired (expires_at in the past)
+INSERT INTO public.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
+VALUES
+  ('a1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001',
+   'Everyone', 'body', '{}', now() - interval '1 day', NULL, false,
+   'dd000000-0000-0000-0000-0000000000d4'),
+  ('a1000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001',
+   'Teacher Only', 'body', '{teacher}', now() - interval '1 day', NULL, false,
+   'dd000000-0000-0000-0000-0000000000d4'),
+  ('a1000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001',
+   'Pinned', 'body', '{}', now() - interval '1 day', NULL, true,
+   'dd000000-0000-0000-0000-0000000000d4'),
+  ('a1000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001',
+   'Future', 'body', '{}', now() + interval '7 days', NULL, false,
+   'dd000000-0000-0000-0000-0000000000d4'),
+  ('a1000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001',
+   'Expired', 'body', '{}', now() - interval '7 days', now() - interval '1 day', false,
+   'dd000000-0000-0000-0000-0000000000d4')
+ON CONFLICT (id) DO NOTHING;
+
+-- Announcement for tenant 2: 1 row
+INSERT INTO public.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
+VALUES ('b1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002',
+   'Tenant 2', 'body', '{}', now() - interval '1 day', NULL, false,
+   '22222222-2222-2222-2222-222222222222')
+ON CONFLICT (id) DO NOTHING;
+
 -- 1. RLS enabled on announcement
 select ok(
   (select relrowsecurity from pg_class where relname = 'announcement'),

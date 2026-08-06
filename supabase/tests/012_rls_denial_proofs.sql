@@ -35,8 +35,56 @@ BEGIN
 END;
 $$;
 
--- NOTE: rc_office_select must exist (migration 052).
--- Test must fail if 052 is absent -- do NOT create it here.
+-- FIXTURES: tenants, auth.users, profiles, consent_records, suppression_records, report_cards, certificates
+INSERT INTO public.tenant_lms (id, name, slug, is_active, created_at)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000001', 'Tenant 1', 't1', true, now())
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.tenant_devotional (id, name, slug, is_active, created_at)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000001', 'Tenant 1', 't1', true, now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert auth.users
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000101', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@012.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('e97e5c3a-1234-4321-abcd-000000000102', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'office@012.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('e97e5c3a-1234-4321-abcd-000000000201', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'teacher@012.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('e97e5c3a-1234-4321-abcd-000000000302', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learner1@012.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('e97e5c3a-1234-4321-abcd-000000000303', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'learner2@012.test', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Update profiles
+SELECT set_config('app.tenant_assignment_bypass', 'true', false);
+UPDATE public.profiles SET role = 'admin', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001'
+WHERE id = 'e97e5c3a-1234-4321-abcd-000000000101';
+UPDATE public.profiles SET role = 'office', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001'
+WHERE id = 'e97e5c3a-1234-4321-abcd-000000000102';
+UPDATE public.profiles SET role = 'teacher', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001'
+WHERE id = 'e97e5c3a-1234-4321-abcd-000000000201';
+UPDATE public.profiles SET role = 'learner', tenant_id = 'e97e5c3a-1234-4321-abcd-000000000001'
+WHERE id IN ('e97e5c3a-1234-4321-abcd-000000000302', 'e97e5c3a-1234-4321-abcd-000000000303');
+SELECT set_config('app.tenant_assignment_bypass', 'false', false);
+
+-- Consent records for learner1
+INSERT INTO public.consent_records (id, profile_id, consent_type, consent_given, given_at, ip_address, tenant_id, created_at)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000501', 'e97e5c3a-1234-4321-abcd-000000000302', 'research', true, now(), '10.0.0.1', 'e97e5c3a-1234-4321-abcd-000000000001', now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Suppression records for learner1
+INSERT INTO public.suppression_records (id, profile_id, suppressed_by, suppression_type, tenant_id)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000401', 'e97e5c3a-1234-4321-abcd-000000000302', 'e97e5c3a-1234-4321-abcd-000000000101', 'full', 'e97e5c3a-1234-4321-abcd-000000000001')
+ON CONFLICT (id) DO NOTHING;
+
+-- Report cards: draft for learner1, visible for learner2
+INSERT INTO public.report_cards (id, student_id, term, subject, grade, status, created_by, tenant_id)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000601', 'e97e5c3a-1234-4321-abcd-000000000302', '2026 Term 1', 'Math', 'A', 'draft', 'e97e5c3a-1234-4321-abcd-000000000201', 'e97e5c3a-1234-4321-abcd-000000000001'),
+       ('e97e5c3a-1234-4321-abcd-000000000602', 'e97e5c3a-1234-4321-abcd-000000000303', '2026 Term 1', 'Math', 'B', 'visible', 'e97e5c3a-1234-4321-abcd-000000000201', 'e97e5c3a-1234-4321-abcd-000000000001')
+ON CONFLICT (student_id, term, subject) DO NOTHING;
+
+-- Certificate for learner1
+INSERT INTO public.certificates (id, user_id, cert_class, title, signatory, status, tenant_id)
+VALUES ('e97e5c3a-1234-4321-abcd-000000000701', 'e97e5c3a-1234-4321-abcd-000000000302', 'core_subject', 'Math Certificate', 'Head Teacher', 'issued', 'e97e5c3a-1234-4321-abcd-000000000001')
+ON CONFLICT (id) DO NOTHING;
 
 SET ROLE authenticated;
 

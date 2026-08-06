@@ -7,6 +7,61 @@
 begin;
 select plan(12);
 
+-- Fixtures: tenant, auth.users, profiles, courses, terms, schedule_slot, student_class, enrollments
+INSERT INTO public.tenant_lms (id, name, slug, is_active, created_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Test Tenant', 'test', true, now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert users
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student1@037.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('bb000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student2@037.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('cc000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'teacher1@037.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('eeee0000-0000-0000-0000-0000000000e5', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'teacher2@037.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('dd000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@037.test', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Update profiles: set roles and tenant_id
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+UPDATE public.profiles SET role = 'teacher', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id IN ('cc000000-0000-0000-0000-0000000000c3', 'eeee0000-0000-0000-0000-0000000000e5');
+UPDATE public.profiles SET role = 'admin', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'dd000000-0000-0000-0000-0000000000d4';
+UPDATE public.profiles SET tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id IN ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'bb000000-0000-0000-0000-0000000000b2');
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
+
+-- Courses: 1111 (teacher1), 2222 (teacher1)
+INSERT INTO public.courses (id, title, price, teacher_id, type, tenant_id)
+VALUES ('11111111-1111-1111-1111-111111111111', 'Course A', 0, 'cc000000-0000-0000-0000-0000000000c3', 'core', '00000000-0000-0000-0000-000000000001'),
+       ('22222222-2222-2222-2222-222222222222', 'Course B', 0, 'cc000000-0000-0000-0000-0000000000c3', 'core', '00000000-0000-0000-0000-000000000001')
+ON CONFLICT (id) DO NOTHING;
+
+-- Terms: cccc0000 (active)
+INSERT INTO public.terms (id, tenant_id, name, start_date, end_date)
+VALUES ('cccc0000-0000-0000-0000-0000000000c1', '00000000-0000-0000-0000-000000000001', 'Current Term', (now() - interval '1 day')::date, (now() + interval '300 days')::date)
+ON CONFLICT (id) DO NOTHING;
+
+-- Schedule slots: 2 slots (course 1111 and 2222)
+INSERT INTO public.schedule_slot (id, tenant_id, course_id, term_id, start_time, end_time, days_of_week)
+VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '00000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'cccc0000-0000-0000-0000-0000000000c1', '09:00', '10:00', ARRAY[1,3,5]),
+       ('bbbb0000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 'cccc0000-0000-0000-0000-0000000000c1', '11:00', '12:00', ARRAY[2,4])
+ON CONFLICT (id) DO NOTHING;
+
+-- student_class: student1 in course 1111, student2 in both
+INSERT INTO public.student_class (student_id, class_id, tenant_id)
+VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001'),
+       ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000001'),
+       ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000001')
+ON CONFLICT (student_id, class_id) DO NOTHING;
+
+-- Enrollments: student1 in 1111, student2 in both
+INSERT INTO public.enrollments (student_id, course_id, payment_reference)
+VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111', 'test-037-001'),
+       ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111', 'test-037-002'),
+       ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', 'test-037-003')
+ON CONFLICT (student_id, course_id) DO NOTHING;
+
 -- RLS tests
 
 -- 1. student1 sees exactly one slot (enrolled in course 11111111, active access window)
@@ -27,22 +82,6 @@ select is(
   0,
   'student1 cannot see slot on course 22222222 (not enrolled)'
 );
-
--- Per-test fixture: student2 needs two rows for RLS to pass:
---  1. student_class row satisfies ss_student_read join (via class_id path)
---  2. enrollment row satisfies has_item_access() (checks enrollments + access window)
--- Both are required; neither is redundant.
-reset role;
-insert into public.student_class (student_id, class_id, tenant_id)
-values ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000001')
-
-on conflict do nothing;
-
--- Per-test fixture: student2 needs enrollment in course 1111 for has_item_access
-reset role;
-insert into public.enrollments (student_id, course_id, payment_reference)
-values ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111', 'test-037-001')
-on conflict (student_id, course_id) do nothing;
 
 set local role authenticated;
 

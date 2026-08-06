@@ -15,37 +15,41 @@ SELECT plan(16);
 --   other_tenant_id = 99999999-9999-9999-9999-999999999999
 -- ══════════════════════════════════════════════════════════
 
--- ═══════════════════════════════════════════════
--- R22 POSITIVE ANCHOR: family sees linked child's
--- visible report card in own tenant.
--- ═══════════════════════════════════════════════
-
--- FIXTURE SETUP (dependency order: auth.users -> profiles -> family_child -> report_cards/certificates)
-
--- 1. Auth user for family member (trigger auto-creates profiles row)
-reset role;
-INSERT INTO auth.users (id, email, aud, role, raw_user_meta_data)
-VALUES ('ff000000-0000-0000-0000-0000000000f1', 'fam1@test.local', 'authenticated', 'authenticated', '{"name":"Family One"}')
+-- FIXTURE SETUP: tenants, auth.users, profiles, family_child, report_cards, certificates
+INSERT INTO public.tenant_lms (id, name, slug, is_active, created_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Tenant 1', 't1', true, now())
 ON CONFLICT (id) DO NOTHING;
 
--- 2. Update trigger-created profiles row
+INSERT INTO public.tenant_devotional (id, name, slug, is_active, created_at)
+VALUES ('00000000-0000-0000-0000-000000000001', 'Tenant 1', 't1', true, now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert auth.users for student, teacher, admin, family
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'student@063.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('cc000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'teacher@063.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('dd000000-0000-0000-0000-0000000000d4', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@063.test', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+       ('ff000000-0000-0000-0000-0000000000f1', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'fam1@063.test', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Update profiles
 SELECT set_config('app.tenant_assignment_bypass', 'true', false);
-UPDATE public.profiles
-SET role = 'family',
-    registration_status = 'approved',
-    consent_given = true,
-    tenant_id = '00000000-0000-0000-0000-000000000001'
+UPDATE public.profiles SET role = 'teacher', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'cc000000-0000-0000-0000-0000000000c3';
+UPDATE public.profiles SET role = 'admin', tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'dd000000-0000-0000-0000-0000000000d4';
+UPDATE public.profiles SET role = 'family', registration_status = 'approved', consent_given = true, tenant_id = '00000000-0000-0000-0000-000000000001'
 WHERE id = 'ff000000-0000-0000-0000-0000000000f1';
+UPDATE public.profiles SET tenant_id = '00000000-0000-0000-0000-000000000001'
+WHERE id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e';
 SELECT set_config('app.tenant_assignment_bypass', 'false', false);
 
--- 3. Link family member -> child
-reset role;
+-- Link family member -> child
 INSERT INTO public.family_child (guardian_id, child_id)
 VALUES ('ff000000-0000-0000-0000-0000000000f1', 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e')
 ON CONFLICT (guardian_id, child_id) DO NOTHING;
 
--- 4. Create visible report card for stud1
-reset role;
+-- Create visible report card for stud1
 INSERT INTO public.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
 VALUES (
     'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
@@ -61,8 +65,7 @@ VALUES (
 )
 ON CONFLICT (student_id, term, subject) DO NOTHING;
 
--- 5. Create issued certificate for stud1
-reset role;
+-- Create issued certificate for stud1
 INSERT INTO public.certificates (user_id, cert_class, title, description, signatory, status, tenant_id)
 VALUES (
     'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
@@ -78,7 +81,7 @@ VALUES (
 -- R22 POSITIVE ANCHOR 1: family sees linked child's visible report card
 set local role authenticated;
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM public.report_cards
@@ -91,7 +94,7 @@ SELECT is(
 -- R22 POSITIVE ANCHOR 2: family sees linked child's issued certificate
 set local role authenticated;
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM public.certificates
@@ -122,7 +125,7 @@ ON CONFLICT (student_id, term, subject) DO NOTHING;
 
 set local role authenticated;
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM public.report_cards
@@ -138,7 +141,7 @@ SELECT is(
 -- ═══════════════════════════════════════════════
 
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","tenant_id":"99999999-9999-9999-9999-999999999999","app_metadata":{"role":"family"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"99999999-9999-9999-9999-999999999999"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM public.report_cards
@@ -153,7 +156,7 @@ SELECT is(
 -- ═══════════════════════════════════════════════
 
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT throws_ok(
   $$INSERT INTO public.report_cards
@@ -276,7 +279,7 @@ SELECT is(
 -- ═══════════════════════════════════════════════
 
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM public.report_cards
