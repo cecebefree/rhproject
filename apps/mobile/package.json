@@ -25,8 +25,9 @@
     "@babel/core": "^7.24.0",
     "@biomejs/biome": "1.9.4",
     "@types/react": "~18.2.79",
+    "add": "^2.0.9",
     "babel-preset-expo": "~11.0.0",
-    "typescript": "^5.6.3",
+    "typescript": "~5.3.3",
     "vitest": "^3.1.1"
   }
 }
