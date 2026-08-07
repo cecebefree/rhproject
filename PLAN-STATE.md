@@ -188,7 +188,7 @@ conversations↔conversation_members.
 
 ### Rows 40-43 (AO docs, DNS cutover, Cloudflare)
 - **AO docs:** AO-001 (send-rail.md) DONE; AO-002 (safeguarding-pipeline.md), AO-004 (gates.md) are PENDING
-- **DNS cutover:** row 46 (DNS cutover: redhouse.school → Cloudflare) is PENDING
+- **DNS cutover:** row 43 (DNS cutover: redhouse.school → Cloudflare) is PENDING
 - **Cloudflare:** CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_PAGES_PROJECT in .env. CF-12 deploy executed to redhouse-web.pages.dev.
 
 ### Rows 10/14/20/21/6/15/17 (docs/rulings)
@@ -264,7 +264,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 
 ---
 
-## 8. Master Board Status (46 rows)
+## 8. Master Board Status (47 rows)
 
 | # | Row Description | Status | Commit Hash |
 |---|----------------|--------|-------------|
@@ -308,20 +308,21 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 38 | AO-002: safeguarding-pipeline.md + Office Desk console | RE-SEAL | 8454c3e + migration 090 | evidence run a–g, re-sealed 2026-08-04 |
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md [0dc922e] |
 | 40 | AO-004: gates.md | DONE | docs/governance/AO-004-gates.md [G1–G11 observed-only] |
-| 41 | QA adversarial RLS pass — extends 152/152 baseline | BLOCKED (41a-7 false positive, 41a-3 open) | gated on 26 |
-| 42 | E2E demo + Cece sign-off — terminal human gate | PENDING | gated on 31-36,41 |
+| 41 | QA adversarial RLS pass — extends 152/152 baseline | CLOSED (41a-3 fix 091 verified re-run 2026-08-07, 41a-7 false positive) | gated on 26; Gate C satisfied 2026-08-07 |
+| 42 | E2E demo + Cece sign-off — terminal human gate | PENDING | gated on 31-36, 46 (Row 41 adversarial RLS CLOSED 2026-08-07, Gate C satisfied); 31-36 DONE-LOCAL pending Cece scope ruling |
 | 43 | DNS cutover: redhouse.school → Cloudflare | PENDING | gated on 42 |
 | 44 | Front Desk intake: submit-lead EF + leads table + read EF | PENDING | G6-1..G6-6 deferred from row 37 |
 | 45 | UNALLOCATED | — | — |
+| 46 | Seed data re-tag — courses.tenant_id NULL post-091 backfill | PENDING | owner: Backend; PREREQUISITE for Row 42 E2E sign-off (Redhouse learner must see populated course list) |
 
 ---
 
 ## 9. Scoreboard
 
-**COMPLETE: 38 | PENDING: 8 | Progress: ~83%**
+**COMPLETE: 39 | PENDING: 8 | Progress: ~83%**
 
-**82.6% flat**: 38/46 complete
-**~83% with PARTIAL half-credit**: (38 + 0.5*1)/46 = 38.5/46 = 83.7%
+**83.0% flat**: 39/47 complete
+**~84% with PARTIAL half-credit**: (39 + 0.5*1)/47 = 39.5/47 = 84.0%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 
@@ -374,7 +375,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 3. **Office Desk console (row 38 build)** - RE-SEAL (8454c3e + migration 090) — full EF re-run done
 4. **AO-002 (safeguarding-pipeline.md)** - BLOCKED ON nothing
 5. **AO-004 (gates.md)** - BLOCKED ON 37,38,39
-6. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36,41 (pending Cece scope ruling, QA adversarial RLS)
+6. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36 (DONE-LOCAL, pending Cece scope ruling) + Row 46 seed re-tag (PENDING, Backend; Redhouse learner must see populated course list); Row 41 adversarial RLS CLOSED (fix 091 verified 2026-08-07, Gate C satisfied)
 7. **DNS cutover (row 43)** - BLOCKED ON row 42 (E2E demo sign-off)
 
 **CRITICAL FLAGS:**
@@ -816,7 +817,7 @@ Pre-RE-SEAL record was a simulated `UPDATE ... SET status='visible'` + simulated
 
 ### ROW 41 — QA ADVERSARIAL RLS PASS (BLOCKED — 1 finding pending root cause)
 
-**Status:** BLOCKED — 1 finding pending root cause (41a-3 only). 41a-7 closed as false positive (test methodology defect). Do not mark released, do not mark resolved.
+**Status:** CLOSED. 41a-3 resolved and re-verified (fix migration 091). 41a-7 remains a closed false positive (test methodology defect). Row 41 may now advance to human sign-off at Row 42.
 
 **Attack date:** 2026-08-04
 **Attack script:** `.swarm/r41-attack-a.sh` (NULL-tenant office user attacks tenant-scoped tables + release EF)
@@ -832,13 +833,23 @@ Pre-RE-SEAL record was a simulated `UPDATE ... SET status='visible'` + simulated
 - `Authorization: Bearer $TOK` (NULL-tenant office)
 - **Result:** HTTP 200 `[]` — RLS correctly returns empty set ✓
 
-#### 41a-3: NULL-tenant SELECT courses → 200 rows (FINDING)
+#### 41a-3: NULL-tenant SELECT courses → 200 [] (CLOSED — fix 091 verified)
 - `GET /rest/v1/courses?select=id,title&limit=10`
 - `Authorization: Bearer $TOK` (NULL-tenant office)
-- **Result:** HTTP 200 — **7 rows returned** (Test Course One, Test Course Two, Culinary Club, Finance 101, Seed Mathematics, Seed Science, Tenant 2 Course)
+- **Pre-fix result (attack 2026-08-04):** HTTP 200 — **7 rows returned** (Test Course One, Test Course Two, Culinary Club, Finance 101, Seed Mathematics, Seed Science, Tenant 2 Course)
 - **Expected:** `[]` (empty set — NULL-tenant user should see no courses)
-- **Root cause:** courses table has permissive RLS — no `tenant_id` check on SELECT for authenticated role. NULL-tenant user can read ALL courses across all tenants.
-- **Severity:** MEDIUM — cross-tenant data exposure; NULL-tenant user sees courses belonging to Tenant 1 and Tenant 2.
+- **Original root cause:** courses table had permissive RLS — no `tenant_id` check on SELECT for authenticated role. NULL-tenant user could read ALL courses across all tenants.
+- **Severity:** MEDIUM — cross-tenant data exposure; NULL-tenant user saw courses belonging to Tenant 1 and Tenant 2.
+- **Fix:** migration `091_courses_tenant_isolation.sql` (commit `4c1884d`, ancestor of `015e516`, committed & tracked). Adds `courses.tenant_id` + restrictive `courses_published_read` policy (`status='published' AND tenant_id = public.jwt_tenant_id()`, path per `086_normalize_jwt_tenant_id_helper.sql`) + restrictive `courses_no_core_outside`.
+- **Re-verified (post-reset re-run 2026-08-07):** `supabase db reset --yes` from `ae5c238`/HEAD applied migrations 013–094 incl. 091; `.swarm/r41-attack-a.sh` 41a-3 re-executed verbatim:
+  ```
+  === 41a-3: NULL-tenant SELECT courses -> expect [] ===
+  [] [HTTP 200]
+  ```
+  **0 rows returned** — NULL-tenant office caller now denied (fail-closed on NULL). Cross-tenant SELECT exposure eliminated.
+- **Gate C (no uncommitted schema drift) — satisfied:** `supabase db diff --local --schema public` → `No schema changes found` / `{"diff":"...""message":"Diff complete."}`; `git status --short` empty; migrations 090–094 present in `git ls-files`. Verified 2026-08-07.
+- **Observation (data follow-up, R4/Backend):** post-091 seeded courses carry `tenant_id = NULL` because 091's backfill `UPDATE courses…FROM profiles` ran at migration-time on empty tables (seed inserts via `scripts/seed-users.sh` arrive AFTER reset). Consequently a *Redhouse-scoped authenticated* caller would also resolve `tenant_id = NULL` (no published course returned) — a functional/data gap, NOT a security regression (no rows leak; 41a-3 passes). Recommended fix: re-tag seeded Redhouse courses to `00000000-0000-0000-0000-000000000001` (the Redhouse tenant UUID per v4.4/v4.5) post-seed, or re-run 091's backfill after seeding. Out of scope for 41a-3 security closure.
+- **Status:** CLOSED — fix 091 verified via authoritative PostgREST REST re-run; 41a-3 cross-tenant SELECT finding resolved. (A `psql` superuser `set_config('request.jwt.claims')` simulation returned 4 rows but is methodologically invalid — it did not `SET ROLE authenticated`, so the role-attached RLS policies did not fire and the superuser bypassed RLS; it is superseded by the authoritative REST re-run above and is NOT cited as evidence.)
 
 #### 41a-4: NULL-tenant SELECT enrollments → 400 (PASS — column error)
 - `GET /rest/v1/enrollments?select=id,profile_id&limit=10`
