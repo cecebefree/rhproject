@@ -309,21 +309,22 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 39 | AO-003: agent-registry.md | DONE | docs/governance/agent-registry.md [0dc922e] |
 | 40 | AO-004: gates.md | DONE | docs/governance/AO-004-gates.md [G1–G11 observed-only] |
 | 41 | QA adversarial RLS pass — extends 152/152 baseline | CLOSED (41a-3 fix 091 verified re-run 2026-08-07, 41a-7 false positive) | gated on 26; Gate C satisfied 2026-08-07 |
-| 42 | E2E demo + Cece sign-off — terminal human gate | PENDING | gated on 31-36, 46 (Row 41 adversarial RLS CLOSED 2026-08-07, Gate C satisfied); 31-36 DONE-LOCAL pending Cece scope ruling |
+| 42 | E2E demo + Cece sign-off — terminal human gate | PENDING | gated on 31-36, 46, 48 (Row 41 adversarial RLS CLOSED 2026-08-07, Gate C satisfied); 31-36 DONE-LOCAL pending Cece scope ruling; Row 48 (leads-read) PENDING Backend/QA — PREREQUISITE (admin must view submitted leads in E2E) |
 | 43 | DNS cutover: redhouse.school → Cloudflare | PENDING | gated on 42 |
-| 44 | Front Desk intake: submit-lead EF + leads table + read EF | DONE | submit-lead EF v7 deployed (row 3/EF table); leads table 078 (3a19e07, 87d8f68); leads read policy 095 (pgTAP 078 = 8/8; full suite 371/371 PASS); read EF HTTP surface deferred per 078 migration header | c5941d0 |
+| 44 | Front Desk leads intake — WRITE path (078 leads table + 079 flags + submit-lead EF v7) | DONE | leads table 078 (3a19e07, 87d8f68) + 079_existing_profile_flag (87d8f68); submit-lead EF v7 deployed (row 3/EF table); GRANT INSERT to service_role only. 095 read policy shipped INERT by design (FOR SELECT TO authenticated, NO SELECT grant — 078 test 1 = ARRAY[], test 4 = 42501 preserved). READ path DEFERRED to Row 48. pgTAP 078 = 8/8; full suite 371/371 PASS | c5941d0 |
 | 45 | UNALLOCATED | — | — |
 | 46 | Seed data re-tag — courses.tenant_id NULL post-091 backfill | DONE | seed-users.sh re-tags published courses to Redhouse tenant_lms.id e97e5c3a-1234-4321-abcd-000000000001; 4/4 published non-NULL + redhouse_ok (pgTAP 091 green; suite 371/371 PASS) | f192dc7 |
-| 47 | .env mis-targets hosted project (ebptjjsmeltykqqvcvqo.supabase.co) with placeholder SRK — seed-users.sh reads .env and can silently hit hosted | PENDING | Owner: DevOps. Fix (ruling required): split .env.local vs .env.production, OR make seed-users.sh default to `supabase status` local values with explicit `--hosted` opt-in; no env file on disk. | — |
+| 47 | .env mis-targets hosted project (ebptjjsmeltykqqvcvqo.supabase.co) with placeholder SRK — seed-users.sh reads .env and can silently hit hosted. Folded env debt: pgTAP repro gap — 000_pgtap_setup calls public.plan() but CLI v2.108.0 installs pgTAP in extensions schema; FAILS on a clean clone (workaround this session = manual CREATE EXTENSION pgtap SCHEMA public on the local test DB only). | PENDING | Owner: DevOps. RULING 2026-08-07 APPROVED (R-OWNER-08xx): .env.local (local stack, DEFAULT) vs .env.production (hosted, NEVER auto-loaded); scripts default to `supabase status` local values; hosted targeting ONLY via explicit --hosted flag + interactive confirmation. Folded: 000_pgtap_setup must work on a clean clone w/ CLI v2.108.0 (pgTAP in extensions) w/o manual surgery — fix in a future session. | — |
+| 48 | Front Desk leads READ path (095 policy activation) | PENDING | GRANT SELECT TO authenticated on leads; amend 078 test 4 per standing R2 (preserve ORIGINAL 42501 expectation in a dated comment block); front-desk-read-leads EF (admin-gated per R1); 095_leads_read_test.sql pgTAP; live adversarial curls incl. forged-JWT cross-tenant + NULL-tenant callers. Turnstile QA (R4): submit-lead live-curl w/ local test key — NOT run this session (deferred to Row 48 execution). PREREQUISITE FOR Row 42 (admin must view submitted leads in E2E demo). Owner: Backend/QA. | — |
 
 ---
 
 ## 9. Scoreboard
 
-**COMPLETE: 41 | PENDING: 7 | Progress: ~85%**
+**COMPLETE: 41 | PENDING: 8 | Progress: ~84%**
 
-**85.4% flat**: 41/48 complete (Rows 44, 46 DONE; +Row 47 .env-debt PENDING)
-**~86% with PARTIAL half-credit**: (41 + 0.5*1)/48 = 41.5/48 = 86.5%
+**83.7% flat**: 41/49 complete (Rows 44, 46 DONE; Row 47 .env-debt + Row 48 leads-read PENDING; Row 48 PREREQUISITE for Row 42)
+**~84% with PARTIAL half-credit**: (41 + 0.5*1)/49 = 41.5/49 = 84.7%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 
@@ -376,7 +377,7 @@ Rows 31-36 are DONE-LOCAL locally but require confirmation if these commits exis
 3. **Office Desk console (row 38 build)** - RE-SEAL (8454c3e + migration 090) — full EF re-run done
 4. **AO-002 (safeguarding-pipeline.md)** - BLOCKED ON nothing
 5. **AO-004 (gates.md)** - BLOCKED ON 37,38,39
-6. **Row 47 (E2E demo)** - BLOCKED ON rows 31-36 (DONE-LOCAL, pending Cece scope ruling) + Row 46 seed re-tag (PENDING, Backend; Redhouse learner must see populated course list); Row 41 adversarial RLS CLOSED (fix 091 verified 2026-08-07, Gate C satisfied)
+6. **Row 42 (E2E demo)** - BLOCKED ON rows 31-36 (DONE-LOCAL, pending Cece scope ruling) + Row 46 seed re-tag (DONE, f192dc7) + Row 48 (leads-read, PENDING, Backend/QA — PREREQUISITE); Row 41 adversarial RLS CLOSED (fix 091 verified 2026-08-07, Gate C satisfied); Row 44 (leads-write) DONE (c5941d0)
 7. **DNS cutover (row 43)** - BLOCKED ON row 42 (E2E demo sign-off)
 
 **CRITICAL FLAGS:**
