@@ -315,16 +315,16 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 45 | UNALLOCATED | — | — |
 | 46 | Seed data re-tag — courses.tenant_id NULL post-091 backfill | DONE | seed-users.sh re-tags published courses to Redhouse tenant_lms.id e97e5c3a-1234-4321-abcd-000000000001; 4/4 published non-NULL + redhouse_ok (pgTAP 091 green; suite 371/371 PASS) | f192dc7 |
 | 47 | .env mis-targets hosted project (ebptjjsmeltykqqvcvqo.supabase.co) with placeholder SRK — seed-users.sh reads .env and can silently hit hosted. Folded env debt: pgTAP repro gap — 000_pgtap_setup calls public.plan() but CLI v2.108.0 installs pgTAP in extensions schema; FAILS on a clean clone (workaround this session = manual CREATE EXTENSION pgtap SCHEMA public on the local test DB only). | PENDING | Owner: DevOps. RULING 2026-08-07 APPROVED (R-OWNER-08xx): .env.local (local stack, DEFAULT) vs .env.production (hosted, NEVER auto-loaded); scripts default to `supabase status` local values; hosted targeting ONLY via explicit --hosted flag + interactive confirmation. Folded: 000_pgtap_setup must work on a clean clone w/ CLI v2.108.0 (pgTAP in extensions) w/o manual surgery — fix in a future session. | — |
-| 48 | Front Desk leads READ path (095 policy activation) | PENDING | GRANT SELECT TO authenticated on leads; amend 078 test 4 per standing R2 (preserve ORIGINAL 42501 expectation in a dated comment block); front-desk-read-leads EF (admin-gated per R1); 095_leads_read_test.sql pgTAP; live adversarial curls incl. forged-JWT cross-tenant + NULL-tenant callers. Turnstile QA (R4): submit-lead live-curl w/ local test key — NOT run this session (deferred to Row 48 execution). PREREQUISITE FOR Row 42 (admin must view submitted leads in E2E demo). Owner: Backend/QA. | — |
+| 48 | Front Desk leads READ path (095 policy activation) | DONE | GRANT SELECT TO authenticated on leads (096_leads_select_grant.sql); amend 078 test 4 per standing R2 (preserved ORIGINAL 42501 in dated comment block; new expectation: authenticated SELECT returns 0 cross-tenant rows); front-desk-read-leads EF (admin-gated per R1, service_role client w/ server-side tenant filter); 096_leads_read_test.sql pgTAP (8/8 PASS); live adversarial curls (8/8 PASS: 401/401/403/500/200/cross-tenant isolation); Turnstile QA (R4): submit-lead local test key 1x0000000000000000000000000000000AA — valid token + correct tenant → 201; missing token → 400; bad tenant → 400; all PASS. PREREQUISITE FOR Row 42 (admin must view submitted leads in E2E demo). Owner: Backend/QA. | <commit-hash> |
 
 ---
 
 ## 9. Scoreboard
 
-**COMPLETE: 41 | PENDING: 8 | Progress: ~84%**
+**COMPLETE: 42 | PENDING: 7 | Progress: ~86%**
 
-**83.7% flat**: 41/49 complete (Rows 44, 46 DONE; Row 47 .env-debt + Row 48 leads-read PENDING; Row 48 PREREQUISITE for Row 42)
-**~84% with PARTIAL half-credit**: (41 + 0.5*1)/49 = 41.5/49 = 84.7%
+**83.7% flat**: 42/49 complete (Rows 44, 46, 48 DONE; Row 47 .env-debt PENDING; Row 48 PREREQUISITE for Row 42 — DONE)
+**~86% with PARTIAL half-credit**: (42 + 0.5*0)/49 = 42/49 = 85.7%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 

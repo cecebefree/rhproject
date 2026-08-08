@@ -7,11 +7,11 @@
 BEGIN;
 SELECT plan(8);
 
--- 1. Privilege surface: authenticated has no per-table privileges on leads
+-- 1. Privilege surface: authenticated has SELECT on leads (post-096 GRANT SELECT)
 SELECT table_privs_are(
   'public', 'leads', 'authenticated',
-  ARRAY[]::text[],
-  'authenticated has no per-table privileges on leads'
+  ARRAY['SELECT'],
+  'authenticated has SELECT grant on leads (post-096)'
 );
 
 -- 2. Privilege surface: anon has no per-table privileges on leads
@@ -30,12 +30,26 @@ SELECT throws_ok(
   'authenticated INSERT on leads throws 42501'
 );
 
--- 4. Denial: authenticated SELECT throws 42501 (no SELECT grant)
-SELECT throws_ok(
-  $$SELECT count(*) FROM public.leads$$,
-  '42501',
-  NULL,
-  'authenticated SELECT on leads throws 42501'
+-- 4. [DATED COMMENT BLOCK] Original 42501 expectation preserved per R2 owner
+-- ruling (Row 44). This active test is retired; the 42501 assertion now lives
+-- as documentation below. After GRANT SELECT (096), authenticated SELECT on
+-- leads is granted and returns 0 cross-tenant rows instead of 42501.
+--   R2: tenant-scoped lead read for Front Desk.
+--   Original test assertion:
+--     SELECT throws_ok(
+--       $$SELECT count(*) FROM public.leads$$,
+--       '42501',
+--       NULL,
+--       'authenticated SELECT on leads throws 42501'
+--     );
+--   Post-096: authenticated SELECT succeeds and returns 0 cross-tenant rows.
+-- R2 owner ruling dated 2026-07-27.
+
+-- 4b. Post-096: authenticated SELECT returns 0 cross-tenant rows (R2: 0 cross-tenant rows)
+SELECT is(
+  (SELECT count(*)::int FROM public.leads),
+  0,
+  'authenticated SELECT returns 0 cross-tenant rows (fail-closed, no JWT tenant_id)'
 );
 
 -- 5. Denial: authenticated UPDATE throws 42501
