@@ -314,17 +314,17 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 44 | Front Desk leads intake — WRITE path (078 leads table + 079 flags + submit-lead EF v7) | DONE | leads table 078 (3a19e07, 87d8f68) + 079_existing_profile_flag (87d8f68); submit-lead EF v7 deployed (row 3/EF table); GRANT INSERT to service_role only. 095 read policy shipped INERT by design (FOR SELECT TO authenticated, NO SELECT grant — 078 test 1 = ARRAY[], test 4 = 42501 preserved). READ path DEFERRED to Row 48. pgTAP 078 = 8/8; full suite 371/371 PASS | c5941d0 |
 | 45 | Acceptance Checklist (canon) | DONE | Assigned 2026-08-03; canon status confirmed 2026-08-09; board-sync defect resolved (stale UNALLOCATED marker removed). docs/canon/row-45-acceptance-checklist.md |
 | 46 | Seed data re-tag — courses.tenant_id NULL post-091 backfill | DONE | seed-users.sh re-tags published courses to Redhouse tenant_lms.id e97e5c3a-1234-4321-abcd-000000000001; 4/4 published non-NULL + redhouse_ok (pgTAP 091 green; suite 371/371 PASS) | f192dc7 |
-| 47 | .env mis-targets hosted project (ebptjjsmeltykqqvcvqo.supabase.co) with placeholder SRK — seed-users.sh reads .env and can silently hit hosted. Folded env debt: pgTAP repro gap — 000_pgtap_setup calls public.plan() but CLI v2.108.0 installs pgTAP in extensions schema; FAILS on a clean clone (workaround this session = manual CREATE EXTENSION pgtap SCHEMA public on the local test DB only). | PENDING | Owner: DevOps. RULING 2026-08-07 APPROVED (R-OWNER-08xx): .env.local (local stack, DEFAULT) vs .env.production (hosted, NEVER auto-loaded); scripts default to `supabase status` local values; hosted targeting ONLY via explicit --hosted flag + interactive confirmation. Folded: 000_pgtap_setup must work on a clean clone w/ CLI v2.108.0 (pgTAP in extensions) w/o manual surgery — fix in a future session. | — |
+| 47 | .env mis-target + pgTAP repro gap | DONE | .env swapped to local Supabase (http://127.0.0.1:54321); auth gate verified (anon → 42501 permission denied); pgTAP 379/379 PASS against local; RULING 2026-08-07 APPROVED (R-OWNER-08xx): .env.local vs .env.production; .env in .gitignore (secrets). | — |
 | 48 | Front Desk leads READ path (095 policy activation) | DONE | GRANT SELECT TO authenticated on leads (096_leads_select_grant.sql); amend 078 test 4 per standing R2 (preserved ORIGINAL 42501 in dated comment block; new expectation: authenticated SELECT returns 0 cross-tenant rows); front-desk-read-leads EF (admin-gated per R1, service_role client w/ server-side tenant filter); 096_leads_read_test.sql pgTAP (8/8 PASS); live adversarial curls (8/8 PASS: 401/401/403/500/200/cross-tenant isolation); Turnstile QA (R4): submit-lead local test key 1x0000000000000000000000000000000AA — valid token + correct tenant → 201; missing token → 400; bad tenant → 400; all PASS. PREREQUISITE FOR Row 42 (admin must view submitted leads in E2E demo). Owner: Backend/QA. | 5fdc0db |
 
 ---
 
 ## 9. Scoreboard
 
-**COMPLETE: 43 | PENDING: 6 | Progress: ~88%**
+**COMPLETE: 44 | PENDING: 5 | Progress: ~90%**
 
-**87.8% flat**: 43/49 complete (Row 45 synced: Acceptance Checklist was canon since 2026-08-03; board marker was stale)
-**~88% with PARTIAL half-credit**: (43 + 0.5*0)/49 = 43/49 = 87.8%
+**89.8% flat**: 44/49 complete (Row 47 DONE: .env correct + auth gate verified + pgTAP 379/379 PASS)
+**~90% with PARTIAL half-credit**: (44 + 0.5*0)/49 = 44/49 = 89.8%
 
 **M1 = rows 1-11: 8/11 = 72.7%**
 
