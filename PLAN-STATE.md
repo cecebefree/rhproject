@@ -274,7 +274,7 @@ TOTAL: 9 mobile files WIRED (index, class, class-detail, profile, teacher, repor
 | 4 | Ruling: section 8 exemption | DONE | S8 exemption per audit/deferred text |
 | 5 | Asset: Expo vs Capacitor + tech-stack amendment | DONE | ITEM-024 sealed; tech-stack.md amended (6d1a38a) |
 | 6 | Asset: Lovable website link | DONE | tech-stack.md amended (6d1a38a): Lovable = front desk intake |
-| 7 | Asset: brand hex + logos | BLOCKED-ON-ASSET | 13 hex approved; 6 final logos outstanding |
+| 7 | Asset: brand hex + logos | BLOCKED-ON-ASSET | Hex + logos intentionally held pending Lovable web build completion. Lovable credits currently exhausted — secondary blocker layered on primary hold. No action possible until credits restored. |
 | 8 | Asset: Supabase cloud URL + anon key | DONE | SB-11 CLEARED per PLAN-STATE clearing ruling |
 | 9 | Asset: Cloudflare credentials + TURNSTILE_SECRET_KEY | PENDING | CLOUDFLARE credentials present, production TURNSTILE_SECRET_KEY open |
 | 10 | Field-Register 13 (lock) | CLOSED | item-13-field-register-guard.md (2026-07-15) |
