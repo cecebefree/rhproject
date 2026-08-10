@@ -84,6 +84,7 @@
 | 41a | Office Desk + School Desk consoles | 28 | DONE — commit 8454c3e, tsc clean |
 | 41b | Front Desk intake form (Lovable) | 40 | Pending — blocked by Turnstile production key (row 40) |
 | 41c | Reclassify report card entry (ReportCardForm.tsx, rc_office_insert RLS, /lms/office-desk route) from Office Desk to School Desk per business desk model — report cards are in-house academic communication to family/student/teacher, not registration/payment/business ops | 41a | Backlog, non-blocking |
+| 41d | Dedicated devotional screen (devotional.tsx / DevotionalGate) — build out full display of type, url_or_text, and iframe handling (is_iframe flag) with SectionLoader/SectionError/SectionEmpty pattern matching index.tsx. Flip devotional feature flag to true in tenant.ts once verified | — | Pending — RPC and schema already DONE |
 | 42 | Cloudflare deploy | 11, 12 | PARTIAL — redhouse-web.pages.dev serving (170d7b4); prod domain + custom domain OPEN (row 49) |
 
 ## PHASE G — AO DOC SERIES (must complete before any agent operates, per 4)
