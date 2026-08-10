@@ -1,4 +1,4 @@
-// HubScreen — Row 36 wiring
+// HubScreen — Row 39 wiring
 // Live data: courses (enrichment platform) via student_class join +
 // schedule_slot for schedule info.
 // Source: frozen Design 7 (teacher variant) + field-register hub fields

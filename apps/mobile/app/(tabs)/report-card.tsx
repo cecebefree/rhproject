@@ -1,4 +1,4 @@
-// Report Card screen — Row 35 wiring
+// Report Card screen — Row 38 wiring
 // READ-ONLY per Ruling 2: office loads cards, learner sees only
 // status='visible' cards. No INSERT/UPDATE/DELETE on this screen.
 // Source: frozen Design 8 (08-report-card-tab.md)

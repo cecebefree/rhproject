@@ -71,10 +71,10 @@
 |---|------|--------|
 | 34 | Wire: Home | **DONE** — 082 get_today_devotional() RPC (SECURITY DEFINER, owner=postgres, GRANT EXECUTE TO authenticated); index.tsx wired (greeting/profiles, devotional/RPC, coming_up/schedule_slot+courses, news/get_announcements); loading/error/empty states per section; tsc clean. HOSTED: verified live 2026-08-10, HTTP 200 returns []. |
 | 35 | Wire: Classes | **DONE** — class.tsx wired (student_class→courses join, teacher→courses direct, schedule_slot, teacher names via 083 RPC); class-detail.tsx wired (course header, chapters_read RPC, schedule slots, route params). 083 get_teacher_name RPC added (SECURITY DEFINER, tenant-scoped, minimal disclosure). tsc clean, 8/8 local smoke pass. HOSTED: verified live 2026-08-10, function exists. 401 for anon is expected — REVOKE ALL FROM anon is intentional; function returns data for authenticated users with valid JWT. |
-| 36 | Wire: Profile | Pending |
-| 37 | Wire: teacher screens | Pending |
-| 38 | Wire: Report Card | Pending |
-| 39 | Wire: Hub | Pending |
+| 36 | Wire: Profile | **DONE** — profile.tsx wired (profiles table: name, role, curriculum, grade, stage, intake, created_at); loading/error/empty states; tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/profiles → HTTP 200. |
+| 37 | Wire: teacher screens | **DONE** — teacher.tsx wired (profiles for name/role, conversation_members→conversations for groups); loading/error states; tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/conversation_members → HTTP 200. |
+| 38 | Wire: Report Card | **DONE** — report-card.tsx wired (report_cards table, student_id filter, status='visible' RLS enforcement); loading/error/empty states; tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/report_cards → HTTP 200. |
+| 39 | Wire: Hub | **DONE** — hub.tsx wired (courses platform=enrichment via student_class join, schedule_slot for schedule); hub-detail.tsx wired (single course + slots). tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/courses → HTTP 200, GET /rest/v1/schedule_slot → HTTP 200. |
 
 ## PHASE F — WEB, DESKS, DEPLOY
 

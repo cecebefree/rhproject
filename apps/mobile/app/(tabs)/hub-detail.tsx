@@ -1,4 +1,4 @@
-// HubDetailScreen — Row 36 wiring
+// HubDetailScreen — Row 39 wiring
 // Reads a single enrichment course + its schedule slots from Supabase.
 // Source: frozen Design 7 (teacher variant)
 

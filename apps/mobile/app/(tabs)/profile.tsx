@@ -1,4 +1,4 @@
-// ProfileScreen — Row 33 wiring
+// ProfileScreen — Row 36 wiring
 // Live data: profiles (name, role, curriculum, grade, stage, intake)
 // All fields backed by DB columns as of migration 089. No seed fallback.
 

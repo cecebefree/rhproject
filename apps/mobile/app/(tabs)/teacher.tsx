@@ -1,4 +1,4 @@
-// TeacherScreen — Row 34 wiring
+// TeacherScreen — Row 37 wiring
 // Live data: profiles (name, role, curriculum, grade, stage, intake)
 // + conversations via conversation_members (059_chat_tables.sql).
 // Source: frozen Design 7 (07-teacher-variant.md)
