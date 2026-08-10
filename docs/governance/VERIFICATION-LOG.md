@@ -3,7 +3,7 @@
 ## 2026-08-10 — Full 1-66 Verification Pass
 
 
-**Source verified:** docs/governance/MASTER-TODO-V2.md (live GitHub, main branch)
+**Source verified:** docs/governance/MASTER-TODO-V2.md @ commit 6157426753d4efd92ac01b7565876b2e015db53e (main branch)
 **Method:** Read-only, line-by-line, no reconstruction from memory or prior chat summaries.
 
 

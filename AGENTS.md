@@ -305,3 +305,14 @@ GOVERNANCE — 2026-07-03
 CI/CD gate (P2-003) must NOT enable while TypeScript errors exist. Fail-fast on a green baseline only. QA override logged: Cece decision final.
 DEVOTIONAL is a fully standalone white-label product. NO devotional code or columns in the shared mobile base. Never reintroduce devotional_enabled or devotional_tenant_id into tenant_mobile.
 Live repo is rhproject-new.
+
+---
+
+## Required Reading Order
+
+Before planning, editing, or referencing project status in any new session, read the following files in this exact order:
+1. docs/governance/best-practices.md
+2. docs/governance/tech-stack.md
+3. docs/governance/VERIFICATION-LOG.md
+
+Do not act on MASTER-TODO-V2.md status from memory or prior session summaries. Always re-pull it live per the rule in best-practices.md.
