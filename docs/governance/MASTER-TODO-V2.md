@@ -76,15 +76,90 @@
 | 38 | Wire: Report Card | **DONE** — Done, pushed. Confirmed unblocked — 34/35 resolved. report-card.tsx wired (report_cards table, student_id filter, status='visible' RLS enforcement); loading/error/empty states; tsc clean. HOSTED: verified live 2026-08-10. |
 | 39 | Wire: Hub | **DONE** — Done, pushed. Confirmed unblocked — 34/35 resolved. hub.tsx wired (courses platform=enrichment via student_class join, schedule_slot for schedule); hub-detail.tsx wired (single course + slots). tsc clean. HOSTED: verified live 2026-08-10. |
 
-## PHASE F — WEB, DESKS, DEPLOY
+## PHASE F — THREE DESK ARCHITECTURE (locked decisions, 2026-08-11)
+
+**Architecture:** Single Supabase project, schema namespaces. Cece decision 2026-08-11 — pivoted from two-project to single-project with schema namespaces per Independent Consultant recommendation. Rows 51-56 (second-project migration) CANCELLED.
+
+### F.1 — INDEPENDENT / CARRY-FORWARD
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 40 | Lovable website intake — Turnstile via 23 mandatory | 9, 23 | Pending |
-| 41a | Office Desk + School Desk consoles | 28 | DONE — Unblocked — 36-39 confirmed done. Ready to queue next. commit 8454c3e, tsc clean |
-| 41b | Front Desk intake form (Lovable) | 40 | Pending — blocked by Turnstile production key (row 40) |
-| 41c | Reclassify report card entry (ReportCardForm.tsx, rc_office_insert RLS, /lms/office-desk route) from Office Desk to School Desk per business desk model — report cards are in-house academic communication to family/student/teacher, not registration/payment/business ops | 41a | Backlog, non-blocking |
-| 42 | Cloudflare deploy | 11, 12 | PARTIAL — redhouse-web.pages.dev serving (170d7b4); prod domain + custom domain OPEN (row 49) |
+| 41 | QA adversarial RLS pass (historical row — superseded by row 50 scope) | 26 | SEALED — see PLAN-STATE row 41 evidence. **Ruling 41c (report card reclassification): LOCKED** — Report Cards moved to School Front Desk per ITEM-010 (docs/governance/rulings/ITEM-010-report-cards-school-front-desk.md). Office Desk scoped strictly to invoicing + registration. |
+| 42 | Cloudflare deploy | 11, 12 | PARTIAL — redhouse-web.pages.dev serving (170d7b4); prod domain + custom domain OPEN (row 76) |
+| 51-56 | ~~Provision separate Front Desk Supabase + migrate leads~~ | — | **CANCELLED** — Cece pivoted to single-project schema-namespace architecture (2026-08-11). See ITEM-011 ruling. |
+
+### F.2 — PHASE 1: SCHEMA NAMESPACES + SECURITY (top priority, unblocks all desk work)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 50 | **Architecture lock — SINGLE PROJECT, schema namespaces** | Cece | **LOCKED** — Single Supabase project. Three schema namespaces: `front_desk` (leads, callbacks), `school_desk` (courses, report_cards, announcements, chat), `office_desk` (invoices, payments, registrations). Shared `public` (profiles, tenants, auth). Lovable connects to same Supabase via service role key. Cece decision 2026-08-11, ITEM-011. |
+| 51 | Schema namespace setup: create `front_desk`, `school_desk`, `office_desk` schemas in existing Supabase | 50 | Pending — `CREATE SCHEMA` for each namespace; GRANT usage to authenticated/service_role |
+| 52 | Migrate leads table to `front_desk` schema: `ALTER TABLE public.leads SET SCHEMA front_desk` | 51 | Pending — leads table (078) moves to front_desk schema; RLS policies updated to new schema path |
+| 53 | Migrate office tables to `office_desk` schema: invoices, payments, registrations (new tables) | 51 | Pending — new tables created in office_desk schema; registration status columns (026) co-located |
+| 54 | Migrate school tables to `school_desk` schema: courses, enrollments, report_cards, announcements, chat tables | 51 | Pending — existing tables move; RLS policies and RPCs updated to new schema paths |
+| 55 | Update all RLS policies for schema-qualified table references | 52, 53, 54 | Pending — every policy using `public.leads` → `front_desk.leads`, etc. 152/152 pgTAP tests must re-pass |
+| 56 | Update all Edge Functions for schema-qualified queries | 52, 53, 54 | Pending — front-desk-read-leads, submit-lead, release-report-card, etc. |
+
+### F.2A — SECURITY LEAD FINDINGS (must resolve before any desk work)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 57 | **EF-to-EF auth design:** how School Front Desk proves identity to front-desk-read-leads EF (no cross-project token exchange needed in single-project) | 50 | Pending — with single project, EF can use service_role + server-side role check from JWT |
+| 58 | **Front Desk RLS policies:** lead status transitions (row 68), callback scheduling (row 60), archived leads — all need RLS | 51 | Pending — defense-in-depth even though EFs use service_role |
+| 59 | **Permission matrix:** desk × role × {read, write, transition, archive} — defines which roles access which desk functions | 50 | Pending — must resolve row 82 (desk-scoped permissions granularity) |
+| 60 | **Data duplication justification:** archived leads — keep in `front_desk.leads` with status='handed_off' vs. duplicate into `office_desk` | 50 | Pending — single-project eliminates cross-project duplication; leads stay in front_desk, referenced by office_desk via lead_reference_id |
+| 61 | **Rate limiting + enumeration protection:** registration Pattern B EF must protect against email enumeration attacks | 72 | Pending — Turnstile + rate limit on registration endpoint |
+
+### F.3 — FRONT DESK (Lovable, pre-gate sales/leads)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 62 | Lead status transition support: enquiry → qualified → invoiced → "Handed off" | 51, 58 | Pending — UPDATE policy or EF for lead status mutations (currently only INSERT+SELECT exist) |
+| 63 | Lead archive flow: on payment confirmation, tag "Handed off", archive (never delete) | 62 | Pending — status='handed_off' in front_desk.leads, referenced by office_desk via lead_reference_id |
+| 64 | Callback scheduling fields on leads (callback_at, callback_notes) | 51, 58 | Pending — schema addition to front_desk.leads |
+| 65 | Front Desk Lovable screens: lead list (admin-only), lead detail, status management, callback queue | 51, 57, 62 | Pending — Lovable-generated, connects to same Supabase via service role |
+| 66 | LMS deferred marker: route stubs only, zero components | 50 | Pending — placeholder routes, explicit scope: route stubs only |
+
+### F.4 — SCHOOL FRONT DESK (post-gate service machine, replaces existing School Desk)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 67 | Rework existing School Desk → School Front Desk: rename route, update page component, preserve ScheduleSlotList + StudentList | 50 | Pending — existing code at apps/web/src/features/lms/pages/SchoolDeskPage.tsx |
+| 68 | Add News section to School Front Desk (announcements in school_desk schema, read/write for authorized desk roles) | 67 | Pending — announcements table already exists (migration 041) |
+| 69 | Add Groups broadcast section to School Front Desk (conversations + conversation_members in school_desk) | 67 | Pending — tables exist (migration 059), need desk-scoped UI |
+| 70 | Add Direct chat section to School Front Desk (messages in school_desk) | 67, 69 | Pending — messages table exists (migration 059), need desk-desked UI |
+| 71 | Move Report Cards from Office Desk to School Front Desk: relocate ReportCardForm + ReportCardList, update rc_office_insert RLS for school-desk role | 67 | Pending — **LOCKED ruling: ITEM-010** (docs/governance/rulings/ITEM-010-report-cards-school-front-desk.md) |
+| 72 | Desk-scoped permissions: basic desk-level role_feature_access for MVP; each desk refines fine-grained permissions independently post-MVP | 59, 67 | **LOCKED** — Cece decision 2026-08-11, ITEM-012. MVP: desk-level role_feature_access. Each desk (Front, School, Office) refines independently post-MVP based on departmental monitoring needs. |
+| 73 | Profile screen: ONE shared component for student/family/teacher, sections mounted by role + data presence | 67 | Pending — hidden not greyed-out |
+
+### F.5 — OFFICE DESK (internal ops, registration + finance)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 74 | Strip report cards from Office Desk: remove ReportCardForm/ReportCardList from OfficeDeskPage | 71 | Pending — Office Desk becomes purely financial/registration |
+| 75 | Registration Pattern A: form + payment arrive same event → single write in office_desk schema | 53, 57 | Pending — Edge Function or direct insert |
+| 76 | Registration Pattern B: form arrives first → pending_review placeholder; payment arrives later → EF lookup-and-attach via stable match key (email or reference ID) → status flips to active | 53, 57 | Pending — requires new EF for payment-attach |
+| 77 | Registration status transitions: pending_init → pending_review → approved → active (plus terminal: withdrawn, rejected) | 75, 76 | Pending — Office Desk owns all status mutations |
+| 78 | Manual/ad-hoc invoice creation UI on Office Desk | 50 | Pending — MVP scaffold, QuickBooks/Shopify deferred |
+| 79 | Payment confirmation UI on Office Desk | 78 | Pending — triggers Pattern B attach or Pattern A completion |
+| 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id (no duplication) | 63, 75 | Pending — single-project eliminates cross-project duplication |
+
+### F.6 — WEBSITE + MOBILE INTEGRATION
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 81 | Public website registration form: feeds Office Desk per Pattern A/B logic | 75, 76 | Pending — lives on public website, not in repo |
+| 82 | v0 mobile screens: consume school_desk schema only, never front_desk leads | 50 | Pending — existing 5 screens already wired (rows 34-39) |
+| 83 | Mobile Profile screen: ONE shared component, conditional sections by role | 73 | Pending — same pattern as Home devotional conditional rendering |
+
+### F.7 — OPEN ITEMS (all locked for MVP)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 84 | **Repo structure** — monorepo vs separate repos. Current decision: single repo for MVP, Lovable generates standalone deployment. | — | **LOCKED** — single repo for MVP, revisit post-MVP |
+| 85 | **Pending-payment timeout** — Pattern B: if payment doesn't follow within set window, does Office Desk get automated reminder or stays pending_review for manual follow-up? | — | **LOCKED** — Cece decision 2026-08-11, ITEM-012. MVP: basic automated reminder, log of who was reminded reported to Office Desk. Full escalation/refinement deferred post-MVP. |
+| 86 | **Lovable ↔ Supabase integration** — Front Desk only. Lovable connects to same Supabase project via service_role key, queries `front_desk` schema. **Prerequisite (manual, one-time):** add `front_desk` to Project Settings → API → Exposed Schemas in Supabase dashboard; run `GRANT USAGE ON SCHEMA front_desk TO anon, authenticated, service_role; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA front_desk TO anon, authenticated, service_role; GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA front_desk TO anon, authenticated, service_role;` — Lovable does not configure schema exposure or grants automatically. | — | **CONFIRMED** — one manual prerequisite (schema exposure + grants) required before first use, no code-level blockers. See ITEM-013 ruling. |
 
 ## PHASE G — AO DOC SERIES (must complete before any agent operates, per 4)
 
@@ -100,38 +175,47 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 47 | QA adversarial RLS pass — extends 152/152 baseline | 26 | Pending |
-| 48 | E2E demo + Cece sign-off — terminal human gate | 34-46, 47 | Pending |
+| 48 | E2E demo + Cece sign-off — terminal human gate | 34-46, 47, 56-79 | Pending |
 
 ## PHASE I — DEPLOY AND DNS
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 49 | DNS cutover: redhouse.school → Cloudflare (near-launch) | 42 | Pending |
-| 50 | profiles UPDATE self-policy has no WITH CHECK — NOT EXPLOITABLE. No UPDATE grant on id/tenant_id/role; tenant_id additionally trigger-guarded (trg_profiles_tenant_id_immutable). Superseded by grant-hygiene fix 068. | — | CLOSED |
-| 51 | Verify migrations 054/055 numbering gap — confirm intentionally absent or locate missing files | — | **CLOSED** — 054/055 confirmed absent (reserved permanent gaps — ruling 4fb1b8f, audit v5 2026-08-03). No files missing. |
-| 52 | Schema-wide grant sweep — migration 069 revoke TRUNCATE/TRIGGER/REFERENCES/MAINTAIN from anon+authenticated on all public tables + ALTER DEFAULT PRIVILEGES for future tables | — | **CLOSED** — migration 069 applied locally, pgTAP 264/264 PASS. Audit: 267 rows (anon+authenticated) → 76 rows (authenticated-only, CRUD only); anon = 0 rows across all public tables. postgres default ACL on public: `{postgres=arwdDxtm, service_role=Dxtm}` (anon+authenticated stripped). supabase_admin-owned default ACL: platform-owned, not alterable by postgres — accepted residual. By-design: six tables grant-empty for authenticated (chapters, devotional_config, devotional_item, tenant_devotional, tenant_lms, tenant_mobile) — reads via SECURITY DEFINER RPC, design intent; RPC not implemented — see rows 59-60. RPC build gates rows 34-35. **ACL-decode lesson:** Two independent misreadings of Dxtm this session (TRUNCATE/TRIGGER/MAINTAIN vs INSERT/TRUNCATE/TRIGGER/MAINTAIN); future grant audits MUST decode against the aclitem legend explicitly (arwdDxtm = a INSERT, r SELECT, w UPDATE, d DELETE, D TRUNCATE, x REFERENCES, t TRIGGER, m MAINTAIN). The originally sealed legend itself omitted x=REFERENCES — third misdecode of the session; corrected in this commit. Ref: 068, 069, table_privileges audit 2026-07-25, supabase/migrations/069_grant_sweep_default_privileges.sql [b89e8ee] |
-| 53 | Sequence ACL audit — postgres default ACL grants anon=w (UPDATE → nextval/setval) on future sequences; existing sequences never audited for anon/authenticated grants | — | **CLOSED** — Current-state audit: zero sequences exist in public (UUID PKs throughout); nothing to revoke retroactively. Gap confirmed: postgres-owned default ACL granted anon=w, authenticated=w on future public sequences (nextval/setval). Collateral finding: 069 had inverted the service_role table default ACL (Dxtm kept, arwd lost) — the exact failure class migration 066 previously fixed at the object level. Fix: migration 071 (commit 0673ee2) — revoked ALL on future sequences from client roles; restored service_role CRUD and stripped TRUNCATE/REFERENCES/TRIGGER on future tables. Post-fix state: S = postgres=rwU, service_role=w; r = postgres=arwdDxtm, service_role=arwdm; f unchanged. Accepted residual: supabase_admin-owned default ACLs (platform schemas + public) grant rwU to client roles; not alterable by postgres — per ITEM-52 residual pattern. Migrations run as postgres, so this path is dormant for project objects. **Ruling note:** 069 collateral logged as a raw-output-over-prose event — the inverted grant sat undetected in the sealed 069 audit until the ITEM-53 defacl query surfaced it. Ref: 071, pg_default_acl audit 2026-07-25 [0673ee2] |
-| 54 | Write-grant review — 16 tables with full CRUD for authenticated (incl. report_cards DELETE, consent_records UPDATE/DELETE); cross-check against RLS policy inventory and RPC surface to confirm each write privilege is necessary | — | **CLOSED** — migration 070 revoked DELETE from authenticated on report_cards, consent_records, messages, certificates (commit 30c547f). Column-grant audit: only column-scoped UPDATE grants are profiles.handle and notifications.read_at; notifications mark-read gap disproven (agent prose contradicted its own raw output — misdecode logged). RLS policy inventory + RPC surface cross-referenced against role_table_grants; full audit data collected 2026-07-25. Test edit to 063 (tests 8,13: lives_ok → throws_ok '42501') shipped inside the fix commit; scope deviation accepted as necessitated-by-change. Ref: 070, column_privileges audit, pg_policies inventory, pg_proc plpgsql filter [30c547f] |
-| 55 | Column-grant narrowing — restrict UPDATE on privileged columns for authenticated. **Three named tables:** report_cards (status, released_at, released_by), messages (sender_id, conversation_id, created_at), consent_records (given_at, ip_address). **tenant_id set (9 tables):** announcement, book, booklist, booklist_item, conversations, enrichment_meta, schedule_slot, suppression_records, terms. **Exited scope (no tenant_id, transitive isolation per P2-011 precedent):** chat_preferences, conversation_members, message_reactions. | 54 | Pending |
-| 56 | Dead-policy cleanup — chapter_progress and enrollments carry student INSERT/DELETE policies with no matching grants | 54 | Pending |
-| 57 | UNALLOCATED — reserved, never assigned. | — | — |
-| 58 | UNALLOCATED — reserved, never assigned. | — | — |
-| 59 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | SEALED — 55c5d5d (2026-07-27). 077_chapters_read_rpc.sql (SECURITY DEFINER). outside_student allow-list: enrichment only; clubs/music-&-art closed pending ruling. Evidence: 18/18 pgTAP operator-run + live wall probe denial (AR-15). Gates 34-35 lifted. [55c5d5d] |
-| 60 | Dead 015 policies (ITEM-60). | — | Pending |
-| 61 | UNALLOCATED — reserved, never assigned. | — | — |
-| 62 | service_role lacks UPDATE on report_cards/messages/consent_records — verify EF write paths; review suppression_records full-CRUD for authenticated | 55 | Pending |
-| 63 | Pre-existing test failures (ITEM-62). — 012_rls_denial_proofs.sql (plan mismatch, planned 18 ran 12), 059_chat_tables_test.sql (tests 17-18, permission denied UPDATE on messages), 063_family_ledger_test.sql (test 6, permission denied UPDATE on report_cards). Shared signature: UPDATE permission denials consistent with post-grant-sweep expectations drift. Triage deferred. Evidence: DB-isolated origin/main run, session 2026-07-25. Attached design note: `changed_by` schema gap on handle_changes table (no FK to auth.users for audit attribution). Planned migration renumbered from 075 to 076 (075 consumed by CHECK constraint fix). | — | Pending |
-| 64 | Local test harness repair (ITEM-64). (i) root-cause supabase test db NOTESTS on operator host — first suspect missing host toolchain (brew install libpq && brew link --force libpq); (ii) reset-durable pgTAP provisioning via a test-setup script applied by the runner post-reset — explicitly NOT a migration; (iii) full 28-file suite re-run on the operator's terminal to re-baseline counts and formally retire all agent-era test claims. | — | Open |
 
-## submit-lead browser harness (evidence-complete)
+---
+
+## LEGACY ROWS (pre-architecture renumber, preserved for audit trail)
+
+Rows 100–117 below are the original Phase I items (formerly 50–67) renumbered to avoid collision with the Phase F architecture rows (50–82). These are CLOSED or pending legacy items — retained for traceability only.
 
 | # | Item | Gated By | Status |
-|-----------------|----------------------------|----------|------------------------|
-| 65 | submit-lead browser harness | — | DONE — 2026-07-29 (201 confirmed in browser; lead row verified in public.leads; three production-revert TODOs outstanding: SUBMIT_URL at lead-form.html:50; Turnstile sitekey 0x4AAAAAADrBMk490tYCQ_p3 at lead-form.html:42; verify_jwt = false in supabase/config.toml) |
-| 66 | EF hosted deployment parity — all 8 EFs deployed to hosted Supabase | — | **PARTIAL** — 6/8 deployed: submit-lead v7, class-start-ping v1, validate-toggle v1, set_handle v1, release-report-card v1 (syntax fix applied 2026-08-03, pre-existing bare YAML at index.ts:10 present since fe72042, now commented). 2 pending: (a) ai-tutor-proxy — gate: AI provider API key secret not yet provisioned; (b) assign_tenant — DEFER (admin reassignment, not demo-critical). RETIRED: verify-turnstile (submit-lead inlines Turnstile verification at lines 48–68, standalone EF redundant). Smoke tests: class-start-ping PASS (500 on empty body = pre-existing), validate-toggle PASS, set_handle PASS, release-report-card PASS. All deployed with verify_jwt=false (functions check auth internally). Sub-items: (c) EF input hardening — guard req.json() with try-catch across all EFs: Pending, non-blocking, batch with wiring QA. |
-| 67 | Migration 099_content_group.sql: content-group filtering layer on daily_verse, bible_plan, video_of_day, vlog, profiles | Migration | **Done** — Applied to hosted, zero schema drift verified against local file, 2026-08-11. |
-| 097 | Migration 097: role_feature_access + devotional RLS | Migration | **Resolved** — Verified zero drift against hosted, committed retroactively at 64cf3aa, pushed. |
-| 098 | Migration 098: get_today_devotional RPC + devotional config | Migration | **Resolved** — Verified zero drift against hosted, committed retroactively at 64cf3aa, pushed. |
+|---|------|----------|--------|
+| 100 | profiles UPDATE self-policy has no WITH CHECK — NOT EXPLOITABLE. No UPDATE grant on id/tenant_id/role; tenant_id additionally trigger-guarded (trg_profiles_tenant_id_immutable). Superseded by grant-hygiene fix 068. | — | CLOSED |
+| 101 | Verify migrations 054/055 numbering gap — confirm intentionally absent or locate missing files | — | **CLOSED** — 054/055 confirmed absent (reserved permanent gaps — ruling 4fb1b8f, audit v5 2026-08-03). No files missing. |
+| 102 | Schema-wide grant sweep — migration 069 revoke TRUNCATE/TRIGGER/REFERENCES/MAINTAIN from anon+authenticated on all public tables + ALTER DEFAULT PRIVILEGES for future tables | — | **CLOSED** — migration 069 applied locally, pgTAP 264/264 PASS. Ref: 068, 069, table_privileges audit 2026-07-25. |
+| 103 | Sequence ACL audit — postgres default ACL grants anon=w on future sequences | — | **CLOSED** — Zero sequences exist in public (UUID PKs). Ref: 071, pg_default_acl audit 2026-07-25. |
+| 104 | Write-grant review — 16 tables with full CRUD for authenticated | — | **CLOSED** — migration 070 revoked DELETE from authenticated on report_cards, consent_records, messages, certificates. Ref: 070. |
+| 105 | Column-grant narrowing — restrict UPDATE on privileged columns for authenticated | 104 | Pending |
+| 106 | Dead-policy cleanup — chapter_progress and enrollments carry student INSERT/DELETE policies with no matching grants | 104 | Pending |
+| 107 | UNALLOCATED — reserved, never assigned. | — | — |
+| 108 | UNALLOCATED — reserved, never assigned. | — | — |
+| 109 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | SEALED — 55c5d5d (2026-07-27). [55c5d5d] |
+| 110 | Dead 015 policies (ITEM-60). | — | Pending |
+| 111 | UNALLOCATED — reserved, never assigned. | — | — |
+| 112 | service_role lacks UPDATE on report_cards/messages/consent_records — verify EF write paths | 105 | Pending |
+| 113 | Pre-existing test failures (ITEM-62). | — | Pending |
+| 114 | Local test harness repair (ITEM-64). | — | Open |
+
+### submit-lead browser harness (evidence-complete)
+
+| # | Item | Gated By | Status |
+|---|------|----------|--------|
+| 115 | submit-lead browser harness | — | DONE — 2026-07-29 (201 confirmed in browser; lead row verified in public.leads) |
+| 116 | EF hosted deployment parity — all 8 EFs deployed to hosted Supabase | — | **PARTIAL** — 6/8 deployed. RETIRED: verify-turnstile. |
+| 117 | Migration 099_content_group.sql | Migration | **Done** — Applied to hosted, zero schema drift, 2026-08-11. |
+| 118 | Migration 097: role_feature_access + devotional RLS | Migration | **Resolved** — Verified zero drift against hosted. |
+| 119 | Migration 098: get_today_devotional RPC + devotional config | Migration | **Resolved** — Verified zero drift against hosted. |
 
 ---
 
@@ -143,7 +227,7 @@
 - My Analytics design doc
 - apps/lms decision
 - ITEM-23-DEP-A: verify-turnstile verify_jwt decision — currently verifyJWT=true; a deliberate deploy-time decision on `verify_jwt = false` in config.toml is required since registrants are unauthenticated.
-- ITEM-23-DEP-B: leads table decision — create dedicated `leads` table or point at existing registration table; unblocks verify-turnstile write path.
+- ITEM-23-DEP-B: leads table — RESOLVED. Leads live in `front_desk` schema within single Supabase project (ITEM-011, row 52). Verify-turnstile write path points to same Supabase.
 
 ---
 
@@ -187,6 +271,54 @@ gates without plan amendment.
 - "Pending item lacks execution evidence" → summarily resolved under item-13 precedent.
 - "Pending item lacks required input" → valid only if input is ungated; gated inputs satisfy the objection by structure.
 - All future changes require DEFECT filing with evidence. No new review rounds.
+
+## Ruling 3 — ITEM-010: Report Cards to School Front Desk (2026-08-11)
+
+**Locked by Cece.** Report cards are in-house academic communication to
+family/student/teacher — NOT registration, payment, or invoicing.
+
+- Report Cards relocate from Office Desk to School Front Desk.
+- Office Desk remains scoped strictly to: invoice creation, payment
+  confirmation, registration status changes (pending_init → pending_review
+  → approved → active).
+- Report cards are explicitly out of Office Desk's scope.
+- Full ruling: docs/governance/rulings/ITEM-010-report-cards-school-front-desk.md
+- Implementation: MASTER-TODO-V2 row 71.
+
+## Ruling 4 — ITEM-011: Single Supabase with Schema Namespaces (2026-08-11)
+
+**Locked by Cece.** Pivots from two-Supabase-project to single-project with schema namespaces.
+
+- Single Supabase project. Three schemas: `front_desk`, `school_desk`, `office_desk`.
+- Shared `public` schema for profiles, tenants, auth.
+- Lovable connects to same Supabase via service_role key.
+- Rows 51-56 (original second-project migration) CANCELLED.
+- New rows 51-56 (schema namespace setup) replace them.
+- Archived leads stay in `front_desk.leads`, referenced by `office_desk` via `lead_reference_id` — no duplication.
+- Security Lead's 5 findings resolved as part of Phase 1 (rows 57-61).
+- Full ruling: docs/governance/rulings/ITEM-011-architecture-pivot-single-supabase.md
+- Implementation: MASTER-TODO-V2 rows 51-61.
+
+## Ruling 5 — ITEM-012: MVP Scope Decisions (2026-08-11)
+
+**Locked by Cece.** Two open items locked for MVP scope.
+
+1. **Pending-payment timeout (row 85):** Basic automated reminder for MVP. Log of who was reminded reported to Office Desk. Full escalation/refinement deferred post-MVP.
+2. **Desk permission granularity (row 72):** Basic desk-level `role_feature_access` for MVP. Each desk (Front, School, Office) refines fine-grained permissions independently post-MVP based on departmental monitoring needs.
+
+- Full ruling: docs/governance/rulings/ITEM-012-mvp-scope-decisions.md
+- Implementation: MASTER-TODO-V2 rows 72, 85.
+
+## Ruling 6 — ITEM-013: Lovable ↔ Supabase Front Desk Integration (2026-08-11)
+
+**Locked by Cece.** Lovable connects to existing single Supabase project for Front Desk only.
+
+- Lovable queries `front_desk` schema via standard `supabase.schema()` client.
+- School Desk and Office Desk managed directly in Supabase — no Lovable integration.
+- **Manual prerequisite:** expose `front_desk` in Supabase Dashboard → Project Settings → API → Exposed Schemas; run GRANT USAGE/SELECT/INSERT/UPDATE/DELETE on schema + tables + sequences for anon, authenticated, service_role.
+- Lovable does not configure schema exposure or grants automatically — this is a one-time manual step.
+- Full ruling: docs/governance/rulings/ITEM-013-lovable-supabase-front-desk-integration.md
+- Implementation: MASTER-TODO-V2 row 86.
 
 ---
 
