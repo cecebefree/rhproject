@@ -27,7 +27,7 @@ UPDATE public.profiles SET tenant_id = 'cccc0000-0000-0000-0000-0000000000c0'
 UPDATE public.profiles SET role = 'teacher' WHERE id = 'cccc0000-0000-0000-0000-0000000000a1';
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
-INSERT INTO public.courses (id, title, price, status, teacher_id)
+INSERT INTO school_desk.courses (id, title, price, status, teacher_id)
 VALUES ('cccc0000-0000-0000-0000-0000000000c1', 'CHAPSEQ Course', 0, 'published', 'cccc0000-0000-0000-0000-0000000000a1')
 ON CONFLICT (id) DO NOTHING;
 
@@ -62,7 +62,7 @@ RESET ROLE;
 SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
 SET ROLE authenticated;
 SELECT throws_ok(
-  $$INSERT INTO public.enrollments (student_id, course_id)
+  $$INSERT INTO school_desk.enrollments (student_id, course_id)
     VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000c1')$$,
   '42501', NULL,
   'denial: authenticated has no INSERT grant on enrollments');

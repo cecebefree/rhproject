@@ -22,7 +22,7 @@ WHERE id IN ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'bb000000-0000-0000-0000-00
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 -- 4 courses (teacher_id = admin for simplicity)
-INSERT INTO public.courses (id, title, price, teacher_id, type, tenant_id)
+INSERT INTO school_desk.courses (id, title, price, teacher_id, type, tenant_id)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Course A', 0, 'dd000000-0000-0000-0000-0000000000d4', 'core', '00000000-0000-0000-0000-000000000001'),
        ('22222222-2222-2222-2222-222222222222', 'Course B', 0, 'dd000000-0000-0000-0000-0000000000d4', 'core', '00000000-0000-0000-0000-000000000001'),
        ('33333333-3333-3333-3333-333333333333', 'Course C', 0, 'dd000000-0000-0000-0000-0000000000d4', 'core', '00000000-0000-0000-0000-000000000001'),

@@ -8,49 +8,49 @@ SELECT plan(43);
 
 -- report_cards: status, released_at, released_by must be blocked
 SELECT is(
-  has_column_privilege('authenticated', 'public.report_cards', 'status', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.report_cards', 'status', 'UPDATE'),
   false,
   'report_cards: authenticated cannot UPDATE status'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.report_cards', 'released_at', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.report_cards', 'released_at', 'UPDATE'),
   false,
   'report_cards: authenticated cannot UPDATE released_at'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.report_cards', 'released_by', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.report_cards', 'released_by', 'UPDATE'),
   false,
   'report_cards: authenticated cannot UPDATE released_by'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.report_cards', 'grade', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.report_cards', 'grade', 'UPDATE'),
   true,
   'report_cards: authenticated can UPDATE grade'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.report_cards', 'tenant_id', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.report_cards', 'tenant_id', 'UPDATE'),
   false,
   'report_cards: authenticated cannot UPDATE tenant_id'
 );
 
 -- messages: sender_id, conversation_id, created_at blocked
 SELECT is(
-  has_column_privilege('authenticated', 'public.messages', 'sender_id', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.messages', 'sender_id', 'UPDATE'),
   false,
   'messages: authenticated cannot UPDATE sender_id'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.messages', 'conversation_id', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.messages', 'conversation_id', 'UPDATE'),
   false,
   'messages: authenticated cannot UPDATE conversation_id'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.messages', 'created_at', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.messages', 'created_at', 'UPDATE'),
   false,
   'messages: authenticated cannot UPDATE created_at'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.messages', 'body', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.messages', 'body', 'UPDATE'),
   true,
   'messages: authenticated can UPDATE body'
 );
@@ -79,12 +79,12 @@ SELECT is(
 
 -- announcement: tenant_id blocked, other cols granted
 SELECT is(
-  has_column_privilege('authenticated', 'public.announcement', 'tenant_id', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.announcement', 'tenant_id', 'UPDATE'),
   false,
   'announcement: authenticated cannot UPDATE tenant_id'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.announcement', 'title', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.announcement', 'title', 'UPDATE'),
   true,
   'announcement: authenticated can UPDATE title'
 );
@@ -127,12 +127,12 @@ SELECT is(
 
 -- conversations: tenant_id blocked
 SELECT is(
-  has_column_privilege('authenticated', 'public.conversations', 'tenant_id', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.conversations', 'tenant_id', 'UPDATE'),
   false,
   'conversations: authenticated cannot UPDATE tenant_id'
 );
 SELECT is(
-  has_column_privilege('authenticated', 'public.conversations', 'category', 'UPDATE'),
+  has_column_privilege('authenticated', 'school_desk.conversations', 'category', 'UPDATE'),
   true,
   'conversations: authenticated can UPDATE category'
 );
@@ -187,12 +187,12 @@ SELECT is(
 
 -- All 12 tables: no table-level UPDATE for authenticated
 SELECT is(
-  has_table_privilege('authenticated', 'public.report_cards', 'UPDATE'),
+  has_table_privilege('authenticated', 'school_desk.report_cards', 'UPDATE'),
   false,
   'report_cards: no table-level UPDATE'
 );
 SELECT is(
-  has_table_privilege('authenticated', 'public.messages', 'UPDATE'),
+  has_table_privilege('authenticated', 'school_desk.messages', 'UPDATE'),
   false,
   'messages: no table-level UPDATE'
 );
@@ -202,7 +202,7 @@ SELECT is(
   'consent_records: no table-level UPDATE'
 );
 SELECT is(
-  has_table_privilege('authenticated', 'public.announcement', 'UPDATE'),
+  has_table_privilege('authenticated', 'school_desk.announcement', 'UPDATE'),
   false,
   'announcement: no table-level UPDATE'
 );
@@ -222,7 +222,7 @@ SELECT is(
   'booklist_item: no table-level UPDATE'
 );
 SELECT is(
-  has_table_privilege('authenticated', 'public.conversations', 'UPDATE'),
+  has_table_privilege('authenticated', 'school_desk.conversations', 'UPDATE'),
   false,
   'conversations: no table-level UPDATE'
 );

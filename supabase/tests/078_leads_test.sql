@@ -9,14 +9,14 @@ SELECT plan(8);
 
 -- 1. Privilege surface: authenticated has SELECT on leads (post-096 GRANT SELECT)
 SELECT table_privs_are(
-  'public', 'leads', 'authenticated',
+  'front_desk', 'leads', 'authenticated',
   ARRAY['SELECT'],
   'authenticated has SELECT grant on leads (post-096)'
 );
 
 -- 2. Privilege surface: anon has no per-table privileges on leads
 SELECT table_privs_are(
-  'public', 'leads', 'anon',
+  'front_desk', 'leads', 'anon',
   ARRAY[]::text[],
   'anon has no per-table privileges on leads'
 );
@@ -24,7 +24,7 @@ SELECT table_privs_are(
 -- 3. Denial: authenticated INSERT throws 42501 (grant-layer deny)
 SET ROLE authenticated;
 SELECT throws_ok(
-  $$INSERT INTO public.leads (tenant_id, name, email) VALUES ((SELECT id FROM public.tenant_devotional LIMIT 1), 'Test', 't@t.com')$$,
+  $$INSERT INTO front_desk.leads (tenant_id, name, email) VALUES ((SELECT id FROM public.tenant_devotional LIMIT 1), 'Test', 't@t.com')$$,
   '42501',
   NULL,
   'authenticated INSERT on leads throws 42501'
@@ -37,7 +37,7 @@ SELECT throws_ok(
 --   R2: tenant-scoped lead read for Front Desk.
 --   Original test assertion:
 --     SELECT throws_ok(
---       $$SELECT count(*) FROM public.leads$$,
+--       $$SELECT count(*) FROM front_desk.leads$$,
 --       '42501',
 --       NULL,
 --       'authenticated SELECT on leads throws 42501'
@@ -47,14 +47,14 @@ SELECT throws_ok(
 
 -- 4b. Post-096: authenticated SELECT returns 0 cross-tenant rows (R2: 0 cross-tenant rows)
 SELECT is(
-  (SELECT count(*)::int FROM public.leads),
+  (SELECT count(*)::int FROM front_desk.leads),
   0,
   'authenticated SELECT returns 0 cross-tenant rows (fail-closed, no JWT tenant_id)'
 );
 
 -- 5. Denial: authenticated UPDATE throws 42501
 SELECT throws_ok(
-  $$UPDATE public.leads SET name = 'x'$$,
+  $$UPDATE front_desk.leads SET name = 'x'$$,
   '42501',
   NULL,
   'authenticated UPDATE on leads throws 42501'
@@ -63,7 +63,7 @@ SELECT throws_ok(
 -- 6. Denial: anon INSERT throws 42501
 SET ROLE anon;
 SELECT throws_ok(
-  $$INSERT INTO public.leads (tenant_id, name, email) VALUES ((SELECT id FROM public.tenant_devotional LIMIT 1), 'Test', 't@t.com')$$,
+  $$INSERT INTO front_desk.leads (tenant_id, name, email) VALUES ((SELECT id FROM public.tenant_devotional LIMIT 1), 'Test', 't@t.com')$$,
   '42501',
   NULL,
   'anon INSERT on leads throws 42501'
@@ -73,13 +73,13 @@ SELECT throws_ok(
 RESET ROLE;
 SET ROLE service_role;
 SELECT lives_ok(
-  $$INSERT INTO public.leads (tenant_id, name, email) VALUES ((SELECT id FROM public.tenant_devotional LIMIT 1), 'Verified', 'v@v.com')$$,
+  $$INSERT INTO front_desk.leads (tenant_id, name, email) VALUES ((SELECT id FROM public.tenant_devotional LIMIT 1), 'Verified', 'v@v.com')$$,
   'service_role can INSERT into leads'
 );
 
 -- 8. Inserted row carries the correct tenant_id
 SELECT is(
-  (SELECT tenant_id::text FROM public.leads WHERE email = 'v@v.com'),
+  (SELECT tenant_id::text FROM front_desk.leads WHERE email = 'v@v.com'),
   (SELECT id::text FROM public.tenant_devotional LIMIT 1),
   'lead row carries the correct tenant_id'
 );

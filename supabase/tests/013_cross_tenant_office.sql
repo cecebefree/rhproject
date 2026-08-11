@@ -77,12 +77,12 @@ UPDATE public.profiles SET role = 'learner'
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 -- Report card in tenant A (draft)
-INSERT INTO public.report_cards (id, student_id, term, subject, status, created_by, tenant_id, created_at)
+INSERT INTO school_desk.report_cards (id, student_id, term, subject, status, created_by, tenant_id, created_at)
 VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '44444444-4444-4444-4444-444444444444', 'Term 1', 'Math', 'draft', '33333333-3333-3333-3333-333333333333', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', now())
 ON CONFLICT (id) DO NOTHING;
 
 -- Report card in tenant B (draft)
-INSERT INTO public.report_cards (id, student_id, term, subject, status, created_by, tenant_id, created_at)
+INSERT INTO school_desk.report_cards (id, student_id, term, subject, status, created_by, tenant_id, created_at)
 VALUES ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '55555555-5555-5555-5555-555555555555', 'Term 1', 'Math', 'draft', '33333333-3333-3333-3333-333333333333', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', now())
 ON CONFLICT (id) DO NOTHING;
 
@@ -91,7 +91,7 @@ SET ROLE authenticated;
 -- t1: Office A cannot SELECT tenant B report_cards
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111','office','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-    (SELECT count(*)::int FROM public.report_cards
+    (SELECT count(*)::int FROM school_desk.report_cards
      WHERE tenant_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
     0,
     't1: office A sees 0 rows from tenant B report_cards'
@@ -100,7 +100,7 @@ SELECT is(
 -- t2: Office A cannot UPDATE tenant B report_cards (0 rows matched)
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111','office','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-    (SELECT count(*)::int FROM public.report_cards
+    (SELECT count(*)::int FROM school_desk.report_cards
      WHERE id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
      AND status = 'visible'
      AND visible_at IS NOT NULL),
@@ -110,7 +110,7 @@ SELECT is(
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111','office','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 -- t3: Office A CAN SELECT own tenant report_cards
 SELECT is(
-    (SELECT count(*)::int FROM public.report_cards
+    (SELECT count(*)::int FROM school_desk.report_cards
      WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
     1,
     't3: office A sees own tenant report_cards'
@@ -119,7 +119,7 @@ SELECT is(
 -- t4: Office A cannot directly UPDATE own tenant report_cards (column grants block authenticated)
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111','office','aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT throws_ok(
-  $$UPDATE public.report_cards
+  $$UPDATE school_desk.report_cards
   SET status='released', released_by='11111111-1111-1111-1111-111111111111', released_at=now()
   WHERE id='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' AND status='draft'$$,
   '42501',

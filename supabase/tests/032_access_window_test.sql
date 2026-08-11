@@ -28,12 +28,12 @@ WHERE id = 'bb000000-0000-0000-0000-0000000000b2';
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 -- Course 1111 exists (teacher_id = student1 for simplicity)
-INSERT INTO public.courses (id, title, price, teacher_id, type, tenant_id)
+INSERT INTO school_desk.courses (id, title, price, teacher_id, type, tenant_id)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Course 1111', 0, 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'core', '00000000-0000-0000-0000-000000000001')
 ON CONFLICT (id) DO NOTHING;
 
 -- student1 enrolled in course 1111
-INSERT INTO public.enrollments (student_id, course_id, payment_reference)
+INSERT INTO school_desk.enrollments (student_id, course_id, payment_reference)
 VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111', 'test-032')
 ON CONFLICT (student_id, course_id) DO NOTHING;
 

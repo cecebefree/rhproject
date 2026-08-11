@@ -31,7 +31,7 @@ WHERE id IN ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'bb000000-0000-0000-0000-00
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 -- Courses: 1111 (teacher1, core), 2222 (teacher1, core), 3333 (teacher1, club, closed), 4444 (teacher1, enrichment, open_to_outside)
-INSERT INTO public.courses (id, title, price, teacher_id, status, type, open_to_outside, tenant_id)
+INSERT INTO school_desk.courses (id, title, price, teacher_id, status, type, open_to_outside, tenant_id)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Core A', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'core', false, '00000000-0000-0000-0000-000000000001'),
        ('22222222-2222-2222-2222-222222222222', 'Core B', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'core', false, '00000000-0000-0000-0000-000000000001'),
        ('33333333-3333-3333-3333-333333333333', 'Club Closed', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'club', false, '00000000-0000-0000-0000-000000000001'),
@@ -167,14 +167,14 @@ select set_config('request.jwt.claims',
   '{"sub":"ffffffff-ffff-ffff-ffff-ffffffffffff","role":"authenticated","app_metadata":{"role":"outside_student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
-  (select count(*)::int from public.courses where type = 'core'),
+  (select count(*)::int from school_desk.courses where type = 'core'),
   0,
   'outside_student sees 0 core courses'
 );
 
 -- 9. outside_student blocked from closed club (open_to_outside=false)
 select is(
-  (select count(*)::int from public.courses
+  (select count(*)::int from school_desk.courses
      where id = '33333333-3333-3333-3333-333333333333'),
   0,
   'outside_student blocked from closed club (open_to_outside=false)'
@@ -182,7 +182,7 @@ select is(
 
 -- 10. outside_student allowed where open_to_outside=true
 select is(
-  (select count(*)::int from public.courses
+  (select count(*)::int from school_desk.courses
      where type in ('club', 'enrichment') and open_to_outside = true),
   1,
   'outside_student sees 1 open club/enrichment course'
@@ -264,7 +264,7 @@ select set_config('request.jwt.claims',
   '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
-  (select count(*)::int from public.courses where type = 'core'),
+  (select count(*)::int from school_desk.courses where type = 'core'),
   2,
   'regression: student still sees all core courses'
 );
@@ -274,7 +274,7 @@ select set_config('request.jwt.claims',
   '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
-  (select count(*)::int from public.courses),
+  (select count(*)::int from school_desk.courses),
   4,
   'regression: teacher still sees all courses'
 );

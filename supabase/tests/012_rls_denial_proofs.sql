@@ -76,7 +76,7 @@ VALUES ('e97e5c3a-1234-4321-abcd-000000000401', 'e97e5c3a-1234-4321-abcd-0000000
 ON CONFLICT (id) DO NOTHING;
 
 -- Report cards: draft for learner1, visible for learner2
-INSERT INTO public.report_cards (id, student_id, term, subject, grade, status, created_by, tenant_id)
+INSERT INTO school_desk.report_cards (id, student_id, term, subject, grade, status, created_by, tenant_id)
 VALUES ('e97e5c3a-1234-4321-abcd-000000000601', 'e97e5c3a-1234-4321-abcd-000000000302', '2026 Term 1', 'Math', 'A', 'draft', 'e97e5c3a-1234-4321-abcd-000000000201', 'e97e5c3a-1234-4321-abcd-000000000001'),
        ('e97e5c3a-1234-4321-abcd-000000000602', 'e97e5c3a-1234-4321-abcd-000000000303', '2026 Term 1', 'Math', 'B', 'visible', 'e97e5c3a-1234-4321-abcd-000000000201', 'e97e5c3a-1234-4321-abcd-000000000001')
 ON CONFLICT (student_id, term, subject) DO NOTHING;
@@ -102,21 +102,21 @@ SELECT is((SELECT count(*)::int FROM public.suppression_records WHERE profile_id
 
 -- b1: Learner cannot see own draft card
 SELECT tests.set_jwt('e97e5c3a-1234-4321-abcd-000000000302','learner','e97e5c3a-1234-4321-abcd-000000000001');
-SELECT is((SELECT count(*)::int FROM public.report_cards WHERE student_id='e97e5c3a-1234-4321-abcd-000000000302' AND status='draft'),0,'b1: learner cannot see own draft card');
+SELECT is((SELECT count(*)::int FROM school_desk.report_cards WHERE student_id='e97e5c3a-1234-4321-abcd-000000000302' AND status='draft'),0,'b1: learner cannot see own draft card');
 
 -- b2: Learner CAN see own visible card
 SELECT tests.set_jwt('e97e5c3a-1234-4321-abcd-000000000303','learner','e97e5c3a-1234-4321-abcd-000000000001');
-SELECT is((SELECT count(*)::int FROM public.report_cards WHERE student_id='e97e5c3a-1234-4321-abcd-000000000303' AND status='visible'),1,'b2: learner can see own visible card');
+SELECT is((SELECT count(*)::int FROM school_desk.report_cards WHERE student_id='e97e5c3a-1234-4321-abcd-000000000303' AND status='visible'),1,'b2: learner can see own visible card');
 
 -- b3: Teacher cannot release card (teacher_update_own WITH CHECK fails)
 SELECT tests.set_jwt('e97e5c3a-1234-4321-abcd-000000000201','teacher','e97e5c3a-1234-4321-abcd-000000000001');
-SELECT throws_ok($$UPDATE public.report_cards SET status='released',released_by='e97e5c3a-1234-4321-abcd-000000000201',released_at=now() WHERE id='e97e5c3a-1234-4321-abcd-000000000601'$$,NULL,'b3: teacher cannot release card');
+SELECT throws_ok($$UPDATE school_desk.report_cards SET status='released',released_by='e97e5c3a-1234-4321-abcd-000000000201',released_at=now() WHERE id='e97e5c3a-1234-4321-abcd-000000000601'$$,NULL,'b3: teacher cannot release card');
 
 -- b4: Office cannot skip draft->visible (lifecycle trigger blocks)
 SELECT tests.set_jwt('e97e5c3a-1234-4321-abcd-000000000102','office','e97e5c3a-1234-4321-abcd-000000000001');
 -- rc_office_manage WITH CHECK passes (status=visible) but the lifecycle trigger fires
 -- and rejects draft->visible
-SELECT throws_ok($$UPDATE public.report_cards SET status='visible',visible_at=now() WHERE id='e97e5c3a-1234-4321-abcd-000000000601'$$,NULL,'b4: office cannot skip draft->visible (trigger)');
+SELECT throws_ok($$UPDATE school_desk.report_cards SET status='visible',visible_at=now() WHERE id='e97e5c3a-1234-4321-abcd-000000000601'$$,NULL,'b4: office cannot skip draft->visible (trigger)');
 
 -- c1: Learner cannot INSERT suppression (only admin_all permits INSERT)
 SELECT tests.set_jwt('e97e5c3a-1234-4321-abcd-000000000302','learner','e97e5c3a-1234-4321-abcd-000000000001');

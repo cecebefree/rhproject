@@ -64,7 +64,7 @@ async function handleRequest(req: Request) {
   );
 
   const { data: leads, error } = await supabase
-    .from("leads")
+    .schema("front_desk").from("leads")
     .select("*")
     .eq("tenant_id", authCtx.tenant_id)
     .order("created_at", { ascending: false })

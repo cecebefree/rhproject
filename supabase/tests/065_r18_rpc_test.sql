@@ -115,7 +115,7 @@ SELECT is(
 
 -- Verify draft exists and capture ID (must be done before role switch)
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
    WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
      AND status = 'draft'
      AND term = '2026 Term 2'),
@@ -124,7 +124,7 @@ SELECT is(
 );
 
 -- Capture draft card ID (office role can see draft via rc_office_select)
-SELECT id INTO TEMP TABLE draft_card FROM public.report_cards
+SELECT id INTO TEMP TABLE draft_card FROM school_desk.report_cards
 WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
   AND term = '2026 Term 2'
   AND status = 'draft'
@@ -141,7 +141,7 @@ SELECT throws_ok(
 -- AC-4: Learner cannot see draft card (before release)
 SELECT tests.set_jwt('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e','student','00000000-0000-0000-0000-000000000001');
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
    WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
      AND status = 'draft'
      AND term = '2026 Term 2'),
@@ -170,7 +170,7 @@ SELECT throws_ok(
 -- Switch back to office role to query the card (cross-tenant JWT blocks RLS)
 SELECT tests.set_jwt('00000000-0000-0000-0000-0000000000ff','office','00000000-0000-0000-0000-000000000001');
 SELECT is(
-  (SELECT status FROM public.report_cards WHERE id = (SELECT id FROM draft_card)),
+  (SELECT status FROM school_desk.report_cards WHERE id = (SELECT id FROM draft_card)),
   'draft',
   'AC-7: card remains in draft after cross-tenant release attempt'
 );
@@ -193,13 +193,13 @@ SELECT is(
 );
 
 SELECT is(
-  (SELECT released_at IS NOT NULL FROM public.report_cards WHERE id = (SELECT id FROM draft_card)),
+  (SELECT released_at IS NOT NULL FROM school_desk.report_cards WHERE id = (SELECT id FROM draft_card)),
   true,
   'AC-2b: released_at is stamped'
 );
 
 SELECT is(
-  (SELECT released_by FROM public.report_cards WHERE id = (SELECT id FROM draft_card)),
+  (SELECT released_by FROM school_desk.report_cards WHERE id = (SELECT id FROM draft_card)),
   '00000000-0000-0000-0000-0000000000ff',
   'AC-2c: released_by matches office caller'
 );
@@ -207,7 +207,7 @@ SELECT is(
 -- AC-3: Learner sees the released (visible) card
 SELECT tests.set_jwt('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e','student','00000000-0000-0000-0000-000000000001');
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
    WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
      AND status = 'visible'
      AND term = '2026 Term 2'),

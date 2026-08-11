@@ -47,7 +47,7 @@ ON CONFLICT (id) DO NOTHING;
 -- Test 1. 096 grant: authenticated has SELECT on leads
 -- ============================================================
 SELECT table_privs_are(
-  'public', 'leads', 'authenticated',
+  'front_desk', 'leads', 'authenticated',
   ARRAY['SELECT'],
   'authenticated has SELECT grant on leads (096 grant, R2)'
 );
@@ -58,7 +58,7 @@ SELECT table_privs_are(
 RESET ROLE;
 SET ROLE service_role;
 SELECT lives_ok(
-  $$INSERT INTO public.leads (tenant_id, name, email) VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Verified', 'v@v.com')$$,
+  $$INSERT INTO front_desk.leads (tenant_id, name, email) VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Verified', 'v@v.com')$$,
   'service_role can INSERT into leads'
 );
 RESET ROLE;
@@ -69,7 +69,7 @@ RESET ROLE;
 SET ROLE authenticated;
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111', 'admin', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-  (SELECT count(*)::int FROM public.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  (SELECT count(*)::int FROM front_desk.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   1,
   'R2: tenant-A admin sees own leads (own tenant)'
 );
@@ -79,7 +79,7 @@ SELECT is(
 -- ============================================================
 SELECT tests.set_jwt('22222222-2222-2222-2222-222222222222', 'admin', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
 SELECT is(
-  (SELECT count(*)::int FROM public.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  (SELECT count(*)::int FROM front_desk.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   0,
   'R2: tenant-B admin sees 0 of Tenant-A leads (cross-tenant isolation)'
 );
@@ -89,7 +89,7 @@ SELECT is(
 -- ============================================================
 SELECT tests.set_jwt('22222222-2222-2222-2222-222222222222', 'admin', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
 SELECT is(
-  (SELECT count(*)::int FROM public.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  (SELECT count(*)::int FROM front_desk.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   0,
   'R2 new expectation: authenticated SELECT returns 0 cross-tenant rows (Tenant-B admin sees 0 Tenant-A leads)'
 );
@@ -99,7 +99,7 @@ SELECT is(
 -- ============================================================
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111', 'admin', NULL);
 SELECT is(
-  (SELECT count(*)::int FROM public.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  (SELECT count(*)::int FROM front_desk.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   0,
   'NULL tenant sees 0 leads (fail-closed)'
 );
@@ -109,7 +109,7 @@ SELECT is(
 -- ============================================================
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111', 'admin', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb');
 SELECT is(
-  (SELECT count(*)::int FROM public.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  (SELECT count(*)::int FROM front_desk.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   0,
   'Forged JWT (tenant mismatch, R20 pattern) returns 0 rows'
 );
@@ -120,7 +120,7 @@ SELECT is(
 RESET ROLE;
 SET ROLE service_role;
 SELECT is(
-  (SELECT count(*)::int FROM public.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  (SELECT count(*)::int FROM front_desk.leads WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   1,
   'service_role SELECT on leads (bypasses RLS, server-side tenant filter)'
 );

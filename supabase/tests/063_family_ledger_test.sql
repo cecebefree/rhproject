@@ -50,7 +50,7 @@ VALUES ('ff000000-0000-0000-0000-0000000000f1', 'ac87ccc1-2186-4c6b-aeb2-dd96603
 ON CONFLICT (guardian_id, child_id) DO NOTHING;
 
 -- Create visible report card for stud1
-INSERT INTO public.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
+INSERT INTO school_desk.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
 VALUES (
     'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
     '2026 Term 1',
@@ -84,7 +84,7 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'visible'),
   1,
@@ -111,7 +111,7 @@ SELECT is(
 
 -- Create a draft report card for the same student
 reset role;
-INSERT INTO public.report_cards (student_id, term, subject, grade, status, created_by, tenant_id)
+INSERT INTO school_desk.report_cards (student_id, term, subject, grade, status, created_by, tenant_id)
 VALUES (
     'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
     '2026 Term 1',
@@ -128,7 +128,7 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'draft'),
   0,
@@ -144,7 +144,7 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"99999999-9999-9999-9999-999999999999"}}', true);
 
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'visible'),
   0,
@@ -159,7 +159,7 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT throws_ok(
-  $$INSERT INTO public.report_cards
+  $$INSERT INTO school_desk.report_cards
     (student_id, term, subject, grade, status, created_by, tenant_id)
   VALUES
     ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e',
@@ -179,7 +179,7 @@ SELECT throws_ok(
 -- ═══════════════════════════════════════════════
 
 SELECT lives_ok(
-  $$UPDATE public.report_cards
+  $$UPDATE school_desk.report_cards
     SET grade = 'A+'
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'visible'$$,
@@ -187,7 +187,7 @@ SELECT lives_ok(
 );
 
 SELECT is(
-  (SELECT grade FROM public.report_cards
+  (SELECT grade FROM school_desk.report_cards
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'visible' LIMIT 1),
   'A',
@@ -199,7 +199,7 @@ SELECT is(
 -- ═══════════════════════════════════════════════
 
 SELECT throws_ok(
-  $$DELETE FROM public.report_cards
+  $$DELETE FROM school_desk.report_cards
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'visible'$$,
   '42501',
@@ -208,7 +208,7 @@ SELECT throws_ok(
 );
 
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
     WHERE student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
       AND status = 'visible'),
   1,
@@ -282,7 +282,7 @@ SELECT set_config('request.jwt.claims',
   '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
-  (SELECT count(*)::int FROM public.report_cards
+  (SELECT count(*)::int FROM school_desk.report_cards
     WHERE status = 'visible'),
   -- student sees own via rc_learner_select_visible, not rc_family_select
   -- fixture only has report_cards where student_id matches the viewing user
@@ -292,7 +292,7 @@ SELECT is(
 );
 
 SELECT is(
-  (SELECT subject::text FROM public.report_cards
+  (SELECT subject::text FROM school_desk.report_cards
     WHERE status = 'visible' LIMIT 1),
   'Mathematics',
   'student sees correct subject of own visible report card (R22 positive-visibility)'
@@ -302,7 +302,7 @@ SELECT is(
 -- CLEANUP: remove test-only fixture rows
 -- ═══════════════════════════════════════════════
 reset role;
-DELETE FROM public.report_cards
+DELETE FROM school_desk.report_cards
 WHERE created_by = 'cc000000-0000-0000-0000-0000000000c3'
   AND student_id = 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e'
   AND term = '2026 Term 1';

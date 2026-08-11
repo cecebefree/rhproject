@@ -94,27 +94,27 @@ SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 -- ============================================================
 
 -- Tenant A: core course (published)
-INSERT INTO public.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
+INSERT INTO school_desk.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
 VALUES ('cccc0000-0000-0000-0000-000000000001', 'Core A', '11111111-1111-1111-1111-111111111111', 'published', 0, 'core', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', now())
 ON CONFLICT (id) DO NOTHING;
 
 -- Tenant A: published non-core, open_to_outside
-INSERT INTO public.courses (id, title, teacher_id, status, price, type, open_to_outside, tenant_id, created_at)
+INSERT INTO school_desk.courses (id, title, teacher_id, status, price, type, open_to_outside, tenant_id, created_at)
 VALUES ('cccc0000-0000-0000-0000-000000000002', 'Club A', '11111111-1111-1111-1111-111111111111', 'published', 0, 'club', true, 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', now())
 ON CONFLICT (id) DO NOTHING;
 
 -- Tenant B: core course (published)
-INSERT INTO public.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
+INSERT INTO school_desk.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
 VALUES ('cccc0000-0000-0000-0000-000000000003', 'Core B', '22222222-2222-2222-2222-222222222222', 'published', 0, 'core', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', now())
 ON CONFLICT (id) DO NOTHING;
 
 -- Tenant A: draft course (should NOT be visible to students)
-INSERT INTO public.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
+INSERT INTO school_desk.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
 VALUES ('cccc0000-0000-0000-0000-000000000004', 'Draft A', '11111111-1111-1111-1111-111111111111', 'draft', 0, 'core', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', now())
 ON CONFLICT (id) DO NOTHING;
 
 -- NULL-tenant course (Seed Mathematics scenario — inserted as superuser)
-INSERT INTO public.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
+INSERT INTO school_desk.courses (id, title, teacher_id, status, price, type, tenant_id, created_at)
 VALUES ('cccc0000-0000-0000-0000-000000000099', 'Orphan Course', '11111111-1111-1111-1111-111111111111', 'published', 0, 'core', NULL, now())
 ON CONFLICT (id) DO NOTHING;
 
@@ -126,7 +126,7 @@ SET ROLE authenticated;
 -- a. Cross-tenant SELECT denied: student A sees zero courses from tenant B
 SELECT tests.set_jwt('33333333-3333-3333-3333-333333333333', 'student', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-  (SELECT count(*)::int FROM public.courses
+  (SELECT count(*)::int FROM school_desk.courses
    WHERE tenant_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'),
   0,
   'a: cross-tenant SELECT denied — student A sees 0 courses from tenant B'
@@ -135,7 +135,7 @@ SELECT is(
 -- b. Same-tenant published course visible to same-tenant student
 SELECT tests.set_jwt('33333333-3333-3333-3333-333333333333', 'student', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-  (SELECT count(*)::int FROM public.courses
+  (SELECT count(*)::int FROM school_desk.courses
    WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
      AND status = 'published'),
   2,
@@ -145,7 +145,7 @@ SELECT is(
 -- c. outside_student cannot see core courses (RESTRICTIVE policy)
 SELECT tests.set_jwt('55555555-5555-5555-5555-555555555555', 'outside_student', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-  (SELECT count(*)::int FROM public.courses
+  (SELECT count(*)::int FROM school_desk.courses
    WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
      AND type = 'core'),
   0,
@@ -155,7 +155,7 @@ SELECT is(
 -- d. outside_student CAN see non-core courses with open_to_outside = true
 SELECT tests.set_jwt('55555555-5555-5555-5555-555555555555', 'outside_student', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-  (SELECT count(*)::int FROM public.courses
+  (SELECT count(*)::int FROM school_desk.courses
    WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
      AND type = 'club'
      AND open_to_outside = true),
@@ -167,7 +167,7 @@ SELECT is(
 --    (RLS allows via courses_teacher_manage, but authenticated lacks UPDATE grant)
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111', 'teacher', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT throws_ok(
-  $$UPDATE public.courses SET title = 'Hacked' WHERE id = 'cccc0000-0000-0000-0000-000000000001'$$,
+  $$UPDATE school_desk.courses SET title = 'Hacked' WHERE id = 'cccc0000-0000-0000-0000-000000000001'$$,
   42501,
   NULL,
   'e: teacher UPDATE on own course denied by column grants (42501)'
@@ -177,7 +177,7 @@ SELECT throws_ok(
 --    Teacher with NULL tenant_id in JWT cannot see any courses (tenant_id = NULL is never true)
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111', 'teacher', NULL);
 SELECT is(
-  (SELECT count(*)::int FROM public.courses
+  (SELECT count(*)::int FROM school_desk.courses
    WHERE tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
   0,
   'f1: NULL-tenant teacher sees 0 tenant-scoped courses (fail-closed)'
@@ -185,7 +185,7 @@ SELECT is(
 -- Also: tenant-A teacher cannot see NULL-tenant course
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111', 'teacher', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-  (SELECT count(*)::int FROM public.courses
+  (SELECT count(*)::int FROM school_desk.courses
    WHERE id = 'cccc0000-0000-0000-0000-000000000099'),
   0,
   'f2: tenant-A teacher sees 0 NULL-tenant courses (fail-closed)'
@@ -194,7 +194,7 @@ SELECT is(
 -- g. NULL-tenant course is invisible to non-admin roles
 SELECT tests.set_jwt('33333333-3333-3333-3333-333333333333', 'student', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
-  (SELECT count(*)::int FROM public.courses
+  (SELECT count(*)::int FROM school_desk.courses
    WHERE id = 'cccc0000-0000-0000-0000-000000000099'),
   0,
   'g: NULL-tenant course invisible to student (fail-closed)'

@@ -41,7 +41,7 @@ SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 -- a3: pinned (published, active, pinned = true)
 -- a4: future-dated (publish_at in the future)
 -- a5: expired (expires_at in the past)
-INSERT INTO public.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
+INSERT INTO school_desk.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
 VALUES
   ('a1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001',
    'Everyone', 'body', '{}', now() - interval '1 day', NULL, false,
@@ -61,7 +61,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- Announcement for tenant 2: 1 row
-INSERT INTO public.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
+INSERT INTO school_desk.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
 VALUES ('b1000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002',
    'Tenant 2', 'body', '{}', now() - interval '1 day', NULL, false,
    '22222222-2222-2222-2222-222222222222')
@@ -79,14 +79,14 @@ select set_config('request.jwt.claims',
   '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
-  (select count(*)::int from public.announcement),
+  (select count(*)::int from school_desk.announcement),
   2,
   'student sees 2 announcements (everyone + pinned)'
 );
 
 -- 3. Student does NOT see teacher-only announcement
 select is(
-  (select count(*)::int from public.announcement
+  (select count(*)::int from school_desk.announcement
    where audience_roles = '{teacher}'),
   0,
   'student cannot see teacher-only announcement'
@@ -97,7 +97,7 @@ select set_config('request.jwt.claims',
   '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
-  (select count(*)::int from public.announcement),
+  (select count(*)::int from school_desk.announcement),
   3,
   'teacher sees 3 announcements (everyone + teacher + pinned)'
 );
@@ -107,7 +107,7 @@ select set_config('request.jwt.claims',
   '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
-  (select count(*)::int from public.announcement
+  (select count(*)::int from school_desk.announcement
    where id = 'a1000000-0000-0000-0000-000000000003'),
   0,
   'future-dated announcement invisible to student'
@@ -115,7 +115,7 @@ select is(
 
 -- 6. Expired row invisible to non-admin student
 select is(
-  (select count(*)::int from public.announcement
+  (select count(*)::int from school_desk.announcement
    where id = 'a1000000-0000-0000-0000-000000000004'),
   0,
   'expired announcement invisible to student'
@@ -126,7 +126,7 @@ select set_config('request.jwt.claims',
   '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
-  (select count(*)::int from public.announcement),
+  (select count(*)::int from school_desk.announcement),
   5,
   'admin sees all 5 tenant-1 announcements'
 );
@@ -136,7 +136,7 @@ select set_config('request.jwt.claims',
   '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000002"}}', true);
 
 select is(
-  (select count(*)::int from public.announcement),
+  (select count(*)::int from school_desk.announcement),
   1,
   'tenant 2 user sees only own 1 announcement'
 );
@@ -146,7 +146,7 @@ select set_config('request.jwt.claims',
   '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select throws_ok(
-  $$insert into public.announcement (tenant_id, title, body, created_by)
+  $$insert into school_desk.announcement (tenant_id, title, body, created_by)
     values ('00000000-0000-0000-0000-000000000001', 'Bad', 'test', 'ac87ccc1-2186-4c6b-aeb2-dd966032ee0e')$$,
   42501,
   null,
@@ -165,7 +165,7 @@ select set_config('request.jwt.claims',
   '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select throws_ok(
-  $$insert into public.announcement (tenant_id, title, body, created_by, publish_at, expires_at)
+  $$insert into school_desk.announcement (tenant_id, title, body, created_by, publish_at, expires_at)
     values ('00000000-0000-0000-0000-000000000001', 'Bad', 'test',
             'dd000000-0000-0000-0000-0000000000d4', now(), now())$$,
   23514,

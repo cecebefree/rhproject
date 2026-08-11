@@ -50,7 +50,7 @@ VALUES ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-0000000
 ON CONFLICT (id) DO NOTHING;
 
 -- Courses for teacher (needed for materialize_booklist and teacher RLS)
-INSERT INTO public.courses (id, title, price, teacher_id, status, type, tenant_id)
+INSERT INTO school_desk.courses (id, title, price, teacher_id, status, type, tenant_id)
 VALUES ('c1000000-0000-0000-0000-000000000001', 'Math 101', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'core', '00000000-0000-0000-0000-000000000001'),
        ('c1000000-0000-0000-0000-000000000002', 'Art Club', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'club', '00000000-0000-0000-0000-000000000001'),
        ('c1000000-0000-0000-0000-000000000003', 'Science', 0, 'cc000000-0000-0000-0000-0000000000c3', 'published', 'core', '00000000-0000-0000-0000-000000000001')
@@ -64,7 +64,7 @@ VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'c1000000-0000-0000-0000-0000000
 ON CONFLICT (student_id, class_id) DO NOTHING;
 
 -- Enrollments for student1 and student2
-INSERT INTO public.enrollments (student_id, course_id)
+INSERT INTO school_desk.enrollments (student_id, course_id)
 VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'c1000000-0000-0000-0000-000000000001'),
        ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'c1000000-0000-0000-0000-000000000002'),
        ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'c1000000-0000-0000-0000-000000000003'),

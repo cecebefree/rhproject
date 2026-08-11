@@ -32,7 +32,7 @@ WHERE id IN ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', 'bb000000-0000-0000-0000-00
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
 -- Courses: 1111 (teacher1), 2222 (teacher1)
-INSERT INTO public.courses (id, title, price, teacher_id, type, tenant_id)
+INSERT INTO school_desk.courses (id, title, price, teacher_id, type, tenant_id)
 VALUES ('11111111-1111-1111-1111-111111111111', 'Course A', 0, 'cc000000-0000-0000-0000-0000000000c3', 'core', '00000000-0000-0000-0000-000000000001'),
        ('22222222-2222-2222-2222-222222222222', 'Course B', 0, 'cc000000-0000-0000-0000-0000000000c3', 'core', '00000000-0000-0000-0000-000000000001')
 ON CONFLICT (id) DO NOTHING;
@@ -56,7 +56,7 @@ VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-1111111
 ON CONFLICT (student_id, class_id) DO NOTHING;
 
 -- Enrollments: student1 in 1111, student2 in both
-INSERT INTO public.enrollments (student_id, course_id, payment_reference)
+INSERT INTO school_desk.enrollments (student_id, course_id, payment_reference)
 VALUES ('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e', '11111111-1111-1111-1111-111111111111', 'test-037-001'),
        ('bb000000-0000-0000-0000-0000000000b2', '11111111-1111-1111-1111-111111111111', 'test-037-002'),
        ('bb000000-0000-0000-0000-0000000000b2', '22222222-2222-2222-2222-222222222222', 'test-037-003')

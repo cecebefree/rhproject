@@ -24,7 +24,7 @@ UPDATE public.profiles SET tenant_id = 'dddd0000-0000-0000-0000-0000000000c0'
   WHERE id = 'dddd0000-0000-0000-0000-0000000000a1';
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
-INSERT INTO public.courses (id, title, price, status, teacher_id)
+INSERT INTO school_desk.courses (id, title, price, status, teacher_id)
 VALUES ('dddd0000-0000-0000-0000-0000000000c1', 'DEL Course', 0, 'published', 'dddd0000-0000-0000-0000-0000000000a1')
 ON CONFLICT (id) DO NOTHING;
 

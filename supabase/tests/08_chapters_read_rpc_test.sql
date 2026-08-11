@@ -58,7 +58,7 @@ SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 -- ============================================================
 -- FIXTURE: courses + chapters
 -- ============================================================
-INSERT INTO public.courses (id, title, price, status, teacher_id, type)
+INSERT INTO school_desk.courses (id, title, price, status, teacher_id, type)
 VALUES
   ('07700000-0000-0000-0000-0000000000c1', 'R23 Pub Core',    0, 'published', '07700000-0000-0000-0000-0000000000a4', 'core'),
   ('07700000-0000-0000-0000-0000000000c2', 'R23 Draft Core',  0, 'draft',     '07700000-0000-0000-0000-0000000000a4', 'core'),
@@ -81,7 +81,7 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================================
 -- FIXTURE: enrollments
 -- ============================================================
-INSERT INTO public.enrollments (student_id, course_id)
+INSERT INTO school_desk.enrollments (student_id, course_id)
 VALUES
   ('07700000-0000-0000-0000-0000000000a1', '07700000-0000-0000-0000-0000000000c1'),
   ('07700000-0000-0000-0000-0000000000a1', '07700000-0000-0000-0000-0000000000c2'),
@@ -247,7 +247,7 @@ RESET ROLE;
 SELECT set_config('request.jwt.claims', '{"sub":"07700000-0000-0000-0000-0000000000a6"}', true);
 SET ROLE authenticated;
 SELECT is(
-  (SELECT count(*)::int FROM public.enrollments
+  (SELECT count(*)::int FROM school_desk.enrollments
    WHERE student_id = '07700000-0000-0000-0000-0000000000a6'
      AND course_id  = '07700000-0000-0000-0000-0000000000c1'),
   1,
@@ -264,7 +264,7 @@ RESET ROLE;
 SELECT set_config('request.jwt.claims', '{"sub":"07700000-0000-0000-0000-0000000000a6"}', true);
 SET ROLE authenticated;
 SELECT is(
-  (SELECT count(*)::int FROM public.enrollments
+  (SELECT count(*)::int FROM school_desk.enrollments
    WHERE student_id = '07700000-0000-0000-0000-0000000000a6'
      AND course_id  = '07700000-0000-0000-0000-0000000000c4'),
   1,
