@@ -69,19 +69,19 @@
 
 | # | Item | Status |
 |---|------|--------|
-| 34 | Wire: Home | **DONE** — 082 get_today_devotional() RPC (SECURITY DEFINER, owner=postgres, GRANT EXECUTE TO authenticated); index.tsx wired (greeting/profiles, devotional/RPC, coming_up/schedule_slot+courses, news/get_announcements); loading/error/empty states per section; tsc clean. HOSTED: RPCs 082+083 verified live 2026-08-10. 082 get_today_devotional HTTP 200 returns []. |
-| 35 | Wire: Classes | **DONE** — class.tsx wired (student_class→courses join, teacher→courses direct, schedule_slot, teacher names via 083 RPC); class-detail.tsx wired (course header, chapters_read RPC, schedule slots, route params). 083 get_teacher_name RPC added (SECURITY DEFINER, tenant-scoped, minimal disclosure). tsc clean, 8/8 local smoke pass. HOSTED: 083 get_teacher_name HTTP 401 for anon (expected — REVOKE ALL FROM anon intentional; returns data for authenticated users with valid JWT). |
-| 36 | Wire: Profile | **DONE** — profile.tsx wired (profiles table: name, role, curriculum, grade, stage, intake, created_at); loading/error/empty states; tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/profiles → HTTP 200. |
-| 37 | Wire: teacher screens | **DONE** — teacher.tsx wired (profiles for name/role, conversation_members→conversations for groups); loading/error states; tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/conversation_members → HTTP 200. |
-| 38 | Wire: Report Card | **DONE** — report-card.tsx wired (report_cards table, student_id filter, status='visible' RLS enforcement); loading/error/empty states; tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/report_cards → HTTP 200. |
-| 39 | Wire: Hub | **DONE** — hub.tsx wired (courses platform=enrichment via student_class join, schedule_slot for schedule); hub-detail.tsx wired (single course + slots). tsc clean. HOSTED: verified live 2026-08-10, GET /rest/v1/courses → HTTP 200, GET /rest/v1/schedule_slot → HTTP 200. |
+| 34 | Wire: Home | **DONE** — Resolved — confirmed live on hosted via migration list, 2026-08-11. PGRST202 assumption was incorrect. 082 get_today_devotional() RPC + index.tsx wired; loading/error/empty states; tsc clean. |
+| 35 | Wire: Classes | **DONE** — Resolved — confirmed live on hosted via migration list, 2026-08-11. 083 get_teacher_name RPC + class.tsx/class-detail.tsx wired; tsc clean, 8/8 local smoke pass. |
+| 36 | Wire: Profile | **DONE** — Done, pushed. Confirmed unblocked — 34/35 resolved. profile.tsx wired (profiles table: name, role, curriculum, grade, stage, intake, created_at); loading/error/empty states; tsc clean. HOSTED: verified live 2026-08-10. |
+| 37 | Wire: teacher screens | **DONE** — Done, pushed. Confirmed unblocked — 34/35 resolved. teacher.tsx wired (profiles for name/role, conversation_members→conversations for groups); loading/error states; tsc clean. HOSTED: verified live 2026-08-10. |
+| 38 | Wire: Report Card | **DONE** — Done, pushed. Confirmed unblocked — 34/35 resolved. report-card.tsx wired (report_cards table, student_id filter, status='visible' RLS enforcement); loading/error/empty states; tsc clean. HOSTED: verified live 2026-08-10. |
+| 39 | Wire: Hub | **DONE** — Done, pushed. Confirmed unblocked — 34/35 resolved. hub.tsx wired (courses platform=enrichment via student_class join, schedule_slot for schedule); hub-detail.tsx wired (single course + slots). tsc clean. HOSTED: verified live 2026-08-10. |
 
 ## PHASE F — WEB, DESKS, DEPLOY
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 40 | Lovable website intake — Turnstile via 23 mandatory | 9, 23 | Pending |
-| 41a | Office Desk + School Desk consoles | 28 | DONE — commit 8454c3e, tsc clean |
+| 41a | Office Desk + School Desk consoles | 28 | DONE — Unblocked — 36-39 confirmed done. Ready to queue next. commit 8454c3e, tsc clean |
 | 41b | Front Desk intake form (Lovable) | 40 | Pending — blocked by Turnstile production key (row 40) |
 | 41c | Reclassify report card entry (ReportCardForm.tsx, rc_office_insert RLS, /lms/office-desk route) from Office Desk to School Desk per business desk model — report cards are in-house academic communication to family/student/teacher, not registration/payment/business ops | 41a | Backlog, non-blocking |
 | 42 | Cloudflare deploy | 11, 12 | PARTIAL — redhouse-web.pages.dev serving (170d7b4); prod domain + custom domain OPEN (row 49) |
@@ -129,7 +129,9 @@
 |-----------------|----------------------------|----------|------------------------|
 | 65 | submit-lead browser harness | — | DONE — 2026-07-29 (201 confirmed in browser; lead row verified in public.leads; three production-revert TODOs outstanding: SUBMIT_URL at lead-form.html:50; Turnstile sitekey 0x4AAAAAADrBMk490tYCQ_p3 at lead-form.html:42; verify_jwt = false in supabase/config.toml) |
 | 66 | EF hosted deployment parity — all 8 EFs deployed to hosted Supabase | — | **PARTIAL** — 6/8 deployed: submit-lead v7, class-start-ping v1, validate-toggle v1, set_handle v1, release-report-card v1 (syntax fix applied 2026-08-03, pre-existing bare YAML at index.ts:10 present since fe72042, now commented). 2 pending: (a) ai-tutor-proxy — gate: AI provider API key secret not yet provisioned; (b) assign_tenant — DEFER (admin reassignment, not demo-critical). RETIRED: verify-turnstile (submit-lead inlines Turnstile verification at lines 48–68, standalone EF redundant). Smoke tests: class-start-ping PASS (500 on empty body = pre-existing), validate-toggle PASS, set_handle PASS, release-report-card PASS. All deployed with verify_jwt=false (functions check auth internally). Sub-items: (c) EF input hardening — guard req.json() with try-catch across all EFs: Pending, non-blocking, batch with wiring QA. |
-| 67 | Migration 099_content_group.sql: content-group filtering layer on daily_verse, bible_plan, video_of_day, vlog, profiles | Migration | Done-local — content-group filtering layer added on top of RPCs from rows 34/35. NOT applied to hosted. Blocked on rows 34/35 hosted-apply gap (PGRST202) resolving first. |
+| 67 | Migration 099_content_group.sql: content-group filtering layer on daily_verse, bible_plan, video_of_day, vlog, profiles | Migration | **Done** — Applied to hosted, zero schema drift verified against local file, 2026-08-11. |
+| 097 | Migration 097: role_feature_access + devotional RLS | Migration | **Resolved** — Verified zero drift against hosted, committed retroactively at 64cf3aa, pushed. |
+| 098 | Migration 098: get_today_devotional RPC + devotional config | Migration | **Resolved** — Verified zero drift against hosted, committed retroactively at 64cf3aa, pushed. |
 
 ---
 
