@@ -94,10 +94,10 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 50 | **Architecture lock — SINGLE PROJECT, schema namespaces** | Cece | **LOCKED** — Single Supabase project. Three schema namespaces: `front_desk` (leads, callbacks), `school_desk` (courses, report_cards, announcements, chat), `office_desk` (invoices, payments, registrations). Shared `public` (profiles, tenants, auth). Lovable connects to same Supabase via service role key. Cece decision 2026-08-11, ITEM-011. |
-| 51 | Schema namespace setup: create `front_desk`, `school_desk`, `office_desk` schemas in existing Supabase | 50 | Pending — `CREATE SCHEMA` for each namespace; GRANT usage to authenticated/service_role |
-| 52 | Migrate leads table to `front_desk` schema: `ALTER TABLE public.leads SET SCHEMA front_desk` | 51 | Pending — leads table (078) moves to front_desk schema; RLS policies updated to new schema path |
-| 53 | Migrate office tables to `office_desk` schema: invoices, payments, registrations (new tables) | 51 | Pending — new tables created in office_desk schema; registration status columns (026) co-located |
-| 54 | Migrate school tables to `school_desk` schema: courses, enrollments, report_cards, announcements, chat tables | 51 | Pending — existing tables move; RLS policies and RPCs updated to new schema paths |
+| 51 | Schema namespace setup: create `front_desk`, `school_desk`, `office_desk` schemas in existing Supabase | 50 | **DONE** — Schemas front_desk, office_desk, school_desk created + granted via migration 100, 104. Verified on hosted 2026-08-12. |
+| 52 | Migrate leads table to `front_desk` schema: `ALTER TABLE public.leads SET SCHEMA front_desk` | 51 | **DONE** — leads moved to front_desk via migration 100. Verified on hosted 2026-08-12. |
+| 53 | Migrate office tables to `office_desk` schema: invoices, payments, registrations (new tables) | 51 | **DONE** — registrations, invoices, payments created in office_desk via migration 100. Verified on hosted 2026-08-12. |
+| 54 | Migrate school tables to `school_desk` schema: courses, enrollments, report_cards, announcements, chat tables | 51 | **DONE** — 7 tables (courses, enrollments, report_cards, announcement, conversations, conversation_members, messages) moved to school_desk via migration 102. Verified on hosted 2026-08-12. |
 | 55 | Update all RLS policies for schema-qualified table references | 52, 53, 54 | **BLOCKED** — local 379/379 pgTAP PASS, migrations 100-105 applied + pushed, config correct. Blocked on Supabase platform-level PostgREST schema cache bug. Support ticket drafted (docs/support/supabase-ticket-2026-08-12.md), not yet submitted. GitHub comment posted 2026-08-12: https://github.com/supabase/supabase/issues/45904#issuecomment-5263758989. Awaiting Supabase engineering response or manual server-side restart. |
 | 56 | Update all Edge Functions for schema-qualified queries | 52, 53, 54 | Pending — front-desk-read-leads, submit-lead, release-report-card, etc. |
 
