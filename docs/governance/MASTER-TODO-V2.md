@@ -98,7 +98,7 @@
 | 52 | Migrate leads table to `front_desk` schema: `ALTER TABLE public.leads SET SCHEMA front_desk` | 51 | Pending — leads table (078) moves to front_desk schema; RLS policies updated to new schema path |
 | 53 | Migrate office tables to `office_desk` schema: invoices, payments, registrations (new tables) | 51 | Pending — new tables created in office_desk schema; registration status columns (026) co-located |
 | 54 | Migrate school tables to `school_desk` schema: courses, enrollments, report_cards, announcements, chat tables | 51 | Pending — existing tables move; RLS policies and RPCs updated to new schema paths |
-| 55 | Update all RLS policies for schema-qualified table references | 52, 53, 54 | Pending — every policy using `public.leads` → `front_desk.leads`, etc. 152/152 pgTAP tests must re-pass |
+| 55 | Update all RLS policies for schema-qualified table references | 52, 53, 54 | **BLOCKED** — local 379/379 pgTAP PASS, migrations 100-105 applied + pushed, config correct. Blocked on Supabase platform-level PostgREST schema cache bug. Support ticket filed for project ebptjjsmeltykqqvcvqo. Tracking via GitHub issue #45904 (comment posted 2026-08-12). Awaiting Supabase engineering response or manual server-side restart. |
 | 56 | Update all Edge Functions for schema-qualified queries | 52, 53, 54 | Pending — front-desk-read-leads, submit-lead, release-report-card, etc. |
 
 ### F.2A — SECURITY LEAD FINDINGS (must resolve before any desk work)
