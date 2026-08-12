@@ -54,7 +54,7 @@
    **Standing Verification Rule (2026-07-25):**
    "Code isolation without DB isolation is no isolation. Worktree/stash verifications against a shared local database are VOID. Pre-existing-failure claims require supabase db reset from the tree under test." (Ratified as AR-14, docs/governance/audit-rules.md, 2026-07-27.)
    **NOTE for ITEM-56:** applied inside the MASTER-TODO-V2 edit — note: "deferred - requires fix commit" only if runtime files were touched — runtime files unchanged, so ITEM-56 state remains "DONE" (row carries DONE status).
-| 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | DONE - full implementations, locally tested (4/4, 7/7, 7/7 paths), config.toml registered |
+| 29 | EFs: class-start-ping, validate-toggle, ai-tutor-proxy | 22 | DONE - full implementations, locally tested (4/4, 7/7, 7/7 paths), config.toml registered. Note: ai-tutor-proxy is LMS-scoped and deferred to post-MVP. EF exists as backend plumbing only — no product UI, no MVP association. Do not prioritize alongside web/iOS/Front Desk work. |
 | 30 | EF/RPC inventory doc + Realtime usage audit | 22, 29 | DONE - EF/RPC inventory complete, docs/EF-RPC-INVENTORY.md present [c4f76f2] |
 
 ## PHASE D — DESIGN AND FRONTEND
