@@ -99,7 +99,7 @@
 | 53 | Migrate office tables to `office_desk` schema: invoices, payments, registrations (new tables) | 51 | **DONE** — registrations, invoices, payments created in office_desk via migration 100. Verified on hosted 2026-08-12. |
 | 54 | Migrate school tables to `school_desk` schema: courses, enrollments, report_cards, announcements, chat tables | 51 | **DONE** — 7 tables (courses, enrollments, report_cards, announcement, conversations, conversation_members, messages) moved to school_desk via migration 102. Verified on hosted 2026-08-12. |
 | 55 | Update all RLS policies for schema-qualified table references | 52, 53, 54 | **BLOCKED** — local 379/379 pgTAP PASS, migrations 100-105 applied + pushed, config correct. Blocked on Supabase platform-level PostgREST schema cache bug. Support ticket drafted (docs/support/supabase-ticket-2026-08-12.md), not yet submitted. GitHub comment posted 2026-08-12: https://github.com/supabase/supabase/issues/45904#issuecomment-5263758989. Awaiting Supabase engineering response or manual server-side restart. |
-| 56 | Update all Edge Functions for schema-qualified queries | 52, 53, 54 | Pending — front-desk-read-leads, submit-lead, release-report-card, etc. |
+| 56 | Update all Edge Functions for schema-qualified queries | 52, 53, 54 | **DONE** — submit-lead, release-report-card, ai-tutor-proxy updated to schema-qualified queries (front_desk.leads, school_desk.report_cards, school_desk.courses). Deployed to hosted 2026-08-12, verified locally with 201 insert to front_desk.leads. release-report-card and ai-tutor-proxy auth-gated (401 without JWT), code confirmed correct. |
 
 ### F.2A — SECURITY LEAD FINDINGS (must resolve before any desk work)
 
