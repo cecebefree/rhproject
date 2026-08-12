@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
   if (regErr) return reject(500, "registration_check_failed", headers);
 
 
-  const { error: insertErr } = await admin.from("leads").insert({
+  const { error: insertErr } = await admin.schema("front_desk").from("leads").insert({
     tenant_id: tenant.id,
     name,
     email,

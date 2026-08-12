@@ -110,7 +110,7 @@ serve(async (req) => {
 
     // Verify the content belongs to the caller's tenant
     const { data: course, error: courseError } = await supabase
-      .from('courses')
+      .schema('school_desk').from('courses')
       .select('id, tenant_id')
       .eq('id', content_id)
       .eq('tenant_id', profile.tenant_id)

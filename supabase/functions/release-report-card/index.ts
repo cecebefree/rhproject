@@ -117,7 +117,7 @@ serve(async (req) => {
 
     // Find the report card to validate and transition
     const { data: reportCard, error: cardError } = await supabase
-      .from('report_cards')
+      .schema('school_desk').from('report_cards')
       .select('id, student_id, status, tenant_id, released_by, term, subject, grade')
       .eq('id', report_card_id)
       .single()
@@ -194,7 +194,7 @@ serve(async (req) => {
     if (target_status === 'released') {
       // Record who released the card
       const { error: updateError } = await supabase
-        .from('report_cards')
+        .schema('school_desk').from('report_cards')
         .update({ status: 'released', released_by: profile.id, released_at: new Date().toISOString() })
         .eq('id', report_card_id)
 
@@ -226,7 +226,7 @@ serve(async (req) => {
       }
 
       const { error: updateError } = await supabase
-        .from('report_cards')
+        .schema('school_desk').from('report_cards')
         .update({ status: 'visible', visible_at: new Date().toISOString() })
         .eq('id', report_card_id)
 
