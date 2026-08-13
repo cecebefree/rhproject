@@ -56,15 +56,19 @@ async function verifyTurnstileToken(token: string, remoteIp?: string): Promise<b
   if (remoteIp) form.append("remoteip", remoteIp);
 
 
-  const res = await fetch(
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    { method: "POST", body: form },
-  );
-  if (!res.ok) return false;
+  try {
+    const res = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      { method: "POST", body: form },
+    );
+    if (!res.ok) return false;
 
 
-  const data = await res.json();
-  return data.success === true;
+    const data = await res.json();
+    return data.success === true;
+  } catch (_err) {
+    return false;
+  }
 }
 
 
