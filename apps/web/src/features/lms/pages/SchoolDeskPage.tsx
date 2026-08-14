@@ -1,6 +1,6 @@
-// School Desk page — Row 67/68/69/71/72 scope
-// Reworked: registration intake, list, detail views + news + broadcasts + report cards + payments
-// Teacher workflow: create registrations, submit for review, author news, send broadcasts, write report cards, collect payments
+// School Desk page — Row 67/68/69/71/72/73 scope
+// Reworked: registration intake, list, detail views + news + broadcasts + report cards + payments + attendance
+// Teacher workflow: create registrations, submit for review, author news, send broadcasts, write report cards, collect payments, mark attendance
 
 import { useEffect, useState } from 'react';
 import { RegistrationIntakeForm } from '../components/RegistrationIntakeForm';
@@ -18,6 +18,9 @@ import { ReportCardForm } from '../components/ReportCardForm';
 import { PaymentList } from '../components/PaymentList';
 import { PaymentDetail } from '../components/PaymentDetail';
 import { PaymentRequestForm } from '../components/PaymentRequestForm';
+import { AttendanceList } from '../components/AttendanceList';
+import { AttendanceDetail } from '../components/AttendanceDetail';
+import { AttendanceForm } from '../components/AttendanceForm';
 import { supabase } from '../services/supabase';
 import type { Registration } from '../services/supabase';
 import type { News } from '../services/supabase';
@@ -47,7 +50,10 @@ type ViewMode =
   | 'report-cards-edit'
   | 'payments'
   | 'payments-detail'
-  | 'payments-create';
+  | 'payments-create'
+  | 'attendance'
+  | 'attendance-detail'
+  | 'attendance-mark';
 
 export default function SchoolDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -60,6 +66,10 @@ export default function SchoolDeskPage() {
   const [selectedReportCardId, setSelectedReportCardId] =
     useState<string | null>(null);
   const [selectedPaymentId, setSelectedPaymentId] =
+    useState<string | null>(null);
+  const [selectedAttendanceCourseId, setSelectedAttendanceCourseId] =
+    useState<string | null>(null);
+  const [selectedAttendanceDate, setSelectedAttendanceDate] =
     useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,6 +181,18 @@ export default function SchoolDeskPage() {
     setViewMode('payments');
   }
 
+  function handleSelectAttendance(courseId: string, date: string) {
+    setSelectedAttendanceCourseId(courseId);
+    setSelectedAttendanceDate(date);
+    setViewMode('attendance-detail');
+  }
+
+  function handleBackToAttendance() {
+    setSelectedAttendanceCourseId(null);
+    setSelectedAttendanceDate(null);
+    setViewMode('attendance');
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -241,6 +263,14 @@ export default function SchoolDeskPage() {
     );
   }
 
+  function isAttendanceView() {
+    return (
+      viewMode === 'attendance' ||
+      viewMode === 'attendance-detail' ||
+      viewMode === 'attendance-mark'
+    );
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
@@ -283,6 +313,13 @@ export default function SchoolDeskPage() {
           onClick={() => setViewMode('payments')}
         >
           Payments
+        </button>
+        <button
+          type="button"
+          style={isAttendanceView() ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('attendance')}
+        >
+          Attendance
         </button>
       </nav>
 
@@ -467,6 +504,42 @@ export default function SchoolDeskPage() {
             userId={profile.id}
             onSuccess={() => setViewMode('payments')}
             onCancel={() => setViewMode('payments')}
+          />
+        )}
+
+        {/* Attendance views */}
+        {viewMode === 'attendance' && profile.tenant_id && (
+          <div>
+            <div style={styles.sectionHeader}>
+              <button
+                type="button"
+                onClick={() => setViewMode('attendance-mark')}
+                style={styles.createButton}
+              >
+                + Mark Attendance
+              </button>
+            </div>
+            <AttendanceList
+              tenantId={profile.tenant_id}
+              onSelect={handleSelectAttendance}
+            />
+          </div>
+        )}
+        {viewMode === 'attendance-detail' &&
+          selectedAttendanceCourseId &&
+          selectedAttendanceDate && (
+            <AttendanceDetail
+              courseId={selectedAttendanceCourseId}
+              classDate={selectedAttendanceDate}
+              onBack={handleBackToAttendance}
+            />
+          )}
+        {viewMode === 'attendance-mark' && profile.tenant_id && (
+          <AttendanceForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSuccess={() => setViewMode('attendance')}
+            onCancel={() => setViewMode('attendance')}
           />
         )}
       </main>

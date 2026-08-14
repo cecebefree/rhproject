@@ -668,3 +668,174 @@ export async function createPaymentSession(payload: {
 
   return { data: result, error: null };
 }
+
+// ═══════════════════════════════════════════════════════════
+// ATTENDANCE TYPES & QUERIES (Row 73)
+// ═══════════════════════════════════════════════════════════
+
+export type AttendanceStatus = 'present' | 'absent' | 'excused';
+
+export interface Attendance {
+  id: string;
+  tenant_id: string;
+  course_id: string;
+  student_id: string;
+  class_date: string;
+  status: AttendanceStatus;
+  marked_by: string;
+  marked_at: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface AttendanceWithRelations extends Attendance {
+  profiles?: { id: string; name: string } | null;
+  courses?: { id: string; title: string } | null;
+}
+
+export async function selectAttendance(
+  tenantId: string,
+  options?: { courseId?: string; classDate?: string; startDate?: string; endDate?: string },
+) {
+  let query = supabaseUntyped
+    .from('school_desk.attendance')
+    .select('*, profiles!student_id(id, name), courses!course_id(id, title)')
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null);
+
+  if (options?.courseId) {
+    query = query.eq('course_id', options.courseId);
+  }
+  if (options?.classDate) {
+    query = query.eq('class_date', options.classDate);
+  }
+  if (options?.startDate) {
+    query = query.gte('class_date', options.startDate);
+  }
+  if (options?.endDate) {
+    query = query.lte('class_date', options.endDate);
+  }
+
+  query = query.order('class_date', { ascending: false });
+
+  return query;
+}
+
+export async function insertAttendance(record: {
+  tenant_id: string;
+  course_id: string;
+  student_id: string;
+  class_date: string;
+  status: AttendanceStatus;
+  marked_by: string;
+  notes?: string;
+}) {
+  return supabaseUntyped
+    .from('school_desk.attendance')
+    .insert({
+      tenant_id: record.tenant_id,
+      course_id: record.course_id,
+      student_id: record.student_id,
+      class_date: record.class_date,
+      status: record.status,
+      marked_by: record.marked_by,
+      notes: record.notes || null,
+    })
+    .select()
+    .single();
+}
+
+export async function updateAttendance(
+  attendanceId: string,
+  updates: { status?: AttendanceStatus; notes?: string },
+) {
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updates.status !== undefined) updateData.status = updates.status;
+  if (updates.notes !== undefined) updateData.notes = updates.notes;
+
+  return supabaseUntyped
+    .from('school_desk.attendance')
+    .update(updateData)
+    .eq('id', attendanceId)
+    .select()
+    .single();
+}
+
+export async function getAttendanceByDate(courseId: string, classDate: string) {
+  return supabaseUntyped
+    .from('school_desk.attendance')
+    .select('*, profiles!student_id(id, name), courses!course_id(id, title)')
+    .eq('course_id', courseId)
+    .eq('class_date', classDate)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true });
+}
+
+export function subscribeToAttendance(
+  callback: (payload: {
+    eventType: string;
+    new: Attendance;
+    old: Attendance | null;
+  }) => void,
+) {
+  return supabaseUntyped
+    .channel('school_desk.attendance-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'school_desk', table: 'attendance' },
+      callback as (payload: Record<string, unknown>) => void,
+    )
+    .subscribe();
+}
+
+export async function markAttendanceBulk(payload: {
+  course_id: string;
+  class_date: string;
+  marks: Array<{ student_id: string; status: AttendanceStatus; notes?: string }>;
+}) {
+  const { data: { session } } = await supabaseUntyped.auth.getSession();
+  if (!session?.access_token) {
+    return { data: null, error: { message: 'Not authenticated' } };
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mark-attendance`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { data: null, error: { message: result.error || 'Failed to mark attendance' } };
+  }
+
+  return { data: result, error: null };
+}
+
+export async function getStudentRoster(courseId: string) {
+  return supabaseUntyped
+    .from('student_class')
+    .select('student_id, profiles!student_id(id, name, email)')
+    .eq('class_id', courseId)
+    .is('deleted_at', null);
+}
+
+export async function getTeacherCourses(teacherId: string) {
+  return supabaseUntyped
+    .from('school_desk.courses')
+    .select('id, title, status')
+    .eq('teacher_id', teacherId)
+    .in('status', ['published', 'active']);
+}
