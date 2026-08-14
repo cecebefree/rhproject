@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import OfficeDeskPage from './features/lms/pages/OfficeDeskPage';
 import SchoolDeskPage from './features/lms/pages/SchoolDeskPage';
+import { FrontDeskPage } from './features/front-desk';
 
 function IndexPage() {
   return (
@@ -10,6 +11,7 @@ function IndexPage() {
       <h1>Redhouse Web</h1>
       <p>Cloudflare Pages — live deploy</p>
       <nav style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <Link to="/lms/front-desk">Front Desk</Link>
         <Link to="/lms/school-desk">School Desk</Link>
         <Link to="/lms/office-desk">Office Desk</Link>
       </nav>
@@ -31,9 +33,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<IndexPage />} />
+        <Route path="/lms/front-desk" element={<FrontDeskPage />} />
         <Route path="/lms/school-desk" element={<SchoolDeskPage />} />
         <Route path="/lms/office-desk" element={<OfficeDeskPage />} />
-        <Route path="/lms" element={<Navigate to="/lms/school-desk" replace />} />
+        <Route path="/lms" element={<Navigate to="/lms/front-desk" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
