@@ -1,6 +1,6 @@
-// School Desk page — Row 67/68/69/71 scope
-// Reworked: registration intake, list, detail views + news + broadcasts + report cards
-// Teacher workflow: create registrations, submit for review, author news, send broadcasts, write report cards
+// School Desk page — Row 67/68/69/71/72 scope
+// Reworked: registration intake, list, detail views + news + broadcasts + report cards + payments
+// Teacher workflow: create registrations, submit for review, author news, send broadcasts, write report cards, collect payments
 
 import { useEffect, useState } from 'react';
 import { RegistrationIntakeForm } from '../components/RegistrationIntakeForm';
@@ -15,6 +15,9 @@ import { BroadcastForm } from '../components/BroadcastForm';
 import { ReportCardList } from '../components/ReportCardList';
 import { ReportCardDetail } from '../components/ReportCardDetail';
 import { ReportCardForm } from '../components/ReportCardForm';
+import { PaymentList } from '../components/PaymentList';
+import { PaymentDetail } from '../components/PaymentDetail';
+import { PaymentRequestForm } from '../components/PaymentRequestForm';
 import { supabase } from '../services/supabase';
 import type { Registration } from '../services/supabase';
 import type { News } from '../services/supabase';
@@ -41,7 +44,10 @@ type ViewMode =
   | 'report-cards'
   | 'report-cards-detail'
   | 'report-cards-create'
-  | 'report-cards-edit';
+  | 'report-cards-edit'
+  | 'payments'
+  | 'payments-detail'
+  | 'payments-create';
 
 export default function SchoolDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -52,6 +58,8 @@ export default function SchoolDeskPage() {
   const [selectedBroadcast, setSelectedBroadcast] =
     useState<BroadcastWithGroup | null>(null);
   const [selectedReportCardId, setSelectedReportCardId] =
+    useState<string | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] =
     useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,6 +161,16 @@ export default function SchoolDeskPage() {
     setViewMode('report-cards-edit');
   }
 
+  function handleSelectPayment(paymentId: string) {
+    setSelectedPaymentId(paymentId);
+    setViewMode('payments-detail');
+  }
+
+  function handleBackToPayments() {
+    setSelectedPaymentId(null);
+    setViewMode('payments');
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -215,6 +233,14 @@ export default function SchoolDeskPage() {
     );
   }
 
+  function isPaymentsView() {
+    return (
+      viewMode === 'payments' ||
+      viewMode === 'payments-detail' ||
+      viewMode === 'payments-create'
+    );
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
@@ -250,6 +276,13 @@ export default function SchoolDeskPage() {
           onClick={() => setViewMode('report-cards')}
         >
           Report Cards
+        </button>
+        <button
+          type="button"
+          style={isPaymentsView() ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('payments')}
+        >
+          Payments
         </button>
       </nav>
 
@@ -401,6 +434,39 @@ export default function SchoolDeskPage() {
             cardId={selectedReportCardId}
             onBack={handleBackToReportCards}
             onEdit={handleEditReportCard}
+          />
+        )}
+
+        {/* Payment views */}
+        {viewMode === 'payments' && profile.tenant_id && (
+          <div>
+            <div style={styles.sectionHeader}>
+              <button
+                type="button"
+                onClick={() => setViewMode('payments-create')}
+                style={styles.createButton}
+              >
+                + Create Payment Request
+              </button>
+            </div>
+            <PaymentList
+              tenantId={profile.tenant_id}
+              onSelect={handleSelectPayment}
+            />
+          </div>
+        )}
+        {viewMode === 'payments-detail' && selectedPaymentId && (
+          <PaymentDetail
+            paymentId={selectedPaymentId}
+            onBack={handleBackToPayments}
+          />
+        )}
+        {viewMode === 'payments-create' && profile.tenant_id && (
+          <PaymentRequestForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSuccess={() => setViewMode('payments')}
+            onCancel={() => setViewMode('payments')}
           />
         )}
       </main>

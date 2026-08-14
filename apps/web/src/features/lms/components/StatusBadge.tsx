@@ -1,11 +1,12 @@
 // StatusBadge — color-coded status display
-// Row 67/71: Reusable badge for registration and report card statuses
+// Row 67/71/72: Reusable badge for registration, report card, and payment statuses
 
 import type { RegistrationStatus } from '../services/supabase';
 import type { ReportCardStatus } from '../services/supabase';
+import type { PaymentRequestStatus } from '../services/supabase';
 
 interface StatusBadgeProps {
-  status: RegistrationStatus | ReportCardStatus;
+  status: RegistrationStatus | ReportCardStatus | PaymentRequestStatus;
 }
 
 const STATUS_CONFIG: Record<
@@ -21,6 +22,10 @@ const STATUS_CONFIG: Record<
   draft: { label: 'Draft', bg: '#fef3c7', fg: '#92400e' },
   released: { label: 'Released', bg: '#dbeafe', fg: '#1e40af' },
   visible: { label: 'Visible', bg: '#d1fae5', fg: '#065f46' },
+  pending: { label: 'Pending', bg: '#fef3c7', fg: '#92400e' },
+  paid: { label: 'Paid', bg: '#d1fae5', fg: '#065f46' },
+  expired: { label: 'Expired', bg: '#e5e7eb', fg: '#374151' },
+  cancelled: { label: 'Cancelled', bg: '#fee2e2', fg: '#991b1b' },
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {

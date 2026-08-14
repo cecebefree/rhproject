@@ -510,3 +510,161 @@ export function subscribeToReportCards(
     )
     .subscribe();
 }
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT REQUEST TYPES & QUERIES (Row 72)
+// ═══════════════════════════════════════════════════════════
+
+export type PaymentRequestStatus = 'pending' | 'paid' | 'expired' | 'cancelled';
+
+export interface PaymentRequest {
+  id: string;
+  tenant_id: string;
+  registration_id: string;
+  amount: number;
+  currency: string;
+  description: string | null;
+  stripe_session_id: string | null;
+  stripe_payment_url: string | null;
+  status: PaymentRequestStatus;
+  created_by: string;
+  created_at: string;
+  paid_at: string | null;
+  expired_at: string | null;
+  cancelled_at: string | null;
+  deleted_at: string | null;
+}
+
+export interface PaymentRequestWithRelations extends PaymentRequest {
+  registrations?: { id: string; student_name: string; student_email: string } | null;
+}
+
+export async function selectPaymentRequests(tenantId: string) {
+  return supabaseUntyped
+    .from('school_desk.payment_requests')
+    .select('*, registrations!registration_id(id, student_name, student_email)')
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+}
+
+export async function insertPaymentRequest(request: {
+  tenant_id: string;
+  registration_id: string;
+  amount: number;
+  currency: string;
+  description?: string;
+  created_by: string;
+}) {
+  return supabaseUntyped
+    .from('school_desk.payment_requests')
+    .insert({
+      tenant_id: request.tenant_id,
+      registration_id: request.registration_id,
+      amount: request.amount,
+      currency: request.currency,
+      description: request.description || null,
+      status: 'pending',
+      created_by: request.created_by,
+    })
+    .select()
+    .single();
+}
+
+export async function updatePaymentRequest(
+  requestId: string,
+  updates: {
+    status?: PaymentRequestStatus;
+    stripe_session_id?: string;
+    stripe_payment_url?: string;
+  },
+) {
+  const updateData: Record<string, unknown> = {};
+
+  if (updates.status !== undefined) {
+    updateData.status = updates.status;
+    if (updates.status === 'paid') updateData.paid_at = new Date().toISOString();
+    if (updates.status === 'expired') updateData.expired_at = new Date().toISOString();
+    if (updates.status === 'cancelled') updateData.cancelled_at = new Date().toISOString();
+  }
+  if (updates.stripe_session_id !== undefined) {
+    updateData.stripe_session_id = updates.stripe_session_id;
+  }
+  if (updates.stripe_payment_url !== undefined) {
+    updateData.stripe_payment_url = updates.stripe_payment_url;
+  }
+
+  return supabaseUntyped
+    .from('school_desk.payment_requests')
+    .update(updateData)
+    .eq('id', requestId)
+    .select()
+    .single();
+}
+
+export async function getPaymentRequestById(requestId: string) {
+  return supabaseUntyped
+    .from('school_desk.payment_requests')
+    .select('*, registrations!registration_id(id, student_name, student_email)')
+    .eq('id', requestId)
+    .is('deleted_at', null)
+    .single();
+}
+
+export async function getPaymentRequestBySessionId(sessionId: string) {
+  return supabaseUntyped
+    .from('school_desk.payment_requests')
+    .select('*, registrations!registration_id(id, student_name, student_email)')
+    .eq('stripe_session_id', sessionId)
+    .is('deleted_at', null)
+    .single();
+}
+
+export function subscribeToPaymentRequests(
+  callback: (payload: {
+    eventType: string;
+    new: PaymentRequest;
+    old: PaymentRequest | null;
+  }) => void,
+) {
+  return supabaseUntyped
+    .channel('school_desk.payment_requests-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'school_desk', table: 'payment_requests' },
+      callback as (payload: Record<string, unknown>) => void,
+    )
+    .subscribe();
+}
+
+export async function createPaymentSession(payload: {
+  registration_id: string;
+  amount: number;
+  currency: string;
+  description?: string;
+}) {
+  const { data: { session } } = await supabaseUntyped.auth.getSession();
+  if (!session?.access_token) {
+    return { data: null, error: { message: 'Not authenticated' } };
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-payment-session`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { data: null, error: { message: result.error || 'Failed to create payment session' } };
+  }
+
+  return { data: result, error: null };
+}
