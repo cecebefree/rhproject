@@ -146,3 +146,128 @@ export function subscribeToRegistrations(
     )
     .subscribe();
 }
+
+// ═══════════════════════════════════════════════════════════
+// NEWS TYPES & QUERIES (Row 68)
+// ═══════════════════════════════════════════════════════════
+
+export interface News {
+  id: string;
+  tenant_id: string;
+  title: string;
+  content: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+  deleted_at: string | null;
+}
+
+export async function selectNews(
+  tenantId: string,
+  search?: string,
+  options?: { includeDrafts?: boolean; createdBy?: string },
+) {
+  let query = supabaseUntyped
+    .from('school_desk.news')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null);
+
+  if (!options?.includeDrafts) {
+    query = query.not('published_at', 'is', null);
+  }
+
+  if (options?.createdBy) {
+    query = query.eq('created_by', options.createdBy);
+  }
+
+  if (search) {
+    query = query.ilike('title', `%${search}%`);
+  }
+
+  query = query.order('published_at', { ascending: false });
+
+  return query;
+}
+
+export async function insertNews(news: {
+  tenant_id: string;
+  title: string;
+  content: string;
+  created_by: string;
+  publish?: boolean;
+}) {
+  return supabaseUntyped
+    .from('school_desk.news')
+    .insert({
+      tenant_id: news.tenant_id,
+      title: news.title,
+      content: news.content,
+      created_by: news.created_by,
+      published_at: news.publish ? new Date().toISOString() : null,
+    })
+    .select()
+    .single();
+}
+
+export async function updateNews(
+  newsId: string,
+  updates: {
+    title?: string;
+    content?: string;
+    publish?: boolean;
+  },
+) {
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updates.title !== undefined) updateData.title = updates.title;
+  if (updates.content !== undefined) updateData.content = updates.content;
+  if (updates.publish !== undefined) {
+    updateData.published_at = updates.publish
+      ? new Date().toISOString()
+      : null;
+  }
+
+  return supabaseUntyped
+    .from('school_desk.news')
+    .update(updateData)
+    .eq('id', newsId)
+    .select()
+    .single();
+}
+
+export async function deleteNews(newsId: string) {
+  return supabaseUntyped
+    .from('school_desk.news')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', newsId);
+}
+
+export async function getNewsById(newsId: string) {
+  return supabaseUntyped
+    .from('school_desk.news')
+    .select('*')
+    .eq('id', newsId)
+    .is('deleted_at', null)
+    .single();
+}
+
+export function subscribeToNews(
+  callback: (payload: {
+    eventType: string;
+    new: News;
+    old: News | null;
+  }) => void,
+) {
+  return supabaseUntyped
+    .channel('school_desk.news-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'school_desk', table: 'news' },
+      callback as (payload: Record<string, unknown>) => void,
+    )
+    .subscribe();
+}

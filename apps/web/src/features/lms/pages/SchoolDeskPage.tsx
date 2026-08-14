@@ -1,13 +1,17 @@
-// School Desk page — Row 67 scope
-// Reworked: registration intake, list, and detail views
-// Teacher workflow: create registrations, submit for review, withdraw
+// School Desk page — Row 67/68 scope
+// Reworked: registration intake, list, detail views + news section
+// Teacher workflow: create registrations, submit for review, withdraw, author news
 
 import { useEffect, useState } from 'react';
 import { RegistrationIntakeForm } from '../components/RegistrationIntakeForm';
 import { RegistrationList } from '../components/RegistrationList';
 import { RegistrationDetail } from '../components/RegistrationDetail';
+import { NewsList } from '../components/NewsList';
+import { NewsDetail } from '../components/NewsDetail';
+import { NewsForm } from '../components/NewsForm';
 import { supabase } from '../services/supabase';
 import type { Registration } from '../services/supabase';
+import type { News } from '../services/supabase';
 
 interface Profile {
   id: string;
@@ -16,13 +20,21 @@ interface Profile {
   tenant_id: string | null;
 }
 
-type ViewMode = 'intake' | 'list' | 'detail';
+type ViewMode =
+  | 'intake'
+  | 'list'
+  | 'detail'
+  | 'news'
+  | 'news-detail'
+  | 'news-create'
+  | 'news-edit';
 
 export default function SchoolDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedRegistration, setSelectedRegistration] =
     useState<Registration | null>(null);
+  const [selectedNews, setSelectedNews] = useState<News | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,6 +95,21 @@ export default function SchoolDeskPage() {
     setViewMode('list');
   }
 
+  function handleSelectNews(news: News) {
+    setSelectedNews(news);
+    setViewMode('news-detail');
+  }
+
+  function handleBackToNewsList() {
+    setSelectedNews(null);
+    setViewMode('news');
+  }
+
+  function handleEditNews(news: News) {
+    setSelectedNews(news);
+    setViewMode('news-edit');
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -119,36 +146,41 @@ export default function SchoolDeskPage() {
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.title}>School Desk</h1>
-        <p style={styles.subtitle}>Registration Management — {profile.name}</p>
+        <p style={styles.subtitle}>Registration & News — {profile.name}</p>
       </header>
 
       <nav style={styles.nav}>
         <button
           type="button"
-          style={viewMode === 'intake' ? styles.navButtonActive : styles.navButton}
-          onClick={() => setViewMode('intake')}
-        >
-          New Registration
-        </button>
-        <button
-          type="button"
-          style={viewMode === 'list' ? styles.navButtonActive : styles.navButton}
+          style={
+            viewMode === 'intake' ||
+            viewMode === 'list' ||
+            viewMode === 'detail'
+              ? styles.navButtonActive
+              : styles.navButton
+          }
           onClick={() => setViewMode('list')}
         >
           Registrations
         </button>
-        {selectedRegistration && (
-          <button
-            type="button"
-            style={viewMode === 'detail' ? styles.navButtonActive : styles.navButton}
-            onClick={() => setViewMode('detail')}
-          >
-            Detail
-          </button>
-        )}
+        <button
+          type="button"
+          style={
+            viewMode === 'news' ||
+            viewMode === 'news-detail' ||
+            viewMode === 'news-create' ||
+            viewMode === 'news-edit'
+              ? styles.navButtonActive
+              : styles.navButton
+          }
+          onClick={() => setViewMode('news')}
+        >
+          News
+        </button>
       </nav>
 
       <main style={styles.main}>
+        {/* Registration views */}
         {viewMode === 'intake' && profile.tenant_id && (
           <RegistrationIntakeForm
             tenantId={profile.tenant_id}
@@ -156,15 +188,70 @@ export default function SchoolDeskPage() {
           />
         )}
         {viewMode === 'list' && profile.tenant_id && (
-          <RegistrationList
-            tenantId={profile.tenant_id}
-            onSelect={handleSelectRegistration}
-          />
+          <div>
+            <div style={styles.sectionHeader}>
+              <button
+                type="button"
+                onClick={() => setViewMode('intake')}
+                style={styles.createButton}
+              >
+                + New Registration
+              </button>
+            </div>
+            <RegistrationList
+              tenantId={profile.tenant_id}
+              onSelect={handleSelectRegistration}
+            />
+          </div>
         )}
         {viewMode === 'detail' && selectedRegistration && (
           <RegistrationDetail
             registrationId={selectedRegistration.id}
             onBack={handleBackToList}
+          />
+        )}
+
+        {/* News views */}
+        {viewMode === 'news' && profile.tenant_id && (
+          <div>
+            <div style={styles.sectionHeader}>
+              <button
+                type="button"
+                onClick={() => setViewMode('news-create')}
+                style={styles.createButton}
+              >
+                + Create News
+              </button>
+            </div>
+            <NewsList
+              tenantId={profile.tenant_id}
+              onSelect={handleSelectNews}
+            />
+          </div>
+        )}
+        {viewMode === 'news-detail' && selectedNews && (
+          <NewsDetail
+            newsId={selectedNews.id}
+            currentUserId={profile.id}
+            onBack={handleBackToNewsList}
+            onEdit={handleEditNews}
+          />
+        )}
+        {viewMode === 'news-create' && profile.tenant_id && (
+          <NewsForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSuccess={() => setViewMode('news')}
+            onCancel={() => setViewMode('news')}
+          />
+        )}
+        {viewMode === 'news-edit' && selectedNews && profile.tenant_id && (
+          <NewsForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            news={selectedNews}
+            onSuccess={() => setViewMode('news')}
+            onCancel={() => setViewMode('news')}
           />
         )}
       </main>
@@ -221,6 +308,21 @@ const styles: Record<string, React.CSSProperties> = {
   },
   main: {
     padding: '24px',
+  },
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '16px',
+  },
+  createButton: {
+    padding: '8px 16px',
+    backgroundColor: '#3182ce',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '14px',
+    fontWeight: '500',
+    cursor: 'pointer',
   },
   loading: {
     padding: '48px',
