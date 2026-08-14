@@ -116,7 +116,7 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 62 | Lead status transition support: enquiry → qualified → invoiced → "Handed off" | 51, 58 | **DONE** — CHECK constraint fixed in migration 115 (converted → handed_off). RLS policies in migration 106 + 109 enforce valid transitions. pgTAP 456/456 PASS. |
-| 63 | Lead archive flow: on payment confirmation, tag "Handed off", archive (never delete) | 62 | **READY** — Unblocked by Rows 76-77. Archive mechanism in migration 109 (archive_lead function). Ready for implementation. |
+| 63 | Lead archive flow: on payment confirmation, tag "Handed off", archive (never delete) | 62 | **DONE** — archive_lead() RPC integrated into stripe-webhook (v2, commit 329d1db) and paypal-webhook (v2, commit 329d1db). Triggers after successful payment attachment. Logs archive success/failure (non-fatal). |
 | 64 | Callback scheduling fields on leads (callback_scheduled_at, callback_status, callback_notes) | 51, 58 | **DONE** — Migration 107_add_callback_fields_to_leads.sql: 3 columns (callback_scheduled_at timestamptz, callback_status front_desk.callback_status_type enum, callback_notes text) + partial index idx_leads_callback_scheduled. pgTAP: 107_callback_fields_test.sql 6/6 pass, 078/096/04/013 baseline pass, no regressions. Applied locally 2026-08-13. Unblocks Row 65 (Front Desk screens). |
 | 65 | Front Desk Lovable screens: lead list (admin-only), lead detail, status management, callback queue | 51, 57, 62 | Pending — Lovable-generated, connects to same Supabase via service role |
 | 66 | LMS deferred marker: route stubs only, zero components | 50 | Pending — placeholder routes, explicit scope: route stubs only |
