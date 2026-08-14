@@ -1191,3 +1191,298 @@ export async function getStudentTranscript(studentId: string, tenantId: string) 
 
   return { data: transcript, error: null };
 }
+
+// ═══════════════════════════════════════════════════════════
+// PARENT PORTAL TYPES & QUERIES (Row 75)
+// ═══════════════════════════════════════════════════════════
+
+export type Relationship = 'mother' | 'father' | 'guardian' | 'other';
+
+export interface ParentStudentLink {
+  id: string;
+  parent_id: string;
+  student_id: string;
+  relationship: Relationship;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface ParentStudentLinkWithStudent extends ParentStudentLink {
+  profiles?: { id: string; name: string; email: string } | null;
+}
+
+export interface ChildProgress {
+  student_id: string;
+  student_name: string;
+  courses: Array<{
+    course_id: string;
+    course_title: string;
+    teacher_name: string;
+    weighted_average: number | null;
+    grade_letter: string | null;
+    attendance_pct: number | null;
+  }>;
+  overall_gpa: number | null;
+}
+
+export async function selectLinkedChildren(parentId: string) {
+  return supabaseUntyped
+    .from('parent_student_link')
+    .select('*, profiles!student_id(id, name, email)')
+    .eq('parent_id', parentId)
+    .eq('verified', true)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true });
+}
+
+export async function getChildProgress(studentId: string) {
+  // Get enrolled courses
+  const { data: enrollments, error: enrollError } = await supabaseUntyped
+    .from('student_class')
+    .select('class_id, courses!class_id(id, title, teacher_id)')
+    .eq('student_id', studentId)
+    .is('deleted_at', null);
+
+  if (enrollError) {
+    return { data: null, error: enrollError };
+  }
+
+  if (!enrollments || enrollments.length === 0) {
+    // Get student name even if no enrollments
+    const { data: student } = await supabaseUntyped
+      .from('profiles')
+      .select('name')
+      .eq('id', studentId)
+      .single();
+
+    return {
+      data: {
+        student_id: studentId,
+        student_name: student?.name || 'Unknown',
+        courses: [],
+        overall_gpa: null,
+      },
+      error: null,
+    };
+  }
+
+  const courses = [];
+
+  for (const enrollment of enrollments) {
+    const course = enrollment.courses as any;
+    if (!course) continue;
+
+    // Get teacher name
+    const { data: teacher } = await supabaseUntyped
+      .from('profiles')
+      .select('name')
+      .eq('id', course.teacher_id)
+      .single();
+
+    // Get grades
+    const { data: grades } = await supabaseUntyped
+      .from('school_desk.gradebook')
+      .select('score, assignments!assignment_id(max_score, weight)')
+      .eq('course_id', course.id)
+      .eq('student_id', studentId)
+      .is('deleted_at', null)
+      .not('score', 'is', null);
+
+    // Calculate weighted average
+    let totalWeightedScore = 0;
+    let totalWeight = 0;
+
+    if (grades) {
+      for (const grade of grades) {
+        const assignment = grade.assignments as any;
+        if (assignment && grade.score !== null) {
+          const normalizedScore = (grade.score / assignment.max_score) * 100;
+          totalWeightedScore += normalizedScore * assignment.weight;
+          totalWeight += assignment.weight;
+        }
+      }
+    }
+
+    const weightedAverage = totalWeight > 0
+      ? Math.round((totalWeightedScore / totalWeight) * 100) / 100
+      : null;
+
+    // Get attendance stats
+    const { data: attendance } = await supabaseUntyped
+      .from('school_desk.attendance')
+      .select('status')
+      .eq('course_id', course.id)
+      .eq('student_id', studentId)
+      .is('deleted_at', null);
+
+    let attendancePct = null;
+    if (attendance && attendance.length > 0) {
+      const presentCount = attendance.filter((a: any) => a.status === 'present').length;
+      attendancePct = Math.round((presentCount / attendance.length) * 100);
+    }
+
+    courses.push({
+      course_id: course.id,
+      course_title: course.title,
+      teacher_name: teacher?.name || 'Unknown',
+      weighted_average: weightedAverage,
+      grade_letter: weightedAverage !== null ? getLetterGradeFromAvg(weightedAverage) : null,
+      attendance_pct: attendancePct,
+    });
+  }
+
+  // Calculate overall GPA
+  const validAverages = courses
+    .filter((c) => c.weighted_average !== null)
+    .map((c) => c.weighted_average!);
+
+  const overallGpa = validAverages.length > 0
+    ? Math.round(validAverages.reduce((a, b) => a + b, 0) / validAverages.length)
+    : null;
+
+  // Get student name
+  const { data: student } = await supabaseUntyped
+    .from('profiles')
+    .select('name')
+    .eq('id', studentId)
+    .single();
+
+  return {
+    data: {
+      student_id: studentId,
+      student_name: student?.name || 'Unknown',
+      courses,
+      overall_gpa: overallGpa,
+    },
+    error: null,
+  };
+}
+
+export async function getChildAttendance(
+  studentId: string,
+  options?: { courseId?: string },
+) {
+  let query = supabaseUntyped
+    .from('school_desk.attendance')
+    .select('*, courses!course_id(id, title)')
+    .eq('student_id', studentId)
+    .is('deleted_at', null);
+
+  if (options?.courseId) {
+    query = query.eq('course_id', options.courseId);
+  }
+
+  query = query.order('class_date', { ascending: false });
+
+  return query;
+}
+
+export async function getChildTranscript(studentId: string) {
+  // Get enrolled courses
+  const { data: enrollments, error: enrollError } = await supabaseUntyped
+    .from('student_class')
+    .select('class_id, courses!class_id(id, title)')
+    .eq('student_id', studentId)
+    .is('deleted_at', null);
+
+  if (enrollError) {
+    return { data: null, error: enrollError };
+  }
+
+  if (!enrollments || enrollments.length === 0) {
+    return { data: { courses: [], overall_gpa: null }, error: null };
+  }
+
+  const transcript = [];
+
+  for (const enrollment of enrollments) {
+    const course = enrollment.courses as any;
+    if (!course) continue;
+
+    // Get grades
+    const { data: grades } = await supabaseUntyped
+      .from('school_desk.gradebook')
+      .select('score, assignments!assignment_id(id, title, max_score, weight)')
+      .eq('course_id', course.id)
+      .eq('student_id', studentId)
+      .is('deleted_at', null)
+      .not('score', 'is', null);
+
+    // Calculate weighted average
+    let totalWeightedScore = 0;
+    let totalWeight = 0;
+
+    if (grades) {
+      for (const grade of grades) {
+        const assignment = grade.assignments as any;
+        if (assignment && grade.score !== null) {
+          const normalizedScore = (grade.score / assignment.max_score) * 100;
+          totalWeightedScore += normalizedScore * assignment.weight;
+          totalWeight += assignment.weight;
+        }
+      }
+    }
+
+    const weightedAverage = totalWeight > 0
+      ? Math.round((totalWeightedScore / totalWeight) * 100) / 100
+      : null;
+
+    transcript.push({
+      course_id: course.id,
+      course_title: course.title,
+      weighted_average: weightedAverage,
+      grade_letter: weightedAverage !== null ? getLetterGradeFromAvg(weightedAverage) : null,
+      grade_count: grades?.length || 0,
+    });
+  }
+
+  // Calculate overall GPA
+  const validAverages = transcript
+    .filter((c) => c.weighted_average !== null)
+    .map((c) => c.weighted_average!);
+
+  const overallGpa = validAverages.length > 0
+    ? Math.round(validAverages.reduce((a, b) => a + b, 0) / validAverages.length)
+    : null;
+
+  return {
+    data: {
+      courses: transcript,
+      overall_gpa: overallGpa,
+    },
+    error: null,
+  };
+}
+
+function getLetterGradeFromAvg(avg: number): string {
+  if (avg >= 93) return 'A';
+  if (avg >= 90) return 'A-';
+  if (avg >= 87) return 'B+';
+  if (avg >= 83) return 'B';
+  if (avg >= 80) return 'B-';
+  if (avg >= 77) return 'C+';
+  if (avg >= 73) return 'C';
+  if (avg >= 70) return 'C-';
+  if (avg >= 67) return 'D+';
+  if (avg >= 60) return 'D';
+  return 'F';
+}
+
+export function subscribeToParentStudentLink(
+  callback: (payload: {
+    eventType: string;
+    new: ParentStudentLink;
+    old: ParentStudentLink | null;
+  }) => void,
+) {
+  return supabaseUntyped
+    .channel('parent_student_link-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'parent_student_link' },
+      callback as (payload: Record<string, unknown>) => void,
+    )
+    .subscribe();
+}

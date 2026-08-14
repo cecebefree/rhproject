@@ -4,6 +4,7 @@ import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import OfficeDeskPage from './features/lms/pages/OfficeDeskPage';
 import SchoolDeskPage from './features/lms/pages/SchoolDeskPage';
 import { FrontDeskPage } from './features/front-desk';
+import ParentPortalPage from './features/parent-portal/pages/ParentPortalPage';
 
 function IndexPage() {
   return (
@@ -14,6 +15,7 @@ function IndexPage() {
         <Link to="/lms/front-desk">Front Desk</Link>
         <Link to="/lms/school-desk">School Desk</Link>
         <Link to="/lms/office-desk">Office Desk</Link>
+        <Link to="/parent-portal">Parent Portal</Link>
       </nav>
     </div>
   );
@@ -37,6 +39,7 @@ function App() {
         <Route path="/lms/school-desk" element={<SchoolDeskPage />} />
         <Route path="/lms/office-desk" element={<OfficeDeskPage />} />
         <Route path="/lms" element={<Navigate to="/lms/front-desk" replace />} />
+        <Route path="/parent-portal" element={<ParentPortalPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
