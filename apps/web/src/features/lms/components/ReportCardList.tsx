@@ -1,219 +1,159 @@
-// ReportCardList — View report cards and release via EF
-// SELECTs via rc_office_select (office/admin can see all statuses in tenant)
-// Releases via release-report-card EF (row 25)
-// Source: AO-002-safeguarding-pipeline.md §2.3
+// ReportCardList — List of teacher's report cards with search/filter
+// Row 71: Teacher sees only own cards (created_by = auth.uid())
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { supabase } from '../services/supabase';
-
-interface ReportCard {
-  id: string;
-  student_id: string;
-  term: string;
-  subject: string;
-  grade: string | null;
-  status: string;
-  created_at: string;
-  profiles: { name: string } | null;
-}
+import { useEffect, useState } from 'react';
+import {
+  selectReportCards,
+  subscribeToReportCards,
+  type ReportCardWithRelations,
+} from '../services/supabase';
+import { StatusBadge } from './StatusBadge';
 
 interface ReportCardListProps {
-  tenantId: string | null;
-  refreshKey: number;
+  tenantId: string;
+  userId: string;
+  onSelect: (cardId: string) => void;
 }
 
-export function ReportCardList({ tenantId, refreshKey }: ReportCardListProps) {
-  const [cards, setCards] = useState<ReportCard[]>([]);
+export function ReportCardList({ tenantId, userId, onSelect }: ReportCardListProps) {
+  const [cards, setCards] = useState<ReportCardWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [releasing, setReleasing] = useState<string | null>(null);
-  const refreshKeyRef = useRef(refreshKey);
-
-  const fetchCards = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    const { data, error: fetchError } = await supabase
-      .from('report_cards')
-      .select('id, student_id, term, subject, grade, status, created_at, profiles!student_id(name)')
-      .eq('tenant_id', tenantId ?? '')
-      .order('created_at', { ascending: false });
-
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setCards(data as ReportCard[]);
-    }
-    setLoading(false);
-  }, [tenantId]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    refreshKeyRef.current = refreshKey;
-    fetchCards();
-  }, [fetchCards, refreshKey]);
+    let cancelled = false;
 
-  const handleRelease = async (cardId: string) => {
-    setReleasing(cardId);
-    setError(null);
+    async function load() {
+      const { data, error: fetchError } = await selectReportCards(tenantId, {
+        createdBy: userId,
+      });
 
-    const { error: fnError } = await supabase.functions.invoke('release-report-card', {
-      body: { card_id: cardId },
-    });
-
-    if (fnError) {
-      setError(fnError.message);
-    } else {
-      await fetchCards();
+      if (!cancelled) {
+        if (fetchError) {
+          setError(fetchError.message);
+        } else {
+          setCards(data ?? []);
+        }
+        setLoading(false);
+      }
     }
 
-    setReleasing(null);
-  };
+    load();
+    const sub = subscribeToReportCards((payload) => {
+      if (payload.eventType === 'INSERT') {
+        setCards((prev) => [payload.new as ReportCardWithRelations, ...prev]);
+      } else if (payload.eventType === 'UPDATE') {
+        setCards((prev) =>
+          prev.map((c) =>
+            c.id === payload.new.id
+              ? (payload.new as ReportCardWithRelations)
+              : c,
+          ),
+        );
+      } else if (payload.eventType === 'DELETE') {
+        setCards((prev) => prev.filter((c) => c.id !== payload.old?.id));
+      }
+    });
 
-  if (loading) {
-    return <div style={styles.loading}>Loading report cards...</div>;
-  }
+    return () => {
+      cancelled = true;
+      sub.unsubscribe();
+    };
+  }, [tenantId, userId]);
 
-  if (error) {
-    return <div style={styles.error}>{error}</div>;
-  }
+  const filtered = cards.filter(
+    (c) =>
+      c.term?.toLowerCase().includes(search.toLowerCase()) ||
+      c.subject?.toLowerCase().includes(search.toLowerCase()) ||
+      c.profiles?.name?.toLowerCase().includes(search.toLowerCase()),
+  );
 
-  if (cards.length === 0) {
-    return (
-      <div style={styles.empty}>
-        <h3>No report cards</h3>
-        <p>No report cards have been created yet. Use "Enter Report Card" to create one.</p>
-      </div>
-    );
-  }
+  if (loading) return <div style={styles.loading}>Loading report cards...</div>;
+  if (error) return <div style={styles.error}>{error}</div>;
 
   return (
-    <div style={styles.listContainer}>
-      <h2 style={styles.listTitle}>Report Cards ({cards.length})</h2>
-      <div style={styles.cardList}>
-        {cards.map((card) => (
-          <div key={card.id} style={styles.card}>
-            <div style={styles.cardHeader}>
-              <span style={styles.studentName}>{card.profiles?.name ?? 'Unknown Student'}</span>
-              <span
-                style={{
-                  ...styles.statusBadge,
-                  backgroundColor:
-                    card.status === 'draft'
-                      ? '#fefcbf'
-                      : card.status === 'released'
-                        ? '#c6f6d5'
-                        : '#bee3f8',
-                  color:
-                    card.status === 'draft'
-                      ? '#744210'
-                      : card.status === 'released'
-                        ? '#22543d'
-                        : '#2a4365',
-                }}
-              >
-                {card.status}
-              </span>
-            </div>
-            <div style={styles.cardBody}>
-              <div style={styles.cardField}>
-                <span style={styles.fieldLabel}>Term:</span> {card.term}
-              </div>
-              <div style={styles.cardField}>
-                <span style={styles.fieldLabel}>Subject:</span> {card.subject}
-              </div>
-              <div style={styles.cardField}>
-                <span style={styles.fieldLabel}>Grade:</span> {card.grade ?? '—'}
-              </div>
-            </div>
-            {card.status === 'draft' && (
-              <div style={styles.cardFooter}>
-                <button
-                  type="button"
-                  onClick={() => handleRelease(card.id)}
-                  disabled={releasing === card.id}
-                  style={styles.releaseButton}
-                >
-                  {releasing === card.id ? 'Releasing...' : 'Release'}
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <h2 style={styles.title}>Report Cards</h2>
+        <span style={styles.count}>{cards.length} total</span>
       </div>
+
+      <input
+        type="text"
+        placeholder="Search by term, subject, or student..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        style={styles.search}
+      />
+
+      {filtered.length === 0 ? (
+        <div style={styles.empty}>
+          {cards.length === 0
+            ? 'No report cards yet. Create one to get started.'
+            : 'No results match your search.'}
+        </div>
+      ) : (
+        <div style={styles.table}>
+          <div style={styles.tableHeader}>
+            <div style={styles.colStudent}>Student</div>
+            <div style={styles.colTerm}>Term</div>
+            <div style={styles.colSubject}>Subject</div>
+            <div style={styles.colGrade}>Grade</div>
+            <div style={styles.colStatus}>Status</div>
+          </div>
+          {filtered.map((card) => (
+            <div
+              key={card.id}
+              style={styles.tableRow}
+              onClick={() => onSelect(card.id)}
+            >
+              <div style={styles.colStudent}>{card.profiles?.name ?? 'Unknown'}</div>
+              <div style={styles.colTerm}>{card.term}</div>
+              <div style={styles.colSubject}>{card.subject}</div>
+              <div style={styles.colGrade}>{card.grade || '—'}</div>
+              <div style={styles.colStatus}>
+                <StatusBadge status={card.status} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  listContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  listTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    margin: '0',
-    color: '#1a202c',
-  },
-  cardList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  card: {
+  container: {
     backgroundColor: 'white',
     borderRadius: '8px',
-    padding: '16px',
+    padding: '24px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
   },
-  cardHeader: {
+  header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '12px',
+    marginBottom: '16px',
   },
-  studentName: {
-    fontSize: '16px',
+  title: {
+    fontSize: '18px',
     fontWeight: '600',
-    color: '#1a202c',
+    color: '#2d3748',
+    margin: 0,
   },
-  statusBadge: {
-    padding: '4px 8px',
-    fontSize: '12px',
-    fontWeight: '600',
-    borderRadius: '4px',
-    textTransform: 'uppercase',
-  },
-  cardBody: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
+  count: {
     fontSize: '14px',
-    color: '#4a5568',
-  },
-  cardField: {
-    display: 'flex',
-    gap: '8px',
-  },
-  fieldLabel: {
-    fontWeight: '500',
     color: '#718096',
   },
-  cardFooter: {
-    marginTop: '12px',
-    paddingTop: '12px',
-    borderTop: '1px solid #e2e8f0',
-  },
-  releaseButton: {
-    padding: '8px 16px',
-    fontSize: '14px',
-    fontWeight: '600',
-    color: 'white',
-    backgroundColor: '#38a169',
-    border: 'none',
+  search: {
+    width: '100%',
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
     borderRadius: '6px',
-    cursor: 'pointer',
+    fontSize: '14px',
+    marginBottom: '16px',
+    boxSizing: 'border-box',
   },
   loading: {
     padding: '24px',
@@ -221,18 +161,42 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#718096',
   },
   error: {
-    padding: '16px',
-    backgroundColor: '#fed7d7',
-    color: '#742a2a',
+    padding: '12px',
+    backgroundColor: '#fee2e2',
+    color: '#991b1b',
     borderRadius: '6px',
     fontSize: '14px',
   },
   empty: {
-    padding: '48px',
+    padding: '24px',
     textAlign: 'center',
     color: '#718096',
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    fontSize: '14px',
   },
+  table: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  tableHeader: {
+    display: 'flex',
+    padding: '8px 12px',
+    borderBottom: '2px solid #e2e8f0',
+    fontWeight: '600',
+    fontSize: '12px',
+    color: '#718096',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  tableRow: {
+    display: 'flex',
+    padding: '12px',
+    borderBottom: '1px solid #e2e8f0',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
+  },
+  colStudent: { flex: 2, fontSize: '14px' },
+  colTerm: { flex: 1, fontSize: '14px' },
+  colSubject: { flex: 1, fontSize: '14px' },
+  colGrade: { flex: 1, fontSize: '14px' },
+  colStatus: { flex: 1, fontSize: '14px' },
 };

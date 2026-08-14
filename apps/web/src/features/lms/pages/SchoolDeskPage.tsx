@@ -1,6 +1,6 @@
-// School Desk page — Row 67/68/69 scope
-// Reworked: registration intake, list, detail views + news + broadcasts
-// Teacher workflow: create registrations, submit for review, author news, send broadcasts
+// School Desk page — Row 67/68/69/71 scope
+// Reworked: registration intake, list, detail views + news + broadcasts + report cards
+// Teacher workflow: create registrations, submit for review, author news, send broadcasts, write report cards
 
 import { useEffect, useState } from 'react';
 import { RegistrationIntakeForm } from '../components/RegistrationIntakeForm';
@@ -12,6 +12,9 @@ import { NewsForm } from '../components/NewsForm';
 import { BroadcastList } from '../components/BroadcastList';
 import { BroadcastDetail } from '../components/BroadcastDetail';
 import { BroadcastForm } from '../components/BroadcastForm';
+import { ReportCardList } from '../components/ReportCardList';
+import { ReportCardDetail } from '../components/ReportCardDetail';
+import { ReportCardForm } from '../components/ReportCardForm';
 import { supabase } from '../services/supabase';
 import type { Registration } from '../services/supabase';
 import type { News } from '../services/supabase';
@@ -34,7 +37,11 @@ type ViewMode =
   | 'news-edit'
   | 'broadcasts'
   | 'broadcasts-detail'
-  | 'broadcasts-create';
+  | 'broadcasts-create'
+  | 'report-cards'
+  | 'report-cards-detail'
+  | 'report-cards-create'
+  | 'report-cards-edit';
 
 export default function SchoolDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -44,6 +51,8 @@ export default function SchoolDeskPage() {
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
   const [selectedBroadcast, setSelectedBroadcast] =
     useState<BroadcastWithGroup | null>(null);
+  const [selectedReportCardId, setSelectedReportCardId] =
+    useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,6 +138,21 @@ export default function SchoolDeskPage() {
     setViewMode('broadcasts');
   }
 
+  function handleSelectReportCard(cardId: string) {
+    setSelectedReportCardId(cardId);
+    setViewMode('report-cards-detail');
+  }
+
+  function handleBackToReportCards() {
+    setSelectedReportCardId(null);
+    setViewMode('report-cards');
+  }
+
+  function handleEditReportCard(cardId: string) {
+    setSelectedReportCardId(cardId);
+    setViewMode('report-cards-edit');
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -182,6 +206,15 @@ export default function SchoolDeskPage() {
     );
   }
 
+  function isReportCardsView() {
+    return (
+      viewMode === 'report-cards' ||
+      viewMode === 'report-cards-detail' ||
+      viewMode === 'report-cards-create' ||
+      viewMode === 'report-cards-edit'
+    );
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
@@ -210,6 +243,13 @@ export default function SchoolDeskPage() {
           onClick={() => setViewMode('broadcasts')}
         >
           Broadcasts
+        </button>
+        <button
+          type="button"
+          style={isReportCardsView() ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('report-cards')}
+        >
+          Report Cards
         </button>
       </nav>
 
@@ -319,6 +359,48 @@ export default function SchoolDeskPage() {
             userId={profile.id}
             onSuccess={() => setViewMode('broadcasts')}
             onCancel={() => setViewMode('broadcasts')}
+          />
+        )}
+
+        {/* Report Card views */}
+        {viewMode === 'report-cards' && profile.tenant_id && (
+          <div>
+            <div style={styles.sectionHeader}>
+              <button
+                type="button"
+                onClick={() => setViewMode('report-cards-create')}
+                style={styles.createButton}
+              >
+                + Create Report Card
+              </button>
+            </div>
+            <ReportCardList
+              tenantId={profile.tenant_id}
+              userId={profile.id}
+              onSelect={handleSelectReportCard}
+            />
+          </div>
+        )}
+        {viewMode === 'report-cards-detail' && selectedReportCardId && (
+          <ReportCardDetail
+            cardId={selectedReportCardId}
+            onBack={handleBackToReportCards}
+            onEdit={handleEditReportCard}
+          />
+        )}
+        {viewMode === 'report-cards-create' && profile.tenant_id && (
+          <ReportCardForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSuccess={() => setViewMode('report-cards')}
+            onCancel={() => setViewMode('report-cards')}
+          />
+        )}
+        {viewMode === 'report-cards-edit' && selectedReportCardId && (
+          <ReportCardDetail
+            cardId={selectedReportCardId}
+            onBack={handleBackToReportCards}
+            onEdit={handleEditReportCard}
           />
         )}
       </main>

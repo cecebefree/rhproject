@@ -1,11 +1,8 @@
-// Office Desk page — Row 38 scope
-// Admin/office workflow: enter report cards, release to visible
-// MVP scope per Ruling 2 (report-card write is Office Desk only)
-// Source: row-45-acceptance-checklist.md §1.2 (Office Desk)
+// Office Desk page — Row 38/71 scope
+// Admin/office workflow: release report cards, manage registrations
+// Row 71: Report Card creation moved to School Desk (teacher-owned)
 
 import { useEffect, useState } from 'react';
-import { ReportCardForm } from '../components/ReportCardForm';
-import { ReportCardList } from '../components/ReportCardList';
 import { supabase } from '../services/supabase';
 
 interface Profile {
@@ -15,14 +12,10 @@ interface Profile {
   tenant_id: string | null;
 }
 
-type ViewMode = 'enter' | 'list';
-
 export default function OfficeDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('enter');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,11 +61,6 @@ export default function OfficeDeskPage() {
     };
   }, []);
 
-  const handleSuccess = () => {
-    setRefreshKey((k) => k + 1);
-    setViewMode('list');
-  };
-
   if (loading) {
     return (
       <div style={styles.container}>
@@ -109,33 +97,29 @@ export default function OfficeDeskPage() {
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.title}>Office Desk</h1>
-        <p style={styles.subtitle}>Report Cards — {profile.name}</p>
+        <p style={styles.subtitle}>Administration — {profile.name}</p>
       </header>
 
-      <nav style={styles.nav}>
-        <button
-          type="button"
-          style={viewMode === 'enter' ? styles.navButtonActive : styles.navButton}
-          onClick={() => setViewMode('enter')}
-        >
-          Enter Report Card
-        </button>
-        <button
-          type="button"
-          style={viewMode === 'list' ? styles.navButtonActive : styles.navButton}
-          onClick={() => setViewMode('list')}
-        >
-          View Report Cards
-        </button>
-      </nav>
-
       <main style={styles.main}>
-        {viewMode === 'enter' && (
-          <ReportCardForm tenantId={profile.tenant_id} onSuccess={handleSuccess} />
-        )}
-        {viewMode === 'list' && (
-          <ReportCardList tenantId={profile.tenant_id} refreshKey={refreshKey} />
-        )}
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Report Cards</h2>
+          <p style={styles.cardDescription}>
+            Report Card creation has moved to <strong>School Desk</strong>. Teachers now create
+            report cards directly for their own courses.
+          </p>
+          <p style={styles.cardNote}>
+            Office Desk retains the ability to release report cards to learners. Contact your
+            system administrator for the release workflow.
+          </p>
+        </div>
+
+        <div style={styles.card}>
+          <h2 style={styles.cardTitle}>Registrations</h2>
+          <p style={styles.cardDescription}>
+            Registration management is available through the LMS. Use the registration pipeline
+            to approve or reject pending enrollments.
+          </p>
+        </div>
       </main>
     </div>
   );
@@ -162,34 +146,35 @@ const styles: Record<string, React.CSSProperties> = {
     opacity: 0.9,
     margin: '0',
   },
-  nav: {
-    display: 'flex',
-    backgroundColor: '#4a5568',
-    padding: '0 24px',
-    gap: '4px',
-  },
-  navButton: {
-    padding: '12px 24px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: '#a0aec0',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    borderBottom: '2px solid transparent',
-  },
-  navButtonActive: {
-    padding: '12px 24px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: 'white',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    borderBottom: '2px solid #4299e1',
-  },
   main: {
     padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    padding: '24px',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  },
+  cardTitle: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#2d3748',
+    margin: '0 0 8px 0',
+  },
+  cardDescription: {
+    fontSize: '14px',
+    color: '#4a5568',
+    margin: '0 0 8px 0',
+    lineHeight: '1.5',
+  },
+  cardNote: {
+    fontSize: '14px',
+    color: '#718096',
+    margin: 0,
+    fontStyle: 'italic',
   },
   loading: {
     padding: '48px',

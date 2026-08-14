@@ -396,3 +396,117 @@ export function subscribeToBroadcasts(
     )
     .subscribe();
 }
+
+// ═══════════════════════════════════════════════════════════
+// REPORT CARD TYPES & QUERIES (Row 71)
+// ═══════════════════════════════════════════════════════════
+
+export type ReportCardStatus = 'draft' | 'released' | 'visible';
+
+export interface ReportCard {
+  id: string;
+  student_id: string;
+  term: string;
+  subject: string;
+  grade: string | null;
+  status: ReportCardStatus;
+  created_by: string;
+  released_by: string | null;
+  released_at: string | null;
+  visible_at: string | null;
+  tenant_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReportCardWithRelations extends ReportCard {
+  profiles?: { id: string; name: string } | null;
+}
+
+export async function selectReportCards(
+  tenantId: string,
+  options?: { courseId?: string; createdBy?: string },
+) {
+  let query = supabaseUntyped
+    .from('school_desk.report_cards')
+    .select('*, profiles!student_id(id, name)')
+    .eq('tenant_id', tenantId);
+
+  if (options?.createdBy) {
+    query = query.eq('created_by', options.createdBy);
+  }
+
+  query = query.order('created_at', { ascending: false });
+
+  return query;
+}
+
+export async function insertReportCard(card: {
+  student_id: string;
+  term: string;
+  subject: string;
+  grade?: string;
+  created_by: string;
+  tenant_id: string;
+}) {
+  return supabaseUntyped
+    .from('school_desk.report_cards')
+    .insert({
+      student_id: card.student_id,
+      term: card.term,
+      subject: card.subject,
+      grade: card.grade || null,
+      status: 'draft',
+      created_by: card.created_by,
+      tenant_id: card.tenant_id,
+    })
+    .select()
+    .single();
+}
+
+export async function updateReportCard(
+  cardId: string,
+  updates: {
+    grade?: string;
+    feedback?: string;
+  },
+) {
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updates.grade !== undefined) updateData.grade = updates.grade;
+  if (updates.feedback !== undefined) updateData.feedback = updates.feedback;
+
+  return supabaseUntyped
+    .from('school_desk.report_cards')
+    .update(updateData)
+    .eq('id', cardId)
+    .select()
+    .single();
+}
+
+export async function getReportCardById(cardId: string) {
+  return supabaseUntyped
+    .from('school_desk.report_cards')
+    .select('*, profiles!student_id(id, name)')
+    .eq('id', cardId)
+    .single();
+}
+
+export function subscribeToReportCards(
+  callback: (payload: {
+    eventType: string;
+    new: ReportCard;
+    old: ReportCard | null;
+  }) => void,
+) {
+  return supabaseUntyped
+    .channel('school_desk.report_cards-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'school_desk', table: 'report_cards' },
+      callback as (payload: Record<string, unknown>) => void,
+    )
+    .subscribe();
+}
