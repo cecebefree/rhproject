@@ -413,3 +413,56 @@ Signed: Cece — final human gate. 2026-07-15.
 2. Create PayPal webhook EF (Row 76)
 3. Implement payment-attach logic (lookup by email + registration_id)
 4. Row 63 (archive flow) unblocks after Row 76 completes
+
+---
+
+# SESSION COMPLETE — 2026-08-14
+
+## Rows Completed This Session
+
+| Row | Item | Status | Commit |
+|-----|------|--------|--------|
+| 62 | Lead status transition support | ✓ DONE | `04810fc` (migration 115), `b6c36bb` (doc) |
+| 63 | Lead archive flow (archive_lead() in webhooks) | ✓ DONE | `329d1db` (code), `4fac6cf` (doc) |
+| 76 | Stripe webhook EF (charge.succeeded) | ✓ DONE | `6393cc1` (code), `563db69` (doc) |
+| 77 | PayPal webhook EF (ipn.verified) | ✓ DONE | `238b403` (code), `563db69` (doc) |
+
+## Deployed Edge Functions (9 total, all ACTIVE)
+
+| Function | Version | URL |
+|----------|---------|-----|
+| stripe-webhook | v3 | https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/stripe-webhook |
+| paypal-webhook | v2 | https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/paypal-webhook |
+| submit-lead | v55 | ACTIVE |
+| class-start-ping | v7 | ACTIVE |
+| validate-toggle | v7 | ACTIVE |
+| set_handle | v7 | ACTIVE |
+| release-report-card | v9 | ACTIVE |
+| ai-tutor-proxy | v7 | ACTIVE |
+| front-desk-read-leads | v19 | ACTIVE |
+
+## Database
+
+- **Tests:** 464/464 PASS (45 files)
+- **Migrations applied:** 115 (leads CHECK fix), 116 (payment columns), 117 (paypal column)
+- **New columns:** `payment_attached_at`, `stripe_customer_id`, `stripe_charge_id`, `paypal_transaction_id` on `office_desk.registrations`
+
+## Environment Config
+
+- `STRIPE_WEBHOOK_SECRET` — configured in Supabase Dashboard
+- `PAYPAL_MODE` — configured in Supabase Dashboard
+- Stripe webhook endpoint — configured in Stripe Dashboard
+- PayPal IPN endpoint — configured in PayPal Dashboard
+
+## Next Session Queue
+
+| Row | Item | Gated By | Priority |
+|-----|------|----------|----------|
+| 64 | Callback scheduling fields | 51, 58 | ✓ Already DONE (migration 107) |
+| 65 | Front Desk Lovable screens | 51, 57, 62 | **NEXT** — unblocked by 62 |
+| 67 | Rework School Desk → School Front Desk | 50 | Pending |
+| 80 | Archived leads reference (front_desk → office_desk) | 63, 75 | Ready after Row 76 |
+
+---
+
+Signed: Cece — final human gate. 2026-08-14.
