@@ -88,6 +88,24 @@ serve(async (req) => {
       }
 
       console.log("Payment attached:", reg);
+
+      // Row 63: Archive lead after successful payment attachment
+      if (reg && reg.length > 0 && reg[0].lead_reference_id) {
+        const { error: archiveError } = await supabase.rpc("archive_lead", {
+          p_lead_id: reg[0].lead_reference_id,
+          p_action: "archive",
+          p_reason: "enrolled",
+          p_notes: `Payment attached via Stripe charge ${charge.id}`,
+        });
+
+        if (archiveError) {
+          console.error("Archive lead failed:", archiveError);
+          // Non-fatal: payment attached but archive failed
+        } else {
+          console.log("Lead archived successfully:", reg[0].lead_reference_id);
+        }
+      }
+
       return new Response(JSON.stringify({ success: true }), { status: 200 });
     } catch (err) {
       console.error("Webhook processing error:", err);
