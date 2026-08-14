@@ -1,6 +1,6 @@
-// School Desk page — Row 67/68 scope
-// Reworked: registration intake, list, detail views + news section
-// Teacher workflow: create registrations, submit for review, withdraw, author news
+// School Desk page — Row 67/68/69 scope
+// Reworked: registration intake, list, detail views + news + broadcasts
+// Teacher workflow: create registrations, submit for review, author news, send broadcasts
 
 import { useEffect, useState } from 'react';
 import { RegistrationIntakeForm } from '../components/RegistrationIntakeForm';
@@ -9,9 +9,13 @@ import { RegistrationDetail } from '../components/RegistrationDetail';
 import { NewsList } from '../components/NewsList';
 import { NewsDetail } from '../components/NewsDetail';
 import { NewsForm } from '../components/NewsForm';
+import { BroadcastList } from '../components/BroadcastList';
+import { BroadcastDetail } from '../components/BroadcastDetail';
+import { BroadcastForm } from '../components/BroadcastForm';
 import { supabase } from '../services/supabase';
 import type { Registration } from '../services/supabase';
 import type { News } from '../services/supabase';
+import type { BroadcastWithGroup } from '../services/supabase';
 
 interface Profile {
   id: string;
@@ -27,7 +31,10 @@ type ViewMode =
   | 'news'
   | 'news-detail'
   | 'news-create'
-  | 'news-edit';
+  | 'news-edit'
+  | 'broadcasts'
+  | 'broadcasts-detail'
+  | 'broadcasts-create';
 
 export default function SchoolDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -35,6 +42,8 @@ export default function SchoolDeskPage() {
   const [selectedRegistration, setSelectedRegistration] =
     useState<Registration | null>(null);
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
+  const [selectedBroadcast, setSelectedBroadcast] =
+    useState<BroadcastWithGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,6 +119,16 @@ export default function SchoolDeskPage() {
     setViewMode('news-edit');
   }
 
+  function handleSelectBroadcast(broadcast: BroadcastWithGroup) {
+    setSelectedBroadcast(broadcast);
+    setViewMode('broadcasts-detail');
+  }
+
+  function handleBackToBroadcasts() {
+    setSelectedBroadcast(null);
+    setViewMode('broadcasts');
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -142,40 +161,55 @@ export default function SchoolDeskPage() {
     );
   }
 
+  function isRegistrationView() {
+    return viewMode === 'intake' || viewMode === 'list' || viewMode === 'detail';
+  }
+
+  function isNewsView() {
+    return (
+      viewMode === 'news' ||
+      viewMode === 'news-detail' ||
+      viewMode === 'news-create' ||
+      viewMode === 'news-edit'
+    );
+  }
+
+  function isBroadcastView() {
+    return (
+      viewMode === 'broadcasts' ||
+      viewMode === 'broadcasts-detail' ||
+      viewMode === 'broadcasts-create'
+    );
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.title}>School Desk</h1>
-        <p style={styles.subtitle}>Registration & News — {profile.name}</p>
+        <p style={styles.subtitle}>Registration, News & Broadcasts — {profile.name}</p>
       </header>
 
       <nav style={styles.nav}>
         <button
           type="button"
-          style={
-            viewMode === 'intake' ||
-            viewMode === 'list' ||
-            viewMode === 'detail'
-              ? styles.navButtonActive
-              : styles.navButton
-          }
+          style={isRegistrationView() ? styles.navButtonActive : styles.navButton}
           onClick={() => setViewMode('list')}
         >
           Registrations
         </button>
         <button
           type="button"
-          style={
-            viewMode === 'news' ||
-            viewMode === 'news-detail' ||
-            viewMode === 'news-create' ||
-            viewMode === 'news-edit'
-              ? styles.navButtonActive
-              : styles.navButton
-          }
+          style={isNewsView() ? styles.navButtonActive : styles.navButton}
           onClick={() => setViewMode('news')}
         >
           News
+        </button>
+        <button
+          type="button"
+          style={isBroadcastView() ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('broadcasts')}
+        >
+          Broadcasts
         </button>
       </nav>
 
@@ -252,6 +286,39 @@ export default function SchoolDeskPage() {
             news={selectedNews}
             onSuccess={() => setViewMode('news')}
             onCancel={() => setViewMode('news')}
+          />
+        )}
+
+        {/* Broadcast views */}
+        {viewMode === 'broadcasts' && profile.tenant_id && (
+          <div>
+            <div style={styles.sectionHeader}>
+              <button
+                type="button"
+                onClick={() => setViewMode('broadcasts-create')}
+                style={styles.createButton}
+              >
+                + Send Broadcast
+              </button>
+            </div>
+            <BroadcastList
+              tenantId={profile.tenant_id}
+              onSelect={handleSelectBroadcast}
+            />
+          </div>
+        )}
+        {viewMode === 'broadcasts-detail' && selectedBroadcast && (
+          <BroadcastDetail
+            broadcastId={selectedBroadcast.id}
+            onBack={handleBackToBroadcasts}
+          />
+        )}
+        {viewMode === 'broadcasts-create' && profile.tenant_id && (
+          <BroadcastForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSuccess={() => setViewMode('broadcasts')}
+            onCancel={() => setViewMode('broadcasts')}
           />
         )}
       </main>
