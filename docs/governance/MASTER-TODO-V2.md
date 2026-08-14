@@ -125,7 +125,7 @@
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 67 | Rework existing School Desk → School Front Desk: rename route, update page component, preserve ScheduleSlotList + StudentList | 50 | Pending — existing code at apps/web/src/features/lms/pages/SchoolDeskPage.tsx |
+| 67 | Rework existing School Desk → School Front Desk: rename route, update page component, preserve ScheduleSlotList + StudentList | 50 | **DONE** — Migration 118 added school_desk SELECT policy on registrations. SchoolDeskPage refactored: 3 tabs (Intake, List, Detail). Components: RegistrationIntakeForm, RegistrationList (search/filter/real-time), RegistrationDetail (status transitions, payment indicator, lead ref), StatusBadge. supabase.ts: selectRegistrations, insertRegistration, updateRegistrationStatus, getRegistrationById, subscribeToRegistrations. TypeScript clean, 464/464 pgTAP PASS. |
 | 68 | Add News section to School Front Desk (announcements in school_desk schema, read/write for authorized desk roles) | 67 | Pending — announcements table already exists (migration 041) |
 | 69 | Add Groups broadcast section to School Front Desk (conversations + conversation_members in school_desk) | 67 | Pending — tables exist (migration 059), need desk-scoped UI |
 | 70 | Add Direct chat section to School Front Desk (messages in school_desk) | 67, 69 | Pending — messages table exists (migration 059), need desk-desked UI |
@@ -460,7 +460,7 @@ Signed: Cece — final human gate. 2026-07-15.
 |-----|------|----------|----------|
 | 64 | Callback scheduling fields | 51, 58 | ✓ Already DONE (migration 107) |
 | 65 | Front Desk Lovable screens | 51, 57, 62 | **NEXT** — unblocked by 62 |
-| 67 | Rework School Desk → School Front Desk | 50 | Pending |
+| 67 | Rework School Desk → School Front Desk | 50 | **DONE** — Migration 118, registration screens, real-time subscriptions |
 | 80 | Archived leads reference (front_desk → office_desk) | 63, 75 | Ready after Row 76 |
 
 ---

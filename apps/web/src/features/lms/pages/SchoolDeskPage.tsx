@@ -1,13 +1,13 @@
-// School Desk page — Row 37 scope
-// Teacher/school workflow: view schedule slots, view enrolled students
-// READ-ONLY per D22 (schedule writes are admin-only) and Ruling 2
-// (report-card write is Office Desk only)
-// Source: row-45-acceptance-checklist.md §1.3 (School Desk)
+// School Desk page — Row 67 scope
+// Reworked: registration intake, list, and detail views
+// Teacher workflow: create registrations, submit for review, withdraw
 
 import { useEffect, useState } from 'react';
-import { ScheduleSlotList } from '../components/ScheduleSlotList';
-import { StudentList } from '../components/StudentList';
+import { RegistrationIntakeForm } from '../components/RegistrationIntakeForm';
+import { RegistrationList } from '../components/RegistrationList';
+import { RegistrationDetail } from '../components/RegistrationDetail';
 import { supabase } from '../services/supabase';
+import type { Registration } from '../services/supabase';
 
 interface Profile {
   id: string;
@@ -16,11 +16,13 @@ interface Profile {
   tenant_id: string | null;
 }
 
-type ViewMode = 'schedule' | 'students';
+type ViewMode = 'intake' | 'list' | 'detail';
 
 export default function SchoolDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('schedule');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [selectedRegistration, setSelectedRegistration] =
+    useState<Registration | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +55,10 @@ export default function SchoolDeskPage() {
       if (!cancelled) {
         if (profileError) {
           setError(profileError.message);
-        } else if (profileData.role !== 'teacher' && profileData.role !== 'admin') {
+        } else if (
+          profileData.role !== 'teacher' &&
+          profileData.role !== 'admin'
+        ) {
           setError('Access denied. School Desk is for teachers and admins only.');
         } else {
           setProfile(profileData);
@@ -67,6 +72,16 @@ export default function SchoolDeskPage() {
       cancelled = true;
     };
   }, []);
+
+  function handleSelectRegistration(reg: Registration) {
+    setSelectedRegistration(reg);
+    setViewMode('detail');
+  }
+
+  function handleBackToList() {
+    setSelectedRegistration(null);
+    setViewMode('list');
+  }
 
   if (loading) {
     return (
@@ -104,29 +119,54 @@ export default function SchoolDeskPage() {
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.title}>School Desk</h1>
-        <p style={styles.subtitle}>Schedule & Students — {profile.name}</p>
+        <p style={styles.subtitle}>Registration Management — {profile.name}</p>
       </header>
 
       <nav style={styles.nav}>
         <button
           type="button"
-          style={viewMode === 'schedule' ? styles.navButtonActive : styles.navButton}
-          onClick={() => setViewMode('schedule')}
+          style={viewMode === 'intake' ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('intake')}
         >
-          Schedule
+          New Registration
         </button>
         <button
           type="button"
-          style={viewMode === 'students' ? styles.navButtonActive : styles.navButton}
-          onClick={() => setViewMode('students')}
+          style={viewMode === 'list' ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('list')}
         >
-          Students
+          Registrations
         </button>
+        {selectedRegistration && (
+          <button
+            type="button"
+            style={viewMode === 'detail' ? styles.navButtonActive : styles.navButton}
+            onClick={() => setViewMode('detail')}
+          >
+            Detail
+          </button>
+        )}
       </nav>
 
       <main style={styles.main}>
-        {viewMode === 'schedule' && <ScheduleSlotList tenantId={profile.tenant_id} />}
-        {viewMode === 'students' && <StudentList tenantId={profile.tenant_id} />}
+        {viewMode === 'intake' && profile.tenant_id && (
+          <RegistrationIntakeForm
+            tenantId={profile.tenant_id}
+            onSuccess={() => setViewMode('list')}
+          />
+        )}
+        {viewMode === 'list' && profile.tenant_id && (
+          <RegistrationList
+            tenantId={profile.tenant_id}
+            onSelect={handleSelectRegistration}
+          />
+        )}
+        {viewMode === 'detail' && selectedRegistration && (
+          <RegistrationDetail
+            registrationId={selectedRegistration.id}
+            onBack={handleBackToList}
+          />
+        )}
       </main>
     </div>
   );
