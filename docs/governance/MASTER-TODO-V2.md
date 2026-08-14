@@ -116,7 +116,7 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 62 | Lead status transition support: enquiry → qualified → invoiced → "Handed off" | 51, 58 | **DONE** — CHECK constraint fixed in migration 115 (converted → handed_off). RLS policies in migration 106 + 109 enforce valid transitions. pgTAP 456/456 PASS. |
-| 63 | Lead archive flow: on payment confirmation, tag "Handed off", archive (never delete) | 62 | Pending — status='handed_off' in front_desk.leads, referenced by office_desk via lead_reference_id |
+| 63 | Lead archive flow: on payment confirmation, tag "Handed off", archive (never delete) | 62 | **READY** — Unblocked by Rows 76-77. Archive mechanism in migration 109 (archive_lead function). Ready for implementation. |
 | 64 | Callback scheduling fields on leads (callback_scheduled_at, callback_status, callback_notes) | 51, 58 | **DONE** — Migration 107_add_callback_fields_to_leads.sql: 3 columns (callback_scheduled_at timestamptz, callback_status front_desk.callback_status_type enum, callback_notes text) + partial index idx_leads_callback_scheduled. pgTAP: 107_callback_fields_test.sql 6/6 pass, 078/096/04/013 baseline pass, no regressions. Applied locally 2026-08-13. Unblocks Row 65 (Front Desk screens). |
 | 65 | Front Desk Lovable screens: lead list (admin-only), lead detail, status management, callback queue | 51, 57, 62 | Pending — Lovable-generated, connects to same Supabase via service role |
 | 66 | LMS deferred marker: route stubs only, zero components | 50 | Pending — placeholder routes, explicit scope: route stubs only |
@@ -139,8 +139,8 @@
 |---|------|----------|--------|
 | 74 | Strip report cards from Office Desk: remove ReportCardForm/ReportCardList from OfficeDeskPage | 71 | Pending — Office Desk becomes purely financial/registration |
 | 75 | Registration Pattern A: form + payment arrive same event → single write in office_desk schema | 53, 57 | Pending — Edge Function or direct insert |
-| 76 | Registration Pattern B: form arrives first → pending_review placeholder; payment arrives later → EF lookup-and-attach via stable match key (email or reference ID) → status flips to active | 53, 57 | Pending — requires new EF for payment-attach |
-| 77 | Registration status transitions: pending_init → pending_review → approved → active (plus terminal: withdrawn, rejected) | 75, 76 | Pending — Office Desk owns all status mutations |
+| 76 | Registration Pattern B: form arrives first → pending_review placeholder; payment arrives later → EF lookup-and-attach via stable match key (email or reference ID) → status flips to active | 53, 57 | **DONE** — Stripe webhook EF deployed (commit 6393cc1, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/stripe-webhook |
+| 77 | Registration status transitions: pending_init → pending_review → approved → active (plus terminal: withdrawn, rejected) | 75, 76 | **DONE** — PayPal webhook EF deployed (commit 238b403, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/paypal-webhook |
 | 78 | Manual/ad-hoc invoice creation UI on Office Desk | 50 | Pending — MVP scaffold, QuickBooks/Shopify deferred |
 | 79 | Payment confirmation UI on Office Desk | 78 | Pending — triggers Pattern B attach or Pattern A completion |
 | 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id (no duplication) | 63, 75 | Pending — single-project eliminates cross-project duplication |
