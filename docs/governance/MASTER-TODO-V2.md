@@ -393,3 +393,23 @@ do not create items. Citing an undefined item number is a fabrication
 event.
 
 Signed: Cece — final human gate. 2026-07-15.
+
+---
+
+## Payment Provider Decision (Cece)
+
+
+**Decision:** Stripe + PayPal integration for MVP
+
+
+**Scope:**
+- Row 76: Payment-attach EF — Stripe webhook → lookup registration by stable key → attach payment → flip status to active
+- Row 78: Manual invoice creation UI — deferred post-MVP (QuickBooks/Shopify sync later)
+- Row 85: Pending-payment timeout — basic reminder for MVP, full escalation post-MVP
+
+
+**Next steps:**
+1. Create Stripe webhook EF (Row 76)
+2. Create PayPal webhook EF (Row 76)
+3. Implement payment-attach logic (lookup by email + registration_id)
+4. Row 63 (archive flow) unblocks after Row 76 completes
