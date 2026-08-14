@@ -1,6 +1,6 @@
-// School Desk page — Row 67/68/69/71/72/73 scope
-// Reworked: registration intake, list, detail views + news + broadcasts + report cards + payments + attendance
-// Teacher workflow: create registrations, submit for review, author news, send broadcasts, write report cards, collect payments, mark attendance
+// School Desk page — Row 67/68/69/71/72/73/74 scope
+// Reworked: registration intake, list, detail views + news + broadcasts + report cards + payments + attendance + gradebook
+// Teacher workflow: create registrations, submit for review, author news, send broadcasts, write report cards, collect payments, mark attendance, manage assignments/grades
 
 import { useEffect, useState } from 'react';
 import { RegistrationIntakeForm } from '../components/RegistrationIntakeForm';
@@ -21,6 +21,11 @@ import { PaymentRequestForm } from '../components/PaymentRequestForm';
 import { AttendanceList } from '../components/AttendanceList';
 import { AttendanceDetail } from '../components/AttendanceDetail';
 import { AttendanceForm } from '../components/AttendanceForm';
+import { AssignmentForm } from '../components/AssignmentForm';
+import { GradebookForm } from '../components/GradebookForm';
+import { GradebookList } from '../components/GradebookList';
+import { GradebookDetail } from '../components/GradebookDetail';
+import { StudentTranscript } from '../components/StudentTranscript';
 import { supabase } from '../services/supabase';
 import type { Registration } from '../services/supabase';
 import type { News } from '../services/supabase';
@@ -53,7 +58,12 @@ type ViewMode =
   | 'payments-create'
   | 'attendance'
   | 'attendance-detail'
-  | 'attendance-mark';
+  | 'attendance-mark'
+  | 'gradebook'
+  | 'gradebook-detail'
+  | 'gradebook-create-assignment'
+  | 'gradebook-enter-grades'
+  | 'gradebook-transcript';
 
 export default function SchoolDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -71,6 +81,10 @@ export default function SchoolDeskPage() {
     useState<string | null>(null);
   const [selectedAttendanceDate, setSelectedAttendanceDate] =
     useState<string | null>(null);
+  const [selectedGradebookCourseId, setSelectedGradebookCourseId] =
+    useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedStudentName, setSelectedStudentName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -193,6 +207,28 @@ export default function SchoolDeskPage() {
     setViewMode('attendance');
   }
 
+  function handleSelectGradebookCourse(courseId: string) {
+    setSelectedGradebookCourseId(courseId);
+    setViewMode('gradebook-detail');
+  }
+
+  function handleBackToGradebook() {
+    setSelectedGradebookCourseId(null);
+    setViewMode('gradebook');
+  }
+
+  function handleViewStudentTranscript(studentId: string, studentName: string) {
+    setSelectedStudentId(studentId);
+    setSelectedStudentName(studentName);
+    setViewMode('gradebook-transcript');
+  }
+
+  function handleBackFromTranscript() {
+    setSelectedStudentId(null);
+    setSelectedStudentName('');
+    setViewMode('gradebook');
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -271,11 +307,21 @@ export default function SchoolDeskPage() {
     );
   }
 
+  function isGradebookView() {
+    return (
+      viewMode === 'gradebook' ||
+      viewMode === 'gradebook-detail' ||
+      viewMode === 'gradebook-create-assignment' ||
+      viewMode === 'gradebook-enter-grades' ||
+      viewMode === 'gradebook-transcript'
+    );
+  }
+
   return (
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.title}>School Desk</h1>
-        <p style={styles.subtitle}>Registration, News & Broadcasts — {profile.name}</p>
+        <p style={styles.subtitle}>Registration, News, Broadcasts & Gradebook — {profile.name}</p>
       </header>
 
       <nav style={styles.nav}>
@@ -320,6 +366,13 @@ export default function SchoolDeskPage() {
           onClick={() => setViewMode('attendance')}
         >
           Attendance
+        </button>
+        <button
+          type="button"
+          style={isGradebookView() ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('gradebook')}
+        >
+          Gradebook
         </button>
       </nav>
 
@@ -540,6 +593,50 @@ export default function SchoolDeskPage() {
             userId={profile.id}
             onSuccess={() => setViewMode('attendance')}
             onCancel={() => setViewMode('attendance')}
+          />
+        )}
+
+        {/* Gradebook views */}
+        {viewMode === 'gradebook' && profile.tenant_id && (
+          <GradebookList
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSelectCourse={handleSelectGradebookCourse}
+            onSelectAssignment={() => {}}
+            onEnterGrades={() => setViewMode('gradebook-enter-grades')}
+            onCreateAssignment={() => setViewMode('gradebook-create-assignment')}
+          />
+        )}
+        {viewMode === 'gradebook-detail' && selectedGradebookCourseId && (
+          <GradebookDetail
+            courseId={selectedGradebookCourseId}
+            courseTitle="Course"
+            onBack={handleBackToGradebook}
+            tenantId={profile.tenant_id!}
+          />
+        )}
+        {viewMode === 'gradebook-create-assignment' && profile.tenant_id && (
+          <AssignmentForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSuccess={() => setViewMode('gradebook')}
+            onCancel={() => setViewMode('gradebook')}
+          />
+        )}
+        {viewMode === 'gradebook-enter-grades' && profile.tenant_id && (
+          <GradebookForm
+            tenantId={profile.tenant_id}
+            userId={profile.id}
+            onSuccess={() => setViewMode('gradebook')}
+            onCancel={() => setViewMode('gradebook')}
+          />
+        )}
+        {viewMode === 'gradebook-transcript' && selectedStudentId && (
+          <StudentTranscript
+            studentId={selectedStudentId}
+            studentName={selectedStudentName}
+            tenantId={profile.tenant_id!}
+            onBack={handleBackFromTranscript}
           />
         )}
       </main>

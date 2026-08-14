@@ -839,3 +839,355 @@ export async function getTeacherCourses(teacherId: string) {
     .eq('teacher_id', teacherId)
     .in('status', ['published', 'active']);
 }
+
+// ═══════════════════════════════════════════════════════════
+// ASSIGNMENT TYPES & QUERIES (Row 74)
+// ═══════════════════════════════════════════════════════════
+
+export interface Assignment {
+  id: string;
+  tenant_id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  max_score: number;
+  weight: number;
+  due_date: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface AssignmentWithRelations extends Assignment {
+  courses?: { id: string; title: string } | null;
+}
+
+export async function selectAssignments(
+  tenantId: string,
+  options?: { courseId?: string },
+) {
+  let query = supabaseUntyped
+    .from('school_desk.assignments')
+    .select('*, courses!course_id(id, title)')
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null);
+
+  if (options?.courseId) {
+    query = query.eq('course_id', options.courseId);
+  }
+
+  query = query.order('created_at', { ascending: false });
+
+  return query;
+}
+
+export async function insertAssignment(assignment: {
+  tenant_id: string;
+  course_id: string;
+  title: string;
+  description?: string;
+  max_score?: number;
+  weight?: number;
+  due_date?: string;
+  created_by: string;
+}) {
+  return supabaseUntyped
+    .from('school_desk.assignments')
+    .insert({
+      tenant_id: assignment.tenant_id,
+      course_id: assignment.course_id,
+      title: assignment.title,
+      description: assignment.description || null,
+      max_score: assignment.max_score || 100,
+      weight: assignment.weight || 1.0,
+      due_date: assignment.due_date || null,
+      created_by: assignment.created_by,
+    })
+    .select()
+    .single();
+}
+
+export async function updateAssignment(
+  assignmentId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    max_score?: number;
+    weight?: number;
+    due_date?: string;
+  },
+) {
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updates.title !== undefined) updateData.title = updates.title;
+  if (updates.description !== undefined) updateData.description = updates.description;
+  if (updates.max_score !== undefined) updateData.max_score = updates.max_score;
+  if (updates.weight !== undefined) updateData.weight = updates.weight;
+  if (updates.due_date !== undefined) updateData.due_date = updates.due_date;
+
+  return supabaseUntyped
+    .from('school_desk.assignments')
+    .update(updateData)
+    .eq('id', assignmentId)
+    .select()
+    .single();
+}
+
+// ═══════════════════════════════════════════════════════════
+// GRADEBOOK TYPES & QUERIES (Row 74)
+// ═══════════════════════════════════════════════════════════
+
+export interface Gradebook {
+  id: string;
+  tenant_id: string;
+  assignment_id: string;
+  student_id: string;
+  course_id: string;
+  score: number | null;
+  feedback: string | null;
+  graded_by: string;
+  graded_at: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface GradebookWithRelations extends Gradebook {
+  assignments?: { id: string; title: string; max_score: number; weight: number } | null;
+  profiles?: { id: string; name: string } | null;
+  courses?: { id: string; title: string } | null;
+}
+
+export async function selectGradebook(
+  tenantId: string,
+  options?: { courseId?: string; assignmentId?: string; studentId?: string },
+) {
+  let query = supabaseUntyped
+    .from('school_desk.gradebook')
+    .select(`
+      *,
+      assignments!assignment_id(id, title, max_score, weight),
+      profiles!student_id(id, name),
+      courses!course_id(id, title)
+    `)
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null);
+
+  if (options?.courseId) {
+    query = query.eq('course_id', options.courseId);
+  }
+  if (options?.assignmentId) {
+    query = query.eq('assignment_id', options.assignmentId);
+  }
+  if (options?.studentId) {
+    query = query.eq('student_id', options.studentId);
+  }
+
+  query = query.order('created_at', { ascending: false });
+
+  return query;
+}
+
+export async function insertGrade(grade: {
+  tenant_id: string;
+  assignment_id: string;
+  student_id: string;
+  course_id: string;
+  score: number | null;
+  feedback?: string;
+  graded_by: string;
+}) {
+  return supabaseUntyped
+    .from('school_desk.gradebook')
+    .insert({
+      tenant_id: grade.tenant_id,
+      assignment_id: grade.assignment_id,
+      student_id: grade.student_id,
+      course_id: grade.course_id,
+      score: grade.score,
+      feedback: grade.feedback || null,
+      graded_by: grade.graded_by,
+    })
+    .select()
+    .single();
+}
+
+export async function updateGrade(
+  gradeId: string,
+  updates: { score?: number | null; feedback?: string },
+) {
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updates.score !== undefined) updateData.score = updates.score;
+  if (updates.feedback !== undefined) updateData.feedback = updates.feedback;
+
+  return supabaseUntyped
+    .from('school_desk.gradebook')
+    .update(updateData)
+    .eq('id', gradeId)
+    .select()
+    .single();
+}
+
+export async function getStudentGrades(courseId: string, studentId: string) {
+  return supabaseUntyped
+    .from('school_desk.gradebook')
+    .select(`
+      *,
+      assignments!assignment_id(id, title, max_score, weight),
+      profiles!student_id(id, name)
+    `)
+    .eq('course_id', courseId)
+    .eq('student_id', studentId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+}
+
+export async function calculateGrade(courseId: string, studentId: string) {
+  const { data: { session } } = await supabaseUntyped.auth.getSession();
+  if (!session?.access_token) {
+    return { data: null, error: { message: 'Not authenticated' } };
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/calculate-final-grade`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ course_id: courseId, student_id: studentId }),
+    },
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    return { data: null, error: { message: result.error || 'Failed to calculate grade' } };
+  }
+
+  return { data: result, error: null };
+}
+
+export function subscribeToGradebook(
+  callback: (payload: {
+    eventType: string;
+    new: Gradebook;
+    old: Gradebook | null;
+  }) => void,
+) {
+  return supabaseUntyped
+    .channel('school_desk.gradebook-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'school_desk', table: 'gradebook' },
+      callback as (payload: Record<string, unknown>) => void,
+    )
+    .subscribe();
+}
+
+export function subscribeToAssignments(
+  callback: (payload: {
+    eventType: string;
+    new: Assignment;
+    old: Assignment | null;
+  }) => void,
+) {
+  return supabaseUntyped
+    .channel('school_desk.assignments-changes')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'school_desk', table: 'assignments' },
+      callback as (payload: Record<string, unknown>) => void,
+    )
+    .subscribe();
+}
+
+// ═══════════════════════════════════════════════════════════
+// STUDENT TRANSCRIPT QUERY (Row 74)
+// ═══════════════════════════════════════════════════════════
+
+export async function getStudentTranscript(studentId: string, tenantId: string) {
+  // Get all courses the student is enrolled in
+  const { data: enrollments, error: enrollError } = await supabaseUntyped
+    .from('student_class')
+    .select('class_id, courses!class_id(id, title)')
+    .eq('student_id', studentId)
+    .is('deleted_at', null);
+
+  if (enrollError) {
+    return { data: null, error: enrollError };
+  }
+
+  if (!enrollments || enrollments.length === 0) {
+    return { data: [], error: null };
+  }
+
+  const transcript = [];
+
+  for (const enrollment of enrollments) {
+    const course = enrollment.courses as any;
+    if (!course) continue;
+
+    // Get grades for this course
+    const { data: grades } = await supabaseUntyped
+      .from('school_desk.gradebook')
+      .select(`
+        score,
+        assignments!assignment_id(id, title, max_score, weight)
+      `)
+      .eq('course_id', course.id)
+      .eq('student_id', studentId)
+      .is('deleted_at', null)
+      .not('score', 'is', null);
+
+    // Calculate weighted average
+    let totalWeightedScore = 0;
+    let totalWeight = 0;
+
+    if (grades) {
+      for (const grade of grades) {
+        const assignment = grade.assignments as any;
+        if (assignment && grade.score !== null) {
+          const normalizedScore = (grade.score / assignment.max_score) * 100;
+          totalWeightedScore += normalizedScore * assignment.weight;
+          totalWeight += assignment.weight;
+        }
+      }
+    }
+
+    const weightedAverage = totalWeight > 0
+      ? Math.round((totalWeightedScore / totalWeight) * 100) / 100
+      : null;
+
+    const getLetterGrade = (avg: number): string => {
+      if (avg >= 93) return 'A';
+      if (avg >= 90) return 'A-';
+      if (avg >= 87) return 'B+';
+      if (avg >= 83) return 'B';
+      if (avg >= 80) return 'B-';
+      if (avg >= 77) return 'C+';
+      if (avg >= 73) return 'C';
+      if (avg >= 70) return 'C-';
+      if (avg >= 67) return 'D+';
+      if (avg >= 60) return 'D';
+      return 'F';
+    };
+
+    transcript.push({
+      course_id: course.id,
+      course_title: course.title,
+      weighted_average: weightedAverage,
+      grade_letter: weightedAverage !== null ? getLetterGrade(weightedAverage) : null,
+      grade_count: grades?.length || 0,
+    });
+  }
+
+  return { data: transcript, error: null };
+}
