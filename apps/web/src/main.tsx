@@ -1,9 +1,19 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
-import OfficeDeskPage from './features/lms/pages/OfficeDeskPage';
-import SchoolDeskPage from './features/lms/pages/SchoolDeskPage';
+import { DeepLinkProvider } from './components/DeepLinkProvider';
+import { NavigationGuard } from './components/NavigationGuard';
+import { RealtimeProvider } from './contexts/RealtimeProvider';
 import { FrontDeskPage } from './features/front-desk';
+import OfficeDeskBillingPage from './features/lms/pages/OfficeDeskBillingPage';
+import OfficeDeskInvoiceDetailPage from './features/lms/pages/OfficeDeskInvoiceDetailPage';
+import OfficeDeskInvoicesPage from './features/lms/pages/OfficeDeskInvoicesPage';
+import OfficeDeskLeadDetailPage from './features/lms/pages/OfficeDeskLeadDetailPage';
+import OfficeDeskLeadsPage from './features/lms/pages/OfficeDeskLeadsPage';
+import OfficeDeskPage from './features/lms/pages/OfficeDeskPage';
+import OfficeDeskReportsPage from './features/lms/pages/OfficeDeskReportsPage';
+import OfficeDeskSettingsPage from './features/lms/pages/OfficeDeskSettingsPage';
+import SchoolDeskPage from './features/lms/pages/SchoolDeskPage';
 import ParentPortalPage from './features/parent-portal/pages/ParentPortalPage';
 
 function IndexPage() {
@@ -33,15 +43,45 @@ function NotFoundPage() {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<IndexPage />} />
-        <Route path="/lms/front-desk" element={<FrontDeskPage />} />
-        <Route path="/lms/school-desk" element={<SchoolDeskPage />} />
-        <Route path="/lms/office-desk" element={<OfficeDeskPage />} />
-        <Route path="/lms" element={<Navigate to="/lms/front-desk" replace />} />
-        <Route path="/parent-portal" element={<ParentPortalPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <RealtimeProvider>
+        <DeepLinkProvider>
+          <Routes>
+            <Route path="/" element={<IndexPage />} />
+            <Route path="/lms/front-desk" element={<FrontDeskPage />} />
+            <Route path="/lms/school-desk" element={<SchoolDeskPage />} />
+
+            {/* Office Desk with nested routes */}
+            <Route
+              path="/lms/office-desk"
+              element={
+                <NavigationGuard>
+                  <OfficeDeskPage />
+                </NavigationGuard>
+              }
+            >
+              {/* Default redirect to leads */}
+              <Route index element={<Navigate to="leads" replace />} />
+
+              {/* Leads routes */}
+              <Route path="leads" element={<OfficeDeskLeadsPage />} />
+              <Route path="leads/:leadId" element={<OfficeDeskLeadDetailPage />} />
+
+              {/* Invoices routes */}
+              <Route path="invoices" element={<OfficeDeskInvoicesPage />} />
+              <Route path="invoices/:invoiceId" element={<OfficeDeskInvoiceDetailPage />} />
+
+              {/* Other tabs */}
+              <Route path="billing" element={<OfficeDeskBillingPage />} />
+              <Route path="reports" element={<OfficeDeskReportsPage />} />
+              <Route path="settings" element={<OfficeDeskSettingsPage />} />
+            </Route>
+
+            <Route path="/lms" element={<Navigate to="/lms/front-desk" replace />} />
+            <Route path="/parent-portal" element={<ParentPortalPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </DeepLinkProvider>
+      </RealtimeProvider>
     </BrowserRouter>
   );
 }
