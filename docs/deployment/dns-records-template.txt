@@ -1,0 +1,60 @@
+; RhProject DNS Records Template
+; Last updated: [DATE]
+; Domain: rhproject.com
+
+; ============================================================================
+; CLOUDFLARE PAGES ROUTING
+; ============================================================================
+
+; Root domain → Cloudflare Pages
+@       CNAME   rhproject-landing.pages.dev
+
+; www subdomain → Cloudflare Pages
+www     CNAME   rhproject-landing.pages.dev
+
+; ============================================================================
+; EMAIL ROUTING (ProtonMail)
+; ============================================================================
+
+; MX records for email
+@       MX      10  mail.protonmail.com
+@       MX      20  mail.protonmail.ch
+
+; SPF record for email authentication
+@       TXT     "v=spf1 include:protonmail.com ~all"
+
+; DMARC policy (optional but recommended)
+_dmarc  TXT     "v=DMARC1; p=none; rua=mailto:dmarc@rhproject.com"
+
+; ============================================================================
+; DOMAIN VERIFICATION (Optional)
+; ============================================================================
+
+; Google Search Console verification
+; @       TXT     "google-site-verification=YOUR_GOOGLE_CODE"
+
+; Bing Webmaster Tools verification
+; @       TXT     "ms=YOUR_BING_CODE"
+
+; ============================================================================
+; ADDITIONAL SERVICES (Optional)
+; ============================================================================
+
+; Analytics (if using separate analytics service)
+; analytics       CNAME   your-analytics-service.com
+
+; Status page (if using separate status service)
+; status          CNAME   your-status-service.com
+
+; ============================================================================
+; NOTES
+; ============================================================================
+
+; 1. Replace placeholder values with actual codes/records
+; 2. TTL should be set to "Auto" in Cloudflare (it manages TTL automatically)
+; 3. Proxy status:
+;    - CNAME records: Proxied (orange cloud) for Cloudflare Pages routing
+;    - MX records: DNS only (gray cloud) for email
+;    - TXT records: DNS only (gray cloud) for verification
+; 4. After adding records, wait 5-10 minutes for propagation
+; 5. Use https://dnschecker.org/ to verify DNS propagation
