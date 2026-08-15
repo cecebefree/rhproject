@@ -259,6 +259,34 @@ export async function sendInvoiceEmail(invoiceId: string, recipientEmail?: strin
 }
 
 // ═══════════════════════════════════════════════════════════
+// EMAIL TEMPLATE EDGE FUNCTION CALLS (Row 20)
+// ═══════════════════════════════════════════════════════════
+
+export async function sendTemplateEmail(
+  templateId: string,
+  recipientEmail: string,
+  variables: Record<string, string> = {}
+) {
+  const { data, error } = await supabase.functions.invoke('send-template-email', {
+    body: { template_id: templateId, recipient_email: recipientEmail, variables },
+  });
+  return { data, error };
+}
+
+export async function scheduleTemplateEmail(payload: {
+  template_id: string;
+  recipient_email: string;
+  recipient_name?: string;
+  scheduled_at: string;
+  variables: Record<string, string>;
+}) {
+  const { data, error } = await supabase.functions.invoke('schedule-template-email', {
+    body: payload,
+  });
+  return { data, error };
+}
+
+// ═══════════════════════════════════════════════════════════
 // SUBSCRIPTION TYPES (Row 27 — dual processor)
 // ═══════════════════════════════════════════════════════════
 
