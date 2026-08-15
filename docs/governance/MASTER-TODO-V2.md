@@ -141,7 +141,7 @@
 | 75 | Registration Pattern A: form + payment arrive same event → single write in office_desk schema | 53, 57 | Pending — Edge Function or direct insert |
 | 76 | Registration Pattern B: form arrives first → pending_review placeholder; payment arrives later → EF lookup-and-attach via stable match key (email or reference ID) → status flips to active | 53, 57 | **DONE** — Stripe webhook EF deployed (commit 6393cc1, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/stripe-webhook |
 | 77 | Registration status transitions: pending_init → pending_review → approved → active (plus terminal: withdrawn, rejected) | 75, 76 | **DONE** — PayPal webhook EF deployed (commit 238b403, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/paypal-webhook |
-| 78 | Manual/ad-hoc invoice creation UI on Office Desk | 50 | Pending — MVP scaffold, QuickBooks/Shopify deferred |
+| 78 | Manual/ad-hoc invoice creation UI on Office Desk | 50 | **DONE** — Migration 130: invoice_items table, lead_id, amount_paid, due_date, expanded statuses. Components: InvoiceList (search/filter/actions), InvoiceDetail (edit/send/mark-paid/cancel), InvoiceCreate (line items editor), InvoiceSend (email modal). Edge Function: send-invoice-email. OfficeDeskPage updated with Invoices tab. TypeScript clean, 464/464 pgTAP PASS. |
 | 79 | Payment confirmation UI on Office Desk | 78 | Pending — triggers Pattern B attach or Pattern A completion |
 | 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id (no duplication) | 63, 75 | Pending — single-project eliminates cross-project duplication |
 
