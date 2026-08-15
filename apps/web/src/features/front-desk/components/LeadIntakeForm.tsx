@@ -8,6 +8,7 @@ interface LeadIntakeFormProps {
 
 export function LeadIntakeForm({ tenantId, onSuccess }: LeadIntakeFormProps) {
   const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [source, setSource] = useState('');
@@ -25,6 +26,7 @@ export function LeadIntakeForm({ tenantId, onSuccess }: LeadIntakeFormProps) {
     const { error: insertError } = await insertLead({
       tenant_id: tenantId,
       name: name || undefined,
+      company: company || undefined,
       email: email || undefined,
       phone: phone || undefined,
       source: source || undefined,
@@ -36,6 +38,7 @@ export function LeadIntakeForm({ tenantId, onSuccess }: LeadIntakeFormProps) {
     } else {
       setSuccess(true);
       setName('');
+      setCompany('');
       setEmail('');
       setPhone('');
       setSource('');
@@ -47,11 +50,22 @@ export function LeadIntakeForm({ tenantId, onSuccess }: LeadIntakeFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '400px' }}>
+    <form
+      onSubmit={handleSubmit}
+      style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '400px' }}
+    >
       <h2>Lead Intake</h2>
 
-      {error && <div style={{ color: 'red', padding: '8px', background: '#fee' }}>{error}</div>}
-      {success && <div style={{ color: 'green', padding: '8px', background: '#efe' }}>Lead created successfully</div>}
+      {error && (
+        <div style={{ color: 'red', padding: '8px', background: '#fee', borderRadius: '4px' }}>
+          {error}
+        </div>
+      )}
+      {success && (
+        <div style={{ color: 'green', padding: '8px', background: '#efe', borderRadius: '4px' }}>
+          Lead created successfully
+        </div>
+      )}
 
       <label>
         Name
@@ -59,6 +73,17 @@ export function LeadIntakeForm({ tenantId, onSuccess }: LeadIntakeFormProps) {
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+        />
+      </label>
+
+      <label>
+        Company
+        <input
+          type="text"
+          value={company}
+          onChange={(e) => setCompany(e.target.value)}
+          placeholder="Organisation name"
           style={{ width: '100%', padding: '8px', marginTop: '4px' }}
         />
       </label>
@@ -107,7 +132,14 @@ export function LeadIntakeForm({ tenantId, onSuccess }: LeadIntakeFormProps) {
       <button
         type="submit"
         disabled={loading}
-        style={{ padding: '10px 16px', background: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: loading ? 'not-allowed' : 'pointer' }}
+        style={{
+          padding: '10px 16px',
+          background: '#0070f3',
+          color: 'white',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: loading ? 'not-allowed' : 'pointer',
+        }}
       >
         {loading ? 'Creating...' : 'Create Lead'}
       </button>

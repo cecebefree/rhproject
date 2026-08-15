@@ -1,7 +1,10 @@
-export { FrontDeskPage } from './pages/FrontDeskPage';
+export { default as FrontDeskPage } from './pages/FrontDeskPage';
 export { LeadIntakeForm } from './components/LeadIntakeForm';
 export { LeadList } from './components/LeadList';
 export { LeadDetail } from './components/LeadDetail';
+export { LeadFilterPanel } from './components/LeadFilterPanel';
+export { LeadArchiveList } from './components/LeadArchiveList';
 export { StatusDropdown } from './components/StatusDropdown';
 export { ArchiveIndicator } from './components/ArchiveIndicator';
-export type { Lead, LeadStatus } from './services/supabase';
+export { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+export type { Lead, LeadStatus, ArchiveReason } from './services/supabase';
