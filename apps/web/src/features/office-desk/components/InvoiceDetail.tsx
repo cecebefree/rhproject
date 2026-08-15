@@ -1,4 +1,4 @@
-// InvoiceDetail — Full invoice view with edit, status transitions, items (Row 78)
+// InvoiceDetail — Full invoice view with edit, status transitions, items, payment (Row 78 + Row 27)
 
 import { useEffect, useState } from 'react';
 import {
@@ -8,18 +8,24 @@ import {
   insertInvoiceItem,
   updateInvoiceItem,
   deleteInvoiceItem,
+  subscribeToInvoicePayments,
   type Invoice,
   type InvoiceItem,
   INVOICE_STATUS_LABELS,
 } from '../services/supabase';
+import { PaymentForm } from './PaymentForm';
+import { useRbac } from '../../../hooks/useRbac';
 
 interface InvoiceDetailProps {
   invoiceId: string;
+  deskId: string;
+  userId: string;
   onBack: () => void;
   onDeleted?: () => void;
 }
 
-export function InvoiceDetail({ invoiceId, onBack, onDeleted }: InvoiceDetailProps) {
+export function InvoiceDetail({ invoiceId, deskId, userId, onBack, onDeleted }: InvoiceDetailProps) {
+  const { hasPermission } = useRbac({ userId, deskId });
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +44,9 @@ export function InvoiceDetail({ invoiceId, onBack, onDeleted }: InvoiceDetailPro
   const [newItemDesc, setNewItemDesc] = useState('');
   const [newItemQty, setNewItemQty] = useState(1);
   const [newItemPrice, setNewItemPrice] = useState(0);
+
+  // Payment
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,6 +74,19 @@ export function InvoiceDetail({ invoiceId, onBack, onDeleted }: InvoiceDetailPro
     load();
     return () => { cancelled = true; };
   }, [invoiceId]);
+
+  // Real-time subscription for payment status updates
+  useEffect(() => {
+    if (!invoice?.tenant_id) return;
+    const sub = subscribeToInvoicePayments(invoice.tenant_id, (payload) => {
+      if (payload.new?.id === invoiceId) {
+        setInvoice((prev) => prev ? { ...prev, ...payload.new } : prev);
+        if (payload.new.status) setStatus(payload.new.status);
+        if (payload.new.amount_paid !== undefined) setAmountPaid(payload.new.amount_paid);
+      }
+    });
+    return () => { sub.unsubscribe(); };
+  }, [invoice?.tenant_id, invoiceId]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -243,13 +265,47 @@ export function InvoiceDetail({ invoiceId, onBack, onDeleted }: InvoiceDetailPro
         </div>
       </div>
 
+      {/* Payment Info (if paid via Stripe/PayPal) */}
+      {invoice.status === 'paid' && invoice.paid_at && (
+        <div style={{
+          padding: '12px 16px',
+          backgroundColor: '#d1fae5',
+          borderRadius: '8px',
+          fontSize: '13px',
+          color: '#065f46',
+        }}>
+          Paid {invoice.payment_processor ? `via ${invoice.payment_processor}` : ''} on{' '}
+          {new Date(invoice.paid_at).toLocaleDateString()}
+        </div>
+      )}
+
+      {/* Payment Error */}
+      {(invoice.stripe_error_message || invoice.paypal_error_message) && (
+        <div style={{
+          padding: '12px 16px',
+          backgroundColor: '#fee2e2',
+          borderRadius: '8px',
+          fontSize: '13px',
+          color: '#991b1b',
+        }}>
+          {invoice.stripe_error_message || invoice.paypal_error_message}
+        </div>
+      )}
+
       {/* Actions */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
-        <button onClick={handleSave} disabled={saving} style={{ padding: '8px 16px', backgroundColor: '#3182ce', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer' }}>
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-        {status === 'draft' && (
+        {hasPermission('invoices.edit') && (
+          <button onClick={handleSave} disabled={saving} style={{ padding: '8px 16px', backgroundColor: '#3182ce', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '500', cursor: saving ? 'not-allowed' : 'pointer' }}>
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        )}
+        {status === 'draft' && hasPermission('invoices.send') && (
           <button onClick={handleSend} disabled={saving} style={{ padding: '8px 16px', backgroundColor: '#805ad5', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', cursor: 'pointer' }}>Send</button>
+        )}
+        {status !== 'paid' && status !== 'cancelled' && (
+          <button onClick={() => setShowPaymentModal(true)} disabled={saving} style={{ padding: '8px 16px', backgroundColor: '#635bff', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+            Pay Invoice
+          </button>
         )}
         {status !== 'paid' && status !== 'cancelled' && (
           <button onClick={handleMarkPaid} disabled={saving} style={{ padding: '8px 16px', backgroundColor: '#38a169', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', cursor: 'pointer' }}>Mark Paid</button>
@@ -258,6 +314,55 @@ export function InvoiceDetail({ invoiceId, onBack, onDeleted }: InvoiceDetailPro
           <button onClick={handleCancel} disabled={saving} style={{ padding: '8px 16px', backgroundColor: '#e53e3e', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', cursor: 'pointer' }}>Cancel</button>
         )}
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            maxWidth: '480px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          }}>
+            <PaymentForm
+              invoice={{
+                id: invoice.id,
+                amount: invoice.amount,
+                amount_paid: invoice.amount_paid,
+                invoice_number: invoice.invoice_number,
+              }}
+              tenantId={invoice.tenant_id}
+              onPaymentSuccess={() => {
+                setShowPaymentModal(false);
+                // Refresh invoice data
+                getInvoiceById(invoiceId).then(({ data }) => {
+                  if (data) {
+                    const d = data as unknown as Invoice;
+                    setInvoice(d);
+                    setStatus(d.status);
+                    setAmountPaid(d.amount_paid);
+                  }
+                });
+              }}
+              onCancel={() => setShowPaymentModal(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

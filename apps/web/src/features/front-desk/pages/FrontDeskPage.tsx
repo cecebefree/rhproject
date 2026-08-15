@@ -11,6 +11,8 @@ type Tab = 'intake' | 'leads' | 'archived';
 export default function FrontDeskPage() {
   const [activeTab, setActiveTab] = useState<Tab>('leads');
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [deskId, setDeskId] = useState<string | null>(null);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -30,9 +32,11 @@ export default function FrontDeskPage() {
         return;
       }
 
+      setUserId(user.id);
+
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('tenant_id')
+        .select('tenant_id, desk_id')
         .eq('id', user.id)
         .single();
 
@@ -43,6 +47,7 @@ export default function FrontDeskPage() {
       }
 
       setTenantId(profileData.tenant_id);
+      setDeskId(profileData.desk_id);
       setLoading(false);
     }
 
@@ -139,11 +144,13 @@ export default function FrontDeskPage() {
         {activeTab === 'archived' && <LeadArchiveList tenantId={tenantId} />}
       </main>
 
-      {showDetailModal && selectedLeadId && (
+      {showDetailModal && selectedLeadId && userId && deskId && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
             <LeadDetail
               leadId={selectedLeadId}
+              deskId={deskId}
+              userId={userId}
               onBack={handleBackFromDetail}
               onArchived={handleArchived}
             />

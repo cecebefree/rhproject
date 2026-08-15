@@ -16,14 +16,18 @@ import {
   ARCHIVE_REASON_LABELS,
 } from '../services/supabase';
 import { EmailComposer } from './EmailComposer';
+import { useRbac } from '../../../hooks/useRbac';
 
 interface LeadDetailProps {
   leadId: string;
+  deskId: string;
+  userId: string;
   onBack: () => void;
   onArchived?: () => void;
 }
 
-export function LeadDetail({ leadId, onBack, onArchived }: LeadDetailProps) {
+export function LeadDetail({ leadId, deskId, userId, onBack, onArchived }: LeadDetailProps) {
+  const { hasPermission } = useRbac({ userId, deskId });
   const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -283,22 +287,24 @@ export function LeadDetail({ leadId, onBack, onArchived }: LeadDetailProps) {
 
       {/* Action buttons */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            padding: '8px 16px',
-            background: '#3182ce',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: saving ? 'not-allowed' : 'pointer',
-          }}
-        >
-          {saving ? 'Saving...' : 'Save'}
-        </button>
+        {hasPermission('leads.edit') && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              padding: '8px 16px',
+              background: '#3182ce',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: saving ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        )}
 
-        {!lead.archived_at && (
+        {!lead.archived_at && hasPermission('leads.archive') && (
           <button
             onClick={() => setShowArchiveModal(true)}
             style={{
