@@ -3,11 +3,19 @@ import {
   getLeadById,
   updateLead,
   archiveLead,
+  selectCallLogs,
+  selectEmailLogs,
+  subscribeToCallLogs,
+  subscribeToEmailLogs,
+  callLead,
   type Lead,
+  type CallLog,
+  type EmailLog,
   type ArchiveReason,
   ARCHIVE_REASONS,
   ARCHIVE_REASON_LABELS,
 } from '../services/supabase';
+import { EmailComposer } from './EmailComposer';
 
 interface LeadDetailProps {
   leadId: string;
@@ -24,19 +32,65 @@ export function LeadDetail({ leadId, onBack, onArchived }: LeadDetailProps) {
   const [archiveReason, setArchiveReason] = useState<ArchiveReason>('other');
   const [archiving, setArchiving] = useState(false);
 
+  // Call/email state
+  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
+  const [calling, setCalling] = useState(false);
+  const [showEmailComposer, setShowEmailComposer] = useState(false);
+
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadLead() {
       const { data, error: fetchError } = await getLeadById(leadId);
-      if (fetchError) {
-        setError(fetchError.message);
-      } else {
-        setLead(data);
+      if (!cancelled) {
+        if (fetchError) {
+          setError(fetchError.message);
+        } else {
+          setLead(data);
+        }
+        setLoading(false);
       }
-      setLoading(false);
     }
+
+    async function loadLogs() {
+      const [callResult, emailResult] = await Promise.all([
+        selectCallLogs(leadId),
+        selectEmailLogs(leadId),
+      ]);
+      if (!cancelled) {
+        if (callResult.data) setCallLogs(callResult.data);
+        if (emailResult.data) setEmailLogs(emailResult.data);
+      }
+    }
+
     loadLead();
+    loadLogs();
+
+    // Real-time subscriptions
+    const callSub = subscribeToCallLogs(leadId, (payload) => {
+      if (payload.eventType === 'INSERT') {
+        setCallLogs((prev) => [payload.new, ...prev]);
+      } else if (payload.eventType === 'UPDATE') {
+        setCallLogs((prev) => prev.map((c) => (c.id === payload.new.id ? payload.new : c)));
+      }
+    });
+
+    const emailSub = subscribeToEmailLogs(leadId, (payload) => {
+      if (payload.eventType === 'INSERT') {
+        setEmailLogs((prev) => [payload.new, ...prev]);
+      } else if (payload.eventType === 'UPDATE') {
+        setEmailLogs((prev) => prev.map((e) => (e.id === payload.new.id ? payload.new : e)));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      callSub.unsubscribe();
+      emailSub.unsubscribe();
+    };
   }, [leadId]);
 
   useEffect(() => {
@@ -87,15 +141,45 @@ export function LeadDetail({ leadId, onBack, onArchived }: LeadDetailProps) {
     setArchiving(false);
   };
 
+  const handleCall = async () => {
+    if (!lead?.phone) return;
+    setCalling(true);
+    setError(null);
+
+    const { data, error: callError } = await callLead(lead.id, lead.phone);
+
+    if (callError) {
+      setError(callError.message || 'Failed to initiate call');
+    } else if (data?.success === false) {
+      setError(data.error || 'Failed to initiate call');
+    }
+    setCalling(false);
+  };
+
+  const outcomeColors: Record<string, string> = {
+    initiated: '#e2e8f0',
+    answered: '#d1fae5',
+    missed: '#fee2e2',
+    declined: '#fef3c7',
+    voicemail: '#dbeafe',
+    failed: '#f5f5f5',
+  };
+
+  const emailStatusColors: Record<string, string> = {
+    draft: '#e2e8f0',
+    sent: '#d1fae5',
+    failed: '#fee2e2',
+  };
+
   if (loading) return <div style={{ padding: '24px' }}>Loading...</div>;
   if (error && !lead) return <div style={{ padding: '24px', color: 'red' }}>Error: {error}</div>;
   if (!lead) return <div style={{ padding: '24px' }}>Lead not found</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button onClick={onBack} style={{ padding: '4px 8px' }}>
-          ← Back
+          &larr; Back
         </button>
         {lead.archived_at && (
           <span style={{ padding: '4px 8px', background: '#fff3e0', borderRadius: '4px', fontSize: '0.85em' }}>
@@ -197,6 +281,7 @@ export function LeadDetail({ leadId, onBack, onArchived }: LeadDetailProps) {
         </div>
       )}
 
+      {/* Action buttons */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <button
           onClick={handleSave}
@@ -230,38 +315,126 @@ export function LeadDetail({ leadId, onBack, onArchived }: LeadDetailProps) {
         )}
 
         {lead.phone && (
-          <a
-            href={`tel:${lead.phone}`}
+          <button
+            onClick={handleCall}
+            disabled={calling}
             style={{
               padding: '8px 16px',
               background: '#38a169',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              textDecoration: 'none',
+              cursor: calling ? 'not-allowed' : 'pointer',
             }}
           >
-            Call
-          </a>
+            {calling ? 'Calling...' : 'Call'}
+          </button>
         )}
 
         {lead.email && (
-          <a
-            href={`mailto:${lead.email}`}
+          <button
+            onClick={() => setShowEmailComposer(true)}
             style={{
               padding: '8px 16px',
               background: '#805ad5',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
-              textDecoration: 'none',
+              cursor: 'pointer',
             }}
           >
             Email
-          </a>
+          </button>
         )}
       </div>
 
+      {/* Call History */}
+      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#2d3748', marginBottom: '8px' }}>
+          Call History
+        </h3>
+        {callLogs.length === 0 ? (
+          <div style={{ color: '#718096', fontSize: '14px' }}>No calls logged</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ textAlign: 'left', padding: '8px 4px', color: '#718096' }}>Date</th>
+                <th style={{ textAlign: 'left', padding: '8px 4px', color: '#718096' }}>Duration</th>
+                <th style={{ textAlign: 'left', padding: '8px 4px', color: '#718096' }}>Outcome</th>
+              </tr>
+            </thead>
+            <tbody>
+              {callLogs.map((log) => (
+                <tr key={log.id} style={{ borderBottom: '1px solid #f7fafc' }}>
+                  <td style={{ padding: '8px 4px' }}>{new Date(log.created_at).toLocaleString()}</td>
+                  <td style={{ padding: '8px 4px' }}>
+                    {log.duration_seconds != null ? `${log.duration_seconds}s` : '—'}
+                  </td>
+                  <td style={{ padding: '8px 4px' }}>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        backgroundColor: outcomeColors[log.outcome] || '#e2e8f0',
+                      }}
+                    >
+                      {log.outcome}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Email History */}
+      <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: '600', color: '#2d3748', marginBottom: '8px' }}>
+          Email History
+        </h3>
+        {emailLogs.length === 0 ? (
+          <div style={{ color: '#718096', fontSize: '14px' }}>No emails sent</div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                <th style={{ textAlign: 'left', padding: '8px 4px', color: '#718096' }}>Date</th>
+                <th style={{ textAlign: 'left', padding: '8px 4px', color: '#718096' }}>Subject</th>
+                <th style={{ textAlign: 'left', padding: '8px 4px', color: '#718096' }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {emailLogs.map((log) => (
+                <tr key={log.id} style={{ borderBottom: '1px solid #f7fafc' }}>
+                  <td style={{ padding: '8px 4px' }}>
+                    {log.sent_at ? new Date(log.sent_at).toLocaleString() : '—'}
+                  </td>
+                  <td style={{ padding: '8px 4px' }}>{log.subject}</td>
+                  <td style={{ padding: '8px 4px' }}>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        backgroundColor: emailStatusColors[log.status] || '#e2e8f0',
+                      }}
+                    >
+                      {log.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Archive Modal */}
       {showArchiveModal && (
         <div
           style={{
@@ -336,6 +509,23 @@ export function LeadDetail({ leadId, onBack, onArchived }: LeadDetailProps) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Email Composer Modal */}
+      {showEmailComposer && lead.email && (
+        <EmailComposer
+          leadId={lead.id}
+          recipientEmail={lead.email}
+          leadName={lead.name || 'Lead'}
+          onSent={() => {
+            setShowEmailComposer(false);
+            // Refresh email logs
+            selectEmailLogs(lead.id).then(({ data }) => {
+              if (data) setEmailLogs(data);
+            });
+          }}
+          onCancel={() => setShowEmailComposer(false)}
+        />
       )}
     </div>
   );

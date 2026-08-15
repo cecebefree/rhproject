@@ -198,3 +198,145 @@ export function subscribeToArchivedLeads(
     )
     .subscribe();
 }
+
+// ═══════════════════════════════════════════════════════════
+// CALL LOGS
+// ═══════════════════════════════════════════════════════════
+
+export interface CallLog {
+  id: string;
+  tenant_id: string;
+  lead_id: string;
+  call_id: string | null;
+  duration_seconds: number | null;
+  direction: 'inbound' | 'outbound';
+  outcome: 'initiated' | 'answered' | 'missed' | 'declined' | 'voicemail' | 'failed';
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export async function selectCallLogs(leadId: string) {
+  return supabase
+    .from('front_desk.call_logs')
+    .select('*')
+    .eq('lead_id', leadId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+}
+
+export async function insertCallLog(leadId: string, callId: string, outcome: CallLog['outcome']) {
+  return supabase
+    .from('front_desk.call_logs')
+    .insert({ lead_id: leadId, call_id: callId, direction: 'outbound', outcome })
+    .select()
+    .single();
+}
+
+export async function updateCallLog(
+  callId: string,
+  updates: { duration_seconds?: number; outcome?: CallLog['outcome']; notes?: string }
+) {
+  return supabase
+    .from('front_desk.call_logs')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('call_id', callId)
+    .select()
+    .single();
+}
+
+export function subscribeToCallLogs(
+  leadId: string,
+  callback: (payload: { eventType: string; new: CallLog; old: CallLog | null }) => void
+) {
+  return supabase
+    .channel(`front_desk.call_logs-${leadId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'front_desk', table: 'call_logs', filter: `lead_id=eq.${leadId}` },
+      callback as (payload: Record<string, unknown>) => void
+    )
+    .subscribe();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EMAIL LOGS
+// ═══════════════════════════════════════════════════════════
+
+export interface EmailLog {
+  id: string;
+  tenant_id: string;
+  lead_id: string;
+  recipient_email: string;
+  subject: string;
+  body: string;
+  status: 'draft' | 'sent' | 'failed';
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export async function selectEmailLogs(leadId: string) {
+  return supabase
+    .from('front_desk.email_logs')
+    .select('*')
+    .eq('lead_id', leadId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+}
+
+export async function insertEmailLog(
+  leadId: string,
+  recipientEmail: string,
+  subject: string,
+  body: string
+) {
+  return supabase
+    .from('front_desk.email_logs')
+    .insert({ lead_id: leadId, recipient_email: recipientEmail, subject, body })
+    .select()
+    .single();
+}
+
+export async function updateEmailLog(emailId: string, status: EmailLog['status']) {
+  return supabase
+    .from('front_desk.email_logs')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', emailId)
+    .select()
+    .single();
+}
+
+export function subscribeToEmailLogs(
+  leadId: string,
+  callback: (payload: { eventType: string; new: EmailLog; old: EmailLog | null }) => void
+) {
+  return supabase
+    .channel(`front_desk.email_logs-${leadId}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'front_desk', table: 'email_logs', filter: `lead_id=eq.${leadId}` },
+      callback as (payload: Record<string, unknown>) => void
+    )
+    .subscribe();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EDGE FUNCTION CALLS
+// ═══════════════════════════════════════════════════════════
+
+export async function callLead(leadId: string, phoneNumber: string) {
+  const { data, error } = await supabase.functions.invoke('call-lead', {
+    body: { lead_id: leadId, phone_number: phoneNumber },
+  });
+  return { data, error };
+}
+
+export async function sendEmailToLead(leadId: string, subject: string, body: string) {
+  const { data, error } = await supabase.functions.invoke('send-email-lead', {
+    body: { lead_id: leadId, subject, body },
+  });
+  return { data, error };
+}
