@@ -1,0 +1,57 @@
+# Cloudflare Pages configuration for RhProject Landing
+# Docs: https://developers.cloudflare.com/pages/configuration/wrangler-configuration/
+
+name = "rhproject-landing"
+compatibility_date = "2024-11-15"
+compatibility_flags = ["nodejs_compat"]
+
+# Pages configuration (not a worker)
+pages_build_output_dir = ".next"
+
+# Environment-specific settings
+[env.production]
+# Production routes - uncomment when custom domain is configured
+# routes = [
+#   { pattern = "rhproject.com/*", zone_name = "rhproject.com" },
+#   { pattern = "www.rhproject.com/*", zone_name = "rhproject.com" }
+# ]
+
+[env.staging]
+# Staging routes - uncomment when staging domain is configured
+# routes = [
+#   { pattern = "landing.rhproject.pages.dev/*" }
+# ]
+
+# Build settings
+[build]
+command = "npm run build"
+directory = ".next"
+
+# Environment variables (set these in Cloudflare Dashboard, not here)
+# NEXT_PUBLIC_TURNSTILE_SITE_KEY - Cloudflare Turnstile site key
+# NEXT_PUBLIC_SUPABASE_URL - Supabase project URL
+# NEXT_PUBLIC_SUPABASE_ANON_KEY - Supabase anonymous key
+# TURNSTILE_SECRET_KEY - Cloudflare Turnstile secret key (for Edge Function)
+# SUPABASE_SERVICE_ROLE_KEY - Supabase service role key (for Edge Function)
+
+# Headers for security
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://challenges.cloudflare.com https://*.supabase.co; frame-src https://challenges.cloudflare.com;"
+
+# Cache static assets
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Redirects for SPA
+[[redirects]]
+  from = "/api/:path*"
+  to = "/api/:path*"
+  status = 200
