@@ -11,11 +11,19 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Untyped client for office_desk schema (not in shared Database type)
+// biome-ignore lint/suspicious/noExplicitAny: office_desk schema not in shared types
+export const supabaseUntyped = createClient(SUPABASE_URL, SUPABASE_ANON_KEY) as any;
+
 // ═══════════════════════════════════════════════════════════
 // INVOICE TYPES
 // ═══════════════════════════════════════════════════════════
 
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'void';
+
+export type PaymentProcessor = 'stripe' | 'paypal';
+
+export type PaymentMethod = 'card' | 'ach' | 'paypal';
 
 export interface Invoice {
   id: string;
@@ -30,6 +38,15 @@ export interface Invoice {
   status: InvoiceStatus;
   issued_at: string | null;
   due_date: string | null;
+  stripe_payment_intent_id: string | null;
+  stripe_charge_id: string | null;
+  stripe_error_message: string | null;
+  paypal_order_id: string | null;
+  paypal_capture_id: string | null;
+  paypal_error_message: string | null;
+  payment_processor: PaymentProcessor | null;
+  payment_method: PaymentMethod | null;
+  paid_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -239,4 +256,203 @@ export async function sendInvoiceEmail(invoiceId: string, recipientEmail?: strin
     body: { invoice_id: invoiceId, recipient_email: recipientEmail, subject, body },
   });
   return { data, error };
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUBSCRIPTION TYPES (Row 27 — dual processor)
+// ═══════════════════════════════════════════════════════════
+
+export type SubscriptionStatus = 'active' | 'past_due' | 'unpaid' | 'cancelled';
+
+export type PlanId = 'starter' | 'pro' | 'enterprise';
+
+export interface Subscription {
+  id: string;
+  tenant_id: string;
+  stripe_subscription_id: string | null;
+  paypal_plan_id: string | null;
+  processor: PaymentProcessor;
+  plan_id: PlanId;
+  status: SubscriptionStatus;
+  amount_monthly: number;
+  billing_interval: 'month' | 'year';
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StripeCustomer {
+  id: string;
+  tenant_id: string;
+  stripe_customer_id: string | null;
+  paypal_customer_id: string | null;
+  billing_email: string | null;
+  billing_address_line1: string | null;
+  billing_address_line2: string | null;
+  billing_city: string | null;
+  billing_state: string | null;
+  billing_postal_code: string | null;
+  billing_country: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export const PLAN_LABELS: Record<PlanId, { name: string; priceMonthly: number; priceYearly: number }> = {
+  starter: { name: 'Starter', priceMonthly: 99, priceYearly: 990 },
+  pro: { name: 'Pro', priceMonthly: 299, priceYearly: 2990 },
+  enterprise: { name: 'Enterprise', priceMonthly: 999, priceYearly: 9990 },
+};
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT QUERIES (Row 27)
+// ═══════════════════════════════════════════════════════════
+
+export async function selectInvoiceByStripePaymentIntentId(stripePaymentIntentId: string) {
+  return supabase
+    .from('office_desk.invoices')
+    .select('*')
+    .eq('stripe_payment_intent_id', stripePaymentIntentId)
+    .single();
+}
+
+export async function selectInvoiceByPayPalOrderId(paypalOrderId: string) {
+  return supabase
+    .from('office_desk.invoices')
+    .select('*')
+    .eq('paypal_order_id', paypalOrderId)
+    .single();
+}
+
+export async function selectSubscriptions(tenantId: string) {
+  return supabase
+    .from('office_desk.subscriptions')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false });
+}
+
+export async function getSubscriptionById(subscriptionId: string) {
+  return supabase
+    .from('office_desk.subscriptions')
+    .select('*')
+    .eq('id', subscriptionId)
+    .single();
+}
+
+export async function updateSubscription(
+  subscriptionId: string,
+  updates: Partial<Pick<Subscription, 'status' | 'current_period_end' | 'cancel_at_period_end'>>
+) {
+  return supabase
+    .from('office_desk.subscriptions')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', subscriptionId)
+    .select()
+    .single();
+}
+
+export async function cancelSubscription(subscriptionId: string) {
+  return supabase
+    .from('office_desk.subscriptions')
+    .update({
+      status: 'cancelled',
+      cancel_at_period_end: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', subscriptionId)
+    .select()
+    .single();
+}
+
+export async function getStripeCustomer(tenantId: string) {
+  return supabase
+    .from('office_desk.stripe_customers')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .single();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT EDGE FUNCTION CALLS (Row 27)
+// ═══════════════════════════════════════════════════════════
+
+export async function createPaymentIntent(payload: {
+  invoice_id: string;
+  tenant_id: string;
+  processor: PaymentProcessor;
+  payment_method?: PaymentMethod;
+}) {
+  const { data, error } = await supabase.functions.invoke('create-payment-intent', {
+    body: payload,
+  });
+  return { data, error };
+}
+
+export async function confirmPayment(payload: {
+  invoice_id: string;
+  processor: PaymentProcessor;
+  payment_intent_id?: string;
+  order_id?: string;
+  payment_method_id?: string;
+}) {
+  const { data, error } = await supabase.functions.invoke('confirm-payment', {
+    body: payload,
+  });
+  return { data, error };
+}
+
+export async function createSubscription(payload: {
+  tenant_id: string;
+  plan_id: PlanId;
+  processor: 'stripe' | 'paypal' | 'both';
+  billing_interval?: 'month' | 'year';
+}) {
+  const { data, error } = await supabase.functions.invoke('create-subscription', {
+    body: payload,
+  });
+  return { data, error };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT REALTIME SUBSCRIPTIONS (Row 27)
+// ═══════════════════════════════════════════════════════════
+
+export function subscribeToInvoicePayments(
+  tenantId: string,
+  callback: (payload: { eventType: string; new: Invoice; old: Invoice | null }) => void
+) {
+  return supabase
+    .channel(`office_desk.invoices-payments-${tenantId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'office_desk',
+        table: 'invoices',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
+      callback as (payload: Record<string, unknown>) => void
+    )
+    .subscribe();
+}
+
+export function subscribeToSubscriptions(
+  tenantId: string,
+  callback: (payload: { eventType: string; new: Subscription; old: Subscription | null }) => void
+) {
+  return supabase
+    .channel(`office_desk.subscriptions-${tenantId}`)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'subscriptions',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
+      callback as (payload: Record<string, unknown>) => void
+    )
+    .subscribe();
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { type LeadStatus, LEAD_STATUSES } from '../services/supabase';
+import { LEAD_STATUSES, type LeadStatus } from '../services/supabase';
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   enquiry: 'Enquiry',
@@ -8,17 +8,22 @@ const STATUS_LABELS: Record<LeadStatus, string> = {
   handed_off: 'Handed Off',
 };
 
+export type LeadViewTab = 'active' | 'archived';
+
 interface LeadFilterPanelProps {
   search: string;
   statusFilter: LeadStatus | '';
   sourceFilter: string;
   dateFrom: string;
   dateTo: string;
+  activeTab: LeadViewTab;
+  archivedCount?: number;
   onSearchChange: (value: string) => void;
   onStatusChange: (value: LeadStatus | '') => void;
   onSourceChange: (value: string) => void;
   onDateFromChange: (value: string) => void;
   onDateToChange: (value: string) => void;
+  onTabChange: (tab: LeadViewTab) => void;
   onReset: () => void;
 }
 
@@ -28,11 +33,14 @@ export function LeadFilterPanel({
   sourceFilter,
   dateFrom,
   dateTo,
+  activeTab,
+  archivedCount = 0,
   onSearchChange,
   onStatusChange,
   onSourceChange,
   onDateFromChange,
   onDateToChange,
+  onTabChange,
   onReset,
 }: LeadFilterPanelProps) {
   const [expanded, setExpanded] = useState(false);
@@ -41,6 +49,42 @@ export function LeadFilterPanel({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Active / Archived toggle */}
+      <div style={{ display: 'flex', gap: '0', borderBottom: '2px solid #e2e8f0' }}>
+        <button
+          type="button"
+          onClick={() => onTabChange('active')}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            borderBottom: activeTab === 'active' ? '2px solid #3182ce' : '2px solid transparent',
+            background: 'transparent',
+            color: activeTab === 'active' ? '#3182ce' : '#718096',
+            cursor: 'pointer',
+            fontWeight: activeTab === 'active' ? '600' : '400',
+            marginBottom: '-2px',
+          }}
+        >
+          Active
+        </button>
+        <button
+          type="button"
+          onClick={() => onTabChange('archived')}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            borderBottom: activeTab === 'archived' ? '2px solid #3182ce' : '2px solid transparent',
+            background: 'transparent',
+            color: activeTab === 'archived' ? '#3182ce' : '#718096',
+            cursor: 'pointer',
+            fontWeight: activeTab === 'archived' ? '600' : '400',
+            marginBottom: '-2px',
+          }}
+        >
+          Archived {archivedCount > 0 ? `(${archivedCount})` : ''}
+        </button>
+      </div>
+
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
         <input
           type="text"

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createInvite, sendInviteEmail } from '../services/inviteService';
 import { supabase } from '../services/supabase';
 import type { DeskRole } from '../services/rbac';
+import { useResponsive } from '../../../components/MobileNav';
 
 interface InviteMemberDialogProps {
   deskId: string;
@@ -18,6 +19,7 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const { isMobile } = useResponsive();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,14 +81,17 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
+      padding: isMobile ? '16px' : '0',
     }}>
       <div style={{
         backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '24px',
+        borderRadius: isMobile ? '8px' : '12px',
+        padding: isMobile ? '20px' : '24px',
         width: '100%',
         maxWidth: '440px',
         boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+        maxHeight: isMobile ? '90vh' : 'auto',
+        overflow: isMobile ? 'auto' : 'visible',
       }}>
         {success ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>

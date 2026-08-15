@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { renderMarkdownSimple, extractMentions } from '../services/richTextEditor';
+import { useResponsive } from '../../../components/MobileNav';
 
 interface RichTextEditorProps {
   value: string;
@@ -41,6 +42,7 @@ export function RichTextEditor({
   const [showMentions, setShowMentions] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useResponsive();
 
   const charCount = value.length;
   const isOverLimit = charCount > maxLength;
@@ -202,41 +204,62 @@ export function RichTextEditor({
   return (
     <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
       {/* Toolbar */}
-      <div style={{ display: 'flex', gap: '2px', padding: '8px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f7fafc' }}>
-        {TOOLBAR_ITEMS.map((item) => (
-          <button
-            key={item.title}
-            type="button"
-            title={item.title}
-            onClick={() => handleToolbarClick(item.prefix, item.suffix)}
-            disabled={disabled}
-            style={{
-              padding: '4px 8px',
-              border: '1px solid #e2e8f0',
-              borderRadius: '4px',
-              backgroundColor: 'white',
-              fontSize: '12px',
-              fontWeight: item.label === 'B' ? 'bold' : item.label === 'I' ? 'italic' : 'normal',
-              fontStyle: item.label === 'I' ? 'italic' : 'normal',
-              cursor: disabled ? 'not-allowed' : 'pointer',
-              opacity: disabled ? 0.5 : 1,
-            }}
-          >
-            {item.label}
-          </button>
-        ))}
-        <div style={{ flex: 1 }} />
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? '4px' : '2px', 
+        padding: isMobile ? '8px' : '8px', 
+        borderBottom: '1px solid #e2e8f0', 
+        backgroundColor: '#f7fafc',
+        flexWrap: isMobile ? 'wrap' : 'nowrap',
+      }}>
+        {/* Main toolbar buttons */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: isMobile ? 'row' : 'row',
+          gap: '2px',
+          flexWrap: 'wrap',
+          flex: 1,
+        }}>
+          {TOOLBAR_ITEMS.map((item) => (
+            <button
+              key={item.title}
+              type="button"
+              title={item.title}
+              onClick={() => handleToolbarClick(item.prefix, item.suffix)}
+              disabled={disabled}
+              style={{
+                padding: isMobile ? '10px 12px' : '4px 8px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '4px',
+                backgroundColor: 'white',
+                fontSize: isMobile ? '14px' : '12px',
+                fontWeight: item.label === 'B' ? 'bold' : item.label === 'I' ? 'italic' : 'normal',
+                fontStyle: item.label === 'I' ? 'italic' : 'normal',
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.5 : 1,
+                minWidth: isMobile ? '40px' : 'auto',
+                flex: isMobile ? '1' : 'none',
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        
+        {/* Preview toggle */}
         <button
           type="button"
           onClick={() => setShowPreview(!showPreview)}
           style={{
-            padding: '4px 8px',
+            padding: isMobile ? '10px 12px' : '4px 8px',
             border: '1px solid #e2e8f0',
             borderRadius: '4px',
             backgroundColor: showPreview ? '#3182ce' : 'white',
             color: showPreview ? 'white' : '#4a5568',
-            fontSize: '12px',
+            fontSize: isMobile ? '14px' : '12px',
             cursor: 'pointer',
+            marginTop: isMobile ? '4px' : '0',
           }}
         >
           {showPreview ? 'Edit' : 'Preview'}
@@ -274,13 +297,13 @@ export function RichTextEditor({
             disabled={disabled}
             style={{
               width: '100%',
-              minHeight: '100px',
-              maxHeight: '300px',
-              padding: '12px',
+              minHeight: isMobile ? '120px' : '100px',
+              maxHeight: isMobile ? '250px' : '300px',
+              padding: isMobile ? '14px' : '12px',
               border: 'none',
               outline: 'none',
               resize: 'vertical',
-              fontSize: '14px',
+              fontSize: isMobile ? '16px' : '14px',
               lineHeight: '1.5',
               fontFamily: 'inherit',
               boxSizing: 'border-box',

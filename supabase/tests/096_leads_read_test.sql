@@ -44,6 +44,23 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
+-- Fixtures: auth.users + profiles for admin users
+-- (required because leads_admin_all policy checks profiles.role)
+-- ============================================================
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, confirmation_sent_at, created_at, updated_at)
+VALUES
+  ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin-a@test.com', crypt('x', gen_salt('bf')), now(), now(), now(), now()),
+  ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin-b@test.com', crypt('x', gen_salt('bf')), now(), now(), now(), now())
+ON CONFLICT (id) DO NOTHING;
+
+-- The handle_new_user trigger creates profiles with role='student' on auth.users INSERT.
+-- We must UPDATE to the correct role after the trigger fires.
+SELECT set_config('app.tenant_assignment_bypass', 'true', true);
+UPDATE public.profiles SET role = 'admin', tenant_id = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' WHERE id = '11111111-1111-1111-1111-111111111111';
+UPDATE public.profiles SET role = 'admin', tenant_id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb' WHERE id = '22222222-2222-2222-2222-222222222222';
+SELECT set_config('app.tenant_assignment_bypass', 'false', true);
+
+-- ============================================================
 -- Test 1. 096 grant: authenticated has SELECT on leads
 -- ============================================================
 SELECT table_privs_are(

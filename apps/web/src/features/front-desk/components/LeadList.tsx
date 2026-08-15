@@ -11,6 +11,8 @@ import {
 import { BulkArchiveModal } from './BulkArchiveModal';
 import { LeadFilterPanel, type LeadViewTab } from './LeadFilterPanel';
 import { exportToCSV } from '../../office-desk/services/exportService';
+import { ResponsiveTable, type SwipeableCard } from '../../../components/ResponsiveTable';
+import { useResponsive } from '../../../components/MobileNav';
 
 interface LeadListProps {
   tenantId: string;
@@ -39,6 +41,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkArchiveModal, setShowBulkArchiveModal] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const { isMobile } = useResponsive();
 
   const loadLeads = async () => {
     setLoading(true);
@@ -236,151 +239,263 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
           {activeTab === 'active' ? 'No leads found' : 'No archived leads'}
         </div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
-                {activeTab === 'active' && (
-                  <th style={{ padding: '8px', width: '40px' }}>
-                    <input
-                      type="checkbox"
-                      checked={leads.length > 0 && selectedIds.size === leads.length}
-                      onChange={toggleSelectAll}
-                    />
-                  </th>
-                )}
-                <th style={{ padding: '8px' }}>Name</th>
-                <th style={{ padding: '8px' }}>Company</th>
-                <th style={{ padding: '8px' }}>Email</th>
-                {activeTab === 'active' ? (
-                  <th style={{ padding: '8px' }}>Phone</th>
-                ) : (
-                  <th style={{ padding: '8px' }}>Archived</th>
-                )}
-                <th style={{ padding: '8px' }}>Status</th>
-                <th style={{ padding: '8px' }}>Created</th>
-                <th style={{ padding: '8px', textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map((lead) => (
-                <tr
-                  key={lead.id}
-                  style={{
-                    borderBottom: '1px solid #ddd',
-                    background: selectedIds.has(lead.id) ? '#ebf8ff' : undefined,
-                  }}
-                >
+        <>
+          {/* Desktop Table View */}
+          <div style={{ overflowX: 'auto' }} className="hidden md:block">
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
                   {activeTab === 'active' && (
-                    <td style={{ padding: '8px' }}>
+                    <th style={{ padding: '8px', width: '40px' }}>
                       <input
                         type="checkbox"
-                        checked={selectedIds.has(lead.id)}
-                        onChange={() => toggleSelectOne(lead.id)}
+                        checked={leads.length > 0 && selectedIds.size === leads.length}
+                        onChange={toggleSelectAll}
                       />
-                    </td>
+                    </th>
                   )}
-                  <td
-                    style={{ padding: '8px', cursor: 'pointer', color: '#3182ce' }}
-                    onClick={() => onSelectLead(lead.id)}
-                  >
-                    {lead.name || '—'}
-                  </td>
-                  <td style={{ padding: '8px' }}>{lead.company || '—'}</td>
-                  <td style={{ padding: '8px' }}>{lead.email || '—'}</td>
+                  <th style={{ padding: '8px' }}>Name</th>
+                  <th style={{ padding: '8px' }}>Company</th>
+                  <th style={{ padding: '8px' }}>Email</th>
                   {activeTab === 'active' ? (
-                    <td style={{ padding: '8px' }}>{lead.phone || '—'}</td>
+                    <th style={{ padding: '8px' }}>Phone</th>
                   ) : (
-                    <td style={{ padding: '8px' }}>
-                      {lead.archived_at ? new Date(lead.archived_at).toLocaleDateString() : '—'}
-                    </td>
+                    <th style={{ padding: '8px' }}>Archived</th>
                   )}
-                  <td style={{ padding: '8px' }}>
-                    <span
-                      style={{
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        background: lead.status === 'handed_off' ? '#4caf50' : '#2196f3',
-                        color: 'white',
-                        fontSize: '0.85em',
-                      }}
+                  <th style={{ padding: '8px' }}>Status</th>
+                  <th style={{ padding: '8px' }}>Created</th>
+                  <th style={{ padding: '8px', textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((lead) => (
+                  <tr
+                    key={lead.id}
+                    style={{
+                      borderBottom: '1px solid #ddd',
+                      background: selectedIds.has(lead.id) ? '#ebf8ff' : undefined,
+                    }}
+                  >
+                    {activeTab === 'active' && (
+                      <td style={{ padding: '8px' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(lead.id)}
+                          onChange={() => toggleSelectOne(lead.id)}
+                        />
+                      </td>
+                    )}
+                    <td
+                      style={{ padding: '8px', cursor: 'pointer', color: '#3182ce' }}
+                      onClick={() => onSelectLead(lead.id)}
                     >
-                      {STATUS_LABELS[lead.status]}
-                    </span>
-                    {activeTab === 'archived' && lead.archive_reason && (
+                      {lead.name || '—'}
+                    </td>
+                    <td style={{ padding: '8px' }}>{lead.company || '—'}</td>
+                    <td style={{ padding: '8px' }}>{lead.email || '—'}</td>
+                    {activeTab === 'active' ? (
+                      <td style={{ padding: '8px' }}>{lead.phone || '—'}</td>
+                    ) : (
+                      <td style={{ padding: '8px' }}>
+                        {lead.archived_at ? new Date(lead.archived_at).toLocaleDateString() : '—'}
+                      </td>
+                    )}
+                    <td style={{ padding: '8px' }}>
                       <span
                         style={{
-                          marginLeft: '6px',
-                          padding: '2px 6px',
+                          padding: '2px 8px',
                           borderRadius: '4px',
-                          background: '#fed7d7',
-                          color: '#9b2c2c',
-                          fontSize: '0.75em',
-                        }}
-                      >
-                        {lead.archive_reason}
-                      </span>
-                    )}
-                  </td>
-                  <td style={{ padding: '8px' }}>
-                    {new Date(lead.created_at).toLocaleDateString()}
-                  </td>
-                  <td style={{ padding: '8px', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                      <button
-                        type="button"
-                        onClick={() => onSelectLead(lead.id)}
-                        style={{
-                          padding: '4px 8px',
-                          background: '#3182ce',
+                          background: lead.status === 'handed_off' ? '#4caf50' : '#2196f3',
                           color: 'white',
-                          border: 'none',
-                          borderRadius: '3px',
-                          cursor: 'pointer',
-                          fontSize: '0.8em',
+                          fontSize: '0.85em',
                         }}
                       >
-                        View
-                      </button>
-                      {lead.phone && activeTab === 'active' && (
-                        <a
-                          href={`tel:${lead.phone}`}
+                        {STATUS_LABELS[lead.status]}
+                      </span>
+                      {activeTab === 'archived' && lead.archive_reason && (
+                        <span
+                          style={{
+                            marginLeft: '6px',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            background: '#fed7d7',
+                            color: '#9b2c2c',
+                            fontSize: '0.75em',
+                          }}
+                        >
+                          {lead.archive_reason}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ padding: '8px' }}>
+                      {new Date(lead.created_at).toLocaleDateString()}
+                    </td>
+                    <td style={{ padding: '8px', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          onClick={() => onSelectLead(lead.id)}
                           style={{
                             padding: '4px 8px',
-                            background: '#38a169',
+                            background: '#3182ce',
                             color: 'white',
                             border: 'none',
                             borderRadius: '3px',
-                            textDecoration: 'none',
+                            cursor: 'pointer',
                             fontSize: '0.8em',
                           }}
                         >
-                          Call
-                        </a>
-                      )}
-                      {lead.email && activeTab === 'active' && (
-                        <a
-                          href={`mailto:${lead.email}`}
-                          style={{
-                            padding: '4px 8px',
-                            background: '#805ad5',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '3px',
-                            textDecoration: 'none',
-                            fontSize: '0.8em',
-                          }}
-                        >
-                          Email
-                        </a>
-                      )}
+                          View
+                        </button>
+                        {lead.phone && activeTab === 'active' && (
+                          <a
+                            href={`tel:${lead.phone}`}
+                            style={{
+                              padding: '4px 8px',
+                              background: '#38a169',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              textDecoration: 'none',
+                              fontSize: '0.8em',
+                            }}
+                          >
+                            Call
+                          </a>
+                        )}
+                        {lead.email && activeTab === 'active' && (
+                          <a
+                            href={`mailto:${lead.email}`}
+                            style={{
+                              padding: '4px 8px',
+                              background: '#805ad5',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '3px',
+                              textDecoration: 'none',
+                              fontSize: '0.8em',
+                            }}
+                          >
+                            Email
+                          </a>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} className="md:hidden">
+            {leads.map((lead) => (
+              <div
+                key={lead.id}
+                style={{
+                  padding: '16px',
+                  backgroundColor: 'white',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                }}
+              >
+                {/* Card Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{ fontSize: '16px', fontWeight: '600', color: '#3182ce', cursor: 'pointer' }}
+                      onClick={() => onSelectLead(lead.id)}
+                    >
+                      {lead.name || '—'}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    <div style={{ fontSize: '14px', color: '#718096', marginTop: '4px' }}>
+                      {lead.company || '—'}
+                    </div>
+                  </div>
+                  <span
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      background: lead.status === 'handed_off' ? '#4caf50' : '#2196f3',
+                      color: 'white',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                    }}
+                  >
+                    {STATUS_LABELS[lead.status]}
+                  </span>
+                </div>
+
+                {/* Contact Info */}
+                <div style={{ fontSize: '13px', color: '#4a5568', marginBottom: '12px' }}>
+                  {lead.email && <div style={{ marginBottom: '4px' }}>{lead.email}</div>}
+                  {lead.phone && <div>{lead.phone}</div>}
+                  {!lead.email && !lead.phone && <div style={{ color: '#a0aec0' }}>No contact info</div>}
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectLead(lead.id)}
+                    style={{
+                      flex: 1,
+                      padding: '10px 12px',
+                      background: '#3182ce',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                    }}
+                  >
+                    View
+                  </button>
+                  {lead.phone && activeTab === 'active' && (
+                    <a
+                      href={`tel:${lead.phone}`}
+                      style={{
+                        flex: 1,
+                        padding: '10px 12px',
+                        background: '#38a169',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        textAlign: 'center',
+                      }}
+                    >
+                      Call
+                    </a>
+                  )}
+                  {lead.email && activeTab === 'active' && (
+                    <a
+                      href={`mailto:${lead.email}`}
+                      style={{
+                        flex: 1,
+                        padding: '10px 12px',
+                        background: '#805ad5',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        textAlign: 'center',
+                      }}
+                    >
+                      Email
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {showBulkArchiveModal && (

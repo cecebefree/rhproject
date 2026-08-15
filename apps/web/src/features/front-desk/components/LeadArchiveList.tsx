@@ -1,5 +1,10 @@
-import { useState, useEffect } from 'react';
-import { selectArchivedLeads, unarchiveLead, subscribeToArchivedLeads, type Lead } from '../services/supabase';
+import { useEffect, useState } from 'react';
+import {
+  type Lead,
+  selectArchivedLeads,
+  subscribeToArchivedLeads,
+  unarchiveLead,
+} from '../services/supabase';
 
 interface LeadArchiveListProps {
   tenantId: string;
@@ -10,6 +15,7 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [restoring, setRestoring] = useState<string | null>(null);
+  const [confirmRestoreId, setConfirmRestoreId] = useState<string | null>(null);
 
   const loadArchivedLeads = async () => {
     const { data, error: fetchError } = await selectArchivedLeads(tenantId);
@@ -23,6 +29,7 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
 
   useEffect(() => {
     loadArchivedLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantId]);
 
   useEffect(() => {
@@ -54,6 +61,7 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
       setLeads((prev) => prev.filter((lead) => lead.id !== leadId));
     }
     setRestoring(null);
+    setConfirmRestoreId(null);
   };
 
   if (loading) return <div>Loading archived leads...</div>;
@@ -96,21 +104,57 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
                   </td>
                   <td style={{ padding: '8px' }}>{lead.archive_reason || '—'}</td>
                   <td style={{ padding: '8px', textAlign: 'right' }}>
-                    <button
-                      onClick={() => handleRestore(lead.id)}
-                      disabled={restoring === lead.id}
-                      style={{
-                        padding: '4px 12px',
-                        background: '#38a169',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: restoring === lead.id ? 'not-allowed' : 'pointer',
-                        fontSize: '0.85em',
-                      }}
-                    >
-                      {restoring === lead.id ? 'Restoring...' : 'Restore'}
-                    </button>
+                    {confirmRestoreId === lead.id ? (
+                      <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleRestore(lead.id)}
+                          disabled={restoring === lead.id}
+                          style={{
+                            padding: '4px 12px',
+                            background: '#38a169',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: restoring === lead.id ? 'not-allowed' : 'pointer',
+                            fontSize: '0.85em',
+                          }}
+                        >
+                          {restoring === lead.id ? 'Restoring...' : 'Confirm'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmRestoreId(null)}
+                          disabled={restoring === lead.id}
+                          style={{
+                            padding: '4px 8px',
+                            background: '#eee',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.85em',
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmRestoreId(lead.id)}
+                        style={{
+                          padding: '4px 12px',
+                          background: '#38a169',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '0.85em',
+                        }}
+                      >
+                        Restore
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

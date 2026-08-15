@@ -37,7 +37,13 @@ export type ArchiveReason = 'enrolled' | 'withdrawn' | 'inactive' | 'duplicate' 
 
 export const LEAD_STATUSES: LeadStatus[] = ['enquiry', 'qualified', 'invoiced', 'handed_off'];
 
-export const ARCHIVE_REASONS: ArchiveReason[] = ['enrolled', 'withdrawn', 'inactive', 'duplicate', 'other'];
+export const ARCHIVE_REASONS: ArchiveReason[] = [
+  'enrolled',
+  'withdrawn',
+  'inactive',
+  'duplicate',
+  'other',
+];
 
 export const ARCHIVE_REASON_LABELS: Record<ArchiveReason, string> = {
   enrolled: 'Enrolled',
@@ -148,11 +154,7 @@ export async function updateLeadStatus(leadId: string, status: LeadStatus) {
 }
 
 export async function getLeadById(leadId: string) {
-  return supabase
-    .from('front_desk.leads')
-    .select('*')
-    .eq('id', leadId)
-    .single();
+  return supabase.from('front_desk.leads').select('*').eq('id', leadId).single();
 }
 
 export async function archiveLead(leadId: string, reason: ArchiveReason) {
@@ -337,6 +339,165 @@ export async function callLead(leadId: string, phoneNumber: string) {
 export async function sendEmailToLead(leadId: string, subject: string, body: string) {
   const { data, error } = await supabase.functions.invoke('send-email-lead', {
     body: { lead_id: leadId, subject, body },
+  });
+  return { data, error };
+}
+
+// ═══════════════════════════════════════════════════════════
+// ARCHIVE QUERIES (Row 80)
+// ═══════════════════════════════════════════════════════════
+
+export interface ArchiveAuditLogEntry {
+  id: string;
+  lead_id: string;
+  tenant_id: string;
+  action: 'archive' | 'unarchive';
+  reason: ArchiveReason | null;
+  notes: string | null;
+  actor_id: string;
+  created_at: string;
+  lead_name?: string;
+  lead_email?: string;
+}
+
+export interface ArchiveStats {
+  reason: ArchiveReason;
+  count: number;
+}
+
+export interface BulkArchiveResult {
+  archived: number;
+  skipped: number;
+  not_found: number;
+  already_archived_ids: string[];
+  not_found_ids: string[];
+}
+
+export async function selectLeadsWithArchived(
+  tenantId: string,
+  search?: string,
+  statusFilter?: LeadStatus,
+  sourceFilter?: string,
+  dateFrom?: string,
+  dateTo?: string
+) {
+  let query = supabase
+    .from('front_desk.leads')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false });
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%`);
+  }
+
+  if (statusFilter) {
+    query = query.eq('status', statusFilter);
+  }
+
+  if (sourceFilter) {
+    query = query.eq('source', sourceFilter);
+  }
+
+  if (dateFrom) {
+    query = query.gte('created_at', dateFrom);
+  }
+
+  if (dateTo) {
+    query = query.lte('created_at', dateTo);
+  }
+
+  return query;
+}
+
+export async function selectArchivedCount(tenantId: string) {
+  return supabase
+    .from('front_desk.leads')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
+    .not('archived_at', 'is', null);
+}
+
+export async function selectArchiveStats(tenantId: string, dateFrom?: string, dateTo?: string) {
+  let query = supabase
+    .from('front_desk.lead_archive_log')
+    .select('reason')
+    .eq('tenant_id', tenantId)
+    .eq('action', 'archive');
+
+  if (dateFrom) {
+    query = query.gte('created_at', dateFrom);
+  }
+
+  if (dateTo) {
+    query = query.lte('created_at', dateTo);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return { data: null, error };
+
+  // Group by reason and count
+  const counts = new Map<string, number>();
+  for (const entry of data) {
+    const r = entry.reason || 'other';
+    counts.set(r, (counts.get(r) || 0) + 1);
+  }
+
+  const stats: ArchiveStats[] = ARCHIVE_REASONS.map((reason) => ({
+    reason,
+    count: counts.get(reason) || 0,
+  }));
+
+  return { data: stats, error: null };
+}
+
+export async function selectArchiveAuditLogWithLead(
+  tenantId: string,
+  dateFrom?: string,
+  dateTo?: string,
+  limit = 50,
+  offset = 0
+) {
+  let query = supabase
+    .from('front_desk.lead_archive_log')
+    .select('*, leads!inner(name, email)')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (dateFrom) {
+    query = query.gte('created_at', dateFrom);
+  }
+
+  if (dateTo) {
+    query = query.lte('created_at', dateTo);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return { data: null, error };
+
+  const mapped: ArchiveAuditLogEntry[] = data.map((entry: Record<string, unknown>) => {
+    const leads = entry.leads as { name: string | null; email: string | null } | null;
+    return {
+      id: entry.id as string,
+      lead_id: entry.lead_id as string,
+      tenant_id: entry.tenant_id as string,
+      action: entry.action as 'archive' | 'unarchive',
+      reason: entry.reason as ArchiveReason | null,
+      notes: entry.notes as string | null,
+      actor_id: entry.actor_id as string,
+      created_at: entry.created_at as string,
+      lead_name: leads?.name ?? undefined,
+      lead_email: leads?.email ?? undefined,
+    };
+  });
+
+  return { data: mapped, error: null };
+}
+
+export async function bulkArchiveLeads(leadIds: string[], reason: ArchiveReason, notes?: string) {
+  const { data, error } = await supabase.functions.invoke<BulkArchiveResult>('bulk-archive-leads', {
+    body: { lead_ids: leadIds, reason, notes },
   });
   return { data, error };
 }
