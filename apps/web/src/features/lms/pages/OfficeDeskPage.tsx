@@ -1,9 +1,10 @@
-// Office Desk page — Row 38/71 scope
-// Admin/office workflow: release report cards, manage registrations
-// Row 71: Report Card creation moved to School Desk (teacher-owned)
+// Office Desk page — Row 78 Invoices tab + Row 53 Registrations
 
 import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
+import { InvoiceList } from '../../office-desk/components/InvoiceList';
+import { InvoiceDetail } from '../../office-desk/components/InvoiceDetail';
+import { InvoiceCreate } from '../../office-desk/components/InvoiceCreate';
 
 interface Profile {
   id: string;
@@ -12,10 +13,14 @@ interface Profile {
   tenant_id: string | null;
 }
 
+type ViewMode = 'invoices' | 'invoice-detail' | 'invoice-create';
+
 export default function OfficeDeskPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('invoices');
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -24,16 +29,9 @@ export default function OfficeDeskPage() {
       setLoading(true);
       setError(null);
 
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
-        if (!cancelled) {
-          setError('Not authenticated');
-          setLoading(false);
-        }
+        if (!cancelled) { setError('Not authenticated'); setLoading(false); }
         return;
       }
 
@@ -56,17 +54,32 @@ export default function OfficeDeskPage() {
     }
 
     loadProfile();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
+
+  function handleSelectInvoice(invoiceId: string) {
+    setSelectedInvoiceId(invoiceId);
+    setViewMode('invoice-detail');
+  }
+
+  function handleCreateInvoice() {
+    setViewMode('invoice-create');
+  }
+
+  function handleInvoiceCreated(invoiceId: string) {
+    setSelectedInvoiceId(invoiceId);
+    setViewMode('invoice-detail');
+  }
+
+  function handleBackToInvoices() {
+    setSelectedInvoiceId(null);
+    setViewMode('invoices');
+  }
 
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.loading}>
-          <p>Loading Office Desk...</p>
-        </div>
+        <div style={styles.loading}><p>Loading Office Desk...</p></div>
       </div>
     );
   }
@@ -74,10 +87,7 @@ export default function OfficeDeskPage() {
   if (error) {
     return (
       <div style={styles.container}>
-        <div style={styles.error}>
-          <h2>Unable to load</h2>
-          <p>{error}</p>
-        </div>
+        <div style={styles.error}><h2>Unable to load</h2><p>{error}</p></div>
       </div>
     );
   }
@@ -85,10 +95,7 @@ export default function OfficeDeskPage() {
   if (!profile) {
     return (
       <div style={styles.container}>
-        <div style={styles.error}>
-          <h2>Access denied</h2>
-          <p>Profile not found.</p>
-        </div>
+        <div style={styles.error}><h2>Access denied</h2><p>Profile not found.</p></div>
       </div>
     );
   }
@@ -97,29 +104,45 @@ export default function OfficeDeskPage() {
     <div style={styles.container}>
       <header style={styles.header}>
         <h1 style={styles.title}>Office Desk</h1>
-        <p style={styles.subtitle}>Administration — {profile.name}</p>
+        <p style={styles.subtitle}>Billing &amp; Administration — {profile.name}</p>
       </header>
 
-      <main style={styles.main}>
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Report Cards</h2>
-          <p style={styles.cardDescription}>
-            Report Card creation has moved to <strong>School Desk</strong>. Teachers now create
-            report cards directly for their own courses.
-          </p>
-          <p style={styles.cardNote}>
-            Office Desk retains the ability to release report cards to learners. Contact your
-            system administrator for the release workflow.
-          </p>
-        </div>
+      <nav style={styles.nav}>
+        <button
+          type="button"
+          style={viewMode === 'invoices' || viewMode === 'invoice-detail' || viewMode === 'invoice-create' ? styles.navButtonActive : styles.navButton}
+          onClick={handleBackToInvoices}
+        >
+          Invoices
+        </button>
+        <button type="button" style={styles.navButton} disabled>Registrations</button>
+        <button type="button" style={styles.navButton} disabled>Payouts</button>
+      </nav>
 
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Registrations</h2>
-          <p style={styles.cardDescription}>
-            Registration management is available through the LMS. Use the registration pipeline
-            to approve or reject pending enrollments.
-          </p>
-        </div>
+      <main style={styles.main}>
+        {viewMode === 'invoices' && profile.tenant_id && (
+          <InvoiceList
+            tenantId={profile.tenant_id}
+            onSelect={handleSelectInvoice}
+            onCreateNew={handleCreateInvoice}
+          />
+        )}
+
+        {viewMode === 'invoice-detail' && selectedInvoiceId && (
+          <InvoiceDetail
+            invoiceId={selectedInvoiceId}
+            onBack={handleBackToInvoices}
+            onDeleted={handleBackToInvoices}
+          />
+        )}
+
+        {viewMode === 'invoice-create' && profile.tenant_id && (
+          <InvoiceCreate
+            tenantId={profile.tenant_id}
+            onCreated={handleInvoiceCreated}
+            onCancel={handleBackToInvoices}
+          />
+        )}
       </main>
     </div>
   );
@@ -146,35 +169,34 @@ const styles: Record<string, React.CSSProperties> = {
     opacity: 0.9,
     margin: '0',
   },
+  nav: {
+    display: 'flex',
+    backgroundColor: '#1a202c',
+    padding: '0 24px',
+    gap: '4px',
+  },
+  navButton: {
+    padding: '12px 24px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#a0aec0',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    borderBottom: '2px solid transparent',
+  },
+  navButtonActive: {
+    padding: '12px 24px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: 'white',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '500',
+    borderBottom: '2px solid #4299e1',
+  },
   main: {
     padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  card: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '24px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-  },
-  cardTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#2d3748',
-    margin: '0 0 8px 0',
-  },
-  cardDescription: {
-    fontSize: '14px',
-    color: '#4a5568',
-    margin: '0 0 8px 0',
-    lineHeight: '1.5',
-  },
-  cardNote: {
-    fontSize: '14px',
-    color: '#718096',
-    margin: 0,
-    fontStyle: 'italic',
   },
   loading: {
     padding: '48px',
