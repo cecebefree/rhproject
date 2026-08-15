@@ -18,7 +18,7 @@ CREATE POLICY rc_teacher_insert ON school_desk.report_cards
       WHERE p.id = auth.uid() AND p.role = 'teacher'
     )
     AND EXISTS (
-      SELECT 1 FROM school_desk.student_class sc
+      SELECT 1 FROM public.student_class sc
       JOIN school_desk.courses c ON c.id = sc.class_id
       WHERE sc.student_id = report_cards.student_id
         AND c.teacher_id = auth.uid()
