@@ -12,6 +12,7 @@ import {
 } from '../services/supabase';
 import { exportToCSV } from '../services/exportService';
 import { useResponsive } from '../../../components/MobileNav';
+import { useBulkSelection } from './BulkSelectionContext';
 
 interface InvoiceListProps {
   tenantId: string;
@@ -26,6 +27,15 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const { isMobile } = useResponsive();
+  const { select, deselect, toggle, isSelected, selectAllOnPage, deselectAll, selectedCount } = useBulkSelection();
+
+  const toggleSelectAll = () => {
+    if (selectedCount === invoices.length) {
+      deselectAll();
+    } else {
+      selectAllOnPage(invoices.map((inv) => inv.id));
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -171,6 +181,13 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f7fafc' }}>
+                  <th style={{ padding: '12px 16px', width: '40px' }}>
+                    <input
+                      type="checkbox"
+                      checked={invoices.length > 0 && selectedCount === invoices.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Invoice #</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Client</th>
                   <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Amount</th>
@@ -181,7 +198,14 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
               </thead>
               <tbody>
                 {invoices.map((inv) => (
-                  <tr key={inv.id} style={{ borderTop: '1px solid #f0f0f0' }}>
+                  <tr key={inv.id} style={{ borderTop: '1px solid #f0f0f0', backgroundColor: isSelected(inv.id) ? '#ebf8ff' : undefined }}>
+                    <td style={{ padding: '12px 16px' }}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected(inv.id)}
+                        onChange={() => toggle(inv.id)}
+                      />
+                    </td>
                     <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#2d3748' }}>{inv.invoice_number || '—'}</td>
                     <td style={{ padding: '12px 16px', fontSize: '14px', color: '#4a5568' }}>{(inv as any).lead?.name || '—'}</td>
                     <td style={{ padding: '12px 16px', fontSize: '14px', color: '#2d3748', textAlign: 'right' }}>{inv.currency} {inv.amount.toFixed(2)}</td>

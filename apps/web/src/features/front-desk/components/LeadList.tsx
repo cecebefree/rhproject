@@ -13,6 +13,7 @@ import { LeadFilterPanel, type LeadViewTab } from './LeadFilterPanel';
 import { exportToCSV } from '../../office-desk/services/exportService';
 import { ResponsiveTable, type SwipeableCard } from '../../../components/ResponsiveTable';
 import { useResponsive } from '../../../components/MobileNav';
+import { useBulkSelection } from '../../office-desk/components/BulkSelectionContext';
 
 interface LeadListProps {
   tenantId: string;
@@ -38,10 +39,18 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
   const [dateTo, setDateTo] = useState('');
   const [activeTab, setActiveTab] = useState<LeadViewTab>('active');
   const [archivedCount, setArchivedCount] = useState(0);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkArchiveModal, setShowBulkArchiveModal] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const { isMobile } = useResponsive();
+  const { selectedIds, select, deselect, toggle, isSelected, selectAllOnPage, deselectAll, selectedCount } = useBulkSelection();
+
+  const toggleSelectAll = () => {
+    if (selectedCount === leads.length) {
+      deselectAll();
+    } else {
+      selectAllOnPage(leads.map((l) => l.id));
+    }
+  };
 
   const loadLeads = async () => {
     setLoading(true);
@@ -113,7 +122,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
 
   const handleTabChange = (tab: LeadViewTab) => {
     setActiveTab(tab);
-    setSelectedIds(new Set());
+    deselectAll();
     handleResetFilters();
   };
 
@@ -131,28 +140,8 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
     };
   }, []);
 
-  const toggleSelectAll = () => {
-    if (selectedIds.size === leads.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(leads.map((l) => l.id)));
-    }
-  };
-
-  const toggleSelectOne = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
   const handleBulkArchiveComplete = () => {
-    setSelectedIds(new Set());
+    deselectAll();
     setShowBulkArchiveModal(false);
     loadLeads();
     loadArchivedCount();
@@ -191,7 +180,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
           >
             Export CSV
           </button>
-          {activeTab === 'active' && selectedIds.size > 0 && (
+          {activeTab === 'active' && selectedCount > 0 && (
             <button
               type="button"
               onClick={() => setShowBulkArchiveModal(true)}
@@ -205,7 +194,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                 fontSize: '0.85em',
               }}
             >
-              Archive ({selectedIds.size})
+              Archive ({selectedCount})
             </button>
           )}
         </div>
@@ -249,7 +238,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                     <th style={{ padding: '8px', width: '40px' }}>
                       <input
                         type="checkbox"
-                        checked={leads.length > 0 && selectedIds.size === leads.length}
+                        checked={leads.length > 0 && selectedCount === leads.length}
                         onChange={toggleSelectAll}
                       />
                     </th>
@@ -273,15 +262,15 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                     key={lead.id}
                     style={{
                       borderBottom: '1px solid #ddd',
-                      background: selectedIds.has(lead.id) ? '#ebf8ff' : undefined,
+                      background: isSelected(lead.id) ? '#ebf8ff' : undefined,
                     }}
                   >
                     {activeTab === 'active' && (
                       <td style={{ padding: '8px' }}>
                         <input
                           type="checkbox"
-                          checked={selectedIds.has(lead.id)}
-                          onChange={() => toggleSelectOne(lead.id)}
+                          checked={isSelected(lead.id)}
+                          onChange={() => toggle(lead.id)}
                         />
                       </td>
                     )}
