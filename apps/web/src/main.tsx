@@ -15,6 +15,7 @@ import OfficeDeskReportsPage from './features/lms/pages/OfficeDeskReportsPage';
 import OfficeDeskSettingsPage from './features/lms/pages/OfficeDeskSettingsPage';
 import SchoolDeskPage from './features/lms/pages/SchoolDeskPage';
 import ParentPortalPage from './features/parent-portal/pages/ParentPortalPage';
+import WebhookManagementPage from './features/office-desk/components/WebhookManagementPage';
 
 function IndexPage() {
   return (
@@ -74,6 +75,7 @@ function App() {
               <Route path="billing" element={<OfficeDeskBillingPage />} />
               <Route path="reports" element={<OfficeDeskReportsPage />} />
               <Route path="settings" element={<OfficeDeskSettingsPage />} />
+              <Route path="webhooks" element={<WebhookManagementPage />} />
             </Route>
 
             <Route path="/lms" element={<Navigate to="/lms/front-desk" replace />} />
