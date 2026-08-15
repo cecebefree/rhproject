@@ -1,12 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  selectLeads,
-  subscribeToLeads,
+  LEAD_STATUSES,
   type Lead,
   type LeadStatus,
-  LEAD_STATUSES,
+  selectArchivedCount,
+  selectArchivedLeads,
+  selectLeads,
+  subscribeToLeads,
 } from '../services/supabase';
-import { LeadFilterPanel } from './LeadFilterPanel';
+import { BulkArchiveModal } from './BulkArchiveModal';
+import { LeadFilterPanel, type LeadViewTab } from './LeadFilterPanel';
+import { exportToCSV } from '../../office-desk/services/exportService';
 
 interface LeadListProps {
   tenantId: string;
@@ -30,37 +34,62 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
   const [sourceFilter, setSourceFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [activeTab, setActiveTab] = useState<LeadViewTab>('active');
+  const [archivedCount, setArchivedCount] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkArchiveModal, setShowBulkArchiveModal] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const loadLeads = async () => {
-    const { data, error: fetchError } = await selectLeads(
-      tenantId,
-      search || undefined,
-      (statusFilter as LeadStatus) || undefined,
-      sourceFilter || undefined,
-      dateFrom || undefined,
-      dateTo || undefined
-    );
-    if (fetchError) {
-      setError(fetchError.message);
+    setLoading(true);
+    setError(null);
+
+    if (activeTab === 'active') {
+      const { data, error: fetchError } = await selectLeads(
+        tenantId,
+        search || undefined,
+        (statusFilter as LeadStatus) || undefined,
+        sourceFilter || undefined,
+        dateFrom || undefined,
+        dateTo || undefined
+      );
+      if (fetchError) {
+        setError(fetchError.message);
+      } else {
+        setLeads(data || []);
+      }
     } else {
-      setLeads(data || []);
+      const { data, error: fetchError } = await selectArchivedLeads(tenantId);
+      if (fetchError) {
+        setError(fetchError.message);
+      } else {
+        setLeads(data || []);
+      }
     }
     setLoading(false);
   };
 
+  const loadArchivedCount = async () => {
+    const { count } = await selectArchivedCount(tenantId);
+    setArchivedCount(count || 0);
+  };
+
   useEffect(() => {
     loadLeads();
-  }, [tenantId, search, statusFilter, sourceFilter, dateFrom, dateTo]);
+  }, [tenantId, search, statusFilter, sourceFilter, dateFrom, dateTo, activeTab]);
+
+  useEffect(() => {
+    loadArchivedCount();
+  }, [tenantId, activeTab]);
 
   useEffect(() => {
     const channel = subscribeToLeads((payload) => {
       if (payload.eventType === 'UPDATE') {
-        setLeads((prev) =>
-          prev.map((lead) => (lead.id === payload.new.id ? payload.new : lead))
-        );
+        setLeads((prev) => prev.map((lead) => (lead.id === payload.new.id ? payload.new : lead)));
       } else if (payload.eventType === 'INSERT') {
-        setLeads((prev) => [payload.new, ...prev]);
+        if (activeTab === 'active') {
+          setLeads((prev) => [payload.new, ...prev]);
+        }
       } else if (payload.eventType === 'DELETE') {
         setLeads((prev) => prev.filter((lead) => lead.id !== payload.old?.id));
       }
@@ -69,7 +98,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
     return () => {
       channel.unsubscribe();
     };
-  }, []);
+  }, [activeTab]);
 
   const handleResetFilters = () => {
     setSearch('');
@@ -77,6 +106,12 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
     setSourceFilter('');
     setDateFrom('');
     setDateTo('');
+  };
+
+  const handleTabChange = (tab: LeadViewTab) => {
+    setActiveTab(tab);
+    setSelectedIds(new Set());
+    handleResetFilters();
   };
 
   const focusSearch = () => {
@@ -89,15 +124,89 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
     w.__leadListFocusSearch = focusSearch;
     return () => {
       const w = window as unknown as Record<string, unknown>;
-      delete w.__leadListFocusSearch;
+      w.__leadListFocusSearch = undefined;
     };
   }, []);
 
-  if (loading) return <div>Loading leads...</div>;
+  const toggleSelectAll = () => {
+    if (selectedIds.size === leads.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(leads.map((l) => l.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleBulkArchiveComplete = () => {
+    setSelectedIds(new Set());
+    setShowBulkArchiveModal(false);
+    loadLeads();
+    loadArchivedCount();
+  };
+
+  if (loading)
+    return <div>{activeTab === 'active' ? 'Loading leads...' : 'Loading archived leads...'}</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <h2>Leads</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>{activeTab === 'active' ? 'Leads' : 'Archived Leads'}</h2>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={async () => {
+              await exportToCSV({
+                entity_type: 'leads',
+                format: 'csv',
+                tenant_id: tenantId,
+                filters: {
+                  ...(statusFilter ? { status: statusFilter } : {}),
+                  ...(sourceFilter ? { source: sourceFilter } : {}),
+                },
+              });
+            }}
+            style={{
+              padding: '6px 12px',
+              background: '#38a169',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '0.85em',
+            }}
+          >
+            Export CSV
+          </button>
+          {activeTab === 'active' && selectedIds.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowBulkArchiveModal(true)}
+              style={{
+                padding: '6px 12px',
+                background: '#e53e3e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.85em',
+              }}
+            >
+              Archive ({selectedIds.size})
+            </button>
+          )}
+        </div>
+      </div>
 
       {error && (
         <div style={{ color: 'red', padding: '8px', background: '#fee', borderRadius: '4px' }}>
@@ -111,25 +220,43 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
         sourceFilter={sourceFilter}
         dateFrom={dateFrom}
         dateTo={dateTo}
+        activeTab={activeTab}
+        archivedCount={archivedCount}
         onSearchChange={setSearch}
         onStatusChange={setStatusFilter}
         onSourceChange={setSourceFilter}
         onDateFromChange={setDateFrom}
         onDateToChange={setDateTo}
+        onTabChange={handleTabChange}
         onReset={handleResetFilters}
       />
 
       {leads.length === 0 ? (
-        <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '4px' }}>No leads found</div>
+        <div style={{ padding: '16px', background: '#f5f5f5', borderRadius: '4px' }}>
+          {activeTab === 'active' ? 'No leads found' : 'No archived leads'}
+        </div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
+                {activeTab === 'active' && (
+                  <th style={{ padding: '8px', width: '40px' }}>
+                    <input
+                      type="checkbox"
+                      checked={leads.length > 0 && selectedIds.size === leads.length}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                )}
                 <th style={{ padding: '8px' }}>Name</th>
                 <th style={{ padding: '8px' }}>Company</th>
                 <th style={{ padding: '8px' }}>Email</th>
-                <th style={{ padding: '8px' }}>Phone</th>
+                {activeTab === 'active' ? (
+                  <th style={{ padding: '8px' }}>Phone</th>
+                ) : (
+                  <th style={{ padding: '8px' }}>Archived</th>
+                )}
                 <th style={{ padding: '8px' }}>Status</th>
                 <th style={{ padding: '8px' }}>Created</th>
                 <th style={{ padding: '8px', textAlign: 'right' }}>Actions</th>
@@ -139,8 +266,20 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
               {leads.map((lead) => (
                 <tr
                   key={lead.id}
-                  style={{ borderBottom: '1px solid #ddd' }}
+                  style={{
+                    borderBottom: '1px solid #ddd',
+                    background: selectedIds.has(lead.id) ? '#ebf8ff' : undefined,
+                  }}
                 >
+                  {activeTab === 'active' && (
+                    <td style={{ padding: '8px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(lead.id)}
+                        onChange={() => toggleSelectOne(lead.id)}
+                      />
+                    </td>
+                  )}
                   <td
                     style={{ padding: '8px', cursor: 'pointer', color: '#3182ce' }}
                     onClick={() => onSelectLead(lead.id)}
@@ -149,7 +288,13 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                   </td>
                   <td style={{ padding: '8px' }}>{lead.company || '—'}</td>
                   <td style={{ padding: '8px' }}>{lead.email || '—'}</td>
-                  <td style={{ padding: '8px' }}>{lead.phone || '—'}</td>
+                  {activeTab === 'active' ? (
+                    <td style={{ padding: '8px' }}>{lead.phone || '—'}</td>
+                  ) : (
+                    <td style={{ padding: '8px' }}>
+                      {lead.archived_at ? new Date(lead.archived_at).toLocaleDateString() : '—'}
+                    </td>
+                  )}
                   <td style={{ padding: '8px' }}>
                     <span
                       style={{
@@ -162,6 +307,20 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                     >
                       {STATUS_LABELS[lead.status]}
                     </span>
+                    {activeTab === 'archived' && lead.archive_reason && (
+                      <span
+                        style={{
+                          marginLeft: '6px',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          background: '#fed7d7',
+                          color: '#9b2c2c',
+                          fontSize: '0.75em',
+                        }}
+                      >
+                        {lead.archive_reason}
+                      </span>
+                    )}
                   </td>
                   <td style={{ padding: '8px' }}>
                     {new Date(lead.created_at).toLocaleDateString()}
@@ -169,7 +328,8 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                   <td style={{ padding: '8px', textAlign: 'right' }}>
                     <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
                       <button
-                        onClick={() => onEditLead(lead.id)}
+                        type="button"
+                        onClick={() => onSelectLead(lead.id)}
                         style={{
                           padding: '4px 8px',
                           background: '#3182ce',
@@ -180,9 +340,9 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                           fontSize: '0.8em',
                         }}
                       >
-                        Edit
+                        View
                       </button>
-                      {lead.phone && (
+                      {lead.phone && activeTab === 'active' && (
                         <a
                           href={`tel:${lead.phone}`}
                           style={{
@@ -198,7 +358,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                           Call
                         </a>
                       )}
-                      {lead.email && (
+                      {lead.email && activeTab === 'active' && (
                         <a
                           href={`mailto:${lead.email}`}
                           style={{
@@ -221,6 +381,14 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
             </tbody>
           </table>
         </div>
+      )}
+
+      {showBulkArchiveModal && (
+        <BulkArchiveModal
+          leadIds={Array.from(selectedIds)}
+          onComplete={handleBulkArchiveComplete}
+          onCancel={() => setShowBulkArchiveModal(false)}
+        />
       )}
     </div>
   );

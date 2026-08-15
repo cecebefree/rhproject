@@ -10,6 +10,7 @@ import {
   INVOICE_STATUSES,
   INVOICE_STATUS_LABELS,
 } from '../services/supabase';
+import { exportToCSV } from '../services/exportService';
 
 interface InvoiceListProps {
   tenantId: string;
@@ -75,9 +76,24 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '600', color: '#2d3748' }}>Invoices</h2>
-        <button onClick={onCreateNew} style={{ padding: '8px 16px', backgroundColor: '#3182ce', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
-          + New Invoice
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={async () => {
+              await exportToCSV({
+                entity_type: 'invoices',
+                format: 'csv',
+                tenant_id: tenantId,
+                filters: statusFilter ? { status: statusFilter } : undefined,
+              });
+            }}
+            style={{ padding: '8px 16px', backgroundColor: '#38a169', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}
+          >
+            Export CSV
+          </button>
+          <button onClick={onCreateNew} style={{ padding: '8px 16px', backgroundColor: '#3182ce', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: '500', cursor: 'pointer' }}>
+            + New Invoice
+          </button>
+        </div>
       </div>
 
       <div style={{ display: 'flex', gap: '12px' }}>
