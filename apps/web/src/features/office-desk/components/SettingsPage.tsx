@@ -1,24 +1,27 @@
-// SettingsPage — Desk settings with team management and role management
+// SettingsPage — Desk settings with team management, role management, and security
 
 import { useState } from 'react';
 import { TeamMembersList } from './TeamMembersList';
 import { RoleManagementPage } from './RoleManagementPage';
+import { TwoFactorManagementPage } from './TwoFactorManagementPage';
 
 interface SettingsPageProps {
   deskId: string;
   tenantId: string;
   userId: string;
+  email: string;
 }
 
-type SettingsTab = 'team' | 'roles' | 'general';
+type SettingsTab = 'team' | 'roles' | 'general' | 'security';
 
 const SETTINGS_TABS: Array<{ id: SettingsTab; label: string }> = [
   { id: 'team', label: 'Team Members' },
   { id: 'roles', label: 'Roles & Permissions' },
+  { id: 'security', label: 'Security' },
   { id: 'general', label: 'General' },
 ];
 
-export function SettingsPage({ deskId, tenantId, userId }: SettingsPageProps) {
+export function SettingsPage({ deskId, tenantId, userId, email }: SettingsPageProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('team');
 
   return (
@@ -57,6 +60,10 @@ export function SettingsPage({ deskId, tenantId, userId }: SettingsPageProps) {
 
       {activeTab === 'roles' && (
         <RoleManagementPage deskId={deskId} tenantId={tenantId} />
+      )}
+
+      {activeTab === 'security' && (
+        <TwoFactorManagementPage userId={userId} tenantId={tenantId} email={email} />
       )}
 
       {activeTab === 'general' && (

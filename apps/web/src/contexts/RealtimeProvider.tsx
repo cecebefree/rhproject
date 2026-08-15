@@ -9,6 +9,7 @@ import { OptimisticUpdateManager } from '../services/optimisticUpdate';
 import { OfflineQueueManager } from '../services/offlineQueue';
 import { BroadcastChannelManager } from '../services/broadcastChannel';
 import { supabase } from '../lib/supabase';
+import { getTwoFactorStatus } from '../features/office-desk/services/twoFactorService';
 
 interface RealtimeContextValue {
   realtimeClient: RealtimeClient | null;
@@ -17,6 +18,7 @@ interface RealtimeContextValue {
   broadcastChannel: BroadcastChannelManager | null;
   isOnline: boolean;
   userId: string | null;
+  twoFactorEnabled: boolean;
 }
 
 const RealtimeContext = createContext<RealtimeContextValue>({
@@ -26,6 +28,7 @@ const RealtimeContext = createContext<RealtimeContextValue>({
   broadcastChannel: null,
   isOnline: navigator.onLine,
   userId: null,
+  twoFactorEnabled: false,
 });
 
 export function useRealtimeContext() {
@@ -39,6 +42,7 @@ interface RealtimeProviderProps {
 export function RealtimeProvider({ children }: RealtimeProviderProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
   // Initialize managers (stable across renders)
   const optimisticManager = useMemo(() => new OptimisticUpdateManager(), []);
@@ -54,6 +58,11 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
+        // Check 2FA status
+        const status = await getTwoFactorStatus(user.id);
+        setTwoFactorEnabled(status.enabled);
+      } else {
+        setTwoFactorEnabled(false);
       }
     };
 
@@ -63,8 +72,12 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       async (_event: string, session: { user?: { id: string } } | null) => {
         if (session?.user) {
           setUserId(session.user.id);
+          // Check 2FA status
+          const status = await getTwoFactorStatus(session.user.id);
+          setTwoFactorEnabled(status.enabled);
         } else {
           setUserId(null);
+          setTwoFactorEnabled(false);
         }
       }
     );
@@ -124,7 +137,8 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     broadcastChannel,
     isOnline,
     userId,
-  }), [realtimeClient, optimisticManager, offlineQueue, broadcastChannel, isOnline, userId]);
+    twoFactorEnabled,
+  }), [realtimeClient, optimisticManager, offlineQueue, broadcastChannel, isOnline, userId, twoFactorEnabled]);
 
   return (
     <RealtimeContext.Provider value={value}>
