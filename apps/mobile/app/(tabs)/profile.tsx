@@ -1,6 +1,7 @@
-// ProfileScreen — Row 36 wiring
+// ProfileScreen — Row 36 wiring + Row 83 role-conditional sections
 // Live data: profiles (name, role, curriculum, grade, stage, intake)
 // All fields backed by DB columns as of migration 089. No seed fallback.
+// Row 83: Conditional sections by role (student/teacher/admin)
 
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -33,6 +34,89 @@ function SectionError({ message }: { message: string }) {
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Unable to load</Text>
       <Text style={styles.emptyText}>{message}</Text>
+    </View>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// Role-conditional sections (Row 83)
+// ═══════════════════════════════════════════════════════════
+
+function StudentSections({ profile }: { profile: Profile }) {
+  return (
+    <>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Academic Info</Text>
+        <Text style={styles.detail}>Curriculum: {profile.curriculum ?? '—'}</Text>
+        <Text style={styles.detail}>Grade: {profile.grade ?? '—'}</Text>
+        <Text style={styles.detail}>School stage: {profile.stage ?? '—'}</Text>
+        <Text style={styles.detail}>Intake: {profile.intake ?? '—'}</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>My Groups</Text>
+        <Text style={styles.emptyText}>Groups wired via conversation_members (059)</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>My Progress</Text>
+        <Text style={styles.emptyText}>
+          Attendance and grades wired via school_desk (rows 73-74)
+        </Text>
+      </View>
+    </>
+  );
+}
+
+function TeacherSections() {
+  return (
+    <>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>My Classes</Text>
+        <Text style={styles.emptyText}>Classes wired via school_desk.courses + enrollments</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Attendance</Text>
+        <Text style={styles.emptyText}>Mark attendance via school_desk (row 73)</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Gradebook</Text>
+        <Text style={styles.emptyText}>
+          Gradebook and assignments wired via school_desk (row 74)
+        </Text>
+      </View>
+    </>
+  );
+}
+
+function AdminSections() {
+  return (
+    <>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Desk Access</Text>
+        <Text style={styles.detail}>Front Desk — leads & callbacks</Text>
+        <Text style={styles.detail}>School Desk — courses & reports</Text>
+        <Text style={styles.detail}>Office Desk — invoices & payments</Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>System</Text>
+        <Text style={styles.emptyText}>Dashboard stats wired via office_desk views (row 111)</Text>
+      </View>
+    </>
+  );
+}
+
+function QuickLinks() {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Quick Links</Text>
+      <Text style={styles.link}>My Certificates</Text>
+      <Text style={styles.link}>View booklist</Text>
+      <Text style={styles.link}>Contact school</Text>
+      <Text style={styles.link}>Log out</Text>
     </View>
   );
 }
@@ -110,30 +194,19 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* User info */}
+      {/* User info — always shown */}
       <View style={styles.section}>
-        <Text style={styles.name}>{profile.name ?? 'Student'}</Text>
-        <Text style={styles.role}>
-          {profile.role} · {profile.curriculum ?? '—'} · 2026
-        </Text>
-        <Text style={styles.detail}>Grade: {profile.grade ?? '—'}</Text>
-        <Text style={styles.detail}>School stage: {profile.stage ?? '—'}</Text>
-        <Text style={styles.detail}>Intake: {profile.intake ?? '—'}</Text>
+        <Text style={styles.name}>{profile.name ?? 'User'}</Text>
+        <Text style={styles.role}>{profile.role}</Text>
       </View>
 
-      {/* My Groups mirror — read-only */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>My Groups</Text>
-        <Text style={styles.emptyText}>Groups wired via conversation_members (059)</Text>
-      </View>
+      {/* Role-conditional sections */}
+      {profile.role === 'student' && <StudentSections profile={profile} />}
+      {profile.role === 'teacher' && <TeacherSections />}
+      {(profile.role === 'admin' || profile.role === 'expert') && <AdminSections />}
 
-      {/* Quick links */}
-      <View style={styles.section}>
-        <Text style={styles.link}>My Certificates</Text>
-        <Text style={styles.link}>View booklist</Text>
-        <Text style={styles.link}>Contact school</Text>
-        <Text style={styles.link}>Log out</Text>
-      </View>
+      {/* Quick links — always shown */}
+      <QuickLinks />
     </ScrollView>
   );
 }
