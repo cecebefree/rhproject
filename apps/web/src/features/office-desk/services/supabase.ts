@@ -484,3 +484,163 @@ export function subscribeToSubscriptions(
     )
     .subscribe();
 }
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT TYPES + QUERIES (Row 79)
+// ═══════════════════════════════════════════════════════════
+
+export type PaymentStatus = 'pending' | 'confirmed' | 'failed' | 'refunded';
+
+export interface Payment {
+  id: string;
+  tenant_id: string;
+  invoice_id: string;
+  amount: number;
+  currency: string;
+  payment_method: string | null;
+  reference: string | null;
+  status: PaymentStatus;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+export interface PaymentWithInvoice extends Payment {
+  invoice?: {
+    id: string;
+    invoice_number: string | null;
+    description: string | null;
+    amount: number;
+    status: string;
+    registration_id: string | null;
+    registration?: {
+      id: string;
+      student_name: string;
+      student_email: string;
+      course_name: string | null;
+      status: string;
+    } | null;
+  } | null;
+}
+
+export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  failed: 'Failed',
+  refunded: 'Refunded',
+};
+
+export const PAYMENT_STATUS_COLORS: Record<PaymentStatus, string> = {
+  pending: 'bg-yellow-100 text-yellow-800',
+  confirmed: 'bg-green-100 text-green-800',
+  failed: 'bg-red-100 text-red-800',
+  refunded: 'bg-gray-100 text-gray-800',
+};
+
+export async function selectPayments(
+  tenantId: string,
+  filters?: { status?: PaymentStatus; method?: string; search?: string }
+) {
+  let query = supabaseUntyped
+    .from('office_desk.payments')
+    .select(`
+      *,
+      invoice:office_desk.invoices(
+        id, invoice_number, description, amount, registration_id,
+        registration:office_desk.registrations(id, student_name, student_email, course_name, status)
+      )
+    `)
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (filters?.status) {
+    query = query.eq('status', filters.status);
+  }
+  if (filters?.method) {
+    query = query.eq('payment_method', filters.method);
+  }
+  if (filters?.search) {
+    query = query.or(
+      `reference.ilike.%${filters.search}%,invoice.invoices.invoice_number.ilike.%${filters.search}%`
+    );
+  }
+
+  return query;
+}
+
+export async function getPaymentById(paymentId: string) {
+  return supabaseUntyped
+    .from('office_desk.payments')
+    .select(`
+      *,
+      invoice:office_desk.invoices(
+        id, invoice_number, description, amount, amount_paid, status, registration_id, due_date,
+        registration:office_desk.registrations(id, student_name, student_email, student_phone, course_name, status)
+      )
+    `)
+    .eq('id', paymentId)
+    .single();
+}
+
+export async function confirmPaymentManual(paymentId: string, notes?: string) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/confirm-payment-manual`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.access_token || ''}`,
+      apikey: SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ payment_id: paymentId, notes }),
+  });
+  return res.json();
+}
+
+export async function refundPayment(paymentId: string, refundReason: string, refundAmount?: number) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/refund-payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.access_token || ''}`,
+      apikey: SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ payment_id: paymentId, refund_reason: refundReason, refund_amount: refundAmount }),
+  });
+  return res.json();
+}
+
+export async function retryPayment(paymentId: string, newToken?: string) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/retry-payment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.access_token || ''}`,
+      apikey: SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify({ payment_id: paymentId, new_token: newToken }),
+  });
+  return res.json();
+}
+
+export function subscribeToPayments(
+  tenantId: string,
+  callback: (payload: Record<string, unknown>) => void
+) {
+  return supabase
+    .channel('office_desk_payments_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'payments',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
+      callback as (payload: Record<string, unknown>) => void
+    )
+    .subscribe();
+}

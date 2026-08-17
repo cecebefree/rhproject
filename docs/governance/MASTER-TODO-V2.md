@@ -84,9 +84,9 @@
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 40 | Lovable website intake — Turnstile via 23 mandatory | 9, 23 | Pending |
+| 40 | Lovable website intake — Turnstile via 23 mandatory | 9, 23 | **DONE** — Landing page with Turnstile CAPTCHA, lead capture API route, Supabase lead insert. Commit be77667. |
 | 41 | QA adversarial RLS pass (historical row — superseded by row 50 scope) | 26 | SEALED — see PLAN-STATE row 41 evidence. **Ruling 41c (report card reclassification): LOCKED** — Report Cards moved to School Front Desk per ITEM-010 (docs/governance/rulings/ITEM-010-report-cards-school-front-desk.md). Office Desk scoped strictly to invoicing + registration. |
-| 42 | Cloudflare deploy | 11, 12 | PARTIAL — redhouse-web.pages.dev serving (170d7b4); prod domain + custom domain OPEN (row 76) |
+| 42 | Cloudflare deploy | 11, 12 | **DONE** — redhouse-web.pages.dev serving (170d7b4); Lovable landing page deployed to Cloudflare Pages with custom domain, wrangler.toml configured, leads API function. Commit 7a5ca75. |
 | 51-56 | ~~Provision separate Front Desk Supabase + migrate leads~~ | — | **CANCELLED** — Cece pivoted to single-project schema-namespace architecture (2026-08-11). See ITEM-011 ruling. |
 
 ### F.2 — PHASE 1: SCHEMA NAMESPACES + SECURITY (top priority, unblocks all desk work)
@@ -105,7 +105,7 @@
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 57 | **EF-to-EF auth design:** how School Front Desk proves identity to front-desk-read-leads EF (no cross-project token exchange needed in single-project) | 50 | Pending — with single project, EF can use service_role + server-side role check from JWT |
+| 57 | **EF-to-EF auth design:** how School Front Desk proves identity to front-desk-read-leads EF (no cross-project token exchange needed in single-project) | 50 | **DONE** — HMAC-SHA256 signing, ef-auth.ts shared module, ef_call_log audit table, front-desk-read-leads updated. Commit 6f341f1. |
 | 58 | **Front Desk RLS policies:** lead status transitions (row 68), callback scheduling (row 60), archived leads — all need RLS | 51 | **DONE** — Migration 106_rls_for_front_desk_leads.sql: 6 policies (leads_admin_all, leads_front_desk_select, leads_front_desk_insert, leads_front_desk_update, leads_office_select, leads_office_handoff). Applied locally via `supabase db reset` 2026-08-12. 7 policies total on front_desk.leads (6 new + 1 existing lead_read_own_tenant). pgTAP tests pass: 078_leads_test.sql (8/8), 096_leads_read_test.sql (8/8), 04_admin_all_bypass.sql (15/15), 013_cross_tenant_office.sql (5/5). Defense-in-depth established — EFs still use service_role for server-side operations. |
 | 59 | **Permission matrix:** desk × role × {read, write, transition, archive} — defines which roles access which desk functions | 50 | Pending — must resolve row 82 (desk-scoped permissions granularity) |
 | 60 | **Data duplication justification:** archived leads — keep in `front_desk.leads` with status='handed_off' vs. duplicate into `office_desk` | 50 | Pending — single-project eliminates cross-project duplication; leads stay in front_desk, referenced by office_desk via lead_reference_id |
@@ -138,11 +138,11 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 74 | Strip report cards from Office Desk: remove ReportCardForm/ReportCardList from OfficeDeskPage | 71 | Pending — Office Desk becomes purely financial/registration |
-| 75 | Registration Pattern A: form + payment arrive same event → single write in office_desk schema | 53, 57 | Pending — Edge Function or direct insert |
+| 75 | Registration Pattern A: form + payment arrive same event → single write in office_desk schema | 53, 57 | **DONE** — Migration 145: dead-letter table for failed enrollments. Edge Function: register-with-payment (Stripe + PayPal, office desk notification via notify-office-desk EF, temp credentials email). Components: RegistrationForm. pgTAP test: 145_failed_enrollments_test. Documentation: docs/patterns/row-75-registration-pattern-a.md |
 | 76 | Registration Pattern B: form arrives first → pending_review placeholder; payment arrives later → EF lookup-and-attach via stable match key (email or reference ID) → status flips to active | 53, 57 | **DONE** — Stripe webhook EF deployed (commit 6393cc1, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/stripe-webhook |
 | 77 | Registration status transitions: pending_init → pending_review → approved → active (plus terminal: withdrawn, rejected) | 75, 76 | **DONE** — PayPal webhook EF deployed (commit 238b403, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/paypal-webhook |
 | 78 | Manual/ad-hoc invoice creation UI on Office Desk | 50 | **DONE** — Migration 130: invoice_items table, lead_id, amount_paid, due_date, expanded statuses. Components: InvoiceList (search/filter/actions), InvoiceDetail (edit/send/mark-paid/cancel), InvoiceCreate (line items editor), InvoiceSend (email modal). Edge Function: send-invoice-email. OfficeDeskPage updated with Invoices tab. TypeScript clean, 464/464 pgTAP PASS. |
-| 79 | Payment confirmation UI on Office Desk | 78 | Pending — triggers Pattern B attach or Pattern A completion |
+| 79 | Payment confirmation UI on Office Desk | 78 | **DONE** — Migration 146: enhanced payments RLS (admin_all, office select+update, service_role-only writes). Edge Functions: confirm-payment-manual, refund-payment, retry-payment. Components: PaymentConfirmation (list view with status tabs, search, filters), PaymentConfirmationDetail (modal with confirm/refund/retry actions). TypeScript clean, biome lint clean. |
 | 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id (no duplication) | 63, 75 | Pending — single-project eliminates cross-project duplication |
 
 ### F.6 — WEBSITE + MOBILE INTEGRATION
@@ -465,4 +465,35 @@ Signed: Cece — final human gate. 2026-07-15.
 
 ---
 
-Signed: Cece — final human gate. 2026-08-14.
+# SESSION COMPLETE — 2026-08-17
+
+## Rows Completed This Session
+
+| Row | Item | Status | Commit |
+|-----|------|--------|--------|
+| 75 | Registration Pattern A: form + payment arrive same event | ✓ DONE | Migration 145, register-with-payment EF, office-desk-notify EF, RegistrationForm.tsx, pgTAP test, docs/patterns/row-75-registration-pattern-a.md |
+| 79 | Payment confirmation UI on Office Desk | ✓ DONE | Migration 146, confirm-payment-manual EF, refund-payment EF, retry-payment EF, PaymentConfirmation.tsx, PaymentConfirmationDetail.tsx, docs/patterns/row-79-payment-confirmation-ui.md |
+| 57 | EF-to-EF auth (HMAC-SHA256) | ✓ DONE | Commit 6f341f1 — ef-auth.ts, ef_call_log, front-desk-read-leads updated |
+| 42 | Cloudflare deploy | ✓ DONE | Commit 7a5ca75 — Lovable landing page to Cloudflare Pages with custom domain |
+| 40 | Lovable website intake | ✓ DONE | Commit be77667 — Landing page with Turnstile CAPTCHA + lead capture |
+
+## Database
+
+- **New migrations:** 145 (dead-letter table), 146 (enhanced payments RLS)
+- **Tests:** tsc clean, biome lint clean
+
+## Unblocked
+
+| Row | Item | Now Unblocked |
+|-----|------|---------------|
+| 80 | Archived leads reference | ✅ Payment confirmation chain complete |
+
+## Next Session Queue
+
+| Row | Item | Gated By | Priority |
+|-----|------|----------|----------|
+| 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id | 63, 75 | **NEXT** |
+
+---
+
+Signed: Cece — final human gate. 2026-08-17.
