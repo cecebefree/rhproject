@@ -150,7 +150,7 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 81 | Public website registration form: feeds Office Desk per Pattern A/B logic | 75, 76 | Pending — lives on public website, not in repo |
-| 82 | v0 mobile screens: consume school_desk schema only, never front_desk leads | 50 | Pending — existing 5 screens already wired (rows 34-39) |
+| 82 | v0 mobile screens: consume school_desk schema only, never front_desk leads | 50 | **DONE** — 6 screens wired and live on hosted: Home (34), Classes (35), Profile (36), Teacher (37), Report Card (38), Hub (39). All consume school_desk schema only. |
 | 83 | Mobile Profile screen: ONE shared component, conditional sections by role | 73 | Pending — same pattern as Home devotional conditional rendering |
 
 ### F.7 — OPEN ITEMS (all locked for MVP)
@@ -493,7 +493,7 @@ Signed: Cece — final human gate. 2026-07-15.
 | Row | Item | Gated By | Priority |
 |-----|------|----------|----------|
 | 81 | Public website registration form: feeds Office Desk per Pattern A/B logic | 75, 76 | Pending — lives on public website, not in repo |
-| 82 | v0 mobile screens: consume school_desk schema only, never front_desk leads | 50 | Pending — existing 5 screens already wired (rows 34-39) |
+| 83 | Mobile Profile screen: ONE shared component, conditional sections by role | 73 | Pending — same pattern as Home devotional conditional rendering |
 
 ---
 
