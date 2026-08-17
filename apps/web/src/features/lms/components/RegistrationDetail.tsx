@@ -1,13 +1,23 @@
 // RegistrationDetail — detail view with status badge, payment indicator, lead ref
 // Row 67: Shows full registration details + status transitions for teachers
+// Row 80: Shows linked lead info (name, email, status) from front_desk.leads
 
 import { useEffect, useState } from 'react';
-import {
-  getRegistrationById,
-  updateRegistrationStatus,
-} from '../services/supabase';
+import { getRegistrationById, updateRegistrationStatus } from '../services/supabase';
 import type { Registration, RegistrationStatus } from '../services/supabase';
 import { StatusBadge } from './StatusBadge';
+
+interface LeadInfo {
+  id: string;
+  name: string | null;
+  email: string | null;
+  status: string | null;
+  archived_at: string | null;
+}
+
+interface RegistrationWithLead extends Registration {
+  lead?: LeadInfo | null;
+}
 
 interface RegistrationDetailProps {
   registrationId: string;
@@ -23,11 +33,8 @@ const TEACHER_TRANSITIONS: Record<RegistrationStatus, RegistrationStatus[]> = {
   rejected: [],
 };
 
-export function RegistrationDetail({
-  registrationId,
-  onBack,
-}: RegistrationDetailProps) {
-  const [registration, setRegistration] = useState<Registration | null>(null);
+export function RegistrationDetail({ registrationId, onBack }: RegistrationDetailProps) {
+  const [registration, setRegistration] = useState<RegistrationWithLead | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -39,8 +46,7 @@ export function RegistrationDetail({
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } =
-        await getRegistrationById(registrationId);
+      const { data, error: fetchError } = await getRegistrationById(registrationId);
 
       if (!cancelled) {
         if (fetchError) {
@@ -63,10 +69,7 @@ export function RegistrationDetail({
     setUpdating(true);
     setError(null);
 
-    const { data, error: updateError } = await updateRegistrationStatus(
-      registration.id,
-      newStatus,
-    );
+    const { data, error: updateError } = await updateRegistrationStatus(registration.id, newStatus);
 
     setUpdating(false);
 
@@ -89,8 +92,7 @@ export function RegistrationDetail({
     return <div style={styles.error}>Registration not found</div>;
   }
 
-  const allowedTransitions =
-    TEACHER_TRANSITIONS[registration.status] ?? [];
+  const allowedTransitions = TEACHER_TRANSITIONS[registration.status] ?? [];
 
   return (
     <div style={styles.card}>
@@ -110,9 +112,7 @@ export function RegistrationDetail({
         </div>
         <div style={styles.field}>
           <span style={styles.label}>Phone</span>
-          <span style={styles.value}>
-            {registration.student_phone ?? '—'}
-          </span>
+          <span style={styles.value}>{registration.student_phone ?? '—'}</span>
         </div>
         <div style={styles.field}>
           <span style={styles.label}>Course</span>
@@ -120,9 +120,7 @@ export function RegistrationDetail({
         </div>
         <div style={styles.field}>
           <span style={styles.label}>Created</span>
-          <span style={styles.value}>
-            {new Date(registration.created_at).toLocaleDateString()}
-          </span>
+          <span style={styles.value}>{new Date(registration.created_at).toLocaleDateString()}</span>
         </div>
         <div style={styles.field}>
           <span style={styles.label}>Payment Status</span>
@@ -136,7 +134,31 @@ export function RegistrationDetail({
             )}
           </span>
         </div>
-        {registration.lead_reference_id && (
+        {registration.lead && (
+          <div style={styles.field}>
+            <span style={styles.label}>Original Lead</span>
+            <div style={styles.leadInfo}>
+              <span style={styles.leadName}>
+                {registration.lead.name || registration.lead.email || '—'}
+              </span>
+              {registration.lead.email && registration.lead.name && (
+                <span style={styles.leadEmail}>{registration.lead.email}</span>
+              )}
+              {registration.lead.status && (
+                <span
+                  style={{
+                    ...styles.leadStatus,
+                    color: registration.lead.archived_at ? '#92400e' : '#065f46',
+                  }}
+                >
+                  {registration.lead.status}
+                  {registration.lead.archived_at ? ' (archived)' : ''}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        {!registration.lead && registration.lead_reference_id && (
           <div style={styles.field}>
             <span style={styles.label}>Lead Reference</span>
             <span style={styles.value}>{registration.lead_reference_id}</span>
@@ -287,5 +309,24 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#991b1b',
     borderRadius: '6px',
     fontSize: '14px',
+  },
+  leadInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+  },
+  leadName: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#2d3748',
+  },
+  leadEmail: {
+    fontSize: '12px',
+    color: '#718096',
+  },
+  leadStatus: {
+    fontSize: '12px',
+    fontWeight: '500',
+    marginTop: '2px',
   },
 };

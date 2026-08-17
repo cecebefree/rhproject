@@ -125,7 +125,7 @@ export async function updateRegistrationStatus(
 export async function getRegistrationById(registrationId: string) {
   return supabaseUntyped
     .from('office_desk.registrations')
-    .select('*')
+    .select('*, lead:front_desk.leads(id, name, email, status, archived_at)')
     .eq('id', registrationId)
     .single();
 }

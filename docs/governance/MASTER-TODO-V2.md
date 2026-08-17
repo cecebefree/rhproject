@@ -143,7 +143,7 @@
 | 77 | Registration status transitions: pending_init → pending_review → approved → active (plus terminal: withdrawn, rejected) | 75, 76 | **DONE** — PayPal webhook EF deployed (commit 238b403, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/paypal-webhook |
 | 78 | Manual/ad-hoc invoice creation UI on Office Desk | 50 | **DONE** — Migration 130: invoice_items table, lead_id, amount_paid, due_date, expanded statuses. Components: InvoiceList (search/filter/actions), InvoiceDetail (edit/send/mark-paid/cancel), InvoiceCreate (line items editor), InvoiceSend (email modal). Edge Function: send-invoice-email. OfficeDeskPage updated with Invoices tab. TypeScript clean, 464/464 pgTAP PASS. |
 | 79 | Payment confirmation UI on Office Desk | 78 | **DONE** — Migration 146: enhanced payments RLS (admin_all, office select+update, service_role-only writes). Edge Functions: confirm-payment-manual, refund-payment, retry-payment. Components: PaymentConfirmation (list view with status tabs, search, filters), PaymentConfirmationDetail (modal with confirm/refund/retry actions). TypeScript clean, biome lint clean. |
-| 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id (no duplication) | 63, 75 | Pending — single-project eliminates cross-project duplication |
+| 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id (no duplication) | 63, 75 | **DONE** — Migration 147: removed `archived_at IS NULL` from `leads_office_select` policy so office role can read archived leads. `getRegistrationById` now joins `front_desk.leads(id, name, email, status, archived_at)`. `RegistrationDetail.tsx` shows lead name/email/status (archived indicator). TypeScript clean, biome lint clean. |
 
 ### F.6 — WEBSITE + MOBILE INTEGRATION
 
@@ -492,7 +492,8 @@ Signed: Cece — final human gate. 2026-07-15.
 
 | Row | Item | Gated By | Priority |
 |-----|------|----------|----------|
-| 80 | Archived leads: front_desk.leads.status='handed_off', referenced by office_desk via lead_reference_id | 63, 75 | **NEXT** |
+| 81 | Public website registration form: feeds Office Desk per Pattern A/B logic | 75, 76 | Pending — lives on public website, not in repo |
+| 82 | v0 mobile screens: consume school_desk schema only, never front_desk leads | 50 | Pending — existing 5 screens already wired (rows 34-39) |
 
 ---
 
