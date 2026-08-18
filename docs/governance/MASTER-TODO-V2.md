@@ -201,8 +201,8 @@ Rows 100–117 below are the original Phase I items (formerly 50–67) renumbere
 | 102 | Schema-wide grant sweep — migration 069 revoke TRUNCATE/TRIGGER/REFERENCES/MAINTAIN from anon+authenticated on all public tables + ALTER DEFAULT PRIVILEGES for future tables | — | **CLOSED** — migration 069 applied locally, pgTAP 264/264 PASS. Ref: 068, 069, table_privileges audit 2026-07-25. |
 | 103 | Sequence ACL audit — postgres default ACL grants anon=w on future sequences | — | **CLOSED** — Zero sequences exist in public (UUID PKs). Ref: 071, pg_default_acl audit 2026-07-25. |
 | 104 | Write-grant review — 16 tables with full CRUD for authenticated | — | **CLOSED** — migration 070 revoked DELETE from authenticated on report_cards, consent_records, messages, certificates. Ref: 070. |
-| 105 | Column-grant narrowing — restrict UPDATE on privileged columns for authenticated | 104 | Pending |
-| 106 | Dead-policy cleanup — chapter_progress and enrollments carry student INSERT/DELETE policies with no matching grants | 104 | Pending |
+| 105 | Column-grant narrowing — restrict UPDATE on privileged columns for authenticated | 104 | **DONE** — migration 080_column_update_grants.sql implements column-scoped UPDATE on 12 tables. Test 080_column_grants_test.sql: 43/43 PASS. Grants survived schema move (migration 102). |
+| 106 | Dead-policy cleanup — chapter_progress and enrollments carry student INSERT/DELETE policies with no matching grants | 104 | **DONE** — migration 072_drop_dead_policies.sql: dropped 4 dead policies (Students can mark chapters complete, Students can delete their own progress, Students can create enrollments, Students can delete their enrollments). |
 | 107 | UNALLOCATED — reserved, never assigned. | — | — |
 | 108 | UNALLOCATED — reserved, never assigned. | — | — |
 | 109 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | SEALED — 55c5d5d (2026-07-27). [55c5d5d] |
