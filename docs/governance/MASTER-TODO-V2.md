@@ -149,9 +149,14 @@
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 81 | Public website registration form: feeds Office Desk per Pattern A/B logic | 75, 76 | Pending — lives on public website, not in repo |
+| 81 | Public website registration form: feeds Office Desk per Pattern A/B logic | 75, 76 | **DONE** — website-lead-to-registration EF (dual-route: form submission + payment webhook), website-lead-payment-webhook EF (standalone for local dev), migration 148 (extends website_leads + archive_lead_and_create_registration RPC), e2e test suite (25/25 pass). Stripe + PayPal session creation, signature verification, idempotent webhook handling. Docs: docs/stripe-paypal-setup.md, docs/FIXES.md. |
 | 82 | v0 mobile screens: consume school_desk schema only, never front_desk leads | 50 | **DONE** — 6 screens wired and live on hosted: Home (34), Classes (35), Profile (36), Teacher (37), Report Card (38), Hub (39). All consume school_desk schema only. |
 | 83 | Mobile Profile screen: ONE shared component, conditional sections by role | 73 | **DONE** — `profile.tsx` now renders role-conditional sections: StudentSections (academic info, groups, progress), TeacherSections (classes, attendance, gradebook), AdminSections (desk access, system). QuickLinks always shown. TypeScript clean, biome lint clean. |
+| 91 | Payment session EF — Stripe + PayPal session creation for public website | 81 | **DONE** — `supabase/functions/website-lead-payment-session/index.ts` + `deno.json`. POST /website-lead-payment-session → Stripe checkout session OR PayPal order. Input validation, 18 e2e tests pass. URLs updated: Stripe success→/register/success, cancel→/register/cancel; PayPal return→/register/success?provider=paypal, cancel→/register/cancel?provider=paypal. |
+| 92 | Public registration form — web UI for course enrollment + payment | 81 | **DONE** — `apps/web/src/features/registration/types.ts` (PaymentMethod, RegistrationFormValues, RegistrationFormErrors, PaymentSessionRequest/Response). `RegistrationForm.tsx` (5 fields, client-side validation, radio buttons for payment method, submit disabled until valid). `RegistrationPage.tsx` (wraps form, calls EF, handles redirect to Stripe/PayPal). Route `/register` added to `main.tsx` + nav link on IndexPage. |
+| 93 | Form submission wiring — EF call + redirect to payment processor | 91, 92 | **DONE** — RegistrationPage calls `POST /website-lead-payment-session`, handles 200 (redirect to Stripe/PayPal checkout), 400 (show errors), 500 (show error state). |
+| 94 | Registration success/cancel pages — post-payment landing | 91, 92 | **DONE** — `RegistrationSuccess.tsx` (green checkmark, payment details, polls `website_leads` table at 2s intervals, max 30 polls to detect registration creation). `RegistrationCancel.tsx` (red X, cancel reason from `?reason` query, retry link, support email). Routes `/register/success` and `/register/cancel` added. |
+| 95 | Mobile Index screen — browse all classes with enrollment status | 82 | **DONE** — `apps/mobile/src/types/classes.ts` (ClassItem, EnrollmentStatus, ScheduleSlot). `apps/mobile/src/lib/classesClient.ts` (fetchClassesWithEnrollment: courses + student_class + teacher names via RPC). `apps/mobile/src/components/ClassCard.tsx` (card: title, teacher, type/platform badges, enrollment status badge, enroll button). `apps/mobile/app/(tabs)/browse-classes.tsx` (filter tabs: All/Enrolled/Available/Waitlisted, loading/error/empty states). "Browse" tab added to `_layout.tsx`. TypeScript clean. |
 
 ### F.7 — OPEN ITEMS (all locked for MVP)
 
@@ -476,25 +481,87 @@ Signed: Cece — final human gate. 2026-07-15.
 | 57 | EF-to-EF auth (HMAC-SHA256) | ✓ DONE | Commit 6f341f1 — ef-auth.ts, ef_call_log, front-desk-read-leads updated |
 | 42 | Cloudflare deploy | ✓ DONE | Commit 7a5ca75 — Lovable landing page to Cloudflare Pages with custom domain |
 | 40 | Lovable website intake | ✓ DONE | Commit be77667 — Landing page with Turnstile CAPTCHA + lead capture |
+| 85 | Update supabase/config.toml for production deployment | ✓ DONE | Row 85: Edge Functions configured (website-lead-to-registration, website-lead-payment-webhook), 7 secrets templated, CORS policy, deployment notes |
+| 86 | Create office-desk-notify Edge Function | ✓ DONE | Row 86: supabase/functions/office-desk-notify/index.ts + deno.json, migration 149 (office_desk.notifications), config.toml env vars |
+| 87 | Integrate office-desk-notify trigger into migration 148 | ✓ DONE | Row 87: pg_net trigger on office_desk.registrations INSERT → async HTTP POST to office-desk-notify |
+| 88 | Run full end-to-end test: form → payment → registration → notification | ✓ DONE | Row 88: supabase/tests/e2e/full-flow.test.ts + helpers/notification-wait.ts — 9/9 tests PASS |
+| 89 | Fix migration chain (resolve migration 133) | ✓ DONE | Created 132_office_desk_contacts.sql (missing contacts table), 1339_office_desk_core_tables.sql (missing office_desk + user_desks tables). Fixed auth.tenants → public.tenant_lms in migrations 134-137. Fixed public.tenants → public.tenant_lms in migrations 138-142. Fixed duplicate 136 → 1361. Fixed missing columns in migration 144. |
+| 90 | Deploy migration chain — supabase db reset + full validation | ✓ DONE | supabase db reset PASS — 135 migrations applied, 0 errors. office_desk.contacts exists (19 columns). on_registration_created trigger fires. office_desk.notifications has RLS (3 policies). 9 Edge Functions deployed (all ACTIVE). 53 tables across 3 desk schemas. 120 RLS policies. 32 triggers. |
 
 ## Database
 
-- **New migrations:** 145 (dead-letter table), 146 (enhanced payments RLS)
-- **Tests:** tsc clean, biome lint clean
+- **New migrations:** 132 (office_desk.contacts), 1339 (office_desk.office_desk + user_desk), 145 (dead-letter table), 146 (enhanced payments RLS), 148 (website leads + trigger), 149 (office_desk.notifications)
+- **Migration fixes:** auth.tenants → public.tenant_lms (134-137), public.tenants → public.tenant_lms (138-142), duplicate 136 → 1361, missing columns in 144
+- **Tests:** tsc clean, biome lint clean, 9/9 e2e tests PASS
+- **New tables:** office_desk.contacts, office_desk.office_desk, office_desk.user_desks, office_desk.notifications, office_desk.failed_enrollments
+- **New Edge Functions:** office-desk-notify (v1), website-lead-to-registration (dual-route), website-lead-payment-webhook
 
 ## Unblocked
 
 | Row | Item | Now Unblocked |
 |-----|------|---------------|
 | 80 | Archived leads reference | ✅ Payment confirmation chain complete |
+| 81 | Website registration form → Office Desk | ✅ Pattern A/B logic complete, e2e tests passing |
+| 89 | Migration chain clean | ✅ supabase db push unblocked |
+| 90 | Full validation pass | ✅ All desk schemas verified |
 
 ## Next Session Queue
 
 | Row | Item | Gated By | Priority |
 |-----|------|----------|----------|
-| 81 | Public website registration form: feeds Office Desk per Pattern A/B logic | 75, 76 | Pending — lives on public website, not in repo |
 | 85 | Pending-payment timeout — basic automated reminder | — | LOCKED — MVP: basic reminder, log to Office Desk |
 
 ---
 
 Signed: Cece — final human gate. 2026-08-17.
+
+---
+
+# SESSION — 2026-08-17 (Weeks 1-4 Crunch)
+
+## Rows Completed
+
+| Row | Item | Status | Evidence |
+|-----|------|--------|----------|
+| 96 | Mobile Enrollment Flow — enroll-student EF + enrollment client + IndexScreen + 17 e2e tests | ✓ DONE | `enroll-student` EF, `apps/mobile/src/lib/enrollmentClient.ts`, `apps/mobile/app/(tabs)/index.tsx`, tests PASS |
+| 97 | Class Detail Screen — types + client + schedule + materials + class-detail tab | ✓ DONE | `apps/mobile/src/types/class.ts`, `apps/mobile/src/lib/classClient.ts`, `apps/mobile/src/components/ClassScheduleTable.tsx`, `apps/mobile/src/components/ClassMaterialsList.tsx`, `apps/mobile/app/(tabs)/class-detail.tsx` |
+| 98 | Mobile Profile Screen — types + 7 fetch functions + 5 components + profile.tsx rewrite + 12 e2e tests | ✓ DONE | `apps/mobile/src/types/profile.ts`, `apps/mobile/src/lib/profileClient.ts`, `apps/mobile/src/components/EnrolledClassesList.tsx`, `RegistrationStatusTimeline.tsx`, `PaymentHistoryList.tsx`, `GradesAttendanceCard.tsx`, `EditProfileModal.tsx`, `apps/mobile/app/(tabs)/profile.tsx` |
+| 99 | Admin Course Builder — Migration 151 + CRUD client + CourseList | ✓ DONE | `supabase/migrations/151_admin_course_builder.sql`, `apps/web/src/features/admin/adminCoursesClient.ts`, `apps/web/src/features/admin/components/CourseList.tsx` |
+| 100 | Admin Course Builder — CourseForm + CourseSchedule + AdminCoursesPage | ✓ DONE | `apps/web/src/features/admin/components/CourseForm.tsx`, `CourseSchedule.tsx`, `AdminCoursesPage.tsx`, route wired at `/lms/admin/courses` |
+| 101 | Admin Course Builder — TypeScript clean + verify | ✓ DONE | tsc clean |
+| 102 | Stripe Webhooks — Migration 152 (payment_status enum, stripe_events, refunds) + webhooks-stripe EF | ✓ DONE | `supabase/migrations/152_stripe_webhooks_and_events.sql`, `supabase/functions/webhooks-stripe/index.ts`, E2E verified: charge.succeeded → paid + auto-transition, idempotency, charge.failed → notification, charge.refunded → refund record, audit trail logged |
+| 103 | Email Templates + send-template-email EF — Migration 153 (email_logs) + 6 HTML templates + SendGrid | ✓ DONE | `supabase/migrations/153_email_logs.sql`, `supabase/functions/send-template-email/index.ts`, E2E verified: all 6 templates send successfully, email_logs tracks all attempts |
+| 104 | E2E Test Framework — Playwright config + 4 helpers + 6 flow test files (26 tests) | ✓ DONE | `tests/e2e/playwright.config.ts`, `tests/e2e/helpers/{db,auth,payment,assertions}.ts`, 6 flow spec files. **26/26 PASS** — commit a47a42e |
+
+## Row 104 E2E Test Fixes — COMPLETE ✓
+
+**Root causes fixed (26/26 passing, commit a47a42e):**
+
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| `TEST_TENANT_ID` undefined in all imports | `const` instead of `export const` in db.ts | Added `export` keyword |
+| `notifications-bell` 6.1-6.3 silent failures | `payment_received` not in CHECK constraint | Migration 155 added the type |
+| Profile `tenant_id` always NULL after seed | `enforce_tenant_id_immutability()` trigger blocked upserts | Migration 156 created `seed_profile_tenant()` RPC using `app.tenant_assignment_bypass` GUC |
+| `school-desk-grades` 4.1 student_id null | `createUser` returns `{}` for existing users | Use constant `STUDENT_USER_ID` instead of return value |
+| `mobile-enrollment` 1.1 blank page | Missing `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` in `apps/web/.env` | Created `.env` with VITE_-prefixed vars |
+| `mobile-enrollment` 1.1 wrong selectors | Test assumed fields (`studentName`, `course`) that don't exist in actual `RegistrationForm` | Rewrote test to match actual form: `#family_email`, `#child_name`, etc. |
+
+## Database
+
+- **Migrations applied:** 151 (admin course builder), 152 (stripe webhooks + events + refunds + payment_status enum), 153 (email_logs)
+- **New enums:** `payment_status` (pending, paid, failed, refunded)
+- **New tables:** `office_desk.stripe_events`, `office_desk.refunds`, `public.email_logs`
+- **New Edge Functions:** `webhooks-stripe` (unauthenticated, Stripe signature verified), `send-template-email` (JWT auth, 6 templates, SendGrid integration)
+- **Config changes:** `supabase/config.toml` — `webhooks-stripe` verify_jwt=false, `send-template-email` verify_jwt=true
+
+## Unblocked
+
+| Row | Item | Now Unblocked |
+|-----|------|---------------|
+| 105+ | Launch prep | ✅ Rows 96-104 complete |
+
+## Next Session Queue
+
+| Row | Item | Gated By | Priority |
+|-----|------|----------|----------|
+| 105+ | Launch prep — final verification, cleanup, deployment | 104 | HIGH |
