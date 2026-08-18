@@ -122,8 +122,17 @@ UPDATE office_desk.contacts SET updated_at = created_at WHERE updated_at IS NULL
 -- ═══════════════════════════════════════════════════════════
 
 -- Ensure tables are in the realtime publication
-ALTER PUBLICATION supabase_realtime ADD TABLE front_desk.leads;
-ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.invoices;
-ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.contacts;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE front_desk.leads;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.invoices;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.contacts;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 COMMIT;

@@ -5,9 +5,9 @@
 -- REPORT TEMPLATES
 -- ═══════════════════════════════════════════════════════════
 
-CREATE TABLE office_desk.report_templates (
+CREATE TABLE IF NOT EXISTS office_desk.report_templates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
   report_type TEXT NOT NULL CHECK (report_type IN ('summary', 'detailed', 'custom')),
@@ -25,6 +25,7 @@ CREATE TABLE office_desk.report_templates (
 
 ALTER TABLE office_desk.report_templates ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view templates in their desk" ON office_desk.report_templates;
 CREATE POLICY "Users can view templates in their desk"
   ON office_desk.report_templates
   FOR SELECT
@@ -32,6 +33,7 @@ CREATE POLICY "Users can view templates in their desk"
     tenant_id = (SELECT tenant_id FROM office_desk.user_desks WHERE user_id = auth.uid() LIMIT 1)
   );
 
+DROP POLICY IF EXISTS "Users with settings.manage can manage templates" ON office_desk.report_templates;
 CREATE POLICY "Users with settings.manage can manage templates"
   ON office_desk.report_templates
   FOR ALL
@@ -50,13 +52,16 @@ CREATE POLICY "Users with settings.manage can manage templates"
 -- SCHEDULED REPORTS
 -- ═══════════════════════════════════════════════════════════
 
-CREATE TYPE office_desk.report_frequency AS ENUM (
-  'daily', 'weekly', 'monthly', 'quarterly'
-);
+DO $$ BEGIN
+  CREATE TYPE office_desk.report_frequency AS ENUM (
+    'daily', 'weekly', 'monthly', 'quarterly'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE office_desk.scheduled_reports (
+CREATE TABLE IF NOT EXISTS office_desk.scheduled_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   template_id UUID REFERENCES office_desk.report_templates(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   description TEXT,
@@ -74,6 +79,7 @@ CREATE TABLE office_desk.scheduled_reports (
 
 ALTER TABLE office_desk.scheduled_reports ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view scheduled reports in their desk" ON office_desk.scheduled_reports;
 CREATE POLICY "Users can view scheduled reports in their desk"
   ON office_desk.scheduled_reports
   FOR SELECT
@@ -81,6 +87,7 @@ CREATE POLICY "Users can view scheduled reports in their desk"
     tenant_id = (SELECT tenant_id FROM office_desk.user_desks WHERE user_id = auth.uid() LIMIT 1)
   );
 
+DROP POLICY IF EXISTS "Users with settings.manage can manage scheduled reports" ON office_desk.scheduled_reports;
 CREATE POLICY "Users with settings.manage can manage scheduled reports"
   ON office_desk.scheduled_reports
   FOR ALL
@@ -99,13 +106,16 @@ CREATE POLICY "Users with settings.manage can manage scheduled reports"
 -- REPORT LOGS
 -- ═══════════════════════════════════════════════════════════
 
-CREATE TYPE office_desk.report_log_status AS ENUM (
-  'pending', 'running', 'completed', 'failed'
-);
+DO $$ BEGIN
+  CREATE TYPE office_desk.report_log_status AS ENUM (
+    'pending', 'running', 'completed', 'failed'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE office_desk.report_logs (
+CREATE TABLE IF NOT EXISTS office_desk.report_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   scheduled_report_id UUID REFERENCES office_desk.scheduled_reports(id) ON DELETE SET NULL,
   template_id UUID REFERENCES office_desk.report_templates(id) ON DELETE SET NULL,
   report_type TEXT NOT NULL,
@@ -124,6 +134,7 @@ CREATE TABLE office_desk.report_logs (
 
 ALTER TABLE office_desk.report_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view report logs in their desk" ON office_desk.report_logs;
 CREATE POLICY "Users can view report logs in their desk"
   ON office_desk.report_logs
   FOR SELECT
@@ -131,11 +142,13 @@ CREATE POLICY "Users can view report logs in their desk"
     tenant_id = (SELECT tenant_id FROM office_desk.user_desks WHERE user_id = auth.uid() LIMIT 1)
   );
 
+DROP POLICY IF EXISTS "System can insert report logs" ON office_desk.report_logs;
 CREATE POLICY "System can insert report logs"
   ON office_desk.report_logs
   FOR INSERT
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "System can update report logs" ON office_desk.report_logs;
 CREATE POLICY "System can update report logs"
   ON office_desk.report_logs
   FOR UPDATE
@@ -145,13 +158,13 @@ CREATE POLICY "System can update report logs"
 -- INDEXES
 -- ═══════════════════════════════════════════════════════════
 
-CREATE INDEX idx_report_templates_tenant ON office_desk.report_templates(tenant_id);
-CREATE INDEX idx_report_templates_entity ON office_desk.report_templates(entity_type);
-CREATE INDEX idx_scheduled_reports_tenant ON office_desk.scheduled_reports(tenant_id);
-CREATE INDEX idx_scheduled_reports_next_run ON office_desk.scheduled_reports(next_run_at) WHERE is_active = true;
-CREATE INDEX idx_report_logs_tenant ON office_desk.report_logs(tenant_id);
-CREATE INDEX idx_report_logs_scheduled ON office_desk.report_logs(scheduled_report_id);
-CREATE INDEX idx_report_logs_status ON office_desk.report_logs(status);
+CREATE INDEX IF NOT EXISTS idx_report_templates_tenant ON office_desk.report_templates(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_report_templates_entity ON office_desk.report_templates(entity_type);
+CREATE INDEX IF NOT EXISTS idx_scheduled_reports_tenant ON office_desk.scheduled_reports(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_scheduled_reports_next_run ON office_desk.scheduled_reports(next_run_at) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_report_logs_tenant ON office_desk.report_logs(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_report_logs_scheduled ON office_desk.report_logs(scheduled_report_id);
+CREATE INDEX IF NOT EXISTS idx_report_logs_status ON office_desk.report_logs(status);
 
 -- ═══════════════════════════════════════════════════════════
 -- TRIGGER: updated_at
@@ -165,11 +178,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS set_report_templates_updated_at ON office_desk.report_templates;
 CREATE TRIGGER set_report_templates_updated_at
   BEFORE UPDATE ON office_desk.report_templates
   FOR EACH ROW
   EXECUTE FUNCTION office_desk.handle_report_updated_at();
 
+DROP TRIGGER IF EXISTS set_scheduled_reports_updated_at ON office_desk.scheduled_reports;
 CREATE TRIGGER set_scheduled_reports_updated_at
   BEFORE UPDATE ON office_desk.scheduled_reports
   FOR EACH ROW
@@ -184,7 +199,7 @@ DO $$
 DECLARE
   redhouse_tenant_id UUID;
 BEGIN
-  SELECT id INTO redhouse_tenant_id FROM auth.tenants WHERE name = 'Redhouse' LIMIT 1;
+  SELECT id INTO redhouse_tenant_id FROM public.tenant_lms WHERE name = 'Redhouse' LIMIT 1;
   
   IF redhouse_tenant_id IS NOT NULL THEN
     INSERT INTO office_desk.report_templates (tenant_id, name, description, report_type, entity_type, columns, is_default)

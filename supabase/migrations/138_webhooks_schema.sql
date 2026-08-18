@@ -1,13 +1,15 @@
 -- Migration 138: Webhooks & Automation
 -- Creates webhooks, webhook_events tables with RLS policies
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- ═══════════════════════════════════════════════════════════
 -- WEBHOOKS TABLE
 -- ═══════════════════════════════════════════════════════════
 
 CREATE TABLE IF NOT EXISTS office_desk.webhooks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   url TEXT NOT NULL,
   secret_key TEXT NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
@@ -34,7 +36,7 @@ CREATE INDEX idx_webhooks_active ON office_desk.webhooks(tenant_id, active) WHER
 CREATE TABLE IF NOT EXISTS office_desk.webhook_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   webhook_id UUID NOT NULL REFERENCES office_desk.webhooks(id) ON DELETE CASCADE,
-  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL,
   payload JSONB NOT NULL,
   response_status INTEGER,
@@ -68,7 +70,7 @@ CREATE INDEX idx_webhook_events_created_at ON office_desk.webhook_events(created
 
 CREATE TABLE IF NOT EXISTS office_desk.webhook_notification_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE UNIQUE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE UNIQUE,
   enabled BOOLEAN NOT NULL DEFAULT true,
   email_recipients TEXT[] DEFAULT '{}',
   notify_on_failure BOOLEAN NOT NULL DEFAULT true,

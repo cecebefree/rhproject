@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS office_desk.contact_notes (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   contact_id        uuid NOT NULL REFERENCES office_desk.contacts(id) ON DELETE CASCADE,
   desk_id           uuid NOT NULL REFERENCES office_desk.office_desk(id) ON DELETE CASCADE,
-  tenant_id         uuid NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id         uuid NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   created_by        uuid NOT NULL REFERENCES auth.users(id),
   content           text NOT NULL,
   content_html      text,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS office_desk.contact_activity_log (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   contact_id        uuid NOT NULL REFERENCES office_desk.contacts(id) ON DELETE CASCADE,
   desk_id           uuid NOT NULL REFERENCES office_desk.office_desk(id) ON DELETE CASCADE,
-  tenant_id         uuid NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id         uuid NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   user_id           uuid NOT NULL REFERENCES auth.users(id),
   action            varchar(50) NOT NULL,
   action_data       jsonb,
@@ -266,7 +266,13 @@ CREATE TRIGGER trg_contact_notes_updated_at
 -- ENABLE REALTIME
 -- ═══════════════════════════════════════════════════════════
 
-ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.contact_notes;
-ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.contact_activity_log;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.contact_notes;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+DO $$ BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE office_desk.contact_activity_log;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 COMMIT;
