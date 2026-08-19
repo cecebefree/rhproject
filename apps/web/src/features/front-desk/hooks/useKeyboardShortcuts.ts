@@ -1,35 +1,27 @@
 import { useEffect } from 'react';
 
-type Tab = 'intake' | 'leads' | 'archived';
-
-interface UseKeyboardShortcutsOptions {
-  onNavigate: (tab: Tab) => void;
-  onSearchFocus: () => void;
+interface ActionShortcuts {
+  onTake?: () => void;
+  onSchedule?: () => void;
+  onEmail?: () => void;
+  onEscalate?: () => void;
+  onRefresh?: () => void;
 }
 
-export function useKeyboardShortcuts({ onNavigate, onSearchFocus }: UseKeyboardShortcutsOptions) {
+export function useKeyboardShortcuts(shortcuts: ActionShortcuts) {
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
+    const handleKeyDown = (e: KeyboardEvent) => {
       const isMeta = e.metaKey || e.ctrlKey;
       if (!isMeta) return;
 
-      if (e.key === 'n' && !e.shiftKey) {
-        e.preventDefault();
-        onNavigate('intake');
-      }
-
-      if (e.key === 'k' && !e.shiftKey) {
-        e.preventDefault();
-        onSearchFocus();
-      }
-
-      if (e.key === 'a' && e.shiftKey) {
-        e.preventDefault();
-        onNavigate('archived');
-      }
-    }
+      if (e.key === 't') { e.preventDefault(); shortcuts.onTake?.(); }
+      if (e.key === 's') { e.preventDefault(); shortcuts.onSchedule?.(); }
+      if (e.key === 'e') { e.preventDefault(); shortcuts.onEmail?.(); }
+      if (e.key === 'x') { e.preventDefault(); shortcuts.onEscalate?.(); }
+      if (e.key === 'r') { e.preventDefault(); shortcuts.onRefresh?.(); }
+    };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNavigate, onSearchFocus]);
+  }, [shortcuts]);
 }

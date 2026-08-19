@@ -16,7 +16,8 @@ export default function TabLayout() {
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
         <Tabs.Screen name="social" options={{ title: 'My Groups' }} />
-        <Tabs.Screen name="class" options={{ title: 'Class' }} />
+        <Tabs.Screen name="class" options={{ title: 'My Classes' }} />
+        <Tabs.Screen name="browse-classes" options={{ title: 'Browse' }} />
         <Tabs.Screen name="hub" options={{ title: 'Enrichment' }} />
         <Tabs.Screen name="report-card" options={{ title: 'Records' }} />
         <Tabs.Screen name="teacher" options={{ title: 'Teacher' }} />

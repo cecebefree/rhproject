@@ -1,332 +1,361 @@
-// RegistrationDetail — detail view with status badge, payment indicator, lead ref
-// Row 67: Shows full registration details + status transitions for teachers
-// Row 80: Shows linked lead info (name, email, status) from front_desk.leads
+// RegistrationDetail — expandable detail card for a single registration (Row 70)
+// Shows: family info, enrollment info, timeline, payment status, contract status, actions
 
-import { useEffect, useState } from 'react';
-import { getRegistrationById, updateRegistrationStatus } from '../services/supabase';
-import type { Registration, RegistrationStatus } from '../services/supabase';
-import { StatusBadge } from './StatusBadge';
-
-interface LeadInfo {
-  id: string;
-  name: string | null;
-  email: string | null;
-  status: string | null;
-  archived_at: string | null;
-}
-
-interface RegistrationWithLead extends Registration {
-  lead?: LeadInfo | null;
-}
+import { useState } from 'react';
+import {
+  updateRegistrationStatus,
+  type Registration,
+  type RegistrationStatus,
+} from '../services/supabase';
 
 interface RegistrationDetailProps {
-  registrationId: string;
-  onBack?: () => void;
+  registration: Registration;
+  onBack: () => void;
+  onStatusChanged?: () => void;
 }
 
-const TEACHER_TRANSITIONS: Record<RegistrationStatus, RegistrationStatus[]> = {
-  pending_init: ['pending_review', 'withdrawn'],
-  pending_review: ['withdrawn'],
-  approved: [],
-  active: [],
-  withdrawn: [],
-  rejected: [],
+const STATUS_LABELS: Record<RegistrationStatus, string> = {
+  pending_init: 'Not Started',
+  pending_review: 'Under Review',
+  approved: 'Approved',
+  active: 'Active',
+  withdrawn: 'Withdrawn',
+  rejected: 'Rejected',
 };
 
-export function RegistrationDetail({ registrationId, onBack }: RegistrationDetailProps) {
-  const [registration, setRegistration] = useState<RegistrationWithLead | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const STATUS_COLORS: Record<RegistrationStatus, string> = {
+  pending_init: '#e2e8f0',
+  pending_review: '#fef3c7',
+  approved: '#d1fae5',
+  active: '#27ae60',
+  withdrawn: '#fee2e2',
+  rejected: '#fee2e2',
+};
+
+const TIMELINE_STEPS: { key: string; label: string }[] = [
+  { key: 'created', label: 'Created' },
+  { key: 'pending_review', label: 'Under Review' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'active', label: 'Active' },
+];
+
+const STATUS_ORDER: RegistrationStatus[] = [
+  'pending_init',
+  'pending_review',
+  'approved',
+  'active',
+];
+
+function formatDate(iso: string | null): string {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+export function RegistrationDetail({
+  registration,
+  onBack,
+  onStatusChanged,
+}: RegistrationDetailProps) {
   const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const currentIdx = STATUS_ORDER.indexOf(registration.status);
 
-    async function load() {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await getRegistrationById(registrationId);
-
-      if (!cancelled) {
-        if (fetchError) {
-          setError(fetchError.message);
-        } else {
-          setRegistration(data);
-        }
-        setLoading(false);
-      }
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [registrationId]);
-
-  async function handleStatusTransition(newStatus: RegistrationStatus) {
-    if (!registration) return;
+  const handleApprove = async () => {
     setUpdating(true);
     setError(null);
-
-    const { data, error: updateError } = await updateRegistrationStatus(registration.id, newStatus);
-
+    const { error: updateErr } = await updateRegistrationStatus(
+      registration.id,
+      'approved',
+    );
     setUpdating(false);
-
-    if (updateError) {
-      setError(updateError.message);
-    } else if (data) {
-      setRegistration(data);
+    if (updateErr) {
+      setError(updateErr.message);
+    } else {
+      onStatusChanged?.();
     }
-  }
+  };
 
-  if (loading) {
-    return <div style={styles.loading}>Loading registration...</div>;
-  }
-
-  if (error) {
-    return <div style={styles.error}>{error}</div>;
-  }
-
-  if (!registration) {
-    return <div style={styles.error}>Registration not found</div>;
-  }
-
-  const allowedTransitions = TEACHER_TRANSITIONS[registration.status] ?? [];
+  const handleReject = async () => {
+    setUpdating(true);
+    setError(null);
+    const { error: updateErr } = await updateRegistrationStatus(
+      registration.id,
+      'rejected',
+    );
+    setUpdating(false);
+    if (updateErr) {
+      setError(updateErr.message);
+    } else {
+      onStatusChanged?.();
+    }
+  };
 
   return (
-    <div style={styles.card}>
+    <div style={styles.container}>
+      {/* Header */}
       <div style={styles.header}>
-        <button type="button" onClick={onBack} style={styles.backButton}>
-          ← Back to List
+        <button onClick={onBack} style={styles.backButton}>
+          &larr; Back
         </button>
-        <StatusBadge status={registration.status} />
+        <span
+          style={{
+            ...styles.statusBadge,
+            backgroundColor: STATUS_COLORS[registration.status] ?? '#e2e8f0',
+          }}
+        >
+          {STATUS_LABELS[registration.status]}
+        </span>
       </div>
 
       <h2 style={styles.title}>{registration.student_name}</h2>
 
-      <div style={styles.grid}>
-        <div style={styles.field}>
-          <span style={styles.label}>Email</span>
-          <span style={styles.value}>{registration.student_email}</span>
+      {error && <div style={styles.error}>{error}</div>}
+
+      {/* Family Info */}
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Student Info</h3>
+        <div style={styles.fieldRow}>
+          <span style={styles.fieldLabel}>Name</span>
+          <span style={styles.fieldValue}>{registration.student_name}</span>
         </div>
-        <div style={styles.field}>
-          <span style={styles.label}>Phone</span>
-          <span style={styles.value}>{registration.student_phone ?? '—'}</span>
+        <div style={styles.fieldRow}>
+          <span style={styles.fieldLabel}>Email</span>
+          <span style={styles.fieldValue}>{registration.student_email}</span>
         </div>
-        <div style={styles.field}>
-          <span style={styles.label}>Course</span>
-          <span style={styles.value}>{registration.course_name ?? '—'}</span>
-        </div>
-        <div style={styles.field}>
-          <span style={styles.label}>Created</span>
-          <span style={styles.value}>{new Date(registration.created_at).toLocaleDateString()}</span>
-        </div>
-        <div style={styles.field}>
-          <span style={styles.label}>Payment Status</span>
-          <span style={styles.value}>
-            {registration.payment_attached_at ? (
-              <span style={styles.paid}>
-                Paid ({new Date(registration.payment_attached_at).toLocaleDateString()})
-              </span>
-            ) : (
-              <span style={styles.pending}>Pending</span>
-            )}
-          </span>
-        </div>
-        {registration.lead && (
-          <div style={styles.field}>
-            <span style={styles.label}>Original Lead</span>
-            <div style={styles.leadInfo}>
-              <span style={styles.leadName}>
-                {registration.lead.name || registration.lead.email || '—'}
-              </span>
-              {registration.lead.email && registration.lead.name && (
-                <span style={styles.leadEmail}>{registration.lead.email}</span>
-              )}
-              {registration.lead.status && (
-                <span
-                  style={{
-                    ...styles.leadStatus,
-                    color: registration.lead.archived_at ? '#92400e' : '#065f46',
-                  }}
-                >
-                  {registration.lead.status}
-                  {registration.lead.archived_at ? ' (archived)' : ''}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-        {!registration.lead && registration.lead_reference_id && (
-          <div style={styles.field}>
-            <span style={styles.label}>Lead Reference</span>
-            <span style={styles.value}>{registration.lead_reference_id}</span>
+        {registration.student_phone && (
+          <div style={styles.fieldRow}>
+            <span style={styles.fieldLabel}>Phone</span>
+            <span style={styles.fieldValue}>{registration.student_phone}</span>
           </div>
         )}
       </div>
 
-      {registration.notes && (
-        <div style={styles.notesSection}>
-          <span style={styles.label}>Notes</span>
-          <p style={styles.notes}>{registration.notes}</p>
-        </div>
-      )}
-
-      {allowedTransitions.length > 0 && (
-        <div style={styles.actions}>
-          <span style={styles.label}>Actions</span>
-          <div style={styles.buttonGroup}>
-            {allowedTransitions.includes('pending_review') && (
-              <button
-                type="button"
-                onClick={() => handleStatusTransition('pending_review')}
-                disabled={updating}
-                style={styles.submitButton}
-              >
-                Submit for Review
-              </button>
-            )}
-            {allowedTransitions.includes('withdrawn') && (
-              <button
-                type="button"
-                onClick={() => handleStatusTransition('withdrawn')}
-                disabled={updating}
-                style={styles.withdrawButton}
-              >
-                Withdraw
-              </button>
-            )}
+      {/* Enrollment Info */}
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Enrollment</h3>
+        {registration.course_name && (
+          <div style={styles.fieldRow}>
+            <span style={styles.fieldLabel}>Course</span>
+            <span style={styles.fieldValue}>{registration.course_name}</span>
           </div>
+        )}
+        <div style={styles.fieldRow}>
+          <span style={styles.fieldLabel}>Registered</span>
+          <span style={styles.fieldValue}>{formatDate(registration.created_at)}</span>
         </div>
-      )}
+        {registration.notes && (
+          <div style={styles.fieldRow}>
+            <span style={styles.fieldLabel}>Notes</span>
+            <span style={styles.fieldValue}>{registration.notes}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Timeline */}
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Timeline</h3>
+        <div style={styles.timeline}>
+          {TIMELINE_STEPS.map((step, idx) => {
+            const stepIdx = STATUS_ORDER.indexOf(step.key as RegistrationStatus);
+            const isCompleted = stepIdx >= 0 && currentIdx > stepIdx;
+            const isActive = step.key === registration.status;
+            return (
+              <div key={step.key} style={styles.timelineStep}>
+                <div
+                  style={{
+                    ...styles.timelineDot,
+                    backgroundColor: isCompleted
+                      ? '#27ae60'
+                      : isActive
+                        ? '#8b1a2e'
+                        : '#e2e8f0',
+                  }}
+                />
+                <div style={styles.timelineContent}>
+                  <span
+                    style={{
+                      ...styles.timelineLabel,
+                      color: isCompleted || isActive ? '#2d3748' : '#a0aec0',
+                      fontWeight: isActive ? '600' : '400',
+                    }}
+                  >
+                    {step.label}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Payment Status */}
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Payment</h3>
+        <div style={styles.fieldRow}>
+          <span style={styles.fieldLabel}>Status</span>
+          <span style={styles.fieldValue}>
+            {registration.payment_attached_at ? 'Paid' : 'Pending'}
+          </span>
+        </div>
+        {registration.stripe_charge_id && (
+          <div style={styles.fieldRow}>
+            <span style={styles.fieldLabel}>Stripe Charge</span>
+            <span style={{ ...styles.fieldValue, fontFamily: 'monospace', fontSize: '12px' }}>
+              {registration.stripe_charge_id}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>Actions</h3>
+        <div style={styles.actions}>
+          {registration.status === 'pending_review' && (
+            <button
+              onClick={handleApprove}
+              disabled={updating}
+              style={{ ...styles.actionButton, backgroundColor: '#27ae60' }}
+            >
+              {updating ? 'Approving...' : 'Approve Registration'}
+            </button>
+          )}
+          {(registration.status === 'pending_init' ||
+            registration.status === 'pending_review') && (
+            <button
+              onClick={handleReject}
+              disabled={updating}
+              style={{ ...styles.actionButton, backgroundColor: '#e53e3e' }}
+            >
+              {updating ? 'Rejecting...' : 'Reject'}
+            </button>
+          )}
+          <button
+            disabled
+            style={{ ...styles.actionButton, backgroundColor: '#718096', cursor: 'not-allowed' }}
+          >
+            Request Signature
+          </button>
+          <button
+            disabled
+            style={{ ...styles.actionButton, backgroundColor: '#718096', cursor: 'not-allowed' }}
+          >
+            Send Email
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  card: {
-    backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '24px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    maxWidth: '700px',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '16px',
   },
   backButton: {
-    padding: '6px 12px',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
-    backgroundColor: 'white',
+    padding: '4px 8px',
+    background: 'none',
+    border: 'none',
     cursor: 'pointer',
     fontSize: '14px',
-    color: '#4a5568',
+    color: '#3182ce',
+  },
+  statusBadge: {
+    padding: '4px 12px',
+    borderRadius: '12px',
+    fontSize: '13px',
+    fontWeight: '500',
   },
   title: {
     fontSize: '20px',
     fontWeight: '600',
     color: '#2d3748',
-    margin: '0 0 24px 0',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, 1fr)',
-    gap: '16px',
-    marginBottom: '24px',
-  },
-  field: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-  label: {
-    fontSize: '12px',
-    fontWeight: '600',
-    color: '#718096',
-    textTransform: 'uppercase',
-  },
-  value: {
-    fontSize: '14px',
-    color: '#2d3748',
-  },
-  paid: {
-    color: '#065f46',
-    fontWeight: '500',
-  },
-  pending: {
-    color: '#92400e',
-    fontWeight: '500',
-  },
-  notesSection: {
-    marginBottom: '24px',
-  },
-  notes: {
-    fontSize: '14px',
-    color: '#4a5568',
-    margin: '4px 0 0 0',
-  },
-  actions: {
-    borderTop: '1px solid #e2e8f0',
-    paddingTop: '16px',
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '8px',
-    marginTop: '8px',
-  },
-  submitButton: {
-    padding: '8px 16px',
-    backgroundColor: '#3182ce',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-  },
-  withdrawButton: {
-    padding: '8px 16px',
-    backgroundColor: '#e53e3e',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-  },
-  loading: {
-    padding: '24px',
-    textAlign: 'center',
-    color: '#718096',
+    margin: 0,
   },
   error: {
-    padding: '12px',
-    backgroundColor: '#fee2e2',
+    padding: '8px 12px',
+    background: '#fee2e2',
     color: '#991b1b',
-    borderRadius: '6px',
+    borderRadius: '4px',
     fontSize: '14px',
   },
-  leadInfo: {
+  section: {
+    padding: '16px',
+    background: 'white',
+    borderRadius: '8px',
+    border: '1px solid #e2e8f0',
+  },
+  sectionTitle: {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#4a5568',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    margin: '0 0 12px 0',
+  },
+  fieldRow: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '2px',
+    justifyContent: 'space-between',
+    padding: '6px 0',
+    borderBottom: '1px solid #f7fafc',
   },
-  leadName: {
+  fieldLabel: {
     fontSize: '14px',
-    fontWeight: '500',
-    color: '#2d3748',
-  },
-  leadEmail: {
-    fontSize: '12px',
     color: '#718096',
   },
-  leadStatus: {
-    fontSize: '12px',
+  fieldValue: {
+    fontSize: '14px',
+    color: '#2d3748',
     fontWeight: '500',
-    marginTop: '2px',
+  },
+  timeline: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  timelineStep: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  timelineDot: {
+    width: '12px',
+    height: '12px',
+    borderRadius: '50%',
+    flexShrink: 0,
+  },
+  timelineContent: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  timelineLabel: {
+    fontSize: '14px',
+  },
+  actions: {
+    display: 'flex',
+    gap: '8px',
+    flexWrap: 'wrap',
+  },
+  actionButton: {
+    padding: '8px 16px',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '14px',
+    fontWeight: '500',
+    cursor: 'pointer',
   },
 };

@@ -7,7 +7,7 @@
 
 CREATE TABLE office_desk.saved_searches (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
@@ -47,7 +47,7 @@ CREATE POLICY "Users can manage their own saved searches"
 
 CREATE TABLE office_desk.search_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   entity_type TEXT NOT NULL CHECK (entity_type IN ('contacts', 'leads', 'invoices', 'all')),
   search_query TEXT NOT NULL,

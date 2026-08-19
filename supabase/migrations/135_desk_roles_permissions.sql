@@ -9,7 +9,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS office_desk.desk_roles (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   desk_id           uuid NOT NULL REFERENCES office_desk.office_desk(id) ON DELETE CASCADE,
-  tenant_id         uuid NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id         uuid NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   name              text NOT NULL,
   description       text,
   is_system         boolean DEFAULT false,
@@ -69,7 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_user_desk_roles_role_id ON office_desk.user_desk_
 CREATE TABLE IF NOT EXISTS office_desk.desk_invites (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   desk_id           uuid NOT NULL REFERENCES office_desk.office_desk(id) ON DELETE CASCADE,
-  tenant_id         uuid NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id         uuid NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   role_id           uuid NOT NULL REFERENCES office_desk.desk_roles(id) ON DELETE CASCADE,
   email             text NOT NULL,
   invited_by        uuid NOT NULL REFERENCES auth.users(id),
@@ -92,7 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_desk_invites_status ON office_desk.desk_invites(s
 CREATE TABLE IF NOT EXISTS office_desk.permission_audit_log (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   desk_id           uuid NOT NULL REFERENCES office_desk.office_desk(id) ON DELETE CASCADE,
-  tenant_id         uuid NOT NULL REFERENCES auth.tenants(id) ON DELETE CASCADE,
+  tenant_id         uuid NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   actor_id          uuid NOT NULL REFERENCES auth.users(id),
   action            text NOT NULL,
   target_user_id    uuid REFERENCES auth.users(id),

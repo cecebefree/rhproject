@@ -1,12 +1,13 @@
 import { useParams, useSearchParams } from 'react-router-dom';
 
-export type DeskTab = 'leads' | 'invoices' | 'billing' | 'reports' | 'settings';
+export type DeskTab = 'leads' | 'invoices' | 'registrations' | 'billing' | 'reports' | 'settings';
 
-export const DESK_TABS: DeskTab[] = ['leads', 'invoices', 'billing', 'reports', 'settings'];
+export const DESK_TABS: DeskTab[] = ['leads', 'invoices', 'registrations', 'billing', 'reports', 'settings'];
 
 export const DESK_TAB_LABELS: Record<DeskTab, string> = {
   leads: 'Leads',
   invoices: 'Invoices',
+  registrations: 'Registrations',
   billing: 'Billing',
   reports: 'Reports',
   settings: 'Settings',
@@ -90,6 +91,9 @@ export const deskRoutes = {
   invoices: (deskId: string) => `/lms/office-desk/${deskId}/invoices`,
   invoice: (deskId: string, invoiceId: string) =>
     `/lms/office-desk/${deskId}/invoices/${invoiceId}`,
+  registrations: (deskId: string) => `/lms/office-desk/${deskId}/registrations`,
+  registration: (deskId: string, registrationId: string) =>
+    `/lms/office-desk/${deskId}/registrations/${registrationId}`,
   billing: (deskId: string) => `/lms/office-desk/${deskId}/billing`,
   reports: (deskId: string) => `/lms/office-desk/${deskId}/reports`,
   settings: (deskId: string) => `/lms/office-desk/${deskId}/settings`,

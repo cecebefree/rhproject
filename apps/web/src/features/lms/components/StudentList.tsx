@@ -1,4 +1,4 @@
-// StudentList — read-only student view for School Desk
+// StudentList — student view for School Desk with search + filter + selection
 // Shows students enrolled in teacher's courses via student_class
 // RLS: sc_student_read policy filters by student_id = auth.uid()
 // For teacher/admin view, we query via course ownership
@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 
-interface Student {
+export interface Student {
   id: string;
   name: string;
   curriculum?: string;
@@ -20,12 +20,15 @@ interface Student {
 
 interface StudentListProps {
   tenantId: string | null;
+  onSelect?: (student: Student) => void;
 }
 
-export function StudentList({ tenantId }: StudentListProps) {
+export function StudentList({ tenantId, onSelect }: StudentListProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [classFilter, setClassFilter] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -90,6 +93,20 @@ export function StudentList({ tenantId }: StudentListProps) {
     );
   }
 
+  // Deduplicate by student id (student can be in multiple classes)
+  const uniqueStudents = students.reduce<Map<string, Student>>((map, s) => {
+    if (!map.has(s.id)) map.set(s.id, s);
+    return map;
+  }, new Map());
+
+  const classes = [...new Set(students.map((s) => s.class_title).filter(Boolean))];
+
+  const filtered = [...uniqueStudents.values()].filter((s) => {
+    const matchesSearch = !search || s.name.toLowerCase().includes(search.toLowerCase());
+    const matchesClass = !classFilter || s.class_title === classFilter;
+    return matchesSearch && matchesClass;
+  });
+
   if (students.length === 0) {
     return (
       <div style={styles.empty}>
@@ -101,10 +118,33 @@ export function StudentList({ tenantId }: StudentListProps) {
 
   return (
     <div>
-      <h2 style={styles.sectionTitle}>Enrolled Students ({students.length})</h2>
+      <div style={styles.controls}>
+        <input
+          type="text"
+          placeholder="Search students..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={styles.searchInput}
+        />
+        <select
+          value={classFilter}
+          onChange={(e) => setClassFilter(e.target.value)}
+          style={styles.filterSelect}
+        >
+          <option value="">All Classes</option>
+          {classes.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+      <h2 style={styles.sectionTitle}>Students ({filtered.length})</h2>
       <div style={styles.list}>
-        {students.map((student) => (
-          <div key={student.id} style={styles.card}>
+        {filtered.map((student) => (
+          <div
+            key={student.id}
+            style={onSelect ? { ...styles.card, ...styles.cardClickable } : styles.card}
+            onClick={onSelect ? () => onSelect(student) : undefined}
+          >
             <div style={styles.cardHeader}>
               <span style={styles.cardTitle}>{student.name}</span>
               <span style={styles.badge}>{student.class_title ?? 'Unknown Class'}</span>
@@ -126,6 +166,25 @@ export function StudentList({ tenantId }: StudentListProps) {
 }
 
 const styles: Record<string, React.CSSProperties> = {
+  controls: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '16px',
+  },
+  searchInput: {
+    flex: 1,
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '4px',
+    fontSize: '14px',
+  },
+  filterSelect: {
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '4px',
+    fontSize: '14px',
+    minWidth: '150px',
+  },
   loading: {
     padding: '48px',
     textAlign: 'center',
@@ -157,6 +216,10 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '8px',
     padding: '16px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  },
+  cardClickable: {
+    cursor: 'pointer',
+    transition: 'box-shadow 0.15s',
   },
   cardHeader: {
     display: 'flex',

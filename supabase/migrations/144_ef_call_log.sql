@@ -79,6 +79,14 @@ GRANT INSERT ON public.ef_call_log TO service_role;
 GRANT SELECT ON public.ef_call_log TO authenticated;
 
 -- ═══════════════════════════════════════════════════════════
+-- ADD MISSING COLUMNS (table created in migration 110)
+-- ═══════════════════════════════════════════════════════════
+ALTER TABLE public.ef_call_log ADD COLUMN IF NOT EXISTS signature_valid BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.ef_call_log ADD COLUMN IF NOT EXISTS replay_check_passed BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE public.ef_call_log ADD COLUMN IF NOT EXISTS request_hash TEXT;
+ALTER TABLE public.ef_call_log ADD COLUMN IF NOT EXISTS error_msg TEXT;
+
+-- ═══════════════════════════════════════════════════════════
 -- COMMENTS
 -- ═══════════════════════════════════════════════════════════
 

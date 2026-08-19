@@ -1,0 +1,10 @@
+{
+  "name": "rhproject-supabase-tests",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "vitest": "^3.2.1",
+    "@supabase/supabase-js": "^2.52.0",
+    "typescript": "^5.7.0"
+  }
+}

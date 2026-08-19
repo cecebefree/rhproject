@@ -11,12 +11,18 @@ import OfficeDeskInvoicesPage from './features/lms/pages/OfficeDeskInvoicesPage'
 import OfficeDeskLeadDetailPage from './features/lms/pages/OfficeDeskLeadDetailPage';
 import OfficeDeskLeadsPage from './features/lms/pages/OfficeDeskLeadsPage';
 import OfficeDeskPage from './features/lms/pages/OfficeDeskPage';
+import OfficeDeskRegistrationsPage from './features/lms/pages/OfficeDeskRegistrationsPage';
 import OfficeDeskReportsPage from './features/lms/pages/OfficeDeskReportsPage';
 import OfficeDeskSettingsPage from './features/lms/pages/OfficeDeskSettingsPage';
 import SchoolDeskPage from './features/lms/pages/SchoolDeskPage';
 import ParentPortalPage from './features/parent-portal/pages/ParentPortalPage';
 import WebhookManagementPage from './features/office-desk/components/WebhookManagementPage';
 import AnalyticsPage from './features/office-desk/components/AnalyticsPage';
+import RegistrationPage from './features/registration/RegistrationPage';
+import RegistrationSuccess from './features/registration/RegistrationSuccess';
+import RegistrationCancel from './features/registration/RegistrationCancel';
+import AdminCoursesPage from './features/admin/components/AdminCoursesPage';
+import { FrontDeskAdmin } from './pages/admin/FrontDeskAdmin';
 
 function IndexPage() {
   return (
@@ -25,9 +31,12 @@ function IndexPage() {
       <p>Cloudflare Pages — live deploy</p>
       <nav style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <Link to="/lms/front-desk">Front Desk</Link>
+        <Link to="/admin/front-desk">Front Desk Admin</Link>
         <Link to="/lms/school-desk">School Desk</Link>
         <Link to="/lms/office-desk">Office Desk</Link>
+        <Link to="/lms/admin/courses">Admin — Courses</Link>
         <Link to="/parent-portal">Parent Portal</Link>
+        <Link to="/register">Register</Link>
       </nav>
     </div>
   );
@@ -72,6 +81,10 @@ function App() {
               <Route path="invoices" element={<OfficeDeskInvoicesPage />} />
               <Route path="invoices/:invoiceId" element={<OfficeDeskInvoiceDetailPage />} />
 
+              {/* Registrations routes */}
+              <Route path="registrations" element={<OfficeDeskRegistrationsPage />} />
+              <Route path="registrations/:registrationId" element={<OfficeDeskRegistrationsPage />} />
+
               {/* Other tabs */}
               <Route path="billing" element={<OfficeDeskBillingPage />} />
               <Route path="reports" element={<OfficeDeskReportsPage />} />
@@ -81,6 +94,13 @@ function App() {
             </Route>
 
             <Route path="/lms" element={<Navigate to="/lms/front-desk" replace />} />
+            <Route path="/admin/front-desk" element={<FrontDeskAdmin />} />
+            <Route path="/lms/admin/courses" element={
+              <NavigationGuard><AdminCoursesPage /></NavigationGuard>
+            } />
+            <Route path="/register" element={<RegistrationPage />} />
+            <Route path="/register/success" element={<RegistrationSuccess />} />
+            <Route path="/register/cancel" element={<RegistrationCancel />} />
             <Route path="/parent-portal" element={<ParentPortalPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

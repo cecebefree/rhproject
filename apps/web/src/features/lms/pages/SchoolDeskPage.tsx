@@ -25,7 +25,12 @@ import { AssignmentForm } from '../components/AssignmentForm';
 import { GradebookForm } from '../components/GradebookForm';
 import { GradebookList } from '../components/GradebookList';
 import { GradebookDetail } from '../components/GradebookDetail';
+import { StudentList } from '../components/StudentList';
+import type { Student } from '../components/StudentList';
+import { StudentDetail } from '../components/StudentDetail';
+import { SendMessageModal } from '../components/SendMessageModal';
 import { StudentTranscript } from '../components/StudentTranscript';
+import { NotificationCenter } from '../../../components/NotificationCenter';
 import { supabase } from '../services/supabase';
 import type { Registration } from '../services/supabase';
 import type { News } from '../services/supabase';
@@ -42,6 +47,9 @@ type ViewMode =
   | 'intake'
   | 'list'
   | 'detail'
+  | 'students'
+  | 'students-detail'
+  | 'send-message'
   | 'news'
   | 'news-detail'
   | 'news-create'
@@ -85,6 +93,8 @@ export default function SchoolDeskPage() {
     useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [selectedStudentName, setSelectedStudentName] = useState<string>('');
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [showMessageModal, setShowMessageModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -229,6 +239,22 @@ export default function SchoolDeskPage() {
     setViewMode('gradebook');
   }
 
+  function handleSelectStudent(student: Student) {
+    setSelectedStudent(student);
+    setViewMode('students-detail');
+  }
+
+  function handleBackToStudents() {
+    setSelectedStudent(null);
+    setViewMode('students');
+  }
+
+  function handleSendMessage(studentId: string, studentName: string) {
+    setSelectedStudentId(studentId);
+    setSelectedStudentName(studentName);
+    setShowMessageModal(true);
+  }
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -259,6 +285,10 @@ export default function SchoolDeskPage() {
         </div>
       </div>
     );
+  }
+
+  function isStudentsView() {
+    return viewMode === 'students' || viewMode === 'students-detail' || viewMode === 'send-message';
   }
 
   function isRegistrationView() {
@@ -320,11 +350,21 @@ export default function SchoolDeskPage() {
   return (
     <div style={styles.container}>
       <header style={styles.header}>
-        <h1 style={styles.title}>School Desk</h1>
-        <p style={styles.subtitle}>Registration, News, Broadcasts & Gradebook — {profile.name}</p>
+        <div>
+          <h1 style={styles.title}>School Desk</h1>
+          <p style={styles.subtitle}>Registration, News, Broadcasts & Gradebook — {profile.name}</p>
+        </div>
+        <NotificationCenter userId={profile.id} />
       </header>
 
       <nav style={styles.nav}>
+        <button
+          type="button"
+          style={isStudentsView() ? styles.navButtonActive : styles.navButton}
+          onClick={() => setViewMode('students')}
+        >
+          Students
+        </button>
         <button
           type="button"
           style={isRegistrationView() ? styles.navButtonActive : styles.navButton}
@@ -377,6 +417,21 @@ export default function SchoolDeskPage() {
       </nav>
 
       <main style={styles.main}>
+        {/* Students views */}
+        {viewMode === 'students' && profile.tenant_id && (
+          <StudentList
+            tenantId={profile.tenant_id}
+            onSelect={handleSelectStudent}
+          />
+        )}
+        {viewMode === 'students-detail' && selectedStudent && (
+          <StudentDetail
+            student={selectedStudent}
+            onBack={handleBackToStudents}
+            onSendMessage={handleSendMessage}
+          />
+        )}
+
         {/* Registration views */}
         {viewMode === 'intake' && profile.tenant_id && (
           <RegistrationIntakeForm
@@ -403,7 +458,7 @@ export default function SchoolDeskPage() {
         )}
         {viewMode === 'detail' && selectedRegistration && (
           <RegistrationDetail
-            registrationId={selectedRegistration.id}
+            registration={selectedRegistration}
             onBack={handleBackToList}
           />
         )}
@@ -637,6 +692,26 @@ export default function SchoolDeskPage() {
             studentName={selectedStudentName}
             tenantId={profile.tenant_id!}
             onBack={handleBackFromTranscript}
+          />
+        )}
+
+        {/* Send Message Modal */}
+        {showMessageModal && selectedStudentId && profile && (
+          <SendMessageModal
+            studentId={selectedStudentId}
+            studentName={selectedStudentName}
+            tenantId={profile.tenant_id!}
+            senderName={profile.name}
+            onSent={() => {
+              setShowMessageModal(false);
+              setSelectedStudentId(null);
+              setSelectedStudentName('');
+            }}
+            onCancel={() => {
+              setShowMessageModal(false);
+              setSelectedStudentId(null);
+              setSelectedStudentName('');
+            }}
           />
         )}
       </main>

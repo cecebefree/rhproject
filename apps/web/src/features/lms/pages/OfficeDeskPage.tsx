@@ -15,6 +15,7 @@ import { SubscriptionManager } from '../../office-desk/components/SubscriptionMa
 import { SearchBar } from '../../office-desk/components/SearchBar';
 import { AdvancedFilterPanel } from '../../office-desk/components/AdvancedFilterPanel';
 import { useSearch } from '../../../hooks/useSearch';
+import { NotificationCenter } from '../../../components/NotificationCenter';
 import { supabase } from '../services/supabase';
 
 interface Profile {
@@ -148,28 +149,31 @@ export default function OfficeDeskPage() {
             <h1 style={styles.title}>Office Desk</h1>
             <p style={styles.subtitle}>Billing &amp; Administration — {profile.name}</p>
           </div>
-          {deskId && profile && (
-            <div style={{ flex: 1, maxWidth: '600px', marginLeft: '32px' }}>
-              <SearchBar
-                query={searchHook.query}
-                entityType={searchHook.entityType}
-                suggestions={searchHook.suggestions}
-                searchHistory={searchHook.searchHistory}
-                loadingSuggestions={searchHook.loadingSuggestions}
-                onQueryChange={searchHook.setQuery}
-                onSearch={searchHook.executeSearch}
-                onEntityTypeChange={searchHook.setEntityType}
-                onFetchSuggestions={searchHook.fetchSuggestions}
-                onApplyHistory={searchHook.applySavedSearch}
-                onQuickFilter={(filters) => {
-                  searchHook.setFilters(filters as Record<string, unknown>);
-                  searchHook.executeSearch({ filters: filters as Record<string, unknown> });
-                }}
-                onShowFilters={() => setShowFilters(!showFilters)}
-                hasActiveFilters={Object.keys(searchHook.filters).length > 0}
-              />
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {deskId && profile && (
+              <div style={{ flex: 1, maxWidth: '500px' }}>
+                <SearchBar
+                  query={searchHook.query}
+                  entityType={searchHook.entityType}
+                  suggestions={searchHook.suggestions}
+                  searchHistory={searchHook.searchHistory}
+                  loadingSuggestions={searchHook.loadingSuggestions}
+                  onQueryChange={searchHook.setQuery}
+                  onSearch={searchHook.executeSearch}
+                  onEntityTypeChange={searchHook.setEntityType}
+                  onFetchSuggestions={searchHook.fetchSuggestions}
+                  onApplyHistory={searchHook.applySavedSearch}
+                  onQuickFilter={(filters) => {
+                    searchHook.setFilters(filters as Record<string, unknown>);
+                    searchHook.executeSearch({ filters: filters as Record<string, unknown> });
+                  }}
+                  onShowFilters={() => setShowFilters(!showFilters)}
+                  hasActiveFilters={Object.keys(searchHook.filters).length > 0}
+                />
+              </div>
+            )}
+            <NotificationCenter userId={profile.id} />
+          </div>
         </div>
       </header>
 
@@ -199,12 +203,6 @@ export default function OfficeDeskPage() {
             {DESK_TAB_LABELS[tab]}
           </button>
         ))}
-        <button type="button" style={styles.navButton} disabled>
-          Registrations
-        </button>
-        <button type="button" style={styles.navButton} disabled>
-          Payouts
-        </button>
       </nav>
 
       {deskId && (

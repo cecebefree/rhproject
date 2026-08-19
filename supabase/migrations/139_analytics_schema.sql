@@ -7,7 +7,7 @@
 
 CREATE TABLE IF NOT EXISTS office_desk.user_activity_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   user_id UUID REFERENCES auth.users(id),
   session_id TEXT,
   event_type TEXT NOT NULL CHECK (event_type IN (
@@ -39,7 +39,7 @@ CREATE INDEX idx_user_activity_page ON office_desk.user_activity_log(page_path) 
 
 CREATE TABLE IF NOT EXISTS office_desk.conversion_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   lead_id UUID REFERENCES front_desk.leads(id) ON DELETE SET NULL,
   contact_id UUID,
   invoice_id UUID,
@@ -68,7 +68,7 @@ CREATE INDEX idx_conversion_created ON office_desk.conversion_events(created_at 
 
 CREATE TABLE IF NOT EXISTS office_desk.revenue_metrics (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   metric_date DATE NOT NULL,
   metric_period TEXT NOT NULL CHECK (metric_period IN ('daily', 'weekly', 'monthly', 'quarterly', 'yearly')),
   total_revenue NUMERIC(12,2) DEFAULT 0,

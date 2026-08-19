@@ -1,230 +1,221 @@
-// ClassDetailScreen — Row 35 wiring
-// Live data: course details + chapters via chapters_read RPC + schedule slots
+// ClassDetailScreen — Row 97 enhanced
+// Full class detail: info, instructor, schedule, curriculum, materials, enroll button
 
-import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { supabase } from '../../src/services/supabase';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { ClassMaterialsList } from '../../src/components/ClassMaterialsList';
+import { ClassScheduleTable } from '../../src/components/ClassScheduleTable';
+import { fetchClassDetail } from '../../src/lib/classDetailClient';
+import { enrollStudent } from '../../src/lib/enrollmentClient';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
+import type { ClassDetail } from '../../src/types/classDetail';
 
-interface CourseDetail {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  type: string;
-  platform: string;
-  teacher_id: string;
-  teacher_name: string | null;
-}
+const STATUS_LABELS: Record<string, string> = {
+  enrolled: 'Enrolled',
+  available: 'Open',
+  waitlisted: 'Waitlisted',
+};
 
-interface Chapter {
-  id: string;
-  title: string;
-  description: string | null;
-  video_url: string;
-  order_index: number;
-}
-
-interface ScheduleSlot {
-  id: string;
-  label: string | null;
-  start_time: string;
-  end_time: string;
-  days_of_week: number[];
-}
-
-function SectionLoader() {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Loading...</Text>
-    </View>
-  );
-}
-
-function SectionError({ message }: { message: string }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Unable to load</Text>
-      <Text style={styles.emptyText}>{message}</Text>
-    </View>
-  );
-}
-
-function SectionEmpty({ message }: { message: string }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.emptyText}>{message}</Text>
-    </View>
-  );
-}
-
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-function formatDays(days: number[]): string {
-  return days
-    .map((d) => DAY_NAMES[d] || '')
-    .filter(Boolean)
-    .join(', ');
-}
-
-function formatTime(time: string): string {
-  const [h, m] = time.split(':');
-  const hour = Number.parseInt(h, 10);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
-  const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${h12}:${m} ${ampm}`;
-}
+const STATUS_STYLES: Record<string, { bg: string; text: string }> = {
+  enrolled: { bg: '#dcfce7', text: '#166534' },
+  available: { bg: '#dbeafe', text: '#1e40af' },
+  waitlisted: { bg: '#fef3c7', text: '#92400e' },
+};
 
 export default function ClassDetailScreen() {
   const { courseId } = useLocalSearchParams<{ courseId: string }>();
-  const [course, setCourse] = useState<CourseDetail | null>(null);
-  const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [slots, setSlots] = useState<ScheduleSlot[]>([]);
+  const router = useRouter();
+  const [detail, setDetail] = useState<ClassDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [enrolling, setEnrolling] = useState(false);
+
+  const loadDetail = useCallback(async () => {
+    if (!courseId) return;
+    setLoading(true);
+    const { data, error: err } = await fetchClassDetail(courseId);
+    setDetail(data);
+    setError(err);
+    setLoading(false);
+  }, [courseId]);
 
   useEffect(() => {
     let cancelled = false;
-
-    async function loadDetail() {
-      if (!courseId) return;
-      setLoading(true);
-      const newErrors: Record<string, string> = {};
-
-      // 1. Fetch course details
-      const { data: courseData, error: courseErr } = await supabase
-        .from('courses')
-        .select('id, title, description, status, type, platform, teacher_id')
-        .eq('id', courseId)
-        .single();
-
-      if (!cancelled) {
-        if (courseErr) newErrors.course = courseErr.message;
-        else if (courseData) {
-          // 2. Fetch teacher name
-          const { data: teacherData } = await supabase.rpc('get_teacher_name', {
-            p_teacher_id: courseData.teacher_id,
-          });
-
-          setCourse({
-            ...courseData,
-            teacher_name: teacherData?.[0]?.name ?? null,
-          });
-        }
-      }
-
-      // 3. Fetch chapters via RPC
-      const { data: chapterData, error: chapterErr } = await supabase.rpc('chapters_read', {
-        p_course_id: courseId,
-      });
-
-      if (!cancelled) {
-        if (chapterErr) newErrors.chapters = chapterErr.message;
-        else setChapters(chapterData ?? []);
-      }
-
-      // 4. Fetch schedule slots
-      const { data: slotData, error: slotErr } = await supabase
-        .from('schedule_slot')
-        .select('id, label, start_time, end_time, days_of_week')
-        .eq('course_id', courseId)
-        .eq('is_active', true)
-        .order('start_time');
-
-      if (!cancelled) {
-        if (slotErr) newErrors.schedule = slotErr.message;
-        else setSlots(slotData ?? []);
-      }
-
-      if (!cancelled) {
-        setErrors(newErrors);
-        setLoading(false);
-      }
-    }
-
-    loadDetail();
+    loadDetail().then(() => {
+      if (cancelled) return;
+    });
     return () => {
       cancelled = true;
     };
-  }, [courseId]);
+  }, [loadDetail]);
+
+  const handleEnroll = async () => {
+    if (!courseId) return;
+    setEnrolling(true);
+    const { error: err } = await enrollStudent(courseId);
+    setEnrolling(false);
+
+    if (!err) {
+      // Refresh to show enrolled state
+      loadDetail();
+    }
+  };
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push('/(tabs)/browse-classes');
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.burgundy} />
+        <Text style={styles.loadingText}>Loading class…</Text>
+      </View>
+    );
+  }
+
+  if (error || !detail) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorTitle}>Unable to load</Text>
+        <Text style={styles.errorText}>{error ?? 'Class not found'}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={loadDetail}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const statusStyle = STATUS_STYLES[detail.enrollment_status] ?? STATUS_STYLES.available;
+  const isEnrolled = detail.enrollment_status === 'enrolled';
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Course Header */}
-      <View style={styles.header}>
-        {loading ? (
-          <SectionLoader />
-        ) : errors.course ? (
-          <SectionError message={errors.course} />
-        ) : course ? (
-          <>
-            <View style={styles.headerRow}>
-              <Text style={styles.subject}>{course.title}</Text>
-              <View style={[styles.badge, styles.badgeCore]}>
-                <Text style={styles.badgeText}>{course.type}</Text>
-              </View>
-            </View>
-            {course.teacher_name && <Text style={styles.teacher}>{course.teacher_name}</Text>}
-            {course.description && <Text style={styles.description}>{course.description}</Text>}
-          </>
-        ) : (
-          <SectionEmpty message="Course not found" />
-        )}
-      </View>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Back button */}
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+          <Text style={styles.backText}>← Back</Text>
+        </TouchableOpacity>
 
-      {/* Schedule */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Schedule</Text>
-        {loading ? (
-          <SectionLoader />
-        ) : errors.schedule ? (
-          <SectionError message={errors.schedule} />
-        ) : slots.length === 0 ? (
-          <SectionEmpty message="No scheduled sessions" />
-        ) : (
-          slots.map((slot) => (
-            <View key={slot.id} style={styles.scheduleRow}>
-              <Text style={styles.scheduleDays}>{formatDays(slot.days_of_week)}</Text>
-              <Text style={styles.scheduleTime}>
-                {formatTime(slot.start_time)}–{formatTime(slot.end_time)}
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <Text style={styles.title} numberOfLines={2}>
+              {detail.title}
+            </Text>
+            <View style={[styles.badge, { backgroundColor: statusStyle.bg }]}>
+              <Text style={[styles.badgeText, { color: statusStyle.text }]}>
+                {STATUS_LABELS[detail.enrollment_status]}
               </Text>
-              {slot.label && <Text style={styles.scheduleLabel}>{slot.label}</Text>}
             </View>
-          ))
-        )}
-      </View>
+          </View>
 
-      {/* Chapters */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Chapters</Text>
-        {loading ? (
-          <SectionLoader />
-        ) : errors.chapters ? (
-          <SectionError message={errors.chapters} />
-        ) : chapters.length === 0 ? (
-          <SectionEmpty message="No chapters available" />
-        ) : (
-          chapters.map((ch, idx) => (
-            <View key={ch.id} style={styles.chapterRow}>
-              <View style={styles.chapterIndex}>
-                <Text style={styles.chapterIndexText}>{idx + 1}</Text>
-              </View>
-              <View style={styles.chapterInfo}>
-                <Text style={styles.chapterTitle}>{ch.title}</Text>
-                {ch.description && (
-                  <Text style={styles.chapterDesc} numberOfLines={2}>
-                    {ch.description}
-                  </Text>
-                )}
-              </View>
+          {/* Price */}
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>
+              {detail.price === 0 ? 'Free' : `R ${detail.price.toFixed(2)}`}
+            </Text>
+            <View style={[styles.typeBadge, { backgroundColor: colors.navy }]}>
+              <Text style={styles.typeBadgeText}>{detail.type}</Text>
             </View>
-          ))
+            <Text style={styles.platform}>{detail.platform}</Text>
+          </View>
+
+          {/* Instructor */}
+          {detail.teacher_name && (
+            <View style={styles.instructorRow}>
+              <Text style={styles.instructorLabel}>Instructor</Text>
+              <Text style={styles.instructorName}>{detail.teacher_name}</Text>
+            </View>
+          )}
+
+          {/* Description */}
+          {detail.description && <Text style={styles.description}>{detail.description}</Text>}
+        </View>
+
+        {/* Schedule */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Schedule</Text>
+          <ClassScheduleTable slots={detail.schedule} />
+        </View>
+
+        {/* Curriculum / Syllabus */}
+        {detail.chapters.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Curriculum</Text>
+            <Text style={styles.sectionSubtitle}>
+              {detail.chapters.length} {detail.chapters.length === 1 ? 'topic' : 'topics'}
+            </Text>
+            {detail.chapters.map((ch, idx) => (
+              <View key={ch.id} style={styles.chapterRow}>
+                <View style={styles.chapterIndex}>
+                  <Text style={styles.chapterIndexText}>{idx + 1}</Text>
+                </View>
+                <View style={styles.chapterInfo}>
+                  <Text style={styles.chapterTitle}>{ch.title}</Text>
+                  {ch.description && (
+                    <Text style={styles.chapterDesc} numberOfLines={2}>
+                      {ch.description}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Materials (enrolled only) */}
+        {isEnrolled && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Materials</Text>
+            <ClassMaterialsList materials={detail.materials} />
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Bottom action bar */}
+      <View style={styles.bottomBar}>
+        {isEnrolled ? (
+          <View style={styles.enrolledBanner}>
+            <Text style={styles.enrolledText}>✓ You are enrolled in this class</Text>
+          </View>
+        ) : detail.enrollment_status === 'waitlisted' ? (
+          <View style={styles.waitlistBanner}>
+            <Text style={styles.waitlistText}>
+              Waitlisted — you will be notified when a spot opens
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={[styles.enrollButton, enrolling && styles.enrollButtonDisabled]}
+            onPress={handleEnroll}
+            disabled={enrolling}
+          >
+            {enrolling ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.enrollButtonText}>
+                {detail.price === 0 ? 'Enroll (Free)' : `Enroll — R ${detail.price.toFixed(2)}`}
+              </Text>
+            )}
+          </TouchableOpacity>
         )}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -233,8 +224,54 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.ivory,
   },
+  scroll: {
+    paddingBottom: spacing.xl,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xxl,
+  },
+  loadingText: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoalLight,
+    marginTop: spacing.sm,
+  },
+  errorTitle: {
+    fontSize: typography.sizes.h3,
+    fontWeight: typography.weights.semibold,
+    color: colors.error,
+    marginBottom: spacing.xs,
+  },
+  errorText: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoalLight,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    backgroundColor: colors.burgundy,
+    borderRadius: 6,
+  },
+  retryText: {
+    color: '#fff',
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
+  },
+  backButton: {
+    padding: spacing.md,
+  },
+  backText: {
+    fontSize: typography.sizes.body,
+    color: colors.navy,
+    fontWeight: typography.weights.semibold,
+  },
   header: {
     padding: spacing.md,
+    paddingTop: 0,
     borderBottomWidth: 1,
     borderBottomColor: colors.ivoryDark,
     backgroundColor: '#fff',
@@ -242,33 +279,64 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: spacing.sm,
   },
-  subject: {
+  title: {
     fontSize: typography.sizes.h2,
     fontWeight: typography.weights.bold,
     color: colors.charcoal,
     flex: 1,
+    marginRight: spacing.sm,
   },
   badge: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 4,
     borderRadius: 4,
-    marginLeft: spacing.sm,
-  },
-  badgeCore: {
-    backgroundColor: colors.navy,
   },
   badgeText: {
+    fontSize: typography.sizes.badge,
+    fontWeight: typography.weights.bold,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  price: {
+    fontSize: typography.sizes.h3,
+    fontWeight: typography.weights.bold,
+    color: colors.burgundy,
+  },
+  typeBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 3,
+  },
+  typeBadgeText: {
     color: '#fff',
     fontSize: typography.sizes.badge,
     fontWeight: typography.weights.bold,
   },
-  teacher: {
-    fontSize: typography.sizes.body,
+  platform: {
+    fontSize: typography.sizes.caption,
     color: colors.charcoalLight,
-    marginBottom: spacing.xs,
+  },
+  instructorRow: {
+    marginBottom: spacing.sm,
+  },
+  instructorLabel: {
+    fontSize: typography.sizes.caption,
+    color: colors.charcoalLight,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  instructorName: {
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
+    color: colors.charcoal,
+    marginTop: 2,
   },
   description: {
     fontSize: typography.sizes.body,
@@ -284,30 +352,12 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.h3,
     fontWeight: typography.weights.semibold,
     color: colors.charcoal,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
-  scheduleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ivoryDark,
-  },
-  scheduleDays: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
-    width: 80,
-  },
-  scheduleTime: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
-    flex: 1,
-  },
-  scheduleLabel: {
+  sectionSubtitle: {
     fontSize: typography.sizes.caption,
     color: colors.charcoalLight,
-    marginLeft: spacing.sm,
+    marginBottom: spacing.sm,
   },
   chapterRow: {
     flexDirection: 'row',
@@ -343,8 +393,46 @@ const styles = StyleSheet.create({
     color: colors.charcoalLight,
     marginTop: 2,
   },
-  emptyText: {
+  bottomBar: {
+    padding: spacing.md,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: colors.ivoryDark,
+  },
+  enrollButton: {
+    paddingVertical: spacing.md,
+    backgroundColor: colors.burgundy,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  enrollButtonDisabled: {
+    opacity: 0.7,
+  },
+  enrollButtonText: {
+    color: '#fff',
     fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
+    fontWeight: typography.weights.semibold,
+  },
+  enrolledBanner: {
+    paddingVertical: spacing.sm,
+    backgroundColor: '#dcfce7',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  enrolledText: {
+    color: '#166534',
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
+  },
+  waitlistBanner: {
+    paddingVertical: spacing.sm,
+    backgroundColor: '#fef3c7',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  waitlistText: {
+    color: '#92400e',
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
   },
 });

@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS office_desk.bulk_operation_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES public.tenant_lms(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   
   -- Operation details
@@ -57,7 +57,7 @@ CREATE POLICY "Users can view own bulk operations"
   ON office_desk.bulk_operation_history
   FOR SELECT
   USING (
-    tenant_id = (SELECT id FROM public.tenants WHERE slug = current_setting('request.jwt.claims', true)::json->>'tenant_id')
+    tenant_id = (SELECT id FROM public.tenant_lms WHERE slug = current_setting('request.jwt.claims', true)::json->>'tenant_id')
     AND user_id = auth.uid()
   );
 
@@ -65,7 +65,7 @@ CREATE POLICY "Users can create bulk operations"
   ON office_desk.bulk_operation_history
   FOR INSERT
   WITH CHECK (
-    tenant_id = (SELECT id FROM public.tenants WHERE slug = current_setting('request.jwt.claims', true)::json->>'tenant_id')
+    tenant_id = (SELECT id FROM public.tenant_lms WHERE slug = current_setting('request.jwt.claims', true)::json->>'tenant_id')
     AND user_id = auth.uid()
   );
 
@@ -73,7 +73,7 @@ CREATE POLICY "Users can update own bulk operations"
   ON office_desk.bulk_operation_history
   FOR UPDATE
   USING (
-    tenant_id = (SELECT id FROM public.tenants WHERE slug = current_setting('request.jwt.claims', true)::json->>'tenant_id')
+    tenant_id = (SELECT id FROM public.tenant_lms WHERE slug = current_setting('request.jwt.claims', true)::json->>'tenant_id')
     AND user_id = auth.uid()
   );
 
