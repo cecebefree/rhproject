@@ -6,6 +6,15 @@
 BEGIN;
 
 -- ══════════════════════════════════════════════════════════════════════════════
+-- CLEANUP: Drop old denormalized tables from migration 100/179
+-- These conflict with the corrected schema (different columns/FKs)
+-- ══════════════════════════════════════════════════════════════════════════════
+DROP TRIGGER IF EXISTS trg_invoices_updated_at ON office_desk.invoices;
+DROP TRIGGER IF EXISTS trg_payments_updated_at ON office_desk.payments;
+DROP TABLE IF EXISTS office_desk.invoices CASCADE;
+DROP TABLE IF EXISTS office_desk.payments CASCADE;
+
+-- ══════════════════════════════════════════════════════════════════════════════
 -- 1. FAMILY_ACCOUNTS — billing anchor (one login, multiple students)
 -- ══════════════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS office_desk.family_accounts (
@@ -29,8 +38,8 @@ CREATE TABLE IF NOT EXISTS office_desk.users (
   auth_user_id      UUID UNIQUE REFERENCES auth.users(id) ON DELETE SET NULL,
   user_type         TEXT NOT NULL DEFAULT 'adult'
     CHECK (user_type IN ('adult', 'student', 'teacher', 'admin')),
-  role              TEXT DEFAULT 'member'
-    CHECK (role IN ('father', 'mother', 'guardian', 'grandparent', 'family_member', 'sponsor', 'other')),
+  role              TEXT
+    CHECK (role IS NULL OR role IN ('father', 'mother', 'guardian', 'grandparent', 'family_member', 'sponsor', 'other')),
   first_name        TEXT NOT NULL,
   last_name         TEXT NOT NULL,
   email             TEXT,
@@ -213,8 +222,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_validate_family_account ON office_desk.users;
 CREATE CONSTRAINT TRIGGER trg_validate_family_account
-  AFTER INSERT OR UPDATE ON office_desk.family_accounts
+  AFTER INSERT OR UPDATE ON office_desk.users
+  DEFERRABLE INITIALLY DEFERRED
+  FOR EACH ROW
+  EXECUTE FUNCTION office_desk.validate_family_account();
+
+DROP TRIGGER IF EXISTS trg_validate_family_students ON office_desk.students;
+CREATE CONSTRAINT TRIGGER trg_validate_family_students
+  AFTER INSERT OR UPDATE ON office_desk.students
   DEFERRABLE INITIALLY DEFERRED
   FOR EACH ROW
   EXECUTE FUNCTION office_desk.validate_family_account();
@@ -230,34 +247,42 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_family_accounts_updated_at ON office_desk.family_accounts;
 CREATE TRIGGER trg_family_accounts_updated_at
   BEFORE UPDATE ON office_desk.family_accounts
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_users_updated_at ON office_desk.users;
 CREATE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON office_desk.users
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_students_updated_at ON office_desk.students;
 CREATE TRIGGER trg_students_updated_at
   BEFORE UPDATE ON office_desk.students
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_packages_updated_at ON office_desk.packages;
 CREATE TRIGGER trg_packages_updated_at
   BEFORE UPDATE ON office_desk.packages
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_invoices_updated_at ON office_desk.invoices;
 CREATE TRIGGER trg_invoices_updated_at
   BEFORE UPDATE ON office_desk.invoices
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_debit_orders_updated_at ON office_desk.debit_orders;
 CREATE TRIGGER trg_debit_orders_updated_at
   BEFORE UPDATE ON office_desk.debit_orders
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_payments_updated_at ON office_desk.payments;
 CREATE TRIGGER trg_payments_updated_at
   BEFORE UPDATE ON office_desk.payments
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();
 
+DROP TRIGGER IF EXISTS trg_add_on_payments_updated_at ON office_desk.add_on_payments;
 CREATE TRIGGER trg_add_on_payments_updated_at
   BEFORE UPDATE ON office_desk.add_on_payments
   FOR EACH ROW EXECUTE FUNCTION office_desk.set_updated_at();

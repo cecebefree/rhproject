@@ -122,9 +122,6 @@ EXCEPTION WHEN OTHERS THEN
 END $test9$;
 
 -- CLEANUP test-only records
-DELETE FROM office_desk.family_activity WHERE family_code IS NULL;
-DELETE FROM office_desk.debit_orders WHERE family_account_id = '11111111-1111-1111-1111-111111111111' AND id = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
-
-RAISE NOTICE '=== All 9 test scenarios completed ===';
+DELETE FROM office_desk.family_activity WHERE family_account_id = '11111111-1111-1111-1111-111111111111';
 
 COMMIT;
