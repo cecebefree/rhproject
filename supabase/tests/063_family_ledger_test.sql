@@ -81,7 +81,7 @@ VALUES (
 -- R22 POSITIVE ANCHOR 1: family sees linked child's visible report card
 set local role authenticated;
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM school_desk.report_cards
@@ -94,7 +94,7 @@ SELECT is(
 -- R22 POSITIVE ANCHOR 2: family sees linked child's issued certificate
 set local role authenticated;
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM public.certificates
@@ -125,7 +125,7 @@ ON CONFLICT (student_id, term, subject) DO NOTHING;
 
 set local role authenticated;
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM school_desk.report_cards
@@ -141,7 +141,7 @@ SELECT is(
 -- ═══════════════════════════════════════════════
 
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"99999999-9999-9999-9999-999999999999"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","tenant_id":"99999999-9999-9999-9999-999999999999","app_metadata":{"role":"family","tenant_id":"99999999-9999-9999-9999-999999999999"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM school_desk.report_cards
@@ -156,7 +156,7 @@ SELECT is(
 -- ═══════════════════════════════════════════════
 
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ff000000-0000-0000-0000-0000000000f1","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT throws_ok(
   $$INSERT INTO school_desk.report_cards
@@ -279,7 +279,7 @@ SELECT is(
 -- ═══════════════════════════════════════════════
 
 SELECT set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 SELECT is(
   (SELECT count(*)::int FROM school_desk.report_cards

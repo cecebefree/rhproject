@@ -4,6 +4,9 @@
 --        reporting functions, audit trail.
 --
 -- PREDECESSOR: 111_office_desk_rls_and_reporting.sql
+--
+-- TODO: Add school_desk_admin role test once
+-- school_desk_admin is added to profiles.role CHECK constraint (future migration)
 
 BEGIN;
 SELECT plan(10);
@@ -21,6 +24,7 @@ BEGIN
     jsonb_build_object(
       'sub', p_sub::text,
       'role', 'authenticated',
+      'tenant_id', p_tenant_id::text,
       'app_metadata', jsonb_build_object(
         'role', p_role,
         'tenant_id', p_tenant_id::text
@@ -79,17 +83,22 @@ INSERT INTO front_desk.leads (id, tenant_id, name, email, status)
 VALUES ('bbbbbbbb-0000-0000-0000-000000000001', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Lead B', 'lead-b@test.com', 'enquiry')
 ON CONFLICT (id) DO NOTHING;
 
--- Registration + invoice + payment in tenant A
+-- Family account + invoice + payment in tenant A
+INSERT INTO office_desk.family_accounts (id, tenant_id, family_code, status)
+VALUES ('aaaaaaaa-0000-0000-0000-000000000010', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'FAM-A-001', 'active')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO office_desk.invoices (id, tenant_id, family_account_id, invoice_number, amount, status)
+VALUES ('aaaaaaaa-0000-0000-0000-000000000020', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-0000-0000-0000-000000000010', 'INV-TEST-001', 1500.00, 'paid')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO office_desk.payments (id, tenant_id, family_account_id, amount, status, payment_date)
+VALUES ('aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-0000-0000-0000-000000000010', 1500.00, 'confirmed', now())
+ON CONFLICT (id) DO NOTHING;
+
+-- Registration in tenant A
 INSERT INTO office_desk.registrations (id, tenant_id, lead_reference_id, student_name, student_email, status)
-VALUES ('aaaaaaaa-0000-0000-0000-000000000010', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-0000-0000-0000-000000000001', 'Student A', 's-a@test.com', 'active')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO office_desk.invoices (id, tenant_id, registration_id, amount, status)
-VALUES ('aaaaaaaa-0000-0000-0000-000000000020', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-0000-0000-0000-000000000010', 1500.00, 'paid')
-ON CONFLICT (id) DO NOTHING;
-
-INSERT INTO office_desk.payments (id, tenant_id, invoice_id, amount, status, paid_at)
-VALUES ('aaaaaaaa-0000-0000-0000-000000000030', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-0000-0000-0000-000000000020', 1500.00, 'confirmed', now())
+VALUES ('aaaaaaaa-0000-0000-0000-000000000040', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-0000-0000-0000-000000000001', 'Student A', 's-a@test.com', 'active')
 ON CONFLICT (id) DO NOTHING;
 
 -- Registration in tenant B
@@ -138,18 +147,20 @@ SELECT is(
 );
 
 -- ============================================================
--- Test 5. Teacher role CANNOT SELECT office_desk tables
+-- Test 5. Teacher CANNOT see registrations (role gate)
 -- ============================================================
 SELECT tests.set_jwt('44444444-4444-4444-4444-444444444444', 'teacher', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
   (SELECT count(*)::int FROM office_desk.registrations),
   0,
-  'teacher cannot see office_desk registrations (role gate)'
+  'teacher CANNOT read registrations (role gate)'
 );
+RESET ROLE;
 
 -- ============================================================
 -- Test 6. Office A can read leads (cross-desk, via 106 §5)
 -- ============================================================
+SET ROLE authenticated;
 SELECT tests.set_jwt('11111111-1111-1111-1111-111111111111', 'office', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 SELECT is(
   (SELECT count(*)::int FROM front_desk.leads),

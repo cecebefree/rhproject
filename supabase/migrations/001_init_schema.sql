@@ -67,6 +67,26 @@ CREATE TABLE IF NOT EXISTS supabase.organizations (
 
 COMMENT ON TABLE supabase.organizations IS 'Academic groups / organizations — FK target for students, leads, capacity_slots';
 
+-- ────────────────────────────────────────────────────────────────────────────
+-- PROFILES — Core auth profile (created early; referenced by 002, 003, 092+)
+-- ────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id         UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  name       TEXT NOT NULL,
+  role       TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'admin')),
+  tenant_id  UUID,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own profile" ON public.profiles
+  FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can update own profile" ON public.profiles
+  FOR UPDATE USING (auth.uid() = id);
+
 -- ══════════════════════════════════════════════════════════════════════════════
 -- 2. TABLES
 -- ══════════════════════════════════════════════════════════════════════════════

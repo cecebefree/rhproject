@@ -80,6 +80,8 @@
 | Database Testing | pgTAP | — |
 | Lint / Format | Biome | TODO version |
 | CI / CD | GitHub Actions | — |
+| Email | Brevo | Production (noreply@redhouse.co.za) |
+| SMS / Calls | Zadarma | TODO — account not yet created |
 
 > Build-time coding via Nemotron through OpenCode (not a runtime dependency).
 > React: 19.2.7 (confirmed live on disk 2026-07-03; any earlier note assuming React 18 is superseded).
@@ -247,9 +249,12 @@ supabase gen types typescript --local > packages/shared/src/types/database.ts
 - `SUPABASE_SERVICE_ROLE_KEY` — **Server-only** (Edge Functions), bypasses RLS, git-ignored, never shipped to client
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_PAGES_PROJECT`
+- `BREVO_API_KEY` — **Server-only** (Edge Functions), Brevo email API
+- `ZADARMA_USER_KEY` — **Server-only** (Edge Functions), Zadarma API auth
+- `ZADARMA_SECRET_KEY` — **Server-only** (Edge Functions), Zadarma API auth
 
 **TODO (placeholders in `.env.example`):**
-- `WEB3FORMS_KEY`, `BREVO_API_KEY`, `BOTPRESS_KEY`, `CLOUDINARY_URL`
+- `WEB3FORMS_KEY`, `BOTPRESS_KEY`, `CLOUDINARY_URL`
 - `SENTRY_DSN`, `NEMOTRON_ENDPOINT`, `NEMOTRON_KEY`
 
 ---

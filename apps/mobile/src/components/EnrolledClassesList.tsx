@@ -1,5 +1,5 @@
 // src/components/EnrolledClassesList.tsx
-// Row 98: List of enrolled classes with next class, grade, attendance, status
+// List of enrolled classes with next class and section
 
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../theme/colors';
@@ -13,12 +13,6 @@ interface EnrolledClassesListProps {
   onClassPress: (classId: string) => void;
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  active: colors.success,
-  completed: colors.charcoalLight,
-  waitlisted: colors.warning,
-};
-
 function formatDays(days: DayOfWeek[]): string {
   if (!days || days.length === 0) return '';
   if (days.length === 7) return 'Every day';
@@ -29,7 +23,6 @@ function formatDays(days: DayOfWeek[]): string {
 }
 
 function formatTime(time: string): string {
-  // "14:00:00" → "2:00 PM"
   const [h, m] = time.split(':').map(Number);
   const period = h >= 12 ? 'PM' : 'AM';
   const hour = h % 12 || 12;
@@ -43,7 +36,7 @@ function ClassCard({
   enrolledClass: EnrolledClass;
   onPress: () => void;
 }) {
-  const { title, teacher_name, next_class, grade, attendance_pct, status } = enrolledClass;
+  const { title, teacher_name, next_class, section } = enrolledClass;
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
@@ -51,14 +44,11 @@ function ClassCard({
         <Text style={styles.cardTitle} numberOfLines={1}>
           {title}
         </Text>
-        <View
-          style={[
-            styles.statusBadge,
-            { backgroundColor: STATUS_COLORS[status] ?? colors.charcoalLight },
-          ]}
-        >
-          <Text style={styles.statusText}>{status}</Text>
-        </View>
+        {section && (
+          <View style={styles.sectionBadge}>
+            <Text style={styles.sectionText}>{section}</Text>
+          </View>
+        )}
       </View>
 
       {teacher_name && <Text style={styles.teacher}>with {teacher_name}</Text>}
@@ -69,21 +59,6 @@ function ClassCard({
           {formatTime(next_class.start_time)} – {formatTime(next_class.end_time)}
         </Text>
       )}
-
-      <View style={styles.metricsRow}>
-        {grade != null && (
-          <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Grade</Text>
-            <Text style={styles.metricValue}>{Math.round(grade)}%</Text>
-          </View>
-        )}
-        {attendance_pct != null && (
-          <View style={styles.metric}>
-            <Text style={styles.metricLabel}>Attendance</Text>
-            <Text style={styles.metricValue}>{attendance_pct}%</Text>
-          </View>
-        )}
-      </View>
     </TouchableOpacity>
   );
 }
@@ -131,12 +106,13 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.sm,
   },
-  statusBadge: {
+  sectionBadge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: 4,
+    backgroundColor: colors.navy,
   },
-  statusText: {
+  sectionText: {
     fontSize: typography.sizes.badge,
     color: '#fff',
     fontWeight: typography.weights.medium,
@@ -149,25 +125,6 @@ const styles = StyleSheet.create({
   nextClass: {
     fontSize: typography.sizes.caption,
     color: colors.burgundy,
-    marginBottom: spacing.sm,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-  },
-  metric: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  metricLabel: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoalLight,
-  },
-  metricValue: {
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
   },
   empty: {
     alignItems: 'center',

@@ -20,7 +20,11 @@ CREATE TABLE IF NOT EXISTS front_desk.callbacks (
 CREATE INDEX IF NOT EXISTS idx_fd_callbacks_inquiry ON front_desk.callbacks(inquiry_id);
 CREATE INDEX IF NOT EXISTS idx_fd_callbacks_status ON front_desk.callbacks(status);
 
-CREATE TABLE IF NOT EXISTS front_desk.email_logs (
+-- Remote may already have a front_desk.email_logs with different schema (lead_id-based).
+-- Drop and recreate with inquiry_id-based schema (table is empty on remote).
+DROP TABLE IF EXISTS front_desk.email_logs CASCADE;
+
+CREATE TABLE front_desk.email_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   inquiry_id UUID NOT NULL REFERENCES front_desk.inquiries(id) ON DELETE CASCADE,
   recipient TEXT NOT NULL,

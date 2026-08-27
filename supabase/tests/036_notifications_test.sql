@@ -28,7 +28,7 @@ ON CONFLICT (id) DO NOTHING;
 
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 -- 1. self-read: student1 sees exactly one notification (their own)
 select is(

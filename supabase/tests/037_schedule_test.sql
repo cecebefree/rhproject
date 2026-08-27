@@ -67,7 +67,7 @@ ON CONFLICT (student_id, course_id) DO NOTHING;
 -- 1. student1 sees exactly one slot (enrolled in course 11111111, active access window)
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.schedule_slot),
@@ -87,7 +87,7 @@ set local role authenticated;
 
 -- 3. student2 enrolled in both courses -> sees both slots
 select set_config('request.jwt.claims',
-  '{"sub":"bb000000-0000-0000-0000-0000000000b2","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"bb000000-0000-0000-0000-0000000000b2","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.schedule_slot),
@@ -97,7 +97,7 @@ select is(
 
 -- 4. teacher1 owns both courses -> sees both slots
 select set_config('request.jwt.claims',
-  '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.schedule_slot),
@@ -107,7 +107,7 @@ select is(
 
 -- 5. teacher2 owns no course -> sees 0 slots
 select set_config('request.jwt.claims',
-  '{"sub":"eeee0000-0000-0000-0000-0000000000e5","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"eeee0000-0000-0000-0000-0000000000e5","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.schedule_slot),
@@ -117,7 +117,7 @@ select is(
 
 -- 6. admin sees all slots
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.schedule_slot),
@@ -127,7 +127,7 @@ select is(
 
 -- 7. student insert is rejected (ss_admin_write only)
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select throws_ok(
   $$insert into public.schedule_slot
@@ -145,7 +145,7 @@ select throws_ok(
 
 -- 8. different tenant sees 0 slots
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"99999999-9999-9999-9999-999999999999"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"99999999-9999-9999-9999-999999999999","app_metadata":{"role":"student","tenant_id":"99999999-9999-9999-9999-999999999999"}}', true);
 
 select is(
   (select count(*)::int from public.schedule_slot),
@@ -162,7 +162,7 @@ update public.profiles
 
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.schedule_slot),
@@ -179,7 +179,7 @@ update public.profiles
 
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 -- 10. REJECT: same course, overlapping time, overlapping day (Wed=3)
 -- Existing slot: course 11111111, 09:00-10:00, ARRAY[1,3,5]
@@ -217,7 +217,7 @@ select lives_ok(
 
 -- 12. term read works for student (calendar rendering, scoped to fixture term)
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.terms

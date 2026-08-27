@@ -19,6 +19,7 @@ BEGIN
     jsonb_build_object(
       'sub', p_sub::text,
       'role', 'authenticated',
+      'tenant_id', p_tenant_id::text,
       'app_metadata', jsonb_build_object(
         'role', p_role,
         'tenant_id', p_tenant_id::text

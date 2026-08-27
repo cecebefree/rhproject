@@ -6,9 +6,12 @@ import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 
 interface Profile {
-  full_name: string | null;
+  name: string | null;
   curriculum: string | null;
   stage: string | null;
+  zone: number | null;
+  nation: string | null;
+  city: string | null;
 }
 
 interface DevotionalItem {
@@ -107,7 +110,7 @@ export default function HomeScreen() {
       // 1. Profile
       const { data: prof, error: profErr } = await supabase
         .from('profiles')
-        .select('full_name, curriculum, stage')
+        .select('name, curriculum, stage, zone, nation, city')
         .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '')
         .single();
 
@@ -156,7 +159,7 @@ export default function HomeScreen() {
     };
   }, []);
 
-  const greeting = profile?.full_name ?? 'Student';
+  const greeting = profile?.name ?? 'Student';
 
   return (
     <ScrollView style={styles.container}>

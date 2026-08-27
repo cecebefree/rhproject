@@ -1,17 +1,35 @@
 // src/types/profile.ts
-// Types for student profile screen (Row 98)
+// Types for 3 profile variations: Student, Adult, Teacher
+// Tables: public.profiles, office_desk.students, office_desk.family_accounts,
+//         office_desk.invoices, office_desk.payments
 
-export interface StudentProfile {
+// ═══════════════════════════════════════════════════════════
+// SHARED
+// ═══════════════════════════════════════════════════════════
+
+export type UserRole = 'student' | 'adult' | 'teacher' | 'staff' | 'admin';
+
+export interface BaseProfile {
   id: string;
   name: string | null;
+  surname: string | null;
   email: string | null;
   phone: string | null;
-  role: string;
-  curriculum: string | null;
-  grade: string | null;
-  stage: string | null;
-  intake: string | null;
+  role: UserRole;
+  zone: number | null;
+  nation: string | null;
+  city: string | null;
   created_at: string;
+}
+
+// ═══════════════════════════════════════════════════════════
+// STUDENT PROFILE
+// ═══════════════════════════════════════════════════════════
+
+export interface StudentProfile extends BaseProfile {
+  curriculum: string | null;
+  current_stage: string | null;
+  intake_group: string | null;
 }
 
 export interface EnrolledClass {
@@ -30,10 +48,98 @@ export interface EnrolledClass {
     end_time: string;
     days_of_week: number[];
   } | null;
-  grade: number | null;
-  attendance_pct: number | null;
-  status: 'active' | 'completed' | 'waitlisted';
+  section: string | null;
 }
+
+// ═══════════════════════════════════════════════════════════
+// ADULT PROFILE
+// ═══════════════════════════════════════════════════════════
+
+export interface AdultProfile extends BaseProfile {
+  family_account_id: string | null;
+  family_account_status: string | null;
+  family_account_created_at: string | null;
+}
+
+export interface ChildRecord {
+  id: string;
+  user_id: string;
+  name: string | null;
+  curriculum: string | null;
+  current_stage: string | null;
+  grade: string | null;
+  intake_group: string | null;
+  status: string | null;
+}
+
+export interface FamilyAccountDetail {
+  id: string;
+  status: string | null;
+  family_name: string | null;
+  primary_contact_email: string | null;
+  primary_contact_phone: string | null;
+  bank_name: string | null;
+  bank_branch: string | null;
+  bank_sort_code: string | null;
+  created_at: string;
+}
+
+// ═══════════════════════════════════════════════════════════
+// TEACHER PROFILE
+// ═══════════════════════════════════════════════════════════
+
+export interface TeacherProfile extends BaseProfile {
+  classes_taught: TeacherClass[];
+}
+
+export interface TeacherClass {
+  course_id: string;
+  title: string;
+  type: string | null;
+  platform: string | null;
+  section: string | null;
+  student_count: number;
+  students: TeacherStudent[];
+}
+
+export interface TeacherStudent {
+  id: string;
+  name: string | null;
+  email: string | null;
+  grade: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// INVOICES & PAYMENTS (shared by Adult)
+// ═══════════════════════════════════════════════════════════
+
+export interface InvoiceRecord {
+  id: string;
+  invoice_number: string | null;
+  description: string | null;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'paid' | 'overdue' | 'cancelled';
+  due_date: string | null;
+  created_at: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'confirmed' | 'failed' | 'refunded';
+  payment_method: string | null;
+  reference: string | null;
+  paid_at: string | null;
+  created_at: string;
+  description: string | null;
+  invoice_number: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════
+// REGISTRATION STATUS (Student)
+// ═══════════════════════════════════════════════════════════
 
 export interface RegistrationRecord {
   id: string;
@@ -52,34 +158,9 @@ export interface RegistrationRecord {
   updated_at: string;
 }
 
-export interface PaymentRecord {
-  id: string;
-  amount: number;
-  currency: string;
-  status: 'pending' | 'confirmed' | 'failed' | 'refunded';
-  payment_method: string | null;
-  reference: string | null;
-  paid_at: string | null;
-  created_at: string;
-  description: string | null;
-  invoice_number: string | null;
-}
-
-export interface GradeRecord {
-  course_id: string;
-  course_title: string;
-  avg_score: number | null;
-  max_score: number | null;
-  assignment_count: number;
-}
-
-export interface AttendanceRecord {
-  course_id: string;
-  course_title: string;
-  total_sessions: number;
-  present_count: number;
-  attendance_pct: number;
-}
+// ═══════════════════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════════════════
 
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -108,4 +189,11 @@ export const PAYMENT_STATUS_COLORS: Record<string, string> = {
   confirmed: '#27ae60',
   failed: '#e74c3c',
   refunded: '#3498db',
+};
+
+export const INVOICE_STATUS_COLORS: Record<string, string> = {
+  pending: '#f39c12',
+  paid: '#27ae60',
+  overdue: '#e74c3c',
+  cancelled: '#747474',
 };

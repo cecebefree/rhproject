@@ -140,6 +140,24 @@ export async function takeInquiry(inquiryId: string): Promise<void> {
   if (lastActivity) {
     console.log(`  ${c.bold}Last Activity:${c.reset} ${lastActivity.action} ${c.dim}${timeAgo(lastActivity.timestamp)}${c.reset}`);
   }
+  // Assign to current user
+  const counselorId = process.env.COUNSELOR_ID || 'a0000000-0000-0000-0000-000000000003';
+  const { error: updateError } = await frontDesk
+    .from('inquiries')
+    .update({
+      assigned_counselor_id: counselorId,
+      assigned_at: new Date().toISOString(),
+      updated_by: counselorId
+    })
+    .eq('id', inquiryId);
+
+  if (updateError) {
+    console.error(`${c.red}Error assigning:${c.reset} ${updateError.message}`);
+    process.exit(1);
+  }
+
+  console.log(`${c.green}✓ Assigned to counselor${c.reset}`);
+
 
   console.log();
 }

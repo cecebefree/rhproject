@@ -24,8 +24,26 @@ UPDATE public.profiles SET tenant_id = 'dddd0000-0000-0000-0000-0000000000c0'
   WHERE id = 'dddd0000-0000-0000-0000-0000000000a1';
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
-INSERT INTO school_desk.courses (id, title, price, status, teacher_id)
-VALUES ('dddd0000-0000-0000-0000-0000000000c1', 'DEL Course', 0, 'published', 'dddd0000-0000-0000-0000-0000000000a1')
+-- Required FK fixtures for chapter_progress
+INSERT INTO supabase.organizations (id, name, slug)
+VALUES ('dddd0000-0000-0000-0000-0000000000c0', 'DEL Org', 'del-org')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO school_desk.courses (id, title, description, price, status, teacher_id, platform, type, open_to_outside)
+VALUES ('dddd0000-0000-0000-0000-0000000000c1', 'DEL Course', 'Test course', 0.00, 'published', 'dddd0000-0000-0000-0000-0000000000a1', 'core', 'core', false)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.courses (id, organization_id, course_name, course_code, grade, start_date, end_date, status)
+VALUES ('dddd0000-0000-0000-0000-0000000000c1', 'dddd0000-0000-0000-0000-0000000000c0', 'DEL Course', 'DEL-101', '10', now(), now() + interval '6 months', 'active')
+ON CONFLICT (id) DO NOTHING;
+
+-- Students row (required by student_enrollments FK)
+INSERT INTO public.students (id, first_name, last_name, grade, academic_group_id, enrollment_status)
+VALUES ('dddd0000-0000-0000-0000-0000000000a1', 'Del', 'Student', '10', 'dddd0000-0000-0000-0000-0000000000c0', 'active')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.student_enrollments (id, student_id, course_id, enrollment_status)
+VALUES ('dddd0000-0000-0000-0000-0000000000e0', 'dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000c1', 'enrolled')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.chapters (id, course_id, title, video_url, order_index)
@@ -38,11 +56,11 @@ ON CONFLICT (id) DO NOTHING;
 -- Student fixture: complete all three chapters (order 0,1,2).
 -- Run as superuser: RLS bypass needed because INSERT/DELETE policies were dropped (ITEM-56).
 -- Trigger behavior is role-independent (checks chapter sequence data, not JWT).
-INSERT INTO public.chapter_progress (student_id, chapter_id)
+INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
 VALUES
-  ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d0'),
-  ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d1'),
-  ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d2');
+  ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d0', 'dddd0000-0000-0000-0000-0000000000c0', 'dddd0000-0000-0000-0000-0000000000e0', 'dddd0000-0000-0000-0000-0000000000c1'),
+  ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d1', 'dddd0000-0000-0000-0000-0000000000c0', 'dddd0000-0000-0000-0000-0000000000e0', 'dddd0000-0000-0000-0000-0000000000c1'),
+  ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d2', 'dddd0000-0000-0000-0000-0000000000c0', 'dddd0000-0000-0000-0000-0000000000e0', 'dddd0000-0000-0000-0000-0000000000c1');
 SELECT is(
   (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'dddd0000-0000-0000-0000-0000000000a1'),
   3,
@@ -52,8 +70,8 @@ SELECT is(
 SELECT set_config('request.jwt.claims', '{"sub":"dddd0000-0000-0000-0000-0000000000a1","tenant_id":"dddd0000-0000-0000-0000-0000000000c0"}', true);
 SET ROLE authenticated;
 SELECT throws_ok(
-  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
-    VALUES ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d0')$$,
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
+    VALUES ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d0', 'dddd0000-0000-0000-0000-0000000000c0', 'dddd0000-0000-0000-0000-0000000000e0', 'dddd0000-0000-0000-0000-0000000000c1')$$,
   '42501', NULL,
   'denial: authenticated has no INSERT grant on chapter_progress');
 RESET ROLE;
@@ -76,8 +94,8 @@ SELECT is(
 
 -- b. DENIAL: now student has 0 and 1 complete; re-insert 2, then attempt DELETE of 0 (order 0)
 --     while later chapters 1 and 2 still exist -> guard must reject.
-INSERT INTO public.chapter_progress (student_id, chapter_id)
-VALUES ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d2');
+INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
+VALUES ('dddd0000-0000-0000-0000-0000000000a1', 'dddd0000-0000-0000-0000-0000000000d2', 'dddd0000-0000-0000-0000-0000000000c0', 'dddd0000-0000-0000-0000-0000000000e0', 'dddd0000-0000-0000-0000-0000000000c1');
 SELECT throws_ok(
    $$DELETE FROM public.chapter_progress WHERE student_id = 'dddd0000-0000-0000-0000-0000000000a1' AND chapter_id = 'dddd0000-0000-0000-0000-0000000000d0'$$,
   'P0001', 'Later chapter progress must be deleted first');

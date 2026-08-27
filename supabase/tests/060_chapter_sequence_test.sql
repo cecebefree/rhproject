@@ -27,8 +27,30 @@ UPDATE public.profiles SET tenant_id = 'cccc0000-0000-0000-0000-0000000000c0'
 UPDATE public.profiles SET role = 'teacher' WHERE id = 'cccc0000-0000-0000-0000-0000000000a1';
 SELECT set_config('app.tenant_assignment_bypass', 'false', true);
 
-INSERT INTO school_desk.courses (id, title, price, status, teacher_id)
-VALUES ('cccc0000-0000-0000-0000-0000000000c1', 'CHAPSEQ Course', 0, 'published', 'cccc0000-0000-0000-0000-0000000000a1')
+-- Required FK fixtures for chapter_progress
+INSERT INTO supabase.organizations (id, name, slug)
+VALUES ('cccc0000-0000-0000-0000-0000000000c0', 'CHAPSEQ Org', 'chapseq-org')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO school_desk.courses (id, title, description, price, status, teacher_id, platform, type, open_to_outside)
+VALUES ('cccc0000-0000-0000-0000-0000000000c1', 'CHAPSEQ Course', 'Test course', 0.00, 'published', 'cccc0000-0000-0000-0000-0000000000a1', 'core', 'core', false)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.courses (id, organization_id, course_name, course_code, grade, start_date, end_date, status)
+VALUES ('cccc0000-0000-0000-0000-0000000000c1', 'cccc0000-0000-0000-0000-0000000000c0', 'CHAPSEQ Course', 'CHAPSEQ-101', '10', now(), now() + interval '6 months', 'active')
+ON CONFLICT (id) DO NOTHING;
+
+-- Students rows (required by student_enrollments FK)
+INSERT INTO public.students (id, first_name, last_name, grade, academic_group_id, enrollment_status)
+VALUES
+  ('cccc0000-0000-0000-0000-0000000000b1', 'Chap', 'Seq-A', '10', 'cccc0000-0000-0000-0000-0000000000c0', 'active'),
+  ('cccc0000-0000-0000-0000-0000000000b2', 'Chap', 'Seq-B', '10', 'cccc0000-0000-0000-0000-0000000000c0', 'active')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.student_enrollments (id, student_id, course_id, enrollment_status)
+VALUES
+  ('cccc0000-0000-0000-0000-0000000000e0', 'cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000c1', 'enrolled'),
+  ('cccc0000-0000-0000-0000-0000000000e1', 'cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000c1', 'enrolled')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO public.chapters (id, course_id, title, video_url, order_index)
@@ -41,8 +63,8 @@ ON CONFLICT (id) DO NOTHING;
 -- c. FIRST CHAPTER positive anchor: fresh student b2 inserts progress for order_index 0
 -- Run as superuser: RLS bypass needed because INSERT policy was dropped (ITEM-56).
 -- Trigger behavior is role-independent (checks chapter sequence data, not JWT).
-INSERT INTO public.chapter_progress (student_id, chapter_id)
-VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d0');
+INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
+VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d0', 'cccc0000-0000-0000-0000-0000000000c0', 'cccc0000-0000-0000-0000-0000000000e0', 'cccc0000-0000-0000-0000-0000000000c1');
 SELECT is(
   (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'cccc0000-0000-0000-0000-0000000000b2'),
   1,
@@ -52,8 +74,8 @@ SELECT is(
 SELECT set_config('request.jwt.claims', '{"sub":"cccc0000-0000-0000-0000-0000000000b2","tenant_id":"cccc0000-0000-0000-0000-0000000000c0"}', true);
 SET ROLE authenticated;
 SELECT throws_ok(
-  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
-    VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d0')$$,
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
+    VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d0', 'cccc0000-0000-0000-0000-0000000000c0', 'cccc0000-0000-0000-0000-0000000000e0', 'cccc0000-0000-0000-0000-0000000000c1')$$,
   '42501', NULL,
   'denial: authenticated has no INSERT grant on chapter_progress');
 RESET ROLE;
@@ -69,12 +91,16 @@ SELECT throws_ok(
 RESET ROLE;
 
 -- a. POSITIVE ANCHOR: student b1 completes all predecessors (0 and 1) then inserts 2
-INSERT INTO public.chapter_progress (student_id, chapter_id)
+INSERT INTO public.student_enrollments (id, student_id, course_id, enrollment_status)
+VALUES ('cccc0000-0000-0000-0000-0000000000e1', 'cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000c1', 'enrolled')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
 VALUES
-  ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d0'),
-  ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d1');
-INSERT INTO public.chapter_progress (student_id, chapter_id)
-VALUES ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d2');
+  ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d0', 'cccc0000-0000-0000-0000-0000000000c0', 'cccc0000-0000-0000-0000-0000000000e1', 'cccc0000-0000-0000-0000-0000000000c1'),
+  ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d1', 'cccc0000-0000-0000-0000-0000000000c0', 'cccc0000-0000-0000-0000-0000000000e1', 'cccc0000-0000-0000-0000-0000000000c1');
+INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
+VALUES ('cccc0000-0000-0000-0000-0000000000b1', 'cccc0000-0000-0000-0000-0000000000d2', 'cccc0000-0000-0000-0000-0000000000c0', 'cccc0000-0000-0000-0000-0000000000e1', 'cccc0000-0000-0000-0000-0000000000c1');
 SELECT is(
   (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'cccc0000-0000-0000-0000-0000000000b1'),
   3,
@@ -82,8 +108,8 @@ SELECT is(
 
 -- b. DENIAL (the 018 escape): student b2 has only chapter 0 complete, skips 1, inserts 2
 SELECT throws_ok(
-  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
-   VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d2')$$,
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
+   VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'cccc0000-0000-0000-0000-0000000000d2', 'cccc0000-0000-0000-0000-0000000000c0', 'cccc0000-0000-0000-0000-0000000000e0', 'cccc0000-0000-0000-0000-0000000000c1')$$,
   'P0001', 'Previous chapters must be completed before marking this chapter complete');
 SELECT is(
   (SELECT count(*)::int FROM public.chapter_progress WHERE student_id = 'cccc0000-0000-0000-0000-0000000000b2'),
@@ -92,8 +118,8 @@ SELECT is(
 
 -- d. FAIL-LOUD: insert referencing a non-existent chapter_id. The BEFORE INSERT guard runs first and raises P0001 (chapter not found) BEFORE the FK (23503) is enforced, so P0001 is the observed state.
 SELECT throws_ok(
-  $$INSERT INTO public.chapter_progress (student_id, chapter_id)
-   VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'deadbeef-0000-0000-0000-000000000000')$$,
+  $$INSERT INTO public.chapter_progress (student_id, chapter_id, organization_id, enrollment_id, course_id)
+   VALUES ('cccc0000-0000-0000-0000-0000000000b2', 'deadbeef-0000-0000-0000-000000000000', 'cccc0000-0000-0000-0000-0000000000c0', 'cccc0000-0000-0000-0000-0000000000e0', 'cccc0000-0000-0000-0000-0000000000c1')$$,
   'P0001');
 
 -- e. WIRING: new trigger present, old trigger absent

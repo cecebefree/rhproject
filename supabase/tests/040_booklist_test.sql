@@ -134,7 +134,7 @@ select ok(
 -- 3. Student1 reads own booklist
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.booklist),
@@ -144,7 +144,7 @@ select is(
 
 -- 4. Student2 reads own booklist (cross-child leak)
 select set_config('request.jwt.claims',
-  '{"sub":"bb000000-0000-0000-0000-0000000000b2","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"bb000000-0000-0000-0000-0000000000b2","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.booklist),
@@ -154,7 +154,7 @@ select is(
 
 -- 5. Bookshelf: yearly item visible in its active year
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.get_bookshelf('ac87ccc1-2186-4c6b-aeb2-dd966032ee0e')),
@@ -196,7 +196,7 @@ select is(
 
 -- 10. Cross-tenant: student from tenant 2 sees own booklist only
 select set_config('request.jwt.claims',
-  '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000002"}}', true);
+  '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000002","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000002"}}', true);
 
 select is(
   (select count(*)::int from public.booklist),
@@ -213,7 +213,7 @@ select is(
 
 -- 12. Family reads children's booklists
 select set_config('request.jwt.claims',
-  '{"sub":"a0000000-0000-0000-0000-0000000000a1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"a0000000-0000-0000-0000-0000000000a1","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.booklist),
@@ -223,7 +223,7 @@ select is(
 
 -- 13. Materialization idempotency (admin context)
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 do $$
 begin
@@ -254,7 +254,7 @@ select is(
 
 -- 14. Teacher reads booklists for children in their courses
 select set_config('request.jwt.claims',
-  '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"cc000000-0000-0000-0000-0000000000c3","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"teacher","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select ok(
   (select count(*)::int >= 1 from public.booklist
@@ -265,7 +265,7 @@ select ok(
 -- 15. RLS enabled on book
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select ok(
   (select relrowsecurity from pg_class where relname = 'book'),
@@ -274,7 +274,7 @@ select ok(
 
 -- 16. Invalid curriculum_type rejected (admin context for INSERT permission)
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select throws_ok(
   $$insert into public.book (tenant_id, title, curriculum_type) values ('00000000-0000-0000-0000-000000000001', 'Bad', 'invalid')$$,
@@ -293,7 +293,7 @@ select throws_ok(
 
 -- 18. Cross-tenant leak on book (student context)
 select set_config('request.jwt.claims',
-  '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000002"}}', true);
+  '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000002","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000002"}}', true);
 
 select is(
   (select count(*)::int from public.book),
@@ -303,7 +303,7 @@ select is(
 
 -- 19. Student cannot insert book
 select set_config('request.jwt.claims',
-  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"ac87ccc1-2186-4c6b-aeb2-dd966032ee0e","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"student","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select throws_ok(
   $$insert into public.book (tenant_id, title, curriculum_type) values ('00000000-0000-0000-0000-000000000001', 'Should Fail', 'library')$$,
@@ -314,7 +314,7 @@ select throws_ok(
 
 -- 20. Admin can insert book
 select set_config('request.jwt.claims',
-  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"dd000000-0000-0000-0000-0000000000d4","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"admin","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select lives_ok(
   $$insert into public.book (tenant_id, title, curriculum_type) values ('00000000-0000-0000-0000-000000000001', 'Admin Book', 'library')$$,
@@ -323,7 +323,7 @@ select lives_ok(
 
 -- 21. RLS enabled on family_child
 select set_config('request.jwt.claims',
-  '{"sub":"a0000000-0000-0000-0000-0000000000a1","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"a0000000-0000-0000-0000-0000000000a1","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select ok(
   (select relrowsecurity from pg_class where relname = 'family_child'),
@@ -339,7 +339,7 @@ select is(
 
 -- 23. Guardian B (unlinked) sees 0 (leak test)
 select set_config('request.jwt.claims',
-  '{"sub":"a0000000-0000-0000-0000-0000000000a2","role":"authenticated","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
+  '{"sub":"a0000000-0000-0000-0000-0000000000a2","role":"authenticated","tenant_id":"00000000-0000-0000-0000-000000000001","app_metadata":{"role":"family","tenant_id":"00000000-0000-0000-0000-000000000001"}}', true);
 
 select is(
   (select count(*)::int from public.family_child),

@@ -50,25 +50,25 @@ SELECT throws_ok(
 
 -- 12. Auth-first: member A (tenant A) reads own conversation
 set local role authenticated;
-select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
 SELECT is( (SELECT count(*)::int FROM school_desk.conversations WHERE id='cccccccc-cccc-cccc-cccc-cccccccccccc'), 1, 't12 member A reads own conversation');
 
 -- 13. Cross-tenant: member B (tenant B) sees 0 rows from tenant A conversation
-select set_config('request.jwt.claims', '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","app_metadata":{"role":"student","tenant_id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"}}', true);
+select set_config('request.jwt.claims', '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated","tenant_id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","app_metadata":{"role":"student","tenant_id":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"}}', true);
 SELECT is( (SELECT count(*)::int FROM school_desk.conversations WHERE id='cccccccc-cccc-cccc-cccc-cccccccccccc'), 0, 't13 cross-tenant read returns 0 rows');
 
 -- 14. Non-member (other A, same tenant but not in conversation) cannot read it
-select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
+select set_config('request.jwt.claims', '{"sub":"33333333-3333-3333-3333-333333333333","role":"authenticated","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
 SELECT is( (SELECT count(*)::int FROM school_desk.conversations WHERE id='cccccccc-cccc-cccc-cccc-cccccccccccc'), 0, 't14 non-member same-tenant read returns 0 rows');
 
 -- 15. Member write path: member A inserts a message
-select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
 SELECT lives_ok(
   $$INSERT INTO school_desk.messages (id, conversation_id, sender_id, body) VALUES ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'cccccccc-cccc-cccc-cccc-cccccccccccc', '11111111-1111-1111-1111-111111111111', 'hello')$$,
   't15 member A inserts a message');
 
 -- 16. Soft-delete visibility: sender soft-deletes, row still present with deleted_at set
-select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","app_metadata":{"role":"student","tenant_id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"}}', true);
 SELECT lives_ok(
   $$UPDATE school_desk.messages SET deleted_at = now() WHERE id='eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'$$,
   't16 sender soft-deletes message (no hard delete)');

@@ -14,19 +14,20 @@ export default function TabLayout() {
         }}
       >
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
+        <Tabs.Screen name="class" options={{ title: 'Classes' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
-        <Tabs.Screen name="social" options={{ title: 'My Groups' }} />
-        <Tabs.Screen name="class" options={{ title: 'My Classes' }} />
-        <Tabs.Screen name="browse-classes" options={{ title: 'Browse' }} />
-        <Tabs.Screen name="hub" options={{ title: 'Enrichment' }} />
-        <Tabs.Screen name="report-card" options={{ title: 'Records' }} />
-        <Tabs.Screen name="teacher" options={{ title: 'Teacher' }} />
-        <Tabs.Screen name="family" options={{ title: 'Family' }} />
-        <Tabs.Screen name="group-chat" options={{ title: 'Chat', href: null }} />
-        <Tabs.Screen name="group-info" options={{ title: 'Group Info', href: null }} />
-        <Tabs.Screen name="certificates" options={{ title: 'Certificates', href: null }} />
-        <Tabs.Screen name="class-detail" options={{ title: 'Class Detail', href: null }} />
-        <Tabs.Screen name="hub-detail" options={{ title: 'Enrichment', href: null }} />
+        {/* Phase 2+ tabs — hidden */}
+        <Tabs.Screen name="social" options={{ href: null }} />
+        <Tabs.Screen name="browse-classes" options={{ href: null }} />
+        <Tabs.Screen name="hub" options={{ href: null }} />
+        <Tabs.Screen name="report-card" options={{ href: null }} />
+        <Tabs.Screen name="teacher" options={{ href: null }} />
+        <Tabs.Screen name="family" options={{ href: null }} />
+        <Tabs.Screen name="group-chat" options={{ href: null }} />
+        <Tabs.Screen name="group-info" options={{ href: null }} />
+        <Tabs.Screen name="certificates" options={{ href: null }} />
+        <Tabs.Screen name="class-detail" options={{ href: null }} />
+        <Tabs.Screen name="hub-detail" options={{ href: null }} />
       </Tabs>
     </Suspense>
   );

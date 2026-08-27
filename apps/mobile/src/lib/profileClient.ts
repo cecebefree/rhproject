@@ -1,18 +1,50 @@
 // src/lib/profileClient.ts
-// Fetch student profile data: profile, enrollments, registrations, payments, grades, attendance (Row 98)
+// Fetch profile data for 3 user types: Student, Adult, Teacher
+// Tables: public.profiles, office_desk.students, office_desk.family_accounts,
+//         office_desk.invoices, office_desk.payments, office_desk.users
 
 import { supabase } from '../services/supabase';
 import type {
-  AttendanceRecord,
+  AdultProfile,
+  ChildRecord,
   EnrolledClass,
-  GradeRecord,
+  FamilyAccountDetail,
+  InvoiceRecord,
   PaymentRecord,
   RegistrationRecord,
   StudentProfile,
+  TeacherProfile,
 } from '../types/profile';
 
 // ═══════════════════════════════════════════════════════════
-// PROFILE
+// CURRENT USER
+// ═══════════════════════════════════════════════════════════
+
+export async function getCurrentUser(): Promise<{
+  userId: string | null;
+  role: string | null;
+  error: string | null;
+}> {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { userId: null, role: null, error: 'Not authenticated' };
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  return { userId: user.id, role: profile?.role ?? null, error: null };
+}
+
+// ═══════════════════════════════════════════════════════════
+// STUDENT PROFILE
 // ═══════════════════════════════════════════════════════════
 
 export async function fetchStudentProfile(): Promise<{
@@ -28,21 +60,38 @@ export async function fetchStudentProfile(): Promise<{
     return { data: null, error: 'Not authenticated' };
   }
 
-  const { data, error } = await supabase
+  // 1. Fetch profile
+  const { data: profile, error: profErr } = await supabase
     .from('profiles')
-    .select('id, name, email, phone, role, curriculum, grade, stage, intake, created_at')
+    .select('id, name, surname, email, phone, role, zone, nation, city, created_at')
     .eq('id', user.id)
     .single();
 
-  if (error) {
-    return { data: null, error: error.message };
+  if (profErr || !profile) {
+    return { data: null, error: profErr?.message ?? 'Profile not found' };
   }
+
+  // 2. Fetch office_desk.students record (curriculum, stage, intake)
+  const { data: student } = await supabase
+    .from('office_desk.students')
+    .select('curriculum, current_stage, intake_group')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const data: StudentProfile = {
+    ...profile,
+    curriculum: student?.curriculum ?? null,
+    current_stage: student?.current_stage ?? null,
+    intake_group: student?.intake_group ?? null,
+  };
 
   return { data, error: null };
 }
 
 // ═══════════════════════════════════════════════════════════
-// ENROLLED CLASSES
+// ENROLLED CLASSES (Student)
 // ═══════════════════════════════════════════════════════════
 
 export async function fetchEnrolledClasses(): Promise<{
@@ -57,7 +106,7 @@ export async function fetchEnrolledClasses(): Promise<{
     return { data: [], error: 'Not authenticated' };
   }
 
-  // 1. Fetch active enrollments
+  // 1. Fetch active enrollments from student_class
   const { data: enrollments, error: enrErr } = await supabase
     .from('student_class')
     .select('id, class_id, enrolled_at, is_active')
@@ -73,11 +122,11 @@ export async function fetchEnrolledClasses(): Promise<{
     return { data: [], error: null };
   }
 
-  // 2. Fetch course details for each enrollment
+  // 2. Fetch course details
   const classIds = enrollments.map((e) => e.class_id);
   const { data: courses, error: courseErr } = await supabase
     .from('courses')
-    .select('id, title, description, type, platform, teacher_id')
+    .select('id, title, description, type, platform, teacher_id, section')
     .in('id', classIds);
 
   if (courseErr) {
@@ -87,7 +136,7 @@ export async function fetchEnrolledClasses(): Promise<{
   const courseMap = new Map((courses ?? []).map((c) => [c.id, c]));
 
   // 3. Fetch teacher names
-  const teacherIds = [...new Set((courses ?? []).map((c) => c.teacher_id))];
+  const teacherIds = [...new Set((courses ?? []).map((c) => c.teacher_id).filter(Boolean))];
   const teacherMap = new Map<string, string>();
 
   for (const tid of teacherIds) {
@@ -97,7 +146,7 @@ export async function fetchEnrolledClasses(): Promise<{
     }
   }
 
-  // 4. Fetch next schedule slot for each enrolled class
+  // 4. Fetch next schedule slot
   const scheduleMap = new Map<
     string,
     { label: string | null; start_time: string; end_time: string; days_of_week: number[] } | null
@@ -110,7 +159,6 @@ export async function fetchEnrolledClasses(): Promise<{
     .eq('is_active', true)
     .order('start_time');
 
-  // Group by course_id and pick first slot per course
   for (const slot of slots ?? []) {
     if (!scheduleMap.has(slot.course_id)) {
       scheduleMap.set(slot.course_id, {
@@ -122,48 +170,7 @@ export async function fetchEnrolledClasses(): Promise<{
     }
   }
 
-  // 5. Fetch latest grade per course from gradebook
-  const gradeMap = new Map<string, number | null>();
-  const { data: gradeData } = await supabase
-    .from('gradebook')
-    .select('course_id, score')
-    .in('course_id', classIds)
-    .eq('student_id', user.id)
-    .order('graded_at', { ascending: false });
-
-  // Compute average score per course
-  const gradeAccum = new Map<string, { total: number; count: number }>();
-  for (const g of gradeData ?? []) {
-    if (g.score == null) continue;
-    const acc = gradeAccum.get(g.course_id) ?? { total: 0, count: 0 };
-    acc.total += Number(g.score);
-    acc.count += 1;
-    gradeAccum.set(g.course_id, acc);
-  }
-  for (const [cid, acc] of gradeAccum) {
-    gradeMap.set(cid, acc.count > 0 ? acc.total / acc.count : null);
-  }
-
-  // 6. Fetch attendance percentage per course
-  const attendanceMap = new Map<string, number | null>();
-  const { data: attData } = await supabase
-    .from('attendance')
-    .select('course_id, status')
-    .in('course_id', classIds)
-    .eq('student_id', user.id);
-
-  const attAccum = new Map<string, { total: number; present: number }>();
-  for (const a of attData ?? []) {
-    const acc = attAccum.get(a.course_id) ?? { total: 0, present: 0 };
-    acc.total += 1;
-    if (a.status === 'present') acc.present += 1;
-    attAccum.set(a.course_id, acc);
-  }
-  for (const [cid, acc] of attAccum) {
-    attendanceMap.set(cid, acc.total > 0 ? Math.round((acc.present / acc.total) * 100) : null);
-  }
-
-  // 7. Build enrolled class list
+  // 5. Build enrolled class list
   const classes: EnrolledClass[] = enrollments.map((enr) => {
     const course = courseMap.get(enr.class_id);
     return {
@@ -177,9 +184,7 @@ export async function fetchEnrolledClasses(): Promise<{
       enrolled_at: enr.enrolled_at,
       is_active: enr.is_active,
       next_class: scheduleMap.get(enr.class_id) ?? null,
-      grade: gradeMap.get(enr.class_id) ?? null,
-      attendance_pct: attendanceMap.get(enr.class_id) ?? null,
-      status: 'active',
+      section: course?.section ?? null,
     };
   });
 
@@ -187,7 +192,7 @@ export async function fetchEnrolledClasses(): Promise<{
 }
 
 // ═══════════════════════════════════════════════════════════
-// REGISTRATION STATUS
+// REGISTRATION STATUS (Student)
 // ═══════════════════════════════════════════════════════════
 
 export async function fetchRegistrationStatus(): Promise<{
@@ -202,31 +207,214 @@ export async function fetchRegistrationStatus(): Promise<{
     return { data: null, error: 'Not authenticated' };
   }
 
-  // Try fetching by student_email (registration is keyed by email, not user ID)
-  const email = user.email;
-  if (!email) {
-    return { data: null, error: null };
-  }
-
   const { data, error } = await supabase
-    .from('office_desk.registrations')
-    .select('id, student_name, student_email, course_name, status, created_at, updated_at')
-    .eq('student_email', email)
-    .is('deleted_at', null)
+    .from('office_desk.students')
+    .select('id, grade, pack_choice, status, enrollment_date, created_at, updated_at')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 
   if (error) {
-    // RLS may block student access — return null gracefully
     return { data: null, error: null };
   }
 
-  return { data, error: null };
+  const { data: prof } = await supabase
+    .from('profiles')
+    .select('name, email')
+    .eq('id', user.id)
+    .single();
+
+  const record: RegistrationRecord | null = data
+    ? {
+        id: data.id,
+        student_name: prof?.name ?? 'Student',
+        student_email: prof?.email ?? null,
+        course_name: data.pack_choice ?? null,
+        status: data.status ?? 'pending',
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+      }
+    : null;
+
+  return { data: record, error: null };
 }
 
 // ═══════════════════════════════════════════════════════════
-// PAYMENT HISTORY
+// ADULT PROFILE
+// ═══════════════════════════════════════════════════════════
+
+export async function fetchAdultProfile(): Promise<{
+  data: AdultProfile | null;
+  children: ChildRecord[];
+  familyAccount: FamilyAccountDetail | null;
+  error: string | null;
+}> {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return { data: null, children: [], familyAccount: null, error: 'Not authenticated' };
+  }
+
+  // 1. Fetch profile
+  const { data: profile, error: profErr } = await supabase
+    .from('profiles')
+    .select('id, name, surname, email, phone, role, zone, nation, city, created_at')
+    .eq('id', user.id)
+    .single();
+
+  if (profErr || !profile) {
+    return {
+      data: null,
+      children: [],
+      familyAccount: null,
+      error: profErr?.message ?? 'Profile not found',
+    };
+  }
+
+  // 2. Fetch office_desk.users → get family_account_id
+  const { data: officeUser } = await supabase
+    .from('office_desk.users')
+    .select('family_account_id')
+    .eq('auth_user_id', user.id)
+    .maybeSingle();
+
+  const familyAccountId = officeUser?.family_account_id ?? null;
+
+  // 3. Fetch family account details
+  let familyAccount: FamilyAccountDetail | null = null;
+  if (familyAccountId) {
+    const { data: fa } = await supabase
+      .from('office_desk.family_accounts')
+      .select(
+        'id, status, family_name, primary_contact_email, primary_contact_phone, bank_name, bank_branch, bank_sort_code, created_at'
+      )
+      .eq('id', familyAccountId)
+      .maybeSingle();
+
+    if (fa) {
+      familyAccount = {
+        id: fa.id,
+        status: fa.status,
+        family_name: fa.family_name,
+        primary_contact_email: fa.primary_contact_email,
+        primary_contact_phone: fa.primary_contact_phone,
+        bank_name: fa.bank_name,
+        bank_branch: fa.bank_branch,
+        bank_sort_code: fa.bank_sort_code,
+        created_at: fa.created_at,
+      };
+    }
+  }
+
+  // 4. Fetch children (students linked to same family account)
+  const children: ChildRecord[] = [];
+  if (familyAccountId) {
+    const { data: childUsers } = await supabase
+      .from('office_desk.users')
+      .select('auth_user_id')
+      .eq('family_account_id', familyAccountId)
+      .neq('auth_user_id', user.id);
+
+    if (childUsers && childUsers.length > 0) {
+      const childIds = childUsers.map((c) => c.auth_user_id);
+
+      // Fetch profiles for children
+      const { data: childProfiles } = await supabase
+        .from('profiles')
+        .select('id, name, role')
+        .in('id', childIds);
+
+      // Fetch office_desk.students for each child
+      for (const cp of childProfiles ?? []) {
+        const { data: cs } = await supabase
+          .from('office_desk.students')
+          .select('curriculum, current_stage, grade, intake_group, status')
+          .eq('user_id', cp.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        children.push({
+          id: cp.id,
+          user_id: cp.id,
+          name: cp.name,
+          curriculum: cs?.curriculum ?? null,
+          current_stage: cs?.current_stage ?? null,
+          grade: cs?.grade ?? null,
+          intake_group: cs?.intake_group ?? null,
+          status: cs?.status ?? null,
+        });
+      }
+    }
+  }
+
+  const data: AdultProfile = {
+    ...profile,
+    family_account_id: familyAccountId,
+    family_account_status: familyAccount?.status ?? null,
+    family_account_created_at: familyAccount?.created_at ?? null,
+  };
+
+  return { data, children, familyAccount, error: null };
+}
+
+// ═══════════════════════════════════════════════════════════
+// INVOICES (Adult)
+// ═══════════════════════════════════════════════════════════
+
+export async function fetchInvoices(): Promise<{
+  data: InvoiceRecord[];
+  error: string | null;
+}> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { data: [], error: 'Not authenticated' };
+  }
+
+  // Get family_account_id via office_desk.users
+  const { data: officeUser } = await supabase
+    .from('office_desk.users')
+    .select('family_account_id')
+    .eq('auth_user_id', user.id)
+    .maybeSingle();
+
+  if (!officeUser?.family_account_id) {
+    return { data: [], error: null };
+  }
+
+  const { data, error } = await supabase
+    .from('office_desk.invoices')
+    .select('id, invoice_number, description, amount, currency, status, due_date, created_at')
+    .eq('family_account_id', officeUser.family_account_id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return { data: [], error: error.message };
+  }
+
+  const invoices: InvoiceRecord[] = (data ?? []).map((inv) => ({
+    id: inv.id,
+    invoice_number: inv.invoice_number,
+    description: inv.description,
+    amount: inv.amount,
+    currency: inv.currency,
+    status: inv.status,
+    due_date: inv.due_date,
+    created_at: inv.created_at,
+  }));
+
+  return { data: invoices, error: null };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENTS (Adult / Student)
 // ═══════════════════════════════════════════════════════════
 
 export async function fetchPaymentHistory(): Promise<{
@@ -241,7 +429,6 @@ export async function fetchPaymentHistory(): Promise<{
     return { data: [], error: 'Not authenticated' };
   }
 
-  // Payments are readable by any authenticated user in their tenant (payments_auth_select)
   const { data, error } = await supabase
     .from('office_desk.payments')
     .select(
@@ -295,119 +482,106 @@ export async function fetchPaymentHistory(): Promise<{
 }
 
 // ═══════════════════════════════════════════════════════════
-// GRADES (per course)
+// TEACHER PROFILE
 // ═══════════════════════════════════════════════════════════
 
-export async function fetchGrades(): Promise<{
-  data: GradeRecord[];
+export async function fetchTeacherProfile(): Promise<{
+  data: TeacherProfile | null;
   error: string | null;
 }> {
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return { data: [], error: 'Not authenticated' };
+  if (userError || !user) {
+    return { data: null, error: 'Not authenticated' };
   }
 
-  // Fetch gradebook entries for this student
-  const { data: grades, error: gbErr } = await supabase
-    .from('gradebook')
-    .select('course_id, score, max_score:assignments(max_score)')
-    .eq('student_id', user.id);
+  // 1. Fetch profile
+  const { data: profile, error: profErr } = await supabase
+    .from('profiles')
+    .select('id, name, surname, email, phone, role, zone, nation, city, created_at')
+    .eq('id', user.id)
+    .single();
 
-  if (gbErr) {
-    // RLS may block — return empty gracefully
-    return { data: [], error: null };
+  if (profErr || !profile) {
+    return { data: null, error: profErr?.message ?? 'Profile not found' };
   }
 
-  // Fetch course titles
-  const courseIds = [...new Set((grades ?? []).map((g) => g.course_id))];
-  const { data: courses } = await supabase.from('courses').select('id, title').in('id', courseIds);
-  const courseMap = new Map((courses ?? []).map((c) => [c.id, c.title]));
+  // 2. Fetch courses where this user is teacher
+  const { data: courses, error: courseErr } = await supabase
+    .from('courses')
+    .select('id, title, type, platform, section')
+    .eq('teacher_id', user.id);
 
-  // Group by course and compute averages
-  const accum = new Map<string, { total: number; count: number; maxScore: number }>();
-  for (const g of grades ?? []) {
-    const acc = accum.get(g.course_id) ?? { total: 0, count: 0, maxScore: 0 };
-    if (g.score != null) {
-      acc.total += Number(g.score);
-      acc.count += 1;
-    }
-    const maxScore = (g.max_score as unknown as { max_score: number }[])?.[0]?.max_score;
-    if (maxScore && maxScore > acc.maxScore) {
-      acc.maxScore = maxScore;
-    }
-    accum.set(g.course_id, acc);
+  if (courseErr) {
+    return { data: { ...profile, classes_taught: [] }, error: null };
   }
 
-  const result: GradeRecord[] = [];
-  for (const [courseId, acc] of accum) {
-    result.push({
-      course_id: courseId,
-      course_title: courseMap.get(courseId) ?? 'Unknown Course',
-      avg_score: acc.count > 0 ? acc.total / acc.count : null,
-      max_score: acc.maxScore || null,
-      assignment_count: acc.count,
-    });
-  }
+  // 3. For each course, fetch enrolled students
+  const classesTaught = await Promise.all(
+    (courses ?? []).map(async (course) => {
+      const { data: enrollments } = await supabase
+        .from('student_class')
+        .select('student_id')
+        .eq('class_id', course.id)
+        .eq('is_active', true);
 
-  return { data: result, error: null };
-}
+      const studentIds = (enrollments ?? []).map((e) => e.student_id);
 
-// ═══════════════════════════════════════════════════════════
-// ATTENDANCE (per course)
-// ═══════════════════════════════════════════════════════════
+      let students: {
+        id: string;
+        name: string | null;
+        email: string | null;
+        grade: string | null;
+      }[] = [];
+      if (studentIds.length > 0) {
+        const { data: studentProfiles } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .in('id', studentIds);
 
-export async function fetchAttendance(): Promise<{
-  data: AttendanceRecord[];
-  error: string | null;
-}> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+        // Fetch grades for each student in this course
+        students = await Promise.all(
+          (studentProfiles ?? []).map(async (sp) => {
+            const { data: gradeData } = await supabase
+              .from('school_desk.gradebook')
+              .select('score')
+              .eq('course_id', course.id)
+              .eq('student_id', sp.id)
+              .order('graded_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
 
-  if (!user) {
-    return { data: [], error: 'Not authenticated' };
-  }
+            return {
+              id: sp.id,
+              name: sp.name,
+              email: sp.email,
+              grade: gradeData?.score != null ? String(gradeData.score) : null,
+            };
+          })
+        );
+      }
 
-  // Fetch attendance records for this student
-  const { data: records, error: attErr } = await supabase
-    .from('attendance')
-    .select('course_id, status')
-    .eq('student_id', user.id);
+      return {
+        course_id: course.id,
+        title: course.title,
+        type: course.type,
+        platform: course.platform,
+        section: course.section,
+        student_count: students.length,
+        students,
+      };
+    })
+  );
 
-  if (attErr) {
-    // RLS may block — return empty gracefully
-    return { data: [], error: null };
-  }
+  const data: TeacherProfile = {
+    ...profile,
+    classes_taught: classesTaught,
+  };
 
-  // Fetch course titles
-  const courseIds = [...new Set((records ?? []).map((r) => r.course_id))];
-  const { data: courses } = await supabase.from('courses').select('id, title').in('id', courseIds);
-  const courseMap = new Map((courses ?? []).map((c) => [c.id, c.title]));
-
-  // Group by course and compute attendance %
-  const accum = new Map<string, { total: number; present: number }>();
-  for (const r of records ?? []) {
-    const acc = accum.get(r.course_id) ?? { total: 0, present: 0 };
-    acc.total += 1;
-    if (r.status === 'present') acc.present += 1;
-    accum.set(r.course_id, acc);
-  }
-
-  const result: AttendanceRecord[] = [];
-  for (const [courseId, acc] of accum) {
-    result.push({
-      course_id: courseId,
-      course_title: courseMap.get(courseId) ?? 'Unknown Course',
-      total_sessions: acc.total,
-      present_count: acc.present,
-      attendance_pct: acc.total > 0 ? Math.round((acc.present / acc.total) * 100) : 0,
-    });
-  }
-
-  return { data: result, error: null };
+  return { data, error: null };
 }
 
 // ═══════════════════════════════════════════════════════════
