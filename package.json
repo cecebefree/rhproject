@@ -4,20 +4,16 @@
   "version": "0.0.0",
   "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "turbo run dev --filter=!@redhouse/mobile --filter=!@redhouse/cli",
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "biome lint .",
     "typecheck": "turbo run typecheck",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "lint:types": "bash scripts/check-database-types.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@playwright/test": "^1.62.1",
-    "serve": "^14.2.6",
-    "turbo": "2.10.1",
-    "typescript": "^5.7.0"
-  },
-  "engines": {
-    "node": "24.18.0"
+    "turbo": "^2.10.1",
+    "typescript": "^5.7.2"
   }
 }
