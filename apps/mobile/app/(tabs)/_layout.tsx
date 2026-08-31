@@ -16,6 +16,8 @@ export default function TabLayout() {
         <Tabs.Screen name="index" options={{ title: 'Home' }} />
         <Tabs.Screen name="class" options={{ title: 'Classes' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+        <Tabs.Screen name="front-desk" options={{ href: null }} />
+        <Tabs.Screen name="office-desk" options={{ href: null }} />
         {/* Phase 2+ tabs — hidden */}
         <Tabs.Screen name="social" options={{ href: null }} />
         <Tabs.Screen name="browse-classes" options={{ href: null }} />
