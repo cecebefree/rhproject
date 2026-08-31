@@ -31,25 +31,16 @@ interface ScheduleRow {
 
 function SectionLoader() {
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Loading...</Text>
+    <View style={styles.sectionEmpty}>
+      <Text style={styles.sectionEmptyText}>Loading...</Text>
     </View>
   );
 }
 
 function SectionError({ message }: { message: string }) {
   return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Unable to load</Text>
-      <Text style={styles.emptyText}>{message}</Text>
-    </View>
-  );
-}
-
-function SectionEmpty({ message }: { message: string }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.emptyText}>{message}</Text>
+    <View style={styles.errorCard}>
+      <Text style={styles.errorText}>{message}</Text>
     </View>
   );
 }
@@ -69,6 +60,11 @@ function formatTime(time: string): string {
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const h12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
   return `${h12}:${m} ${ampm}`;
+}
+
+function getBarColor(idx: number): string {
+  const palette = ['#C8281E', '#E8A020', '#273946', '#3a3a3e'];
+  return palette[idx % palette.length];
 }
 
 export default function ClassScreen() {
@@ -211,55 +207,133 @@ export default function ClassScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Classes</Text>
+        <Text style={styles.subtitle}>Cambridge · Mid School</Text>
       </View>
 
-      {loading ? (
-        <SectionLoader />
-      ) : errors.courses ? (
-        <SectionError message={errors.courses} />
-      ) : courses.length === 0 ? (
-        <SectionEmpty message="No classes yet" />
-      ) : (
-        courses.map((cls) => {
-          const courseSlots = slotsByCourse.get(cls.id) ?? [];
-          const nextSlot = courseSlots[0];
+      {/* Go to Class CTA */}
+      <TouchableOpacity style={styles.goToClassCard} activeOpacity={0.8}>
+        <View style={styles.goToClassLeft}>
+          <Text style={styles.goToClassLabel}>GO TO CLASS</Text>
+          <Text style={styles.goToClassTitle}>Join your next live session</Text>
+        </View>
+        <View style={styles.goToClassArrow}>
+          <Text style={styles.goToClassArrowText}>→</Text>
+        </View>
+      </TouchableOpacity>
 
-          return (
-            <TouchableOpacity
-              key={cls.id}
-              style={styles.card}
-              onPress={() => navigateToDetail(cls.id)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.cardHeader}>
-                <Text style={styles.subject}>{cls.title}</Text>
-                <View style={[styles.badge, styles.badgeCore]}>
-                  <Text style={styles.badgeText}>{cls.type}</Text>
+      {/* Coming Up */}
+      <View style={styles.section}>
+        <View style={[styles.sectionHeader, { backgroundColor: '#C8281E' }]}>
+          <Text style={styles.sectionHeaderText}>COMING UP</Text>
+          <TouchableOpacity>
+            <Text style={styles.sectionSeeAll}>See all</Text>
+          </TouchableOpacity>
+        </View>
+        {loading ? (
+          <View style={styles.sectionEmpty}>
+            <Text style={styles.sectionEmptyText}>Loading...</Text>
+          </View>
+        ) : courses.length > 0 ? (
+          courses.slice(0, 5).map((cls, idx) => {
+            const courseSlots = slotsByCourse.get(cls.id) ?? [];
+            const nextSlot = courseSlots[0];
+            return (
+              <TouchableOpacity
+                key={cls.id}
+                style={styles.scheduleItem}
+                onPress={() => navigateToDetail(cls.id)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.scheduleBar, { backgroundColor: getBarColor(idx) }]} />
+                <View style={styles.scheduleInfo}>
+                  <Text style={styles.scheduleTitle}>{cls.title}</Text>
+                  <Text style={styles.scheduleTeacher}>
+                    {cls.teacher_name ?? 'Teacher'}
+                    {nextSlot
+                      ? ` · ${formatDays(nextSlot.days_of_week)} ${formatTime(nextSlot.start_time)}`
+                      : ''}
+                  </Text>
                 </View>
-              </View>
+                {idx === 0 ? (
+                  <View style={styles.liveBadge}>
+                    <Text style={styles.liveBadgeText}>LIVE</Text>
+                  </View>
+                ) : nextSlot ? (
+                  <Text style={styles.scheduleTime}>{formatTime(nextSlot.start_time)}</Text>
+                ) : null}
+              </TouchableOpacity>
+            );
+          })
+        ) : (
+          <View style={styles.sectionEmpty}>
+            <Text style={styles.sectionEmptyText}>No classes scheduled</Text>
+          </View>
+        )}
+      </View>
 
-              {cls.teacher_name && <Text style={styles.teacher}>{cls.teacher_name}</Text>}
+      {/* Clubs */}
+      <View style={styles.section}>
+        <View style={[styles.sectionHeader, { backgroundColor: '#E8A020' }]}>
+          <Text style={styles.sectionHeaderText}>CLUBS</Text>
+        </View>
+        {courses.filter((c) => c.type === 'club').length > 0 ? (
+          courses
+            .filter((c) => c.type === 'club')
+            .map((cls) => (
+              <TouchableOpacity
+                key={cls.id}
+                style={styles.scheduleItem}
+                onPress={() => navigateToDetail(cls.id)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.scheduleBar, { backgroundColor: '#E8A020' }]} />
+                <View style={styles.scheduleInfo}>
+                  <Text style={styles.scheduleTitle}>{cls.title}</Text>
+                  <Text style={styles.scheduleType}>Club</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+        ) : (
+          <View style={styles.sectionEmpty}>
+            <Text style={styles.sectionEmptyText}>No clubs</Text>
+          </View>
+        )}
+      </View>
 
-              {nextSlot ? (
-                <Text style={styles.schedule}>
-                  {formatDays(nextSlot.days_of_week)} · {formatTime(nextSlot.start_time)}–
-                  {formatTime(nextSlot.end_time)}
-                </Text>
-              ) : (
-                <Text style={styles.schedule}>No scheduled sessions</Text>
-              )}
+      {/* Enrichment */}
+      <View style={styles.section}>
+        <View style={[styles.sectionHeader, { backgroundColor: '#273946' }]}>
+          <Text style={styles.sectionHeaderText}>ENRICHMENT</Text>
+        </View>
+        {courses.filter((c) => c.type === 'enrichment').length > 0 ? (
+          courses
+            .filter((c) => c.type === 'enrichment')
+            .map((cls) => (
+              <TouchableOpacity
+                key={cls.id}
+                style={styles.scheduleItem}
+                onPress={() => navigateToDetail(cls.id)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.scheduleBar, { backgroundColor: '#273946' }]} />
+                <View style={styles.scheduleInfo}>
+                  <Text style={styles.scheduleTitle}>{cls.title}</Text>
+                  <Text style={styles.scheduleTypeEnrichment}>Enrichment</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+        ) : (
+          <View style={styles.sectionEmpty}>
+            <Text style={styles.sectionEmptyText}>No enrichment classes</Text>
+          </View>
+        )}
+      </View>
 
-              {cls.description ? (
-                <Text style={styles.description} numberOfLines={2}>
-                  {cls.description}
-                </Text>
-              ) : null}
-            </TouchableOpacity>
-          );
-        })
+      {errors.courses && !loading && (
+        <View style={styles.errorCard}>
+          <Text style={styles.errorText}>{errors.courses}</Text>
+        </View>
       )}
-
-      {errors.schedule && !loading && <SectionError message={errors.schedule} />}
     </ScrollView>
   );
 }
@@ -267,80 +341,162 @@ export default function ClassScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.ivory,
+    backgroundColor: '#F8F7F4',
   },
   header: {
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ivoryDark,
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 12,
   },
   title: {
-    fontSize: typography.sizes.h2,
-    fontWeight: typography.weights.bold,
-    color: colors.charcoal,
+    fontSize: 24,
+    color: '#273946',
+    fontWeight: '500',
   },
-  card: {
+  subtitle: {
+    fontSize: 12,
+    color: '#8b939e',
+    marginTop: 2,
+  },
+  goToClassCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#273946',
+    borderRadius: 16,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 16,
+  },
+  goToClassLeft: {
+    flex: 1,
+  },
+  goToClassLabel: {
+    fontSize: 10,
+    letterSpacing: 2,
+    color: '#8899aa',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  goToClassTitle: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '500',
+  },
+  goToClassArrow: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#C8281E',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  goToClassArrowText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  section: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 16,
+    overflow: 'hidden',
     backgroundColor: '#fff',
-    margin: spacing.md,
-    padding: spacing.md,
-    borderRadius: 8,
     borderWidth: 1,
-    borderColor: colors.ivoryDark,
+    borderColor: '#eee',
   },
-  cardHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
-  subject: {
-    fontSize: typography.sizes.h3,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
+  sectionHeaderText: {
+    color: '#fff',
+    fontSize: 11,
+    letterSpacing: 2,
+    fontWeight: '400',
+    textTransform: 'uppercase',
+  },
+  sectionSeeAll: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 10,
+  },
+  sectionEmpty: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  sectionEmptyText: {
+    fontSize: 14,
+    color: '#8b939e',
+  },
+  scheduleItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0f0f0',
+  },
+  scheduleBar: {
+    width: 3,
+    height: 36,
+    borderRadius: 2,
+    marginRight: 12,
+  },
+  scheduleInfo: {
     flex: 1,
   },
-  badge: {
+  scheduleTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#273946',
+  },
+  scheduleTeacher: {
+    fontSize: 12,
+    color: '#8b939e',
+    fontWeight: '300',
+    marginTop: 2,
+  },
+  scheduleTime: {
+    fontSize: 13,
+    color: '#8b939e',
+  },
+  scheduleType: {
+    fontSize: 11,
+    color: '#E8A020',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  scheduleTypeEnrichment: {
+    fontSize: 11,
+    color: '#273946',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  liveBadge: {
+    backgroundColor: '#C8281E',
     paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
-  badgeCore: {
-    backgroundColor: colors.navy,
-  },
-  badgeText: {
+  liveBadgeText: {
     color: '#fff',
-    fontSize: typography.sizes.badge,
-    fontWeight: typography.weights.bold,
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
-  teacher: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
-    marginBottom: spacing.xs,
+  errorCard: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e74c3c',
   },
-  schedule: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
-    marginBottom: spacing.xs,
-  },
-  description: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoalLight,
-    marginTop: spacing.xs,
-  },
-  section: {
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ivoryDark,
-  },
-  sectionTitle: {
-    fontSize: typography.sizes.h3,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
-    marginBottom: spacing.sm,
-  },
-  emptyText: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
+  errorText: {
+    fontSize: 13,
+    color: '#e74c3c',
   },
 });

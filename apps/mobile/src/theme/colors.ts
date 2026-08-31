@@ -1,20 +1,19 @@
-// Brand tokens from docs/brand-assets.md (PLACEHOLDER GRADE)
-// Palette swap re-derives badge colors via blend formula below.
+// Design system tokens — stitch monolith precision palette
 
 export const colors = {
-  // Base palette
-  navy: '#1a2330',
-  burgundy: '#8b1a2e',
-  champagne: '#c9a227',
-  ivory: '#f8f7f4',
+  // Primary palette
+  navy: '#273946',
+  burgundy: '#C8281E',
+  champagne: '#E8A020',
+  ivory: '#F8F7F4',
   charcoal: '#1c1c1e',
 
   // Extended palette
-  navyLight: '#2a3a4d',
-  burgundyLight: '#a84560',
-  champagneDark: '#9a7a1a',
-  ivoryDark: '#e8e7e4',
-  charcoalLight: '#3a3a3e',
+  navyLight: '#3b5163',
+  burgundyLight: '#d94f43',
+  champagneDark: '#c88a1a',
+  ivoryDark: '#EAEAEA',
+  charcoalLight: '#4c4546',
 
   // Semantic
   success: '#27ae60',
@@ -23,17 +22,15 @@ export const colors = {
   info: '#3498db',
 } as const;
 
-// Category badge colors — derived from base palette
-// Derivation: result = (ratio * base) + ((1 - ratio) * ivory), per channel
-// A palette swap re-derives all 7 via these mixing ratios.
+// Category badge colors
 export const categoryColors = {
-  core: colors.navy, // Direct base token
-  enrichment: colors.burgundy, // Direct base token
-  club: colors.champagne, // Direct base token
-  school: colors.charcoal, // Direct base token
-  social: '#5d636b', // blend(navy, ivory, 0.70)
-  staff: '#747474', // blend(charcoal, ivory, 0.60)
-  family: '#b16773', // blend(burgundy, ivory, 0.65)
+  core: colors.navy,
+  enrichment: colors.navy,
+  club: colors.champagne,
+  school: colors.charcoal,
+  social: '#5d636b',
+  staff: '#747474',
+  family: '#b16773',
 } as const;
 
 export type CategoryKey = keyof typeof categoryColors;

@@ -6,11 +6,13 @@
 import { useEffect, useState } from 'react';
 import {
   FlatList,
+  Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { HamburgerMenu } from '../components/HamburgerMenu';
 import { LoadingState } from '../components/LoadingState';
 import { useHomeFilter } from '../hooks/useHomeFilter';
 import { supabase } from '../services/supabase';
@@ -35,10 +37,11 @@ function getGreeting(): Greeting {
   return { text: 'Good Evening', name: '' };
 }
 
-export function HomeScreen() {
+export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: () => void } = {}) {
   const { classes, loading, error } = useHomeFilter();
   const [userName, setUserName] = useState('');
   const [devotionalExpanded, setDevotionalExpanded] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const greeting = getGreeting();
 
@@ -78,7 +81,7 @@ export function HomeScreen() {
                   {userName ? userName.charAt(0).toUpperCase() : '?'}
                 </Text>
               </View>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => setMenuVisible(true)}>
                 <Text style={styles.hamburger}>☰</Text>
               </TouchableOpacity>
             </View>
@@ -89,7 +92,7 @@ export function HomeScreen() {
                 <Text style={styles.greetingLabel}>{greeting.text}</Text>
                 <Text style={styles.greetingName}>{userName || 'Student'}</Text>
               </View>
-              <View style={styles.dateBadge}>
+              <TouchableOpacity onPress={onNavigateToCalendar} style={styles.dateBadge}>
                 <View style={styles.dateBadgeMonth}>
                   <Text style={styles.dateBadgeMonthText}>
                     {new Date().toLocaleString('default', { month: 'long' })}
@@ -103,7 +106,7 @@ export function HomeScreen() {
                     {new Date().toLocaleString('default', { weekday: 'long' })}
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {/* Daily Devotional */}
@@ -144,15 +147,19 @@ export function HomeScreen() {
             </View>
 
             {/* Coming Up */}
-            {classes.length > 0 && (
-              <View style={styles.section}>
-                <View style={[styles.sectionHeader, { backgroundColor: BRAND_RED }]}>
-                  <Text style={styles.sectionHeaderText}>COMING UP</Text>
-                  <TouchableOpacity>
-                    <Text style={styles.sectionSeeAll}>See all</Text>
-                  </TouchableOpacity>
+            <View style={styles.section}>
+              <View style={[styles.sectionHeader, { backgroundColor: BRAND_RED }]}>
+                <Text style={styles.sectionHeaderText}>COMING UP</Text>
+                <TouchableOpacity>
+                  <Text style={styles.sectionSeeAll}>See all</Text>
+                </TouchableOpacity>
+              </View>
+              {loading ? (
+                <View style={styles.sectionEmpty}>
+                  <Text style={styles.sectionEmptyText}>Loading...</Text>
                 </View>
-                {classes.slice(0, 4).map((cls) => (
+              ) : classes.length > 0 ? (
+                classes.slice(0, 4).map((cls) => (
                   <View key={cls.id} style={styles.scheduleItem}>
                     <View style={styles.scheduleDot} />
                     <View style={{ flex: 1 }}>
@@ -162,9 +169,26 @@ export function HomeScreen() {
                       </Text>
                     </View>
                   </View>
-                ))}
+                ))
+              ) : (
+                <View style={styles.sectionEmpty}>
+                  <Text style={styles.sectionEmptyText}>No classes scheduled</Text>
+                </View>
+              )}
+            </View>
+
+            {/* School News */}
+            <View style={styles.section}>
+              <View style={[styles.sectionHeader, { backgroundColor: BRAND_NAVY }]}>
+                <Text style={styles.sectionHeaderText}>SCHOOL NEWS</Text>
+                <TouchableOpacity>
+                  <Text style={styles.sectionSeeAll}>See all</Text>
+                </TouchableOpacity>
               </View>
-            )}
+              <View style={styles.sectionEmpty}>
+                <Text style={styles.sectionEmptyText}>No announcements</Text>
+              </View>
+            </View>
 
             {/* Empty state */}
             {classes.length === 0 && !error && (
@@ -182,6 +206,10 @@ export function HomeScreen() {
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
+
+      <Modal visible={menuVisible} animationType="slide" presentationStyle="pageSheet">
+        <HamburgerMenu onClose={() => setMenuVisible(false)} />
+      </Modal>
     </View>
   );
 }
@@ -360,6 +388,14 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 10,
     fontWeight: typography.weights.regular,
+  },
+  sectionEmpty: {
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  sectionEmptyText: {
+    fontSize: 14,
+    color: TEXT_SECONDARY,
   },
   scheduleItem: {
     flexDirection: 'row',

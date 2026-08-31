@@ -14,6 +14,7 @@ import type {
   RegistrationRecord,
   StudentProfile,
   TeacherProfile,
+  UserRole,
 } from '../types/profile';
 
 // ═══════════════════════════════════════════════════════════
@@ -34,13 +35,25 @@ export async function getCurrentUser(): Promise<{
     return { userId: null, role: null, error: 'Not authenticated' };
   }
 
+  // Try profiles first
   const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
 
-  return { userId: user.id, role: profile?.role ?? null, error: null };
+  if (profile) {
+    return { userId: user.id, role: profile.role, error: null };
+  }
+
+  // Fallback: users table (auth trigger writes here)
+  const { data: userRow } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  return { userId: user.id, role: userRow?.role ?? null, error: null };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -63,7 +76,7 @@ export async function fetchStudentProfile(): Promise<{
   // 1. Fetch profile
   const { data: profile, error: profErr } = await supabase
     .from('profiles')
-    .select('id, name, surname, email, phone, role, zone, nation, city, created_at')
+    .select('id, name, role, created_at, curriculum, grade, stage, intake')
     .eq('id', user.id)
     .single();
 
@@ -81,10 +94,19 @@ export async function fetchStudentProfile(): Promise<{
     .maybeSingle();
 
   const data: StudentProfile = {
-    ...profile,
-    curriculum: student?.curriculum ?? null,
-    current_stage: student?.current_stage ?? null,
-    intake_group: student?.intake_group ?? null,
+    id: profile.id,
+    name: profile.name,
+    surname: null,
+    email: user.email ?? null,
+    phone: null,
+    role: profile.role as UserRole,
+    zone: null,
+    nation: null,
+    city: null,
+    created_at: profile.created_at,
+    curriculum: student?.curriculum ?? profile.curriculum ?? null,
+    current_stage: student?.current_stage ?? profile.stage ?? null,
+    intake_group: student?.intake_group ?? profile.intake ?? null,
   };
 
   return { data, error: null };

@@ -213,22 +213,21 @@ export default function ProfileScreen() {
 
   // ─── RENDER ───
   return (
-    <ScrollView style={styles.container}>
-      {/* ═══ HEADER (shared) ═══ */}
-      <View style={styles.section}>
-        <View style={styles.headerRow}>
-          <View style={styles.headerInfo}>
-            <Text style={styles.name}>{profileData.name ?? 'User'}</Text>
-            {profileData.email && <Text style={styles.email}>{profileData.email}</Text>}
-            {profileData.phone && <Text style={styles.phone}>{profileData.phone}</Text>}
-            <View style={styles.roleBadge}>
-              <Text style={styles.roleText}>{role?.toUpperCase()}</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.editButton} onPress={() => setEditModalVisible(true)}>
-            <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
+    <>
+    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
+      {/* Avatar + Name */}
+      <View style={styles.profileHeader}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {profileData.name ? profileData.name.charAt(0).toUpperCase() : '?'}
+          </Text>
         </View>
+        <Text style={styles.profileName}>{profileData.name ?? 'User'}</Text>
+        {profileData.email && <Text style={styles.profileEmail}>{profileData.email}</Text>}
+        {profileData.phone && <Text style={styles.profilePhone}>{profileData.phone}</Text>}
+        <TouchableOpacity style={styles.editButton} onPress={() => setEditModalVisible(true)}>
+          <Text style={styles.editButtonText}>Edit</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ═══ STUDENT PROFILE ═══ */}
@@ -237,6 +236,7 @@ export default function ProfileScreen() {
           profile={studentProfile}
           enrolledClasses={enrolledClasses}
           registration={registration}
+          payments={payments}
           onClassPress={handleClassPress}
           onPaymentPress={handlePaymentPress}
         />
@@ -290,16 +290,17 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.spacer} />
-
-      {/* Edit Profile Modal */}
-      <EditProfileModal
-        visible={editModalVisible}
-        name={profileData.name ?? ''}
-        phone={profileData.phone ?? ''}
-        onSave={handleEditSave}
-        onCancel={() => setEditModalVisible(false)}
-      />
     </ScrollView>
+
+    {/* Edit Profile Modal */}
+    <EditProfileModal
+      visible={editModalVisible}
+      name={profileData.name ?? ''}
+      phone={profileData.phone ?? ''}
+      onSave={handleEditSave}
+      onCancel={() => setEditModalVisible(false)}
+    />
+    </>
   );
 }
 
@@ -311,36 +312,40 @@ function StudentSections({
   profile,
   enrolledClasses,
   registration,
+  payments,
   onClassPress,
   onPaymentPress,
 }: {
   profile: StudentProfile;
   enrolledClasses: EnrolledClass[];
   registration: RegistrationRecord | null;
+  payments: PaymentRecord[];
   onClassPress: (classId: string) => void;
   onPaymentPress: (payment: PaymentRecord) => void;
 }) {
   return (
     <>
-      {/* Curriculum info */}
+      {/* Academic */}
       {(profile.curriculum || profile.current_stage || profile.intake_group) && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Academic</Text>
-          <View style={styles.infoGrid}>
+        <View style={styles.sectionCard}>
+          <View style={[styles.sectionCardHeader, { backgroundColor: colors.navy }]}>
+            <Text style={styles.sectionCardTitle}>Academic</Text>
+          </View>
+          <View style={styles.sectionCardBody}>
             {profile.curriculum && (
-              <View style={styles.infoItem}>
+              <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Curriculum</Text>
                 <Text style={styles.infoValue}>{profile.curriculum}</Text>
               </View>
             )}
             {profile.current_stage && (
-              <View style={styles.infoItem}>
+              <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Stage</Text>
                 <Text style={styles.infoValue}>{profile.current_stage}</Text>
               </View>
             )}
             {profile.intake_group && (
-              <View style={styles.infoItem}>
+              <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Intake</Text>
                 <Text style={styles.infoValue}>{profile.intake_group}</Text>
               </View>
@@ -349,16 +354,140 @@ function StudentSections({
         </View>
       )}
 
-      {/* Enrolled Classes */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>My Classes</Text>
-        <EnrolledClassesList classes={enrolledClasses} onClassPress={onClassPress} />
+      {/* Core Classes */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.burgundy }]}>
+          <Text style={styles.sectionCardTitle}>Core Classes</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <EnrolledClassesList classes={enrolledClasses} onClassPress={onClassPress} />
+        </View>
       </View>
 
-      {/* Registration Status */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Registration</Text>
-        <RegistrationStatusTimeline registration={registration} />
+      {/* Registration */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.navy }]}>
+          <Text style={styles.sectionCardTitle}>Registration</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <RegistrationStatusTimeline registration={registration} />
+        </View>
+      </View>
+
+      {/* Enrichment */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.burgundy }]}>
+          <Text style={styles.sectionCardTitle}>Enrichment</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          {enrolledClasses.filter(c => c.type === 'enrichment').length > 0 ? (
+            enrolledClasses.filter(c => c.type === 'enrichment').map(c => (
+              <TouchableOpacity key={c.id} style={styles.infoRow} onPress={() => onClassPress(c.id)}>
+                <Text style={styles.infoLabel}>{c.title}</Text>
+                <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'›'}</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>No enrichment activities</Text>
+          )}
+        </View>
+      </View>
+
+      {/* Clubs */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.navy }]}>
+          <Text style={styles.sectionCardTitle}>Clubs</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          {enrolledClasses.filter(c => c.type === 'club').length > 0 ? (
+            enrolledClasses.filter(c => c.type === 'club').map(c => (
+              <TouchableOpacity key={c.id} style={styles.infoRow} onPress={() => onClassPress(c.id)}>
+                <Text style={styles.infoLabel}>{c.title}</Text>
+                <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'›'}</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>No clubs joined</Text>
+          )}
+        </View>
+      </View>
+
+      {/* Groups */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.burgundy }]}>
+          <Text style={styles.sectionCardTitle}>Groups</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Groups</Text>
+        </View>
+      </View>
+
+      {/* Documents */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.navy }]}>
+          <Text style={styles.sectionCardTitle}>Documents</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Documents</Text>
+        </View>
+      </View>
+
+      {/* Activity */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.burgundy }]}>
+          <Text style={styles.sectionCardTitle}>Activity</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Activity</Text>
+        </View>
+      </View>
+
+      {/* Accounts */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.navy }]}>
+          <Text style={styles.sectionCardTitle}>Accounts</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          {payments.length > 0 ? (
+            payments.slice(0, 3).map(p => (
+              <TouchableOpacity key={p.id} style={styles.infoRow} onPress={() => onPaymentPress(p)}>
+                <Text style={styles.infoLabel}>
+                  {new Date(p.paid_at || p.created_at).toLocaleDateString('en-ZA')}
+                </Text>
+                <Text style={[styles.infoValue, { color: p.status === 'confirmed' ? '#27ae60' : colors.burgundy }]}>
+                  R{Number(p.amount).toFixed(2)}
+                </Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>No accounts</Text>
+          )}
+        </View>
+      </View>
+
+      {/* Service Desk */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.burgundy }]}>
+          <Text style={styles.sectionCardTitle}>Service Desk</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Service Desk</Text>
+        </View>
+      </View>
+
+      {/* General */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.champagne }]}>
+          <Text style={styles.sectionCardTitle}>General</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          {profile.created_at && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Member since</Text>
+              <Text style={styles.infoValue}>{new Date(profile.created_at).toLocaleDateString('en-ZA')}</Text>
+            </View>
+          )}
+        </View>
       </View>
     </>
   );
@@ -601,167 +730,206 @@ function TeacherSections({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.ivory,
+    backgroundColor: '#F8F7F4',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: 20,
   },
-  section: {
-    padding: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ivoryDark,
+  profileHeader: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 16,
   },
-  sectionTitle: {
-    fontSize: typography.sizes.h3,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
-    marginBottom: spacing.md,
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#273946',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  // Header
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  avatarText: {
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: '500',
   },
-  headerInfo: {
-    flex: 1,
+  profileName: {
+    fontSize: 22,
+    color: '#273946',
+    fontWeight: '500',
+    marginBottom: 4,
   },
-  name: {
-    fontSize: typography.sizes.h2,
-    fontWeight: typography.weights.bold,
-    color: colors.charcoal,
-    marginBottom: spacing.xs,
-  },
-  email: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
+  profileEmail: {
+    fontSize: 14,
+    color: '#8b939e',
     marginBottom: 2,
   },
-  phone: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
-    marginBottom: spacing.xs,
-  },
-  roleBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: 4,
-    backgroundColor: colors.navy,
-  },
-  roleText: {
-    fontSize: typography.sizes.badge,
-    color: '#fff',
-    fontWeight: typography.weights.medium,
+  profilePhone: {
+    fontSize: 14,
+    color: '#8b939e',
+    marginBottom: 12,
   },
   editButton: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
     borderWidth: 1,
-    borderColor: colors.burgundy,
-    borderRadius: 6,
+    borderColor: '#C8281E',
+    borderRadius: 20,
   },
   editButtonText: {
-    fontSize: typography.sizes.caption,
-    color: colors.burgundy,
-    fontWeight: typography.weights.medium,
+    fontSize: 13,
+    color: '#C8281E',
+    fontWeight: '500',
   },
-  // Error / empty
+  sectionCard: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  sectionCardHeader: {
+    backgroundColor: '#273946',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  sectionCardTitle: {
+    color: '#fff',
+    fontSize: 11,
+    letterSpacing: 2,
+    fontWeight: '400',
+    textTransform: 'uppercase',
+  },
+  sectionCardBody: {
+    padding: 12,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0f0f0',
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#8b939e',
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#273946',
+  },
+  section: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#273946',
+    marginBottom: 12,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#8b939e',
+  },
   errorTitle: {
-    fontSize: typography.sizes.h3,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
-    marginBottom: spacing.sm,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#273946',
+    marginBottom: 8,
     textAlign: 'center',
   },
   errorMessage: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
+    fontSize: 14,
+    color: '#8b939e',
     textAlign: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   retryButton: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    backgroundColor: colors.burgundy,
-    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    backgroundColor: '#C8281E',
+    borderRadius: 20,
   },
   retryText: {
     color: '#fff',
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
+    fontSize: 14,
+    fontWeight: '500',
   },
-  emptyText: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
-  },
-  // Info grid (student academic)
-  infoGrid: {
+  contactRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0f0f0',
   },
-  infoItem: {
-    minWidth: 100,
+  contactLabel: {
+    fontSize: 14,
+    color: '#8b939e',
   },
-  infoLabel: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoalLight,
-    marginBottom: 2,
+  contactValue: {
+    fontSize: 14,
+    color: '#273946',
   },
-  infoValue: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
+  supportLink: {
+    paddingVertical: 10,
   },
-  // Card lists
+  supportLinkText: {
+    fontSize: 14,
+    color: '#C8281E',
+  },
   cardList: {
-    gap: spacing.sm,
+    gap: 8,
   },
-  // Child card
   childCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: spacing.md,
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    borderColor: colors.ivoryDark,
+    borderColor: '#eee',
   },
   childName: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
-    marginBottom: spacing.xs,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#273946',
+    marginBottom: 4,
   },
   childDetails: {
     gap: 2,
-    marginBottom: spacing.sm,
+    marginBottom: 8,
   },
   childDetail: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoalLight,
+    fontSize: 12,
+    color: '#8b939e',
   },
   statusBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
   statusText: {
-    fontSize: typography.sizes.badge,
+    fontSize: 10,
     color: '#fff',
-    fontWeight: typography.weights.medium,
+    fontWeight: '500',
   },
-  // Account card
   accountCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: spacing.md,
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    borderColor: colors.ivoryDark,
-    gap: spacing.sm,
+    borderColor: '#eee',
+    gap: 8,
   },
   accountRow: {
     flexDirection: 'row',
@@ -769,37 +937,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   accountLabel: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
+    fontSize: 14,
+    color: '#8b939e',
   },
   accountValue: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.medium,
-    color: colors.charcoal,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#273946',
   },
-  // Invoice card
   invoiceCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: spacing.md,
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    borderColor: colors.ivoryDark,
+    borderColor: '#eee',
   },
   invoiceHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   invoiceNumber: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#273946',
   },
   invoiceDesc: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoalLight,
-    marginBottom: spacing.xs,
+    fontSize: 12,
+    color: '#8b939e',
+    marginBottom: 4,
   },
   invoiceFooter: {
     flexDirection: 'row',
@@ -807,97 +974,72 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   invoiceAmount: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#273946',
   },
   invoiceDue: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoalLight,
+    fontSize: 12,
+    color: '#8b939e',
   },
-  // Teacher class card
   teacherClassCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: spacing.md,
+    borderRadius: 12,
+    padding: 12,
     borderWidth: 1,
-    borderColor: colors.ivoryDark,
+    borderColor: '#eee',
   },
   teacherClassHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: 4,
   },
   teacherClassName: {
-    fontSize: typography.sizes.body,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#273946',
     flex: 1,
-    marginRight: spacing.sm,
+    marginRight: 8,
   },
   teacherClassMeta: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoalLight,
-    marginBottom: spacing.sm,
+    fontSize: 12,
+    color: '#8b939e',
+    marginBottom: 8,
   },
   sectionBadge: {
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
-    backgroundColor: colors.navy,
+    backgroundColor: '#273946',
   },
   sectionBadgeText: {
-    fontSize: typography.sizes.badge,
+    fontSize: 10,
     color: '#fff',
-    fontWeight: typography.weights.medium,
+    fontWeight: '500',
   },
-  // Student list (teacher view)
   studentList: {
     borderTopWidth: 1,
-    borderTopColor: colors.ivoryDark,
-    paddingTop: spacing.sm,
+    borderTopColor: '#eee',
+    paddingTop: 8,
   },
   studentRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: spacing.xs,
+    paddingVertical: 4,
   },
   studentName: {
-    fontSize: typography.sizes.caption,
-    color: colors.charcoal,
+    fontSize: 12,
+    color: '#273946',
     flex: 1,
   },
   studentGrade: {
-    fontSize: typography.sizes.caption,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoalLight,
-  },
-  // Contact
-  contactRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.ivoryDark,
-  },
-  contactLabel: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoalLight,
-  },
-  contactValue: {
-    fontSize: typography.sizes.body,
-    color: colors.charcoal,
-  },
-  supportLink: {
-    paddingVertical: spacing.sm,
-  },
-  supportLinkText: {
-    fontSize: typography.sizes.body,
-    color: colors.burgundy,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#8b939e',
   },
   spacer: {
-    height: spacing.xxl,
+    height: 40,
   },
 });
