@@ -65,7 +65,7 @@ export function FrontDeskAdmin() {
                   <div><span className="font-semibold text-gray-700">Status:</span><p className="text-gray-600">{selectedInquiry.enrollment_status}</p></div>
                   <div>
                     <span className="font-semibold text-gray-700">AI Category:</span>
-                    <span className={`ml-2 px-2 py-1 rounded text-white text-xs font-bold ${selectedInquiry.ai_category === 'hot' ? 'bg-red-500' : selectedInquiry.ai_category === 'warm' ? 'bg-orange-500' : selectedInquiry.ai_category === 'nurture' ? 'bg-yellow-500' : 'bg-gray-500'}`}>
+                    <span className={`ml-2 px-2 py-1 rounded text-white text-xs font-bold ${selectedInquiry.ai_category === 'hot_lead' ? 'bg-red-500' : selectedInquiry.ai_category === 'warm' ? 'bg-orange-500' : selectedInquiry.ai_category === 'nurture' ? 'bg-yellow-500' : 'bg-gray-500'}`}>
                       {selectedInquiry.ai_category?.toUpperCase()}
                     </span>
                   </div>

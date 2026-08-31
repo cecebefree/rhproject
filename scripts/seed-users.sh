@@ -73,8 +73,8 @@ create_user teacher@demo.redhouse   "$PASSWORD" teacher "$REDHOUSE_TENANT" "Teac
 create_user student@demo.redhouse   "$PASSWORD" student "$REDHOUSE_TENANT" "Student User"
 create_user teacher2@demo.redhouse  "$PASSWORD" teacher "$REDHOUSE_TENANT" "Teacher Two"
 create_user outside@demo.redhouse   "$PASSWORD" outside_student "$REDHOUSE_TENANT" "Outside Student"
-create_user guardian@demo.redhouse  "$PASSWORD" family  "$REDHOUSE_TENANT" "Test Guardian"
-create_user guardian2@demo.redhouse "$PASSWORD" family  "$REDHOUSE_TENANT" "Unlinked Guardian"
+create_user guardian@demo.redhouse  "$PASSWORD" adult   "$REDHOUSE_TENANT" "Test Guardian"
+create_user guardian2@demo.redhouse "$PASSWORD" adult   "$REDHOUSE_TENANT" "Unlinked Guardian"
 create_user other@demo.redhouse     "$PASSWORD" student "$TENANT2"         "Other Tenant Student"
 
 # ── 2. LOOKUP USER IDs (single batch query) ─────────────────────────
@@ -140,8 +140,8 @@ UPDATE public.profiles SET role = 'teacher', registration_status = 'approved', c
 UPDATE public.profiles SET role = 'student', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT', curriculum = 'Cambridge', grade = '8', stage = 'Mid School', intake = 'Group A · Jan' WHERE id = '$STUDENT_ID';
 UPDATE public.profiles SET role = 'teacher', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$TEACHER2_ID';
 UPDATE public.profiles SET role = 'outside_student', registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$OUTSIDE_ID';
-UPDATE public.profiles SET role = 'family',  registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$GUARDIAN_ID';
-UPDATE public.profiles SET role = 'family',  registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$GUARDIAN2_ID';
+UPDATE public.profiles SET role = 'adult',   registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$GUARDIAN_ID';
+UPDATE public.profiles SET role = 'adult',   registration_status = 'approved', consent_given = true, tenant_id = '$REDHOUSE_TENANT' WHERE id = '$GUARDIAN2_ID';
 UPDATE public.profiles SET role = 'student', registration_status = 'approved', consent_given = true, tenant_id = '$TENANT2'         WHERE id = '$OTHER_ID';
 
 SELECT set_config('app.tenant_assignment_bypass', 'false', false);
@@ -168,7 +168,7 @@ WHERE id = '$OTHER_ID';
 
 echo "--- Courses ---"
 db_query "
-INSERT INTO public.courses (id, title, price, status, teacher_id, type, platform, open_to_outside, tenant_id)
+INSERT INTO school_desk.courses (id, title, price, status, teacher_id, type, platform, open_to_outside, tenant_id)
 VALUES
   ('11111111-1111-1111-1111-111111111111', 'Test Course One', 0, 'published', '$TEACHER_ID', 'core', 'core', false, '$REDHOUSE_TENANT'),
   ('22222222-2222-2222-2222-222222222222', 'Test Course Two', 0, 'published', '$TEACHER_ID', 'core', 'core', false, '$REDHOUSE_TENANT'),
@@ -178,7 +178,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Idempotent belt-and-braces: backfill any pre-existing NULL-tenant courses
 -- (e.g. rows seeded before this fix on a non-reset DB).
-UPDATE public.courses SET tenant_id = '$REDHOUSE_TENANT'
+UPDATE school_desk.courses SET tenant_id = '$REDHOUSE_TENANT'
   WHERE teacher_id = '$TEACHER_ID' AND tenant_id IS NULL;
 "
 
@@ -242,7 +242,7 @@ ON CONFLICT (student_class_id) DO NOTHING;
 
 echo "--- Enrollments + platform access ---"
 db_query "
-INSERT INTO public.enrollments (student_id, course_id, payment_reference)
+INSERT INTO school_desk.enrollments (student_id, course_id, payment_reference)
 VALUES
   ('$STUDENT_ID', '11111111-1111-1111-1111-111111111111', 'seed-paid-001'),
   ('$OTHER_ID',   '22222222-2222-2222-2222-222222222222', 'seed-paid-002')
@@ -364,7 +364,7 @@ ON CONFLICT (guardian_id, child_id) DO NOTHING;
 
 echo "--- Announcements ---"
 db_query "
-INSERT INTO public.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
+INSERT INTO school_desk.announcement (id, tenant_id, title, body, audience_roles, publish_at, expires_at, pinned, created_by)
 VALUES
   ('a1000000-0000-0000-0000-000000000001', '$REDHOUSE_TENANT',
    'School Reopening', 'School reopens on Monday.', '{}',
@@ -391,11 +391,11 @@ ON CONFLICT (id) DO NOTHING;
 
 echo "--- Report cards + certificates ---"
 db_query "
-INSERT INTO public.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
+INSERT INTO school_desk.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
 SELECT '$STUDENT_ID', '2026 Term 1', 'Mathematics', 'A', 'visible',
        '$TEACHER_ID', '$ADMIN_ID', now() - interval '2 days', now() - interval '1 day', '$REDHOUSE_TENANT'
 WHERE NOT EXISTS (
-    SELECT 1 FROM public.report_cards
+    SELECT 1 FROM school_desk.report_cards
     WHERE student_id = '$STUDENT_ID' AND term = '2026 Term 1' AND subject = 'Mathematics'
 );
 
@@ -416,11 +416,11 @@ WHERE NOT EXISTS (
 );
 
 -- Draft card (invisible to learner; visible only after release via EF)
-INSERT INTO public.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
+INSERT INTO school_desk.report_cards (student_id, term, subject, grade, status, created_by, released_by, released_at, visible_at, tenant_id)
 SELECT '$STUDENT_ID', '2026 Term 1', 'Science', 'B', 'draft',
        '$TEACHER_ID', NULL, NULL, NULL, '$REDHOUSE_TENANT'
 WHERE NOT EXISTS (
-    SELECT 1 FROM public.report_cards
+    SELECT 1 FROM school_desk.report_cards
     WHERE student_id = '$STUDENT_ID' AND term = '2026 Term 1' AND subject = 'Science'
 );
 "
@@ -430,11 +430,11 @@ WHERE NOT EXISTS (
 echo ""
 echo "--- Conversations + members ---"
 db_query "
-INSERT INTO public.conversations (id, tenant_id, category, created_by, created_at, updated_at)
+INSERT INTO school_desk.conversations (id, tenant_id, category, created_by, created_at, updated_at)
 VALUES ('e0000000-0000-0000-0000-000000000001', '$REDHOUSE_TENANT', 'general', '$TEACHER_ID', now(), now())
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.conversation_members (conversation_id, profile_id, role, joined_at)
+INSERT INTO school_desk.conversation_members (conversation_id, profile_id, role, joined_at)
 VALUES ('e0000000-0000-0000-0000-000000000001', '$TEACHER_ID', 'lead', now())
 ON CONFLICT (conversation_id, profile_id) DO NOTHING;
 "

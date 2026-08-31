@@ -6,6 +6,8 @@ interface ActionShortcuts {
   onEmail?: () => void;
   onEscalate?: () => void;
   onRefresh?: () => void;
+  onNavigate?: (direction: 'up' | 'down') => void;
+  onSearchFocus?: () => void;
 }
 
 export function useKeyboardShortcuts(shortcuts: ActionShortcuts) {
@@ -19,6 +21,9 @@ export function useKeyboardShortcuts(shortcuts: ActionShortcuts) {
       if (e.key === 'e') { e.preventDefault(); shortcuts.onEmail?.(); }
       if (e.key === 'x') { e.preventDefault(); shortcuts.onEscalate?.(); }
       if (e.key === 'r') { e.preventDefault(); shortcuts.onRefresh?.(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); shortcuts.onNavigate?.('up'); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); shortcuts.onNavigate?.('down'); }
+      if (e.key === '/') { e.preventDefault(); shortcuts.onSearchFocus?.(); }
     };
 
     window.addEventListener('keydown', handleKeyDown);

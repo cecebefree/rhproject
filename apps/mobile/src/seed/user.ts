@@ -4,7 +4,7 @@
 export interface SeedUser {
   id: string;
   name: string;
-  role: 'student' | 'teacher' | 'family' | 'admin';
+  role: 'student' | 'adult' | 'teacher' | 'staff' | 'admin';
   curriculum: string;
   grade: string;
   stage: string;

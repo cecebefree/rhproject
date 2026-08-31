@@ -79,7 +79,7 @@ export function InquiryQueue({ onSelectInquiry, showDetailPanel = true }: Inquir
                     <td className="border p-2 text-center">
                       <span
                         className={`px-2 py-1 rounded text-white text-xs font-bold ${
-                          inq.ai_category === 'hot'
+                          inq.ai_category === 'hot_lead'
                             ? 'bg-red-500'
                             : inq.ai_category === 'warm'
                               ? 'bg-orange-500'
@@ -128,7 +128,7 @@ export function InquiryQueue({ onSelectInquiry, showDetailPanel = true }: Inquir
               <span className="font-semibold">AI Category:</span>{' '}
               <span
                 className={`px-2 py-1 rounded text-white text-xs font-bold ${
-                  selectedInquiry.ai_category === 'hot'
+                  selectedInquiry.ai_category === 'hot_lead'
                     ? 'bg-red-500'
                     : selectedInquiry.ai_category === 'warm'
                       ? 'bg-orange-500'

@@ -1,0 +1,4427 @@
+drop extension if exists "pg_net";
+
+create schema if not exists "postgrest";
+
+drop trigger if exists "trg_add_on_payments_updated_at" on "office_desk"."add_on_payments";
+
+drop trigger if exists "trg_debit_orders_updated_at" on "office_desk"."debit_orders";
+
+drop trigger if exists "set_email_template_updated_at" on "office_desk"."email_templates";
+
+drop trigger if exists "trg_family_accounts_updated_at" on "office_desk"."family_accounts";
+
+drop trigger if exists "trg_notifications_updated_at" on "office_desk"."notifications";
+
+drop trigger if exists "trg_packages_updated_at" on "office_desk"."packages";
+
+drop trigger if exists "trg_payments_updated_at" on "office_desk"."payments";
+
+drop trigger if exists "set_revenue_metrics_updated_at" on "office_desk"."revenue_metrics";
+
+drop trigger if exists "trg_students_updated_at" on "office_desk"."students";
+
+drop trigger if exists "trg_validate_family_students" on "office_desk"."students";
+
+drop trigger if exists "trg_users_updated_at" on "office_desk"."users";
+
+drop trigger if exists "trg_validate_family_account" on "office_desk"."users";
+
+drop trigger if exists "set_webhook_event_updated_at" on "office_desk"."webhook_events";
+
+drop trigger if exists "set_webhook_notification_prefs_updated_at" on "office_desk"."webhook_notification_preferences";
+
+drop trigger if exists "set_webhook_updated_at" on "office_desk"."webhooks";
+
+drop trigger if exists "on_assessment_graded" on "public"."assessment_submissions";
+
+drop trigger if exists "on_calendar_sync_events_insert" on "public"."calendar_sync_events";
+
+drop trigger if exists "on_course_progress_update" on "public"."course_progress";
+
+drop trigger if exists "on_debit_order_scheduled" on "public"."debit_orders";
+
+drop trigger if exists "on_meeting_links_insert" on "public"."meeting_links";
+
+drop trigger if exists "trg_notification_preferences_updated_at" on "public"."notification_preferences";
+
+drop trigger if exists "on_payment_status_change" on "public"."payments";
+
+drop trigger if exists "on_slot_bookings_insert" on "public"."slot_bookings";
+
+drop trigger if exists "on_slot_bookings_update" on "public"."slot_bookings";
+
+drop trigger if exists "on_student_attendance_update" on "public"."student_attendance";
+
+drop trigger if exists "on_student_enrollments_insert" on "public"."student_enrollments";
+
+drop trigger if exists "on_student_enrollment_activated" on "public"."students";
+
+drop trigger if exists "set_user_2fa_updated_at" on "public"."user_2fa";
+
+drop trigger if exists "on_role_change_notify" on "public"."users";
+
+drop trigger if exists "on_users_updated" on "public"."users";
+
+drop trigger if exists "update_website_leads_updated_at" on "public"."website_leads";
+
+drop trigger if exists "trg_course_schedule_updated_at" on "school_desk"."course_schedule";
+
+drop trigger if exists "trg_invoices_updated_at" on "office_desk"."invoices";
+
+drop policy "addon_admin_all" on "office_desk"."add_on_payments";
+
+drop policy "addon_parent_select" on "office_desk"."add_on_payments";
+
+drop policy "addon_tenant_select" on "office_desk"."add_on_payments";
+
+drop policy "Users can create bulk operations" on "office_desk"."bulk_operation_history";
+
+drop policy "Users can update own bulk operations" on "office_desk"."bulk_operation_history";
+
+drop policy "Users can view own bulk operations" on "office_desk"."bulk_operation_history";
+
+drop policy "conversion_events_admin_select" on "office_desk"."conversion_events";
+
+drop policy "conversion_events_office_desk_select" on "office_desk"."conversion_events";
+
+drop policy "conversion_events_service_role" on "office_desk"."conversion_events";
+
+drop policy "dbo_admin_all" on "office_desk"."debit_orders";
+
+drop policy "dbo_parent_select" on "office_desk"."debit_orders";
+
+drop policy "dbo_student_select" on "office_desk"."debit_orders";
+
+drop policy "dbo_tenant_select" on "office_desk"."debit_orders";
+
+drop policy "desk_roles_admin_all" on "office_desk"."desk_roles";
+
+drop policy "desk_roles_tenant_select" on "office_desk"."desk_roles";
+
+drop policy "email_template_usage_admin_select" on "office_desk"."email_template_usage";
+
+drop policy "email_template_usage_office_desk_select" on "office_desk"."email_template_usage";
+
+drop policy "email_template_usage_service_role" on "office_desk"."email_template_usage";
+
+drop policy "email_templates_admin_all" on "office_desk"."email_templates";
+
+drop policy "email_templates_office_desk_manage" on "office_desk"."email_templates";
+
+drop policy "email_templates_service_role" on "office_desk"."email_templates";
+
+drop policy "fe_deny_anon" on "office_desk"."failed_enrollments";
+
+drop policy "fe_deny_authenticated" on "office_desk"."failed_enrollments";
+
+drop policy "fe_office_select" on "office_desk"."failed_enrollments";
+
+drop policy "fa_admin_all" on "office_desk"."family_accounts";
+
+drop policy "fa_tenant_select" on "office_desk"."family_accounts";
+
+drop policy "fam_admin_all" on "office_desk"."family_activity";
+
+drop policy "fam_parent_select" on "office_desk"."family_activity";
+
+drop policy "fam_tenant_select" on "office_desk"."family_activity";
+
+drop policy "inv_parent_select" on "office_desk"."invoices";
+
+drop policy "inv_school_desk_read" on "office_desk"."invoices";
+
+drop policy "inv_tenant_select" on "office_desk"."invoices";
+
+drop policy "nd_deny_anon" on "office_desk"."notifications";
+
+drop policy "nd_deny_authenticated" on "office_desk"."notifications";
+
+drop policy "nd_office_select" on "office_desk"."notifications";
+
+drop policy "pkg_admin_all" on "office_desk"."packages";
+
+drop policy "pkg_tenant_select" on "office_desk"."packages";
+
+drop policy "pay_admin_all" on "office_desk"."payments";
+
+drop policy "pay_parent_select" on "office_desk"."payments";
+
+drop policy "pay_school_desk_read" on "office_desk"."payments";
+
+drop policy "pay_tenant_select" on "office_desk"."payments";
+
+drop policy "refunds_admin_select" on "office_desk"."refunds";
+
+drop policy "refunds_service_role" on "office_desk"."refunds";
+
+drop policy "office_registrations_tenant_select" on "office_desk"."registrations";
+
+drop policy "revenue_metrics_admin_select" on "office_desk"."revenue_metrics";
+
+drop policy "revenue_metrics_office_desk_select" on "office_desk"."revenue_metrics";
+
+drop policy "revenue_metrics_service_role" on "office_desk"."revenue_metrics";
+
+drop policy "stripe_events_admin_select" on "office_desk"."stripe_events";
+
+drop policy "stripe_events_service_role" on "office_desk"."stripe_events";
+
+drop policy "students_admin_all" on "office_desk"."students";
+
+drop policy "students_own_select" on "office_desk"."students";
+
+drop policy "students_parent_select" on "office_desk"."students";
+
+drop policy "students_school_desk_read" on "office_desk"."students";
+
+drop policy "students_tenant_select" on "office_desk"."students";
+
+drop policy "activity_log_admin_select" on "office_desk"."user_activity_log";
+
+drop policy "activity_log_insert_own" on "office_desk"."user_activity_log";
+
+drop policy "activity_log_office_desk_select" on "office_desk"."user_activity_log";
+
+drop policy "activity_log_service_role" on "office_desk"."user_activity_log";
+
+drop policy "users_admin_all" on "office_desk"."users";
+
+drop policy "users_parent_select_children" on "office_desk"."users";
+
+drop policy "users_parent_update_own" on "office_desk"."users";
+
+drop policy "users_tenant_select" on "office_desk"."users";
+
+drop policy "webhook_events_admin_select" on "office_desk"."webhook_events";
+
+drop policy "webhook_events_office_desk_select" on "office_desk"."webhook_events";
+
+drop policy "webhook_events_service_role" on "office_desk"."webhook_events";
+
+drop policy "webhook_notification_prefs_admin_all" on "office_desk"."webhook_notification_preferences";
+
+drop policy "webhook_notification_prefs_office_desk_manage" on "office_desk"."webhook_notification_preferences";
+
+drop policy "webhook_notification_prefs_service_role" on "office_desk"."webhook_notification_preferences";
+
+drop policy "webhooks_admin_all" on "office_desk"."webhooks";
+
+drop policy "webhooks_office_desk_manage" on "office_desk"."webhooks";
+
+drop policy "webhooks_service_role" on "office_desk"."webhooks";
+
+drop policy "rubric_grades_admin_all" on "public"."assessment_rubric_grades";
+
+drop policy "rubric_grades_org_insert" on "public"."assessment_rubric_grades";
+
+drop policy "rubric_grades_org_read" on "public"."assessment_rubric_grades";
+
+drop policy "rubric_grades_org_update" on "public"."assessment_rubric_grades";
+
+drop policy "oda_submissions_all" on "public"."assessment_submissions";
+
+drop policy "parent_submissions_select" on "public"."assessment_submissions";
+
+drop policy "sda_submissions_select" on "public"."assessment_submissions";
+
+drop policy "sda_submissions_update" on "public"."assessment_submissions";
+
+drop policy "student_submissions_insert" on "public"."assessment_submissions";
+
+drop policy "student_submissions_select" on "public"."assessment_submissions";
+
+drop policy "student_submissions_update" on "public"."assessment_submissions";
+
+drop policy "teacher_submissions_select" on "public"."assessment_submissions";
+
+drop policy "teacher_submissions_update" on "public"."assessment_submissions";
+
+drop policy "oda_assessments_all" on "public"."assessments";
+
+drop policy "sda_assessments_select" on "public"."assessments";
+
+drop policy "teacher_assessments_all" on "public"."assessments";
+
+drop policy "audit_log_admin_all" on "public"."attendance_audit_log";
+
+drop policy "audit_log_org_insert" on "public"."attendance_audit_log";
+
+drop policy "audit_log_org_read" on "public"."attendance_audit_log";
+
+drop policy "audit_log_org_update" on "public"."attendance_audit_log";
+
+drop policy "oda_calendar_all" on "public"."calendar";
+
+drop policy "parent_calendar_select" on "public"."calendar";
+
+drop policy "sda_calendar_select" on "public"."calendar";
+
+drop policy "sda_calendar_update_status" on "public"."calendar";
+
+drop policy "student_calendar_select" on "public"."calendar";
+
+drop policy "oda_sync_events_all" on "public"."calendar_sync_events";
+
+drop policy "parent_sync_events_select_child" on "public"."calendar_sync_events";
+
+drop policy "sda_sync_events_select" on "public"."calendar_sync_events";
+
+drop policy "sda_sync_events_update_status" on "public"."calendar_sync_events";
+
+drop policy "student_sync_events_select_own" on "public"."calendar_sync_events";
+
+drop policy "teacher_sync_events_select" on "public"."calendar_sync_events";
+
+drop policy "webhook_logs_admin_all" on "public"."calendar_webhook_logs";
+
+drop policy "webhook_logs_org_insert" on "public"."calendar_webhook_logs";
+
+drop policy "webhook_logs_org_read" on "public"."calendar_webhook_logs";
+
+drop policy "webhook_logs_org_update" on "public"."calendar_webhook_logs";
+
+drop policy "oda_chapter_progress_all" on "public"."chapter_progress";
+
+drop policy "parent_chapter_progress_select" on "public"."chapter_progress";
+
+drop policy "sda_chapter_progress_select" on "public"."chapter_progress";
+
+drop policy "sda_chapter_progress_update" on "public"."chapter_progress";
+
+drop policy "student_chapter_progress_select" on "public"."chapter_progress";
+
+drop policy "teacher_chapter_progress_insert" on "public"."chapter_progress";
+
+drop policy "teacher_chapter_progress_select" on "public"."chapter_progress";
+
+drop policy "teacher_chapter_progress_update" on "public"."chapter_progress";
+
+drop policy "oda_sessions_all" on "public"."class_sessions";
+
+drop policy "parent_sessions_select" on "public"."class_sessions";
+
+drop policy "sda_sessions_select" on "public"."class_sessions";
+
+drop policy "sda_sessions_update_status" on "public"."class_sessions";
+
+drop policy "student_sessions_select" on "public"."class_sessions";
+
+drop policy "teacher_sessions_insert" on "public"."class_sessions";
+
+drop policy "teacher_sessions_select" on "public"."class_sessions";
+
+drop policy "teacher_sessions_update" on "public"."class_sessions";
+
+drop policy "oda_progress_all" on "public"."course_progress";
+
+drop policy "parent_progress_select_child" on "public"."course_progress";
+
+drop policy "sda_progress_insert" on "public"."course_progress";
+
+drop policy "sda_progress_select" on "public"."course_progress";
+
+drop policy "sda_progress_update" on "public"."course_progress";
+
+drop policy "student_progress_select_own" on "public"."course_progress";
+
+drop policy "teacher_progress_insert" on "public"."course_progress";
+
+drop policy "teacher_progress_select" on "public"."course_progress";
+
+drop policy "teacher_progress_update" on "public"."course_progress";
+
+drop policy "oda_courses_all" on "public"."courses";
+
+drop policy "parent_courses_select" on "public"."courses";
+
+drop policy "sda_courses_select" on "public"."courses";
+
+drop policy "sda_courses_update_status" on "public"."courses";
+
+drop policy "student_courses_select" on "public"."courses";
+
+drop policy "teacher_courses_select" on "public"."courses";
+
+drop policy "service_role_manage_debit_orders" on "public"."debit_orders";
+
+drop policy "students_view_own_debit_orders" on "public"."debit_orders";
+
+drop policy "ef_call_log_insert_service_role" on "public"."ef_call_log";
+
+drop policy "ef_call_log_select_admin" on "public"."ef_call_log";
+
+drop policy "email_logs_admin_select" on "public"."email_logs";
+
+drop policy "email_logs_service_role" on "public"."email_logs";
+
+drop policy "oda_meeting_links_all" on "public"."meeting_links";
+
+drop policy "parent_meeting_links_select_child" on "public"."meeting_links";
+
+drop policy "sda_meeting_links_select" on "public"."meeting_links";
+
+drop policy "student_meeting_links_select_own" on "public"."meeting_links";
+
+drop policy "teacher_meeting_links_select" on "public"."meeting_links";
+
+drop policy "notif_prefs_service_role_all" on "public"."notification_preferences";
+
+drop policy "notif_prefs_student_insert" on "public"."notification_preferences";
+
+drop policy "notif_prefs_student_select" on "public"."notification_preferences";
+
+drop policy "notif_prefs_student_update" on "public"."notification_preferences";
+
+drop policy "students_view_notification_types" on "public"."notification_types";
+
+drop policy "notif_system_insert" on "public"."notifications";
+
+drop policy "pwh_admin_select" on "public"."payment_webhooks";
+
+drop policy "pwh_service_role_all" on "public"."payment_webhooks";
+
+drop policy "ss_adult_read" on "public"."schedule_slot";
+
+drop policy "school_years_admin_all" on "public"."school_years";
+
+drop policy "school_years_tenant_read" on "public"."school_years";
+
+drop policy "oda_slot_bookings_all" on "public"."slot_bookings";
+
+drop policy "parent_bookings_select_child" on "public"."slot_bookings";
+
+drop policy "sda_slot_bookings_select" on "public"."slot_bookings";
+
+drop policy "student_bookings_insert_own" on "public"."slot_bookings";
+
+drop policy "student_bookings_select_own" on "public"."slot_bookings";
+
+drop policy "student_bookings_update_own" on "public"."slot_bookings";
+
+drop policy "oda_attendance_all" on "public"."student_attendance";
+
+drop policy "parent_attendance_select_child" on "public"."student_attendance";
+
+drop policy "sda_attendance_insert" on "public"."student_attendance";
+
+drop policy "sda_attendance_select" on "public"."student_attendance";
+
+drop policy "sda_attendance_update" on "public"."student_attendance";
+
+drop policy "student_attendance_select_own" on "public"."student_attendance";
+
+drop policy "teacher_attendance_insert" on "public"."student_attendance";
+
+drop policy "teacher_attendance_select" on "public"."student_attendance";
+
+drop policy "teacher_attendance_update" on "public"."student_attendance";
+
+drop policy "oda_enrollments_all" on "public"."student_enrollments";
+
+drop policy "parent_enrollments_select_child" on "public"."student_enrollments";
+
+drop policy "sda_enrollments_insert" on "public"."student_enrollments";
+
+drop policy "sda_enrollments_select" on "public"."student_enrollments";
+
+drop policy "sda_enrollments_update" on "public"."student_enrollments";
+
+drop policy "student_enrollments_select_own" on "public"."student_enrollments";
+
+drop policy "teacher_enrollments_select" on "public"."student_enrollments";
+
+drop policy "service_role_manage_system_log" on "public"."system_log";
+
+drop policy "user_2fa_delete_own" on "public"."user_2fa";
+
+drop policy "user_2fa_insert_own" on "public"."user_2fa";
+
+drop policy "user_2fa_select_own" on "public"."user_2fa";
+
+drop policy "user_2fa_service_role" on "public"."user_2fa";
+
+drop policy "user_2fa_update_own" on "public"."user_2fa";
+
+drop policy "users_oda_delete" on "public"."users";
+
+drop policy "users_oda_insert" on "public"."users";
+
+drop policy "users_oda_select" on "public"."users";
+
+drop policy "users_oda_update" on "public"."users";
+
+drop policy "users_parent_select" on "public"."users";
+
+drop policy "users_sda_select" on "public"."users";
+
+drop policy "users_student_select" on "public"."users";
+
+drop policy "website_leads_delete_authenticated" on "public"."website_leads";
+
+drop policy "website_leads_insert_public" on "public"."website_leads";
+
+drop policy "website_leads_select_authenticated" on "public"."website_leads";
+
+drop policy "website_leads_update_authenticated" on "public"."website_leads";
+
+drop policy "cs_admin_select" on "school_desk"."course_schedule";
+
+drop policy "cs_teacher_manage" on "school_desk"."course_schedule";
+
+drop policy "leads_office_select" on "front_desk"."leads";
+
+drop policy "inv_admin_all" on "office_desk"."invoices";
+
+drop policy "cert_admin_all" on "public"."certificates";
+
+revoke delete on table "office_desk"."conversion_events" from "authenticated";
+
+revoke insert on table "office_desk"."conversion_events" from "authenticated";
+
+revoke references on table "office_desk"."conversion_events" from "authenticated";
+
+revoke select on table "office_desk"."conversion_events" from "authenticated";
+
+revoke trigger on table "office_desk"."conversion_events" from "authenticated";
+
+revoke truncate on table "office_desk"."conversion_events" from "authenticated";
+
+revoke update on table "office_desk"."conversion_events" from "authenticated";
+
+revoke delete on table "office_desk"."conversion_events" from "service_role";
+
+revoke insert on table "office_desk"."conversion_events" from "service_role";
+
+revoke references on table "office_desk"."conversion_events" from "service_role";
+
+revoke select on table "office_desk"."conversion_events" from "service_role";
+
+revoke trigger on table "office_desk"."conversion_events" from "service_role";
+
+revoke truncate on table "office_desk"."conversion_events" from "service_role";
+
+revoke update on table "office_desk"."conversion_events" from "service_role";
+
+revoke delete on table "office_desk"."email_template_usage" from "authenticated";
+
+revoke insert on table "office_desk"."email_template_usage" from "authenticated";
+
+revoke references on table "office_desk"."email_template_usage" from "authenticated";
+
+revoke select on table "office_desk"."email_template_usage" from "authenticated";
+
+revoke trigger on table "office_desk"."email_template_usage" from "authenticated";
+
+revoke truncate on table "office_desk"."email_template_usage" from "authenticated";
+
+revoke update on table "office_desk"."email_template_usage" from "authenticated";
+
+revoke delete on table "office_desk"."email_template_usage" from "service_role";
+
+revoke insert on table "office_desk"."email_template_usage" from "service_role";
+
+revoke references on table "office_desk"."email_template_usage" from "service_role";
+
+revoke select on table "office_desk"."email_template_usage" from "service_role";
+
+revoke trigger on table "office_desk"."email_template_usage" from "service_role";
+
+revoke truncate on table "office_desk"."email_template_usage" from "service_role";
+
+revoke update on table "office_desk"."email_template_usage" from "service_role";
+
+revoke delete on table "office_desk"."email_templates" from "authenticated";
+
+revoke insert on table "office_desk"."email_templates" from "authenticated";
+
+revoke references on table "office_desk"."email_templates" from "authenticated";
+
+revoke select on table "office_desk"."email_templates" from "authenticated";
+
+revoke trigger on table "office_desk"."email_templates" from "authenticated";
+
+revoke truncate on table "office_desk"."email_templates" from "authenticated";
+
+revoke update on table "office_desk"."email_templates" from "authenticated";
+
+revoke delete on table "office_desk"."email_templates" from "service_role";
+
+revoke insert on table "office_desk"."email_templates" from "service_role";
+
+revoke references on table "office_desk"."email_templates" from "service_role";
+
+revoke select on table "office_desk"."email_templates" from "service_role";
+
+revoke trigger on table "office_desk"."email_templates" from "service_role";
+
+revoke truncate on table "office_desk"."email_templates" from "service_role";
+
+revoke update on table "office_desk"."email_templates" from "service_role";
+
+revoke select on table "office_desk"."failed_enrollments" from "authenticated";
+
+revoke delete on table "office_desk"."failed_enrollments" from "service_role";
+
+revoke insert on table "office_desk"."failed_enrollments" from "service_role";
+
+revoke references on table "office_desk"."failed_enrollments" from "service_role";
+
+revoke select on table "office_desk"."failed_enrollments" from "service_role";
+
+revoke trigger on table "office_desk"."failed_enrollments" from "service_role";
+
+revoke truncate on table "office_desk"."failed_enrollments" from "service_role";
+
+revoke update on table "office_desk"."failed_enrollments" from "service_role";
+
+revoke select on table "office_desk"."notifications" from "authenticated";
+
+revoke insert on table "office_desk"."notifications" from "service_role";
+
+revoke select on table "office_desk"."notifications" from "service_role";
+
+revoke select on table "office_desk"."refunds" from "authenticated";
+
+revoke delete on table "office_desk"."refunds" from "service_role";
+
+revoke insert on table "office_desk"."refunds" from "service_role";
+
+revoke references on table "office_desk"."refunds" from "service_role";
+
+revoke select on table "office_desk"."refunds" from "service_role";
+
+revoke trigger on table "office_desk"."refunds" from "service_role";
+
+revoke truncate on table "office_desk"."refunds" from "service_role";
+
+revoke update on table "office_desk"."refunds" from "service_role";
+
+revoke delete on table "office_desk"."revenue_metrics" from "authenticated";
+
+revoke insert on table "office_desk"."revenue_metrics" from "authenticated";
+
+revoke references on table "office_desk"."revenue_metrics" from "authenticated";
+
+revoke select on table "office_desk"."revenue_metrics" from "authenticated";
+
+revoke trigger on table "office_desk"."revenue_metrics" from "authenticated";
+
+revoke truncate on table "office_desk"."revenue_metrics" from "authenticated";
+
+revoke update on table "office_desk"."revenue_metrics" from "authenticated";
+
+revoke delete on table "office_desk"."revenue_metrics" from "service_role";
+
+revoke insert on table "office_desk"."revenue_metrics" from "service_role";
+
+revoke references on table "office_desk"."revenue_metrics" from "service_role";
+
+revoke select on table "office_desk"."revenue_metrics" from "service_role";
+
+revoke trigger on table "office_desk"."revenue_metrics" from "service_role";
+
+revoke truncate on table "office_desk"."revenue_metrics" from "service_role";
+
+revoke update on table "office_desk"."revenue_metrics" from "service_role";
+
+revoke select on table "office_desk"."stripe_events" from "authenticated";
+
+revoke delete on table "office_desk"."stripe_events" from "service_role";
+
+revoke insert on table "office_desk"."stripe_events" from "service_role";
+
+revoke references on table "office_desk"."stripe_events" from "service_role";
+
+revoke select on table "office_desk"."stripe_events" from "service_role";
+
+revoke trigger on table "office_desk"."stripe_events" from "service_role";
+
+revoke truncate on table "office_desk"."stripe_events" from "service_role";
+
+revoke update on table "office_desk"."stripe_events" from "service_role";
+
+revoke delete on table "office_desk"."user_activity_log" from "authenticated";
+
+revoke insert on table "office_desk"."user_activity_log" from "authenticated";
+
+revoke references on table "office_desk"."user_activity_log" from "authenticated";
+
+revoke select on table "office_desk"."user_activity_log" from "authenticated";
+
+revoke trigger on table "office_desk"."user_activity_log" from "authenticated";
+
+revoke truncate on table "office_desk"."user_activity_log" from "authenticated";
+
+revoke update on table "office_desk"."user_activity_log" from "authenticated";
+
+revoke delete on table "office_desk"."user_activity_log" from "service_role";
+
+revoke insert on table "office_desk"."user_activity_log" from "service_role";
+
+revoke references on table "office_desk"."user_activity_log" from "service_role";
+
+revoke select on table "office_desk"."user_activity_log" from "service_role";
+
+revoke trigger on table "office_desk"."user_activity_log" from "service_role";
+
+revoke truncate on table "office_desk"."user_activity_log" from "service_role";
+
+revoke update on table "office_desk"."user_activity_log" from "service_role";
+
+revoke delete on table "office_desk"."webhook_events" from "authenticated";
+
+revoke insert on table "office_desk"."webhook_events" from "authenticated";
+
+revoke references on table "office_desk"."webhook_events" from "authenticated";
+
+revoke select on table "office_desk"."webhook_events" from "authenticated";
+
+revoke trigger on table "office_desk"."webhook_events" from "authenticated";
+
+revoke truncate on table "office_desk"."webhook_events" from "authenticated";
+
+revoke update on table "office_desk"."webhook_events" from "authenticated";
+
+revoke delete on table "office_desk"."webhook_events" from "service_role";
+
+revoke insert on table "office_desk"."webhook_events" from "service_role";
+
+revoke references on table "office_desk"."webhook_events" from "service_role";
+
+revoke select on table "office_desk"."webhook_events" from "service_role";
+
+revoke trigger on table "office_desk"."webhook_events" from "service_role";
+
+revoke truncate on table "office_desk"."webhook_events" from "service_role";
+
+revoke update on table "office_desk"."webhook_events" from "service_role";
+
+revoke delete on table "office_desk"."webhook_notification_preferences" from "authenticated";
+
+revoke insert on table "office_desk"."webhook_notification_preferences" from "authenticated";
+
+revoke references on table "office_desk"."webhook_notification_preferences" from "authenticated";
+
+revoke select on table "office_desk"."webhook_notification_preferences" from "authenticated";
+
+revoke trigger on table "office_desk"."webhook_notification_preferences" from "authenticated";
+
+revoke truncate on table "office_desk"."webhook_notification_preferences" from "authenticated";
+
+revoke update on table "office_desk"."webhook_notification_preferences" from "authenticated";
+
+revoke delete on table "office_desk"."webhook_notification_preferences" from "service_role";
+
+revoke insert on table "office_desk"."webhook_notification_preferences" from "service_role";
+
+revoke references on table "office_desk"."webhook_notification_preferences" from "service_role";
+
+revoke select on table "office_desk"."webhook_notification_preferences" from "service_role";
+
+revoke trigger on table "office_desk"."webhook_notification_preferences" from "service_role";
+
+revoke truncate on table "office_desk"."webhook_notification_preferences" from "service_role";
+
+revoke update on table "office_desk"."webhook_notification_preferences" from "service_role";
+
+revoke delete on table "office_desk"."webhooks" from "authenticated";
+
+revoke insert on table "office_desk"."webhooks" from "authenticated";
+
+revoke references on table "office_desk"."webhooks" from "authenticated";
+
+revoke select on table "office_desk"."webhooks" from "authenticated";
+
+revoke trigger on table "office_desk"."webhooks" from "authenticated";
+
+revoke truncate on table "office_desk"."webhooks" from "authenticated";
+
+revoke update on table "office_desk"."webhooks" from "authenticated";
+
+revoke delete on table "office_desk"."webhooks" from "service_role";
+
+revoke insert on table "office_desk"."webhooks" from "service_role";
+
+revoke references on table "office_desk"."webhooks" from "service_role";
+
+revoke select on table "office_desk"."webhooks" from "service_role";
+
+revoke trigger on table "office_desk"."webhooks" from "service_role";
+
+revoke truncate on table "office_desk"."webhooks" from "service_role";
+
+revoke update on table "office_desk"."webhooks" from "service_role";
+
+revoke insert on table "public"."assessment_rubric_grades" from "authenticated";
+
+revoke select on table "public"."assessment_rubric_grades" from "authenticated";
+
+revoke delete on table "public"."assessment_rubric_grades" from "service_role";
+
+revoke insert on table "public"."assessment_rubric_grades" from "service_role";
+
+revoke references on table "public"."assessment_rubric_grades" from "service_role";
+
+revoke select on table "public"."assessment_rubric_grades" from "service_role";
+
+revoke trigger on table "public"."assessment_rubric_grades" from "service_role";
+
+revoke truncate on table "public"."assessment_rubric_grades" from "service_role";
+
+revoke update on table "public"."assessment_rubric_grades" from "service_role";
+
+revoke delete on table "public"."assessment_submissions" from "authenticated";
+
+revoke insert on table "public"."assessment_submissions" from "authenticated";
+
+revoke select on table "public"."assessment_submissions" from "authenticated";
+
+revoke update on table "public"."assessment_submissions" from "authenticated";
+
+revoke delete on table "public"."assessment_submissions" from "service_role";
+
+revoke insert on table "public"."assessment_submissions" from "service_role";
+
+revoke references on table "public"."assessment_submissions" from "service_role";
+
+revoke select on table "public"."assessment_submissions" from "service_role";
+
+revoke trigger on table "public"."assessment_submissions" from "service_role";
+
+revoke truncate on table "public"."assessment_submissions" from "service_role";
+
+revoke update on table "public"."assessment_submissions" from "service_role";
+
+revoke delete on table "public"."assessments" from "authenticated";
+
+revoke insert on table "public"."assessments" from "authenticated";
+
+revoke select on table "public"."assessments" from "authenticated";
+
+revoke update on table "public"."assessments" from "authenticated";
+
+revoke delete on table "public"."assessments" from "service_role";
+
+revoke insert on table "public"."assessments" from "service_role";
+
+revoke references on table "public"."assessments" from "service_role";
+
+revoke select on table "public"."assessments" from "service_role";
+
+revoke trigger on table "public"."assessments" from "service_role";
+
+revoke truncate on table "public"."assessments" from "service_role";
+
+revoke update on table "public"."assessments" from "service_role";
+
+revoke insert on table "public"."attendance_audit_log" from "authenticated";
+
+revoke select on table "public"."attendance_audit_log" from "authenticated";
+
+revoke delete on table "public"."attendance_audit_log" from "service_role";
+
+revoke insert on table "public"."attendance_audit_log" from "service_role";
+
+revoke references on table "public"."attendance_audit_log" from "service_role";
+
+revoke select on table "public"."attendance_audit_log" from "service_role";
+
+revoke trigger on table "public"."attendance_audit_log" from "service_role";
+
+revoke truncate on table "public"."attendance_audit_log" from "service_role";
+
+revoke update on table "public"."attendance_audit_log" from "service_role";
+
+revoke references on table "public"."book" from "service_role";
+
+revoke trigger on table "public"."book" from "service_role";
+
+revoke truncate on table "public"."book" from "service_role";
+
+revoke references on table "public"."booklist" from "service_role";
+
+revoke trigger on table "public"."booklist" from "service_role";
+
+revoke truncate on table "public"."booklist" from "service_role";
+
+revoke references on table "public"."booklist_item" from "service_role";
+
+revoke trigger on table "public"."booklist_item" from "service_role";
+
+revoke truncate on table "public"."booklist_item" from "service_role";
+
+revoke delete on table "public"."calendar" from "authenticated";
+
+revoke insert on table "public"."calendar" from "authenticated";
+
+revoke select on table "public"."calendar" from "authenticated";
+
+revoke update on table "public"."calendar" from "authenticated";
+
+revoke delete on table "public"."calendar" from "service_role";
+
+revoke insert on table "public"."calendar" from "service_role";
+
+revoke references on table "public"."calendar" from "service_role";
+
+revoke select on table "public"."calendar" from "service_role";
+
+revoke trigger on table "public"."calendar" from "service_role";
+
+revoke truncate on table "public"."calendar" from "service_role";
+
+revoke update on table "public"."calendar" from "service_role";
+
+revoke delete on table "public"."calendar_sync_events" from "authenticated";
+
+revoke insert on table "public"."calendar_sync_events" from "authenticated";
+
+revoke select on table "public"."calendar_sync_events" from "authenticated";
+
+revoke update on table "public"."calendar_sync_events" from "authenticated";
+
+revoke delete on table "public"."calendar_sync_events" from "service_role";
+
+revoke insert on table "public"."calendar_sync_events" from "service_role";
+
+revoke references on table "public"."calendar_sync_events" from "service_role";
+
+revoke select on table "public"."calendar_sync_events" from "service_role";
+
+revoke trigger on table "public"."calendar_sync_events" from "service_role";
+
+revoke truncate on table "public"."calendar_sync_events" from "service_role";
+
+revoke update on table "public"."calendar_sync_events" from "service_role";
+
+revoke delete on table "public"."calendar_webhook_logs" from "authenticated";
+
+revoke insert on table "public"."calendar_webhook_logs" from "authenticated";
+
+revoke select on table "public"."calendar_webhook_logs" from "authenticated";
+
+revoke update on table "public"."calendar_webhook_logs" from "authenticated";
+
+revoke delete on table "public"."calendar_webhook_logs" from "service_role";
+
+revoke insert on table "public"."calendar_webhook_logs" from "service_role";
+
+revoke references on table "public"."calendar_webhook_logs" from "service_role";
+
+revoke select on table "public"."calendar_webhook_logs" from "service_role";
+
+revoke trigger on table "public"."calendar_webhook_logs" from "service_role";
+
+revoke truncate on table "public"."calendar_webhook_logs" from "service_role";
+
+revoke update on table "public"."calendar_webhook_logs" from "service_role";
+
+revoke references on table "public"."certificates" from "service_role";
+
+revoke trigger on table "public"."certificates" from "service_role";
+
+revoke truncate on table "public"."certificates" from "service_role";
+
+revoke references on table "public"."chapter_progress" from "service_role";
+
+revoke trigger on table "public"."chapter_progress" from "service_role";
+
+revoke truncate on table "public"."chapter_progress" from "service_role";
+
+revoke references on table "public"."chat_preferences" from "service_role";
+
+revoke trigger on table "public"."chat_preferences" from "service_role";
+
+revoke truncate on table "public"."chat_preferences" from "service_role";
+
+revoke delete on table "public"."class_sessions" from "authenticated";
+
+revoke insert on table "public"."class_sessions" from "authenticated";
+
+revoke select on table "public"."class_sessions" from "authenticated";
+
+revoke update on table "public"."class_sessions" from "authenticated";
+
+revoke delete on table "public"."class_sessions" from "service_role";
+
+revoke insert on table "public"."class_sessions" from "service_role";
+
+revoke references on table "public"."class_sessions" from "service_role";
+
+revoke select on table "public"."class_sessions" from "service_role";
+
+revoke trigger on table "public"."class_sessions" from "service_role";
+
+revoke truncate on table "public"."class_sessions" from "service_role";
+
+revoke update on table "public"."class_sessions" from "service_role";
+
+revoke references on table "public"."consent_records" from "service_role";
+
+revoke trigger on table "public"."consent_records" from "service_role";
+
+revoke truncate on table "public"."consent_records" from "service_role";
+
+revoke delete on table "public"."course_progress" from "authenticated";
+
+revoke insert on table "public"."course_progress" from "authenticated";
+
+revoke select on table "public"."course_progress" from "authenticated";
+
+revoke update on table "public"."course_progress" from "authenticated";
+
+revoke delete on table "public"."course_progress" from "service_role";
+
+revoke insert on table "public"."course_progress" from "service_role";
+
+revoke references on table "public"."course_progress" from "service_role";
+
+revoke select on table "public"."course_progress" from "service_role";
+
+revoke trigger on table "public"."course_progress" from "service_role";
+
+revoke truncate on table "public"."course_progress" from "service_role";
+
+revoke update on table "public"."course_progress" from "service_role";
+
+revoke delete on table "public"."courses" from "authenticated";
+
+revoke insert on table "public"."courses" from "authenticated";
+
+revoke select on table "public"."courses" from "authenticated";
+
+revoke update on table "public"."courses" from "authenticated";
+
+revoke delete on table "public"."courses" from "service_role";
+
+revoke insert on table "public"."courses" from "service_role";
+
+revoke references on table "public"."courses" from "service_role";
+
+revoke select on table "public"."courses" from "service_role";
+
+revoke trigger on table "public"."courses" from "service_role";
+
+revoke truncate on table "public"."courses" from "service_role";
+
+revoke update on table "public"."courses" from "service_role";
+
+revoke references on table "public"."devotional_config" from "service_role";
+
+revoke trigger on table "public"."devotional_config" from "service_role";
+
+revoke truncate on table "public"."devotional_config" from "service_role";
+
+revoke references on table "public"."devotional_item" from "service_role";
+
+revoke trigger on table "public"."devotional_item" from "service_role";
+
+revoke truncate on table "public"."devotional_item" from "service_role";
+
+revoke select on table "public"."email_logs" from "authenticated";
+
+revoke delete on table "public"."email_logs" from "service_role";
+
+revoke insert on table "public"."email_logs" from "service_role";
+
+revoke references on table "public"."email_logs" from "service_role";
+
+revoke select on table "public"."email_logs" from "service_role";
+
+revoke trigger on table "public"."email_logs" from "service_role";
+
+revoke truncate on table "public"."email_logs" from "service_role";
+
+revoke update on table "public"."email_logs" from "service_role";
+
+revoke references on table "public"."enrichment_meta" from "service_role";
+
+revoke trigger on table "public"."enrichment_meta" from "service_role";
+
+revoke truncate on table "public"."enrichment_meta" from "service_role";
+
+revoke references on table "public"."family_child" from "service_role";
+
+revoke trigger on table "public"."family_child" from "service_role";
+
+revoke truncate on table "public"."family_child" from "service_role";
+
+revoke references on table "public"."handle_changes" from "service_role";
+
+revoke trigger on table "public"."handle_changes" from "service_role";
+
+revoke truncate on table "public"."handle_changes" from "service_role";
+
+revoke delete on table "public"."meeting_links" from "authenticated";
+
+revoke insert on table "public"."meeting_links" from "authenticated";
+
+revoke select on table "public"."meeting_links" from "authenticated";
+
+revoke update on table "public"."meeting_links" from "authenticated";
+
+revoke delete on table "public"."meeting_links" from "service_role";
+
+revoke insert on table "public"."meeting_links" from "service_role";
+
+revoke references on table "public"."meeting_links" from "service_role";
+
+revoke select on table "public"."meeting_links" from "service_role";
+
+revoke trigger on table "public"."meeting_links" from "service_role";
+
+revoke truncate on table "public"."meeting_links" from "service_role";
+
+revoke update on table "public"."meeting_links" from "service_role";
+
+revoke references on table "public"."message_reactions" from "service_role";
+
+revoke trigger on table "public"."message_reactions" from "service_role";
+
+revoke truncate on table "public"."message_reactions" from "service_role";
+
+revoke references on table "public"."notification_preferences" from "service_role";
+
+revoke trigger on table "public"."notification_preferences" from "service_role";
+
+revoke truncate on table "public"."notification_preferences" from "service_role";
+
+revoke references on table "public"."notifications" from "service_role";
+
+revoke trigger on table "public"."notifications" from "service_role";
+
+revoke truncate on table "public"."notifications" from "service_role";
+
+revoke select on table "public"."payment_webhooks" from "authenticated";
+
+revoke delete on table "public"."payment_webhooks" from "service_role";
+
+revoke insert on table "public"."payment_webhooks" from "service_role";
+
+revoke references on table "public"."payment_webhooks" from "service_role";
+
+revoke select on table "public"."payment_webhooks" from "service_role";
+
+revoke trigger on table "public"."payment_webhooks" from "service_role";
+
+revoke truncate on table "public"."payment_webhooks" from "service_role";
+
+revoke update on table "public"."payment_webhooks" from "service_role";
+
+revoke references on table "public"."platform_access" from "service_role";
+
+revoke trigger on table "public"."platform_access" from "service_role";
+
+revoke truncate on table "public"."platform_access" from "service_role";
+
+revoke references on table "public"."profiles" from "service_role";
+
+revoke trigger on table "public"."profiles" from "service_role";
+
+revoke truncate on table "public"."profiles" from "service_role";
+
+revoke references on table "public"."schedule_slot" from "service_role";
+
+revoke trigger on table "public"."schedule_slot" from "service_role";
+
+revoke truncate on table "public"."schedule_slot" from "service_role";
+
+revoke delete on table "public"."school_years" from "service_role";
+
+revoke insert on table "public"."school_years" from "service_role";
+
+revoke select on table "public"."school_years" from "service_role";
+
+revoke update on table "public"."school_years" from "service_role";
+
+revoke delete on table "public"."slot_bookings" from "authenticated";
+
+revoke insert on table "public"."slot_bookings" from "authenticated";
+
+revoke select on table "public"."slot_bookings" from "authenticated";
+
+revoke update on table "public"."slot_bookings" from "authenticated";
+
+revoke delete on table "public"."slot_bookings" from "service_role";
+
+revoke insert on table "public"."slot_bookings" from "service_role";
+
+revoke references on table "public"."slot_bookings" from "service_role";
+
+revoke select on table "public"."slot_bookings" from "service_role";
+
+revoke trigger on table "public"."slot_bookings" from "service_role";
+
+revoke truncate on table "public"."slot_bookings" from "service_role";
+
+revoke update on table "public"."slot_bookings" from "service_role";
+
+revoke delete on table "public"."student_attendance" from "authenticated";
+
+revoke insert on table "public"."student_attendance" from "authenticated";
+
+revoke select on table "public"."student_attendance" from "authenticated";
+
+revoke update on table "public"."student_attendance" from "authenticated";
+
+revoke delete on table "public"."student_attendance" from "service_role";
+
+revoke insert on table "public"."student_attendance" from "service_role";
+
+revoke references on table "public"."student_attendance" from "service_role";
+
+revoke select on table "public"."student_attendance" from "service_role";
+
+revoke trigger on table "public"."student_attendance" from "service_role";
+
+revoke truncate on table "public"."student_attendance" from "service_role";
+
+revoke update on table "public"."student_attendance" from "service_role";
+
+revoke references on table "public"."student_class" from "service_role";
+
+revoke trigger on table "public"."student_class" from "service_role";
+
+revoke truncate on table "public"."student_class" from "service_role";
+
+revoke delete on table "public"."student_enrollments" from "authenticated";
+
+revoke insert on table "public"."student_enrollments" from "authenticated";
+
+revoke select on table "public"."student_enrollments" from "authenticated";
+
+revoke update on table "public"."student_enrollments" from "authenticated";
+
+revoke delete on table "public"."student_enrollments" from "service_role";
+
+revoke insert on table "public"."student_enrollments" from "service_role";
+
+revoke references on table "public"."student_enrollments" from "service_role";
+
+revoke select on table "public"."student_enrollments" from "service_role";
+
+revoke trigger on table "public"."student_enrollments" from "service_role";
+
+revoke truncate on table "public"."student_enrollments" from "service_role";
+
+revoke update on table "public"."student_enrollments" from "service_role";
+
+revoke references on table "public"."suppression_records" from "service_role";
+
+revoke trigger on table "public"."suppression_records" from "service_role";
+
+revoke truncate on table "public"."suppression_records" from "service_role";
+
+revoke delete on table "public"."system_log" from "service_role";
+
+revoke insert on table "public"."system_log" from "service_role";
+
+revoke select on table "public"."system_log" from "service_role";
+
+revoke update on table "public"."system_log" from "service_role";
+
+revoke references on table "public"."tenant_devotional" from "service_role";
+
+revoke trigger on table "public"."tenant_devotional" from "service_role";
+
+revoke truncate on table "public"."tenant_devotional" from "service_role";
+
+revoke references on table "public"."tenant_lms" from "service_role";
+
+revoke trigger on table "public"."tenant_lms" from "service_role";
+
+revoke truncate on table "public"."tenant_lms" from "service_role";
+
+revoke references on table "public"."tenant_mobile" from "service_role";
+
+revoke trigger on table "public"."tenant_mobile" from "service_role";
+
+revoke truncate on table "public"."tenant_mobile" from "service_role";
+
+revoke references on table "public"."terms" from "service_role";
+
+revoke trigger on table "public"."terms" from "service_role";
+
+revoke truncate on table "public"."terms" from "service_role";
+
+revoke delete on table "public"."user_2fa" from "authenticated";
+
+revoke insert on table "public"."user_2fa" from "authenticated";
+
+revoke references on table "public"."user_2fa" from "authenticated";
+
+revoke select on table "public"."user_2fa" from "authenticated";
+
+revoke trigger on table "public"."user_2fa" from "authenticated";
+
+revoke truncate on table "public"."user_2fa" from "authenticated";
+
+revoke update on table "public"."user_2fa" from "authenticated";
+
+revoke delete on table "public"."user_2fa" from "service_role";
+
+revoke insert on table "public"."user_2fa" from "service_role";
+
+revoke references on table "public"."user_2fa" from "service_role";
+
+revoke select on table "public"."user_2fa" from "service_role";
+
+revoke trigger on table "public"."user_2fa" from "service_role";
+
+revoke truncate on table "public"."user_2fa" from "service_role";
+
+revoke update on table "public"."user_2fa" from "service_role";
+
+revoke delete on table "public"."users" from "authenticated";
+
+revoke insert on table "public"."users" from "authenticated";
+
+revoke select on table "public"."users" from "authenticated";
+
+revoke update on table "public"."users" from "authenticated";
+
+revoke delete on table "public"."users" from "service_role";
+
+revoke insert on table "public"."users" from "service_role";
+
+revoke references on table "public"."users" from "service_role";
+
+revoke select on table "public"."users" from "service_role";
+
+revoke trigger on table "public"."users" from "service_role";
+
+revoke truncate on table "public"."users" from "service_role";
+
+revoke update on table "public"."users" from "service_role";
+
+revoke delete on table "public"."website_leads" from "service_role";
+
+revoke insert on table "public"."website_leads" from "service_role";
+
+revoke select on table "public"."website_leads" from "service_role";
+
+revoke update on table "public"."website_leads" from "service_role";
+
+revoke delete on table "school_desk"."course_schedule" from "authenticated";
+
+revoke insert on table "school_desk"."course_schedule" from "authenticated";
+
+revoke select on table "school_desk"."course_schedule" from "authenticated";
+
+revoke update on table "school_desk"."course_schedule" from "authenticated";
+
+revoke delete on table "school_desk"."course_schedule" from "service_role";
+
+revoke insert on table "school_desk"."course_schedule" from "service_role";
+
+revoke references on table "school_desk"."course_schedule" from "service_role";
+
+revoke select on table "school_desk"."course_schedule" from "service_role";
+
+revoke trigger on table "school_desk"."course_schedule" from "service_role";
+
+revoke truncate on table "school_desk"."course_schedule" from "service_role";
+
+revoke update on table "school_desk"."course_schedule" from "service_role";
+
+alter table "office_desk"."activity_log" drop constraint "activity_log_actor_profile_id_fkey";
+
+alter table "office_desk"."activity_log" drop constraint "activity_log_registration_id_fkey";
+
+alter table "office_desk"."add_on_payments" drop constraint "add_on_payments_family_account_id_fkey";
+
+alter table "office_desk"."add_on_payments" drop constraint "add_on_payments_invoice_id_fkey";
+
+alter table "office_desk"."add_on_payments" drop constraint "add_on_payments_status_check";
+
+alter table "office_desk"."add_on_payments" drop constraint "add_on_payments_student_id_fkey";
+
+alter table "office_desk"."add_on_payments" drop constraint "add_on_payments_tenant_id_fkey";
+
+alter table "office_desk"."bulk_operation_history" drop constraint "bulk_operation_history_entity_type_check";
+
+alter table "office_desk"."bulk_operation_history" drop constraint "bulk_operation_history_operation_type_check";
+
+alter table "office_desk"."bulk_operation_history" drop constraint "bulk_operation_history_tenant_id_fkey";
+
+alter table "office_desk"."bulk_operation_history" drop constraint "bulk_operation_history_undone_by_fkey";
+
+alter table "office_desk"."bulk_operation_history" drop constraint "bulk_operation_history_user_id_fkey";
+
+alter table "office_desk"."conversion_events" drop constraint "conversion_events_conversion_type_check";
+
+alter table "office_desk"."conversion_events" drop constraint "conversion_events_lead_id_fkey";
+
+alter table "office_desk"."conversion_events" drop constraint "conversion_events_tenant_id_fkey";
+
+alter table "office_desk"."debit_orders" drop constraint "debit_orders_family_account_id_fkey";
+
+alter table "office_desk"."debit_orders" drop constraint "debit_orders_invoice_id_fkey";
+
+alter table "office_desk"."debit_orders" drop constraint "debit_orders_package_id_fkey";
+
+alter table "office_desk"."debit_orders" drop constraint "debit_orders_status_check";
+
+alter table "office_desk"."debit_orders" drop constraint "debit_orders_student_id_fkey";
+
+alter table "office_desk"."debit_orders" drop constraint "debit_orders_tenant_id_fkey";
+
+alter table "office_desk"."desk_roles" drop constraint "desk_roles_registration_id_fkey";
+
+alter table "office_desk"."desk_roles" drop constraint "desk_roles_registration_id_name_key";
+
+alter table "office_desk"."email_template_usage" drop constraint "email_template_usage_status_check";
+
+alter table "office_desk"."email_template_usage" drop constraint "email_template_usage_template_id_fkey";
+
+alter table "office_desk"."email_template_usage" drop constraint "email_template_usage_tenant_id_fkey";
+
+alter table "office_desk"."email_templates" drop constraint "email_templates_created_by_fkey";
+
+alter table "office_desk"."email_templates" drop constraint "email_templates_tenant_id_fkey";
+
+alter table "office_desk"."failed_enrollments" drop constraint "failed_enrollments_payment_provider_check";
+
+alter table "office_desk"."failed_enrollments" drop constraint "failed_enrollments_resolved_by_fkey";
+
+alter table "office_desk"."failed_enrollments" drop constraint "failed_enrollments_tenant_id_fkey";
+
+alter table "office_desk"."family_accounts" drop constraint "family_accounts_family_code_key";
+
+alter table "office_desk"."family_accounts" drop constraint "family_accounts_status_check";
+
+alter table "office_desk"."family_accounts" drop constraint "family_accounts_tenant_id_fkey";
+
+alter table "office_desk"."family_activity" drop constraint "family_activity_debit_order_id_fkey";
+
+alter table "office_desk"."family_activity" drop constraint "family_activity_family_account_id_fkey";
+
+alter table "office_desk"."family_activity" drop constraint "family_activity_invoice_id_fkey";
+
+alter table "office_desk"."family_activity" drop constraint "family_activity_student_id_fkey";
+
+alter table "office_desk"."family_activity" drop constraint "family_activity_tenant_id_fkey";
+
+alter table "office_desk"."invoices" drop constraint "invoices_family_account_id_fkey";
+
+alter table "office_desk"."invoices" drop constraint "invoices_invoice_number_key";
+
+alter table "office_desk"."invoices" drop constraint "invoices_invoice_type_check";
+
+alter table "office_desk"."notifications" drop constraint "notifications_registration_id_fkey";
+
+alter table "office_desk"."packages" drop constraint "packages_billing_cycle_check";
+
+alter table "office_desk"."packages" drop constraint "packages_package_name_key";
+
+alter table "office_desk"."packages" drop constraint "packages_status_check";
+
+alter table "office_desk"."packages" drop constraint "packages_tenant_id_fkey";
+
+alter table "office_desk"."payments" drop constraint "payments_family_account_id_fkey";
+
+alter table "office_desk"."payments" drop constraint "payments_payment_type_check";
+
+alter table "office_desk"."refunds" drop constraint "refunds_registration_id_fkey";
+
+alter table "office_desk"."refunds" drop constraint "refunds_status_check";
+
+alter table "office_desk"."refunds" drop constraint "refunds_stripe_refund_id_key";
+
+alter table "office_desk"."registrations" drop constraint "fk_reg_school_year";
+
+alter table "office_desk"."revenue_metrics" drop constraint "revenue_metrics_metric_period_check";
+
+alter table "office_desk"."revenue_metrics" drop constraint "revenue_metrics_tenant_id_fkey";
+
+alter table "office_desk"."revenue_metrics" drop constraint "revenue_metrics_tenant_id_metric_date_metric_period_key";
+
+alter table "office_desk"."stripe_events" drop constraint "stripe_events_status_check";
+
+alter table "office_desk"."stripe_events" drop constraint "stripe_events_stripe_event_id_key";
+
+alter table "office_desk"."students" drop constraint "students_family_account_id_fkey";
+
+alter table "office_desk"."students" drop constraint "students_pack_choice_check";
+
+alter table "office_desk"."students" drop constraint "students_status_check";
+
+alter table "office_desk"."students" drop constraint "students_tenant_id_fkey";
+
+alter table "office_desk"."students" drop constraint "students_user_id_fkey";
+
+alter table "office_desk"."students" drop constraint "students_year_selection_check";
+
+alter table "office_desk"."user_activity_log" drop constraint "user_activity_log_event_category_check";
+
+alter table "office_desk"."user_activity_log" drop constraint "user_activity_log_event_type_check";
+
+alter table "office_desk"."user_activity_log" drop constraint "user_activity_log_tenant_id_fkey";
+
+alter table "office_desk"."user_activity_log" drop constraint "user_activity_log_user_id_fkey";
+
+alter table "office_desk"."user_desk_roles" drop constraint "user_desk_roles_tenant_id_fkey";
+
+alter table "office_desk"."user_desk_roles" drop constraint "user_desk_roles_user_id_role_id_key";
+
+alter table "office_desk"."users" drop constraint "users_auth_user_id_fkey";
+
+alter table "office_desk"."users" drop constraint "users_auth_user_id_key";
+
+alter table "office_desk"."users" drop constraint "users_family_account_id_fkey";
+
+alter table "office_desk"."users" drop constraint "users_role_check";
+
+alter table "office_desk"."users" drop constraint "users_status_check";
+
+alter table "office_desk"."users" drop constraint "users_tenant_id_fkey";
+
+alter table "office_desk"."users" drop constraint "users_user_type_check";
+
+alter table "office_desk"."webhook_events" drop constraint "webhook_events_status_check";
+
+alter table "office_desk"."webhook_events" drop constraint "webhook_events_tenant_id_fkey";
+
+alter table "office_desk"."webhook_events" drop constraint "webhook_events_webhook_id_fkey";
+
+alter table "office_desk"."webhook_notification_preferences" drop constraint "webhook_notification_preferences_tenant_id_fkey";
+
+alter table "office_desk"."webhook_notification_preferences" drop constraint "webhook_notification_preferences_tenant_id_key";
+
+alter table "office_desk"."webhooks" drop constraint "webhooks_created_by_fkey";
+
+alter table "office_desk"."webhooks" drop constraint "webhooks_tenant_id_fkey";
+
+alter table "public"."assessment_rubric_grades" drop constraint "assessment_rubric_grades_grade_level_check";
+
+alter table "public"."assessment_rubric_grades" drop constraint "assessment_rubric_grades_organization_id_fkey";
+
+alter table "public"."assessment_rubric_grades" drop constraint "assessment_rubric_grades_submission_id_fkey";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_assessment_id_fkey";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_enrollment_id_fkey";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_graded_by_user_id_fkey";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_mark_earned_check";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_mark_total_check";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_organization_id_fkey";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_student_id_fkey";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_submission_status_check";
+
+alter table "public"."assessment_submissions" drop constraint "uq_assessment_enrollment";
+
+alter table "public"."assessments" drop constraint "assessments_assessment_type_check";
+
+alter table "public"."assessments" drop constraint "assessments_chapter_id_fkey";
+
+alter table "public"."assessments" drop constraint "assessments_course_id_fkey";
+
+alter table "public"."assessments" drop constraint "assessments_created_by_fkey";
+
+alter table "public"."assessments" drop constraint "assessments_max_mark_check";
+
+alter table "public"."assessments" drop constraint "assessments_organization_id_fkey";
+
+alter table "public"."assessments" drop constraint "assessments_weight_percentage_check";
+
+alter table "public"."attendance_audit_log" drop constraint "attendance_audit_log_changed_by_user_id_fkey";
+
+alter table "public"."attendance_audit_log" drop constraint "attendance_audit_log_organization_id_fkey";
+
+alter table "public"."attendance_audit_log" drop constraint "attendance_audit_log_student_attendance_id_fkey";
+
+alter table "public"."calendar" drop constraint "calendar_available_slots_check";
+
+alter table "public"."calendar" drop constraint "calendar_booked_slots_check";
+
+alter table "public"."calendar" drop constraint "calendar_capacity_check";
+
+alter table "public"."calendar" drop constraint "calendar_created_by_fkey";
+
+alter table "public"."calendar" drop constraint "calendar_duration_minutes_check";
+
+alter table "public"."calendar" drop constraint "calendar_organization_id_fkey";
+
+alter table "public"."calendar" drop constraint "calendar_status_check";
+
+alter table "public"."calendar" drop constraint "calendar_updated_by_fkey";
+
+alter table "public"."calendar" drop constraint "chk_slot_capacity";
+
+alter table "public"."calendar_sync_events" drop constraint "calendar_sync_events_calendar_id_fkey";
+
+alter table "public"."calendar_sync_events" drop constraint "calendar_sync_events_external_event_id_key";
+
+alter table "public"."calendar_sync_events" drop constraint "calendar_sync_events_meeting_link_type_check";
+
+alter table "public"."calendar_sync_events" drop constraint "calendar_sync_events_organization_id_fkey";
+
+alter table "public"."calendar_sync_events" drop constraint "calendar_sync_events_sync_status_check";
+
+alter table "public"."calendar_sync_events" drop constraint "chk_sync_event_times";
+
+alter table "public"."calendar_webhook_logs" drop constraint "calendar_webhook_logs_organization_id_fkey";
+
+alter table "public"."calendar_webhook_logs" drop constraint "calendar_webhook_logs_processing_status_check";
+
+alter table "public"."chapter_progress" drop constraint "chapter_progress_completion_percentage_check";
+
+alter table "public"."chapter_progress" drop constraint "chapter_progress_course_id_fkey";
+
+alter table "public"."chapter_progress" drop constraint "chapter_progress_enrollment_id_fkey";
+
+alter table "public"."chapter_progress" drop constraint "chapter_progress_organization_id_fkey";
+
+alter table "public"."chapter_progress" drop constraint "chapter_progress_status_check";
+
+alter table "public"."chapter_progress" drop constraint "chapter_progress_time_spent_minutes_check";
+
+alter table "public"."chapter_progress" drop constraint "uq_enrollment_chapter";
+
+alter table "public"."class_sessions" drop constraint "chk_session_times";
+
+alter table "public"."class_sessions" drop constraint "class_sessions_calendar_sync_event_id_fkey";
+
+alter table "public"."class_sessions" drop constraint "class_sessions_course_id_fkey";
+
+alter table "public"."class_sessions" drop constraint "class_sessions_host_id_fkey";
+
+alter table "public"."class_sessions" drop constraint "class_sessions_meeting_link_id_fkey";
+
+alter table "public"."class_sessions" drop constraint "class_sessions_organization_id_fkey";
+
+alter table "public"."class_sessions" drop constraint "class_sessions_session_status_check";
+
+alter table "public"."course_progress" drop constraint "course_progress_attendance_check";
+
+alter table "public"."course_progress" drop constraint "course_progress_enrollment_id_fkey";
+
+alter table "public"."course_progress" drop constraint "course_progress_score_check";
+
+alter table "public"."course_progress" drop constraint "course_progress_status_check";
+
+alter table "public"."course_progress" drop constraint "uq_enrollment_lesson";
+
+alter table "public"."courses" drop constraint "chk_course_dates";
+
+alter table "public"."courses" drop constraint "courses_capacity_check";
+
+alter table "public"."courses" drop constraint "courses_course_code_key";
+
+alter table "public"."courses" drop constraint "courses_created_by_fkey";
+
+alter table "public"."courses" drop constraint "courses_enrolled_count_check";
+
+alter table "public"."courses" drop constraint "courses_organization_id_fkey";
+
+alter table "public"."courses" drop constraint "courses_status_check";
+
+alter table "public"."courses" drop constraint "courses_updated_by_fkey";
+
+alter table "public"."debit_orders" drop constraint "debit_orders_invoice_id_fkey";
+
+alter table "public"."email_logs" drop constraint "email_logs_status_check";
+
+alter table "public"."email_logs" drop constraint "email_logs_tenant_id_fkey";
+
+alter table "public"."meeting_links" drop constraint "meeting_links_calendar_sync_event_id_fkey";
+
+alter table "public"."meeting_links" drop constraint "meeting_links_provider_check";
+
+alter table "public"."meeting_links" drop constraint "meeting_links_status_check";
+
+alter table "public"."notification_preferences" drop constraint "notification_preferences_class_notification_scope_check";
+
+alter table "public"."notifications" drop constraint "notifications_notification_type_id_fkey";
+
+alter table "public"."notifications" drop constraint "notifications_student_id_fkey";
+
+alter table "public"."payment_webhooks" drop constraint "payment_webhooks_provider_check";
+
+alter table "public"."payment_webhooks" drop constraint "payment_webhooks_status_check";
+
+alter table "public"."payment_webhooks" drop constraint "payment_webhooks_webhook_id_key";
+
+alter table "public"."payments" drop constraint "payments_invoice_id_fkey";
+
+alter table "public"."payments" drop constraint "payments_payment_method_check";
+
+alter table "public"."school_years" drop constraint "school_years_tenant_id_academic_year_key";
+
+alter table "public"."school_years" drop constraint "school_years_tenant_id_fkey";
+
+alter table "public"."slot_bookings" drop constraint "slot_bookings_booked_by_fkey";
+
+alter table "public"."slot_bookings" drop constraint "slot_bookings_booking_status_check";
+
+alter table "public"."slot_bookings" drop constraint "slot_bookings_calendar_id_fkey";
+
+alter table "public"."slot_bookings" drop constraint "slot_bookings_cancelled_by_fkey";
+
+alter table "public"."slot_bookings" drop constraint "slot_bookings_student_id_fkey";
+
+alter table "public"."slot_bookings" drop constraint "uq_student_calendar";
+
+alter table "public"."student_attendance" drop constraint "student_attendance_attendance_status_check";
+
+alter table "public"."student_attendance" drop constraint "student_attendance_class_session_id_fkey";
+
+alter table "public"."student_attendance" drop constraint "student_attendance_enrollment_id_fkey";
+
+alter table "public"."student_attendance" drop constraint "student_attendance_marked_by_user_id_fkey";
+
+alter table "public"."student_attendance" drop constraint "student_attendance_organization_id_fkey";
+
+alter table "public"."student_attendance" drop constraint "student_attendance_student_id_fkey";
+
+alter table "public"."student_attendance" drop constraint "uq_session_enrollment";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_absence_count_check";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_attendance_count_check";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_course_id_fkey";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_enrolled_by_fkey";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_enrollment_status_check";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_final_grade_check";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_late_count_check";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_progress_percentage_check";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_student_id_fkey";
+
+alter table "public"."student_enrollments" drop constraint "uq_student_course";
+
+alter table "public"."system_log" drop constraint "system_log_status_check";
+
+alter table "public"."user_2fa" drop constraint "user_2fa_tenant_id_fkey";
+
+alter table "public"."user_2fa" drop constraint "user_2fa_user_id_fkey";
+
+alter table "public"."user_2fa" drop constraint "user_2fa_user_id_unique";
+
+alter table "public"."users" drop constraint "users_created_by_fkey";
+
+alter table "public"."users" drop constraint "users_email_key";
+
+alter table "public"."users" drop constraint "users_id_fkey";
+
+alter table "public"."users" drop constraint "users_organization_id_fkey";
+
+alter table "public"."users" drop constraint "users_parent_id_fkey";
+
+alter table "public"."users" drop constraint "users_role_check";
+
+alter table "public"."users" drop constraint "users_student_id_fkey";
+
+alter table "public"."users" drop constraint "users_updated_by_fkey";
+
+alter table "public"."website_leads" drop constraint "website_leads_email_key";
+
+alter table "school_desk"."course_schedule" drop constraint "course_schedule_course_id_fkey";
+
+alter table "school_desk"."course_schedule" drop constraint "course_schedule_recurring_check";
+
+alter table "school_desk"."courses" drop constraint "courses_capacity_check";
+
+alter table "office_desk"."invoices" drop constraint "invoices_status_check";
+
+alter table "public"."audit_log" drop constraint "audit_log_operation_check";
+
+alter table "public"."chapter_progress" drop constraint "chapter_progress_student_id_fkey";
+
+alter table "public"."profiles" drop constraint "profiles_role_check";
+
+drop function if exists "office_desk"."calculate_daily_metrics"(p_tenant_id uuid, p_date date);
+
+drop function if exists "office_desk"."fire_webhook_event"(p_tenant_id uuid, p_event_type text, p_payload jsonb);
+
+drop function if exists "office_desk"."log_user_activity"(p_tenant_id uuid, p_user_id uuid, p_event_type text, p_event_category text, p_page_path text, p_element_id text, p_element_text text, p_metadata jsonb);
+
+drop function if exists "office_desk"."record_conversion"(p_tenant_id uuid, p_lead_id uuid, p_conversion_type text, p_source_status text, p_target_status text, p_conversion_value numeric, p_metadata jsonb);
+
+drop function if exists "office_desk"."retry_webhook_events"(p_max_retries integer);
+
+drop function if exists "office_desk"."set_notifications_updated_at"();
+
+drop function if exists "office_desk"."set_updated_at"();
+
+drop function if exists "office_desk"."undo_bulk_operation"(p_operation_id uuid);
+
+drop function if exists "office_desk"."update_analytics_timestamp"();
+
+drop function if exists "office_desk"."update_email_template_timestamp"();
+
+drop function if exists "office_desk"."update_webhook_timestamp"();
+
+drop function if exists "office_desk"."validate_family_account"();
+
+drop function if exists "office_desk"."verify_webhook_signature"(p_secret text, p_signature text, p_payload text);
+
+drop function if exists "public"."cancel_calendar_event"(p_sync_event_id uuid, p_cancellation_reason text);
+
+drop function if exists "public"."check_booking_conflict"(p_student_id uuid, p_slot_date date, p_slot_time time without time zone, p_duration_minutes integer);
+
+drop function if exists "public"."create_payment"(p_student_id uuid, p_amount numeric, p_payment_method text);
+
+drop function if exists "public"."create_paypal_payment_intent"(p_student_id uuid, p_invoice_id uuid, p_amount numeric);
+
+drop function if exists "public"."create_stripe_payment_intent"(p_student_id uuid, p_invoice_id uuid, p_amount numeric);
+
+drop function if exists "public"."end_class_session"(p_session_id uuid, p_recording_url text);
+
+drop function if exists "public"."enroll_student"(p_first_name text, p_last_name text, p_academic_group_id uuid);
+
+drop function if exists "public"."enroll_student_in_course"(p_student_id uuid, p_course_id uuid, p_enrolled_by uuid);
+
+drop function if exists "public"."fn_debit_order_scheduled"();
+
+drop function if exists "public"."fn_payment_status_change"();
+
+drop function if exists "public"."fn_student_enrollment_activated"();
+
+drop function if exists "public"."generate_calendar_slots"(p_org_id uuid, p_grade text, p_num_slots integer, p_start_date date, p_slot_time time without time zone, p_duration_minutes integer, p_capacity integer);
+
+drop function if exists "public"."generate_course_report"(p_course_id uuid);
+
+drop function if exists "public"."generate_invoice"(p_student_id uuid, p_amount numeric, p_due_date date);
+
+drop function if exists "public"."generate_meeting_link"(p_sync_event_id uuid, p_provider text, p_host_email text, p_guest_emails text[]);
+
+drop function if exists "public"."get_assessment_grades_report"(p_enrollment_id uuid, p_course_id uuid);
+
+drop function if exists "public"."get_available_slots"(p_org_id uuid, p_grade text, p_from_date date, p_to_date date);
+
+drop function if exists "public"."get_course_attendance_summary"(p_course_id uuid);
+
+drop function if exists "public"."get_or_create_notification_preferences"(p_student_id uuid);
+
+drop function if exists "public"."get_org_calendar_events"(p_org_id uuid, p_from_date timestamp with time zone, p_to_date timestamp with time zone);
+
+drop function if exists "public"."get_student_attendance_report"(p_enrollment_id uuid);
+
+drop function if exists "public"."get_student_progress"(p_enrollment_id uuid);
+
+drop function if exists "public"."get_student_progress_report"(p_enrollment_id uuid);
+
+drop function if exists "public"."grade_assessment"(p_submission_id uuid, p_mark_earned integer, p_grader_id uuid, p_feedback text);
+
+drop function if exists "public"."handle_auth_user_created"();
+
+drop function if exists "public"."handle_payment_webhook"(p_provider text, p_webhook_id text, p_payload jsonb);
+
+drop function if exists "public"."handle_role_change_notify"();
+
+drop function if exists "public"."handle_users_updated_at"();
+
+drop function if exists "public"."increment_invoice_retry"(p_invoice_id uuid);
+
+drop function if exists "public"."jwt_role"();
+
+drop function if exists "public"."log_attendance_change"();
+
+drop function if exists "public"."mark_student_attendance"(p_session_id uuid, p_enrollment_id uuid, p_attendance_status text, p_notes text, p_marked_by_user_id uuid);
+
+drop function if exists "public"."on_enrollment_created"();
+
+drop function if exists "public"."on_meeting_link_created"();
+
+drop function if exists "public"."on_slot_booking_cancelled"();
+
+drop function if exists "public"."on_slot_booking_created"();
+
+drop function if exists "public"."on_sync_event_created"();
+
+drop function if exists "public"."process_webhook_safe"(p_provider text, p_signature text, p_payload_raw text, p_webhook_secret text, p_payload_parsed jsonb);
+
+drop function if exists "public"."set_notification_preferences_updated_at"();
+
+drop function if exists "public"."start_class_session"(p_session_id uuid);
+
+drop function if exists "public"."submit_assessment"(p_assessment_id uuid, p_enrollment_id uuid, p_submission_content jsonb, p_submission_files jsonb);
+
+drop function if exists "public"."sync_calendar_event"(p_org_id uuid, p_calendar_id uuid, p_external_event_id text, p_event_title text, p_event_description text, p_event_start timestamp with time zone, p_event_end timestamp with time zone, p_event_timezone text, p_location text, p_attendees jsonb, p_meeting_link_type text, p_external_updated_at timestamp with time zone);
+
+drop function if exists "public"."update_chapter_progress"(p_enrollment_id uuid, p_chapter_id uuid, p_completion_percentage integer, p_status text, p_time_spent_minutes integer);
+
+drop function if exists "public"."update_course_average_on_grade"();
+
+drop function if exists "public"."update_progress_percentage"();
+
+drop function if exists "public"."update_user_2fa_timestamp"();
+
+drop function if exists "public"."update_website_leads_updated_at"();
+
+drop function if exists "public"."verify_webhook_signature"(p_provider text, p_signature text, p_payload_raw text, p_secret text);
+
+drop function if exists "public"."withdraw_student_from_course"(p_enrollment_id uuid, p_withdrawn_by uuid, p_reason text);
+
+drop function if exists "school_desk"."set_course_schedule_updated_at"();
+
+alter table "office_desk"."activity_log" drop constraint "activity_log_pkey";
+
+alter table "office_desk"."add_on_payments" drop constraint "add_on_payments_pkey";
+
+alter table "office_desk"."bulk_operation_history" drop constraint "bulk_operation_history_pkey";
+
+alter table "office_desk"."conversion_events" drop constraint "conversion_events_pkey";
+
+alter table "office_desk"."debit_orders" drop constraint "debit_orders_pkey";
+
+alter table "office_desk"."email_logs" drop constraint "email_logs_pkey";
+
+alter table "office_desk"."email_template_usage" drop constraint "email_template_usage_pkey";
+
+alter table "office_desk"."email_templates" drop constraint "email_templates_pkey";
+
+alter table "office_desk"."failed_enrollments" drop constraint "failed_enrollments_pkey";
+
+alter table "office_desk"."family_accounts" drop constraint "family_accounts_pkey";
+
+alter table "office_desk"."family_activity" drop constraint "family_activity_pkey";
+
+alter table "office_desk"."notifications" drop constraint "notifications_pkey";
+
+alter table "office_desk"."packages" drop constraint "packages_pkey";
+
+alter table "office_desk"."refunds" drop constraint "refunds_pkey";
+
+alter table "office_desk"."revenue_metrics" drop constraint "revenue_metrics_pkey";
+
+alter table "office_desk"."stripe_events" drop constraint "stripe_events_pkey";
+
+alter table "office_desk"."students" drop constraint "students_pkey";
+
+alter table "office_desk"."user_activity_log" drop constraint "user_activity_log_pkey";
+
+alter table "office_desk"."users" drop constraint "users_pkey";
+
+alter table "office_desk"."webhook_events" drop constraint "webhook_events_pkey";
+
+alter table "office_desk"."webhook_notification_preferences" drop constraint "webhook_notification_preferences_pkey";
+
+alter table "office_desk"."webhooks" drop constraint "webhooks_pkey";
+
+alter table "public"."assessment_rubric_grades" drop constraint "assessment_rubric_grades_pkey";
+
+alter table "public"."assessment_submissions" drop constraint "assessment_submissions_pkey";
+
+alter table "public"."assessments" drop constraint "assessments_pkey";
+
+alter table "public"."attendance_audit_log" drop constraint "attendance_audit_log_pkey";
+
+alter table "public"."calendar" drop constraint "calendar_pkey";
+
+alter table "public"."calendar_sync_events" drop constraint "calendar_sync_events_pkey";
+
+alter table "public"."calendar_webhook_logs" drop constraint "calendar_webhook_logs_pkey";
+
+alter table "public"."class_sessions" drop constraint "class_sessions_pkey";
+
+alter table "public"."course_progress" drop constraint "course_progress_pkey";
+
+alter table "public"."courses" drop constraint "courses_pkey";
+
+alter table "public"."email_logs" drop constraint "email_logs_pkey";
+
+alter table "public"."meeting_links" drop constraint "meeting_links_pkey";
+
+alter table "public"."payment_webhooks" drop constraint "payment_webhooks_pkey";
+
+alter table "public"."school_years" drop constraint "school_years_pkey";
+
+alter table "public"."slot_bookings" drop constraint "slot_bookings_pkey";
+
+alter table "public"."student_attendance" drop constraint "student_attendance_pkey";
+
+alter table "public"."student_enrollments" drop constraint "student_enrollments_pkey";
+
+alter table "public"."system_log" drop constraint "system_log_pkey";
+
+alter table "public"."user_2fa" drop constraint "user_2fa_pkey";
+
+alter table "public"."users" drop constraint "users_pkey";
+
+alter table "public"."website_leads" drop constraint "website_leads_pkey";
+
+alter table "school_desk"."course_schedule" drop constraint "course_schedule_pkey";
+
+drop index if exists "office_desk"."activity_log_pkey";
+
+drop index if exists "office_desk"."add_on_payments_pkey";
+
+drop index if exists "office_desk"."bulk_operation_history_pkey";
+
+drop index if exists "office_desk"."conversion_events_pkey";
+
+drop index if exists "office_desk"."debit_orders_pkey";
+
+drop index if exists "office_desk"."desk_roles_registration_id_name_key";
+
+drop index if exists "office_desk"."email_logs_pkey";
+
+drop index if exists "office_desk"."email_template_usage_pkey";
+
+drop index if exists "office_desk"."email_templates_pkey";
+
+drop index if exists "office_desk"."failed_enrollments_pkey";
+
+drop index if exists "office_desk"."family_accounts_family_code_key";
+
+drop index if exists "office_desk"."family_accounts_pkey";
+
+drop index if exists "office_desk"."family_activity_pkey";
+
+drop index if exists "office_desk"."idx_actlog_action";
+
+drop index if exists "office_desk"."idx_actlog_created";
+
+drop index if exists "office_desk"."idx_actlog_registration";
+
+drop index if exists "office_desk"."idx_addon_family";
+
+drop index if exists "office_desk"."idx_addon_invoice";
+
+drop index if exists "office_desk"."idx_addon_status";
+
+drop index if exists "office_desk"."idx_addon_student";
+
+drop index if exists "office_desk"."idx_addon_tenant";
+
+drop index if exists "office_desk"."idx_bulk_op_history_entity";
+
+drop index if exists "office_desk"."idx_bulk_op_history_tenant";
+
+drop index if exists "office_desk"."idx_bulk_op_history_undoable";
+
+drop index if exists "office_desk"."idx_bulk_op_history_user";
+
+drop index if exists "office_desk"."idx_conversion_created";
+
+drop index if exists "office_desk"."idx_conversion_lead";
+
+drop index if exists "office_desk"."idx_conversion_tenant";
+
+drop index if exists "office_desk"."idx_conversion_type";
+
+drop index if exists "office_desk"."idx_dbo_family";
+
+drop index if exists "office_desk"."idx_dbo_invoice";
+
+drop index if exists "office_desk"."idx_dbo_next_debit";
+
+drop index if exists "office_desk"."idx_dbo_package";
+
+drop index if exists "office_desk"."idx_dbo_status";
+
+drop index if exists "office_desk"."idx_dbo_student";
+
+drop index if exists "office_desk"."idx_dbo_tenant";
+
+drop index if exists "office_desk"."idx_elog_created";
+
+drop index if exists "office_desk"."idx_elog_status";
+
+drop index if exists "office_desk"."idx_elog_tenant";
+
+drop index if exists "office_desk"."idx_email_template_usage_contact_id";
+
+drop index if exists "office_desk"."idx_email_template_usage_sent_at";
+
+drop index if exists "office_desk"."idx_email_template_usage_template_id";
+
+drop index if exists "office_desk"."idx_email_template_usage_tenant_id";
+
+drop index if exists "office_desk"."idx_email_templates_active";
+
+drop index if exists "office_desk"."idx_email_templates_created_at";
+
+drop index if exists "office_desk"."idx_email_templates_tenant_id";
+
+drop index if exists "office_desk"."idx_fa_family_code";
+
+drop index if exists "office_desk"."idx_fa_status";
+
+drop index if exists "office_desk"."idx_fa_tenant";
+
+drop index if exists "office_desk"."idx_failed_enrollments_created";
+
+drop index if exists "office_desk"."idx_failed_enrollments_tenant";
+
+drop index if exists "office_desk"."idx_failed_enrollments_unresolved";
+
+drop index if exists "office_desk"."idx_fam_action";
+
+drop index if exists "office_desk"."idx_fam_debit";
+
+drop index if exists "office_desk"."idx_fam_family";
+
+drop index if exists "office_desk"."idx_fam_invoice";
+
+drop index if exists "office_desk"."idx_fam_student";
+
+drop index if exists "office_desk"."idx_fam_tenant";
+
+drop index if exists "office_desk"."idx_fam_timestamp";
+
+drop index if exists "office_desk"."idx_inv_due";
+
+drop index if exists "office_desk"."idx_inv_family";
+
+drop index if exists "office_desk"."idx_inv_number";
+
+drop index if exists "office_desk"."idx_inv_status";
+
+drop index if exists "office_desk"."idx_inv_tenant";
+
+drop index if exists "office_desk"."idx_inv_type";
+
+drop index if exists "office_desk"."idx_notifications_registration";
+
+drop index if exists "office_desk"."idx_notifications_sent_at";
+
+drop index if exists "office_desk"."idx_notifications_status";
+
+drop index if exists "office_desk"."idx_pay_date";
+
+drop index if exists "office_desk"."idx_pay_family";
+
+drop index if exists "office_desk"."idx_pay_ref";
+
+drop index if exists "office_desk"."idx_pay_status";
+
+drop index if exists "office_desk"."idx_pay_tenant";
+
+drop index if exists "office_desk"."idx_pay_type";
+
+drop index if exists "office_desk"."idx_pkg_grade";
+
+drop index if exists "office_desk"."idx_pkg_name";
+
+drop index if exists "office_desk"."idx_pkg_status";
+
+drop index if exists "office_desk"."idx_pkg_tenant";
+
+drop index if exists "office_desk"."idx_refunds_charge";
+
+drop index if exists "office_desk"."idx_refunds_created";
+
+drop index if exists "office_desk"."idx_refunds_registration";
+
+drop index if exists "office_desk"."idx_reg_course_id";
+
+drop index if exists "office_desk"."idx_reg_payment_status";
+
+drop index if exists "office_desk"."idx_reg_reg_status";
+
+drop index if exists "office_desk"."idx_reg_school_year";
+
+drop index if exists "office_desk"."idx_reg_tenant_lms";
+
+drop index if exists "office_desk"."idx_registrations_payment_status";
+
+drop index if exists "office_desk"."idx_revenue_date";
+
+drop index if exists "office_desk"."idx_revenue_period";
+
+drop index if exists "office_desk"."idx_revenue_tenant";
+
+drop index if exists "office_desk"."idx_revenue_tenant_date";
+
+drop index if exists "office_desk"."idx_stripe_events_created";
+
+drop index if exists "office_desk"."idx_stripe_events_event_id";
+
+drop index if exists "office_desk"."idx_stripe_events_type";
+
+drop index if exists "office_desk"."idx_students_family";
+
+drop index if exists "office_desk"."idx_students_grade";
+
+drop index if exists "office_desk"."idx_students_pack";
+
+drop index if exists "office_desk"."idx_students_status";
+
+drop index if exists "office_desk"."idx_students_tenant";
+
+drop index if exists "office_desk"."idx_students_user";
+
+drop index if exists "office_desk"."idx_user_activity_created";
+
+drop index if exists "office_desk"."idx_user_activity_event_type";
+
+drop index if exists "office_desk"."idx_user_activity_page";
+
+drop index if exists "office_desk"."idx_user_activity_tenant";
+
+drop index if exists "office_desk"."idx_user_activity_user";
+
+drop index if exists "office_desk"."idx_user_desk_roles_role";
+
+drop index if exists "office_desk"."idx_user_desk_roles_user";
+
+drop index if exists "office_desk"."idx_users_auth";
+
+drop index if exists "office_desk"."idx_users_family";
+
+drop index if exists "office_desk"."idx_users_status";
+
+drop index if exists "office_desk"."idx_users_tenant";
+
+drop index if exists "office_desk"."idx_users_type";
+
+drop index if exists "office_desk"."idx_webhook_events_created_at";
+
+drop index if exists "office_desk"."idx_webhook_events_status";
+
+drop index if exists "office_desk"."idx_webhook_events_tenant_id";
+
+drop index if exists "office_desk"."idx_webhook_events_webhook_id";
+
+drop index if exists "office_desk"."idx_webhook_notification_prefs_tenant";
+
+drop index if exists "office_desk"."idx_webhooks_active";
+
+drop index if exists "office_desk"."idx_webhooks_tenant_id";
+
+drop index if exists "office_desk"."invoices_invoice_number_key";
+
+drop index if exists "office_desk"."notifications_pkey";
+
+drop index if exists "office_desk"."packages_package_name_key";
+
+drop index if exists "office_desk"."packages_pkey";
+
+drop index if exists "office_desk"."refunds_pkey";
+
+drop index if exists "office_desk"."refunds_stripe_refund_id_key";
+
+drop index if exists "office_desk"."revenue_metrics_pkey";
+
+drop index if exists "office_desk"."revenue_metrics_tenant_id_metric_date_metric_period_key";
+
+drop index if exists "office_desk"."stripe_events_pkey";
+
+drop index if exists "office_desk"."stripe_events_stripe_event_id_key";
+
+drop index if exists "office_desk"."students_pkey";
+
+drop index if exists "office_desk"."user_activity_log_pkey";
+
+drop index if exists "office_desk"."user_desk_roles_user_id_role_id_key";
+
+drop index if exists "office_desk"."users_auth_user_id_key";
+
+drop index if exists "office_desk"."users_pkey";
+
+drop index if exists "office_desk"."webhook_events_pkey";
+
+drop index if exists "office_desk"."webhook_notification_preferences_pkey";
+
+drop index if exists "office_desk"."webhook_notification_preferences_tenant_id_key";
+
+drop index if exists "office_desk"."webhooks_pkey";
+
+drop index if exists "public"."assessment_rubric_grades_pkey";
+
+drop index if exists "public"."assessment_submissions_pkey";
+
+drop index if exists "public"."assessments_pkey";
+
+drop index if exists "public"."attendance_audit_log_pkey";
+
+drop index if exists "public"."calendar_pkey";
+
+drop index if exists "public"."calendar_sync_events_external_event_id_key";
+
+drop index if exists "public"."calendar_sync_events_pkey";
+
+drop index if exists "public"."calendar_webhook_logs_pkey";
+
+drop index if exists "public"."class_sessions_pkey";
+
+drop index if exists "public"."course_progress_pkey";
+
+drop index if exists "public"."courses_course_code_key";
+
+drop index if exists "public"."courses_pkey";
+
+drop index if exists "public"."email_logs_pkey";
+
+drop index if exists "public"."idx_assessments_chapter";
+
+drop index if exists "public"."idx_assessments_course";
+
+drop index if exists "public"."idx_assessments_org";
+
+drop index if exists "public"."idx_assessments_type";
+
+drop index if exists "public"."idx_attendance_enrollment";
+
+drop index if exists "public"."idx_attendance_org";
+
+drop index if exists "public"."idx_attendance_session";
+
+drop index if exists "public"."idx_attendance_status";
+
+drop index if exists "public"."idx_attendance_student";
+
+drop index if exists "public"."idx_audit_created";
+
+drop index if exists "public"."idx_audit_org";
+
+drop index if exists "public"."idx_audit_student_attendance";
+
+drop index if exists "public"."idx_calendar_date_time";
+
+drop index if exists "public"."idx_calendar_org_grade_date";
+
+drop index if exists "public"."idx_calendar_status";
+
+drop index if exists "public"."idx_chapter_progress_course";
+
+drop index if exists "public"."idx_chapter_progress_enrollment";
+
+drop index if exists "public"."idx_chapter_progress_org";
+
+drop index if exists "public"."idx_chapter_progress_status";
+
+drop index if exists "public"."idx_courses_grade";
+
+drop index if exists "public"."idx_courses_org_status";
+
+drop index if exists "public"."idx_ef_call_log_caller";
+
+drop index if exists "public"."idx_ef_call_log_created_at";
+
+drop index if exists "public"."idx_ef_call_log_tenant_id";
+
+drop index if exists "public"."idx_email_logs_created";
+
+drop index if exists "public"."idx_email_logs_recipient";
+
+drop index if exists "public"."idx_email_logs_template";
+
+drop index if exists "public"."idx_email_logs_tenant";
+
+drop index if exists "public"."idx_email_logs_tenant_hour";
+
+drop index if exists "public"."idx_enrollments_course";
+
+drop index if exists "public"."idx_enrollments_status";
+
+drop index if exists "public"."idx_enrollments_student";
+
+drop index if exists "public"."idx_meeting_links_event";
+
+drop index if exists "public"."idx_meeting_links_meeting_id";
+
+drop index if exists "public"."idx_meeting_links_provider";
+
+drop index if exists "public"."idx_notification_preferences_class_ids";
+
+drop index if exists "public"."idx_notification_preferences_student";
+
+drop index if exists "public"."idx_notifications_data";
+
+drop index if exists "public"."idx_payment_webhooks_created";
+
+drop index if exists "public"."idx_payment_webhooks_provider";
+
+drop index if exists "public"."idx_payment_webhooks_status";
+
+drop index if exists "public"."idx_payments_paypal_txn";
+
+drop index if exists "public"."idx_payments_student_invoice";
+
+drop index if exists "public"."idx_progress_enrollment";
+
+drop index if exists "public"."idx_progress_status";
+
+drop index if exists "public"."idx_rubric_grades_org";
+
+drop index if exists "public"."idx_rubric_grades_submission";
+
+drop index if exists "public"."idx_school_years_active";
+
+drop index if exists "public"."idx_school_years_tenant";
+
+drop index if exists "public"."idx_sessions_course";
+
+drop index if exists "public"."idx_sessions_date_range";
+
+drop index if exists "public"."idx_sessions_host";
+
+drop index if exists "public"."idx_sessions_org";
+
+drop index if exists "public"."idx_sessions_status";
+
+drop index if exists "public"."idx_slot_bookings_calendar";
+
+drop index if exists "public"."idx_slot_bookings_status";
+
+drop index if exists "public"."idx_slot_bookings_student";
+
+drop index if exists "public"."idx_slot_bookings_student_status";
+
+drop index if exists "public"."idx_submission_assessment";
+
+drop index if exists "public"."idx_submission_enrollment";
+
+drop index if exists "public"."idx_submission_graded";
+
+drop index if exists "public"."idx_submission_org";
+
+drop index if exists "public"."idx_submission_status";
+
+drop index if exists "public"."idx_submission_student";
+
+drop index if exists "public"."idx_sync_events_calendar";
+
+drop index if exists "public"."idx_sync_events_date_range";
+
+drop index if exists "public"."idx_sync_events_external_id";
+
+drop index if exists "public"."idx_sync_events_org";
+
+drop index if exists "public"."idx_sync_events_status";
+
+drop index if exists "public"."idx_system_log_created";
+
+drop index if exists "public"."idx_system_log_function";
+
+drop index if exists "public"."idx_system_log_status";
+
+drop index if exists "public"."idx_user_2fa_tenant_id";
+
+drop index if exists "public"."idx_user_2fa_user_id";
+
+drop index if exists "public"."idx_users_email";
+
+drop index if exists "public"."idx_users_organization_id";
+
+drop index if exists "public"."idx_users_parent_id";
+
+drop index if exists "public"."idx_users_role";
+
+drop index if exists "public"."idx_users_student_id";
+
+drop index if exists "public"."idx_webhook_logs_org";
+
+drop index if exists "public"."idx_webhook_logs_received";
+
+drop index if exists "public"."idx_webhook_logs_source";
+
+drop index if exists "public"."idx_webhook_logs_status";
+
+drop index if exists "public"."idx_website_leads_created_at";
+
+drop index if exists "public"."idx_website_leads_email";
+
+drop index if exists "public"."meeting_links_pkey";
+
+drop index if exists "public"."payment_webhooks_pkey";
+
+drop index if exists "public"."payment_webhooks_webhook_id_key";
+
+drop index if exists "public"."school_years_pkey";
+
+drop index if exists "public"."school_years_tenant_id_academic_year_key";
+
+drop index if exists "public"."slot_bookings_pkey";
+
+drop index if exists "public"."student_attendance_pkey";
+
+drop index if exists "public"."student_enrollments_pkey";
+
+drop index if exists "public"."system_log_pkey";
+
+drop index if exists "public"."uq_assessment_enrollment";
+
+drop index if exists "public"."uq_enrollment_chapter";
+
+drop index if exists "public"."uq_enrollment_lesson";
+
+drop index if exists "public"."uq_session_enrollment";
+
+drop index if exists "public"."uq_student_calendar";
+
+drop index if exists "public"."uq_student_course";
+
+drop index if exists "public"."user_2fa_pkey";
+
+drop index if exists "public"."user_2fa_user_id_unique";
+
+drop index if exists "public"."users_email_key";
+
+drop index if exists "public"."users_pkey";
+
+drop index if exists "public"."website_leads_email_key";
+
+drop index if exists "public"."website_leads_pkey";
+
+drop index if exists "school_desk"."course_schedule_pkey";
+
+drop index if exists "school_desk"."idx_course_schedule_course";
+
+drop index if exists "school_desk"."idx_course_schedule_date";
+
+drop table "office_desk"."activity_log";
+
+drop table "office_desk"."add_on_payments";
+
+drop table "office_desk"."bulk_operation_history";
+
+drop table "office_desk"."conversion_events";
+
+drop table "office_desk"."debit_orders";
+
+drop table "office_desk"."email_logs";
+
+drop table "office_desk"."email_template_usage";
+
+drop table "office_desk"."email_templates";
+
+drop table "office_desk"."failed_enrollments";
+
+drop table "office_desk"."family_accounts";
+
+drop table "office_desk"."family_activity";
+
+drop table "office_desk"."notifications";
+
+drop table "office_desk"."packages";
+
+drop table "office_desk"."refunds";
+
+drop table "office_desk"."revenue_metrics";
+
+drop table "office_desk"."stripe_events";
+
+drop table "office_desk"."students";
+
+drop table "office_desk"."user_activity_log";
+
+drop table "office_desk"."users";
+
+drop table "office_desk"."webhook_events";
+
+drop table "office_desk"."webhook_notification_preferences";
+
+drop table "office_desk"."webhooks";
+
+drop table "public"."assessment_rubric_grades";
+
+drop table "public"."assessment_submissions";
+
+drop table "public"."assessments";
+
+drop table "public"."attendance_audit_log";
+
+drop table "public"."calendar";
+
+drop table "public"."calendar_sync_events";
+
+drop table "public"."calendar_webhook_logs";
+
+drop table "public"."class_sessions";
+
+drop table "public"."course_progress";
+
+drop table "public"."courses";
+
+drop table "public"."email_logs";
+
+drop table "public"."meeting_links";
+
+drop table "public"."payment_webhooks";
+
+drop table "public"."school_years";
+
+drop table "public"."slot_bookings";
+
+drop table "public"."student_attendance";
+
+drop table "public"."student_enrollments";
+
+drop table "public"."system_log";
+
+drop table "public"."user_2fa";
+
+drop table "public"."users";
+
+drop table "public"."website_leads";
+
+drop table "school_desk"."course_schedule";
+
+
+  create table "office_desk"."desk_invites" (
+    "id" uuid not null default gen_random_uuid(),
+    "desk_id" uuid not null,
+    "tenant_id" uuid not null,
+    "role_id" uuid not null,
+    "email" text not null,
+    "invited_by" uuid not null,
+    "token" text not null,
+    "status" text not null default 'pending'::text,
+    "expires_at" timestamp with time zone not null,
+    "accepted_at" timestamp with time zone,
+    "created_at" timestamp with time zone not null default now()
+      );
+
+
+alter table "office_desk"."desk_invites" enable row level security;
+
+
+  create table "office_desk"."permission_audit_log" (
+    "id" uuid not null default gen_random_uuid(),
+    "desk_id" uuid not null,
+    "tenant_id" uuid not null,
+    "actor_id" uuid not null,
+    "action" text not null,
+    "target_user_id" uuid,
+    "target_role_id" uuid,
+    "details" jsonb,
+    "created_at" timestamp with time zone not null default now()
+      );
+
+
+alter table "office_desk"."permission_audit_log" enable row level security;
+
+
+  create table "school_desk"."__reload_trigger" (
+    "id" integer not null
+      );
+
+
+alter table "office_desk"."desk_roles" drop column "registration_id";
+
+alter table "office_desk"."desk_roles" add column "desk_id" uuid not null;
+
+alter table "office_desk"."invoices" drop column "family_account_id";
+
+alter table "office_desk"."invoices" drop column "invoice_type";
+
+alter table "office_desk"."invoices" drop column "issued_date";
+
+alter table "office_desk"."invoices" drop column "paid_date";
+
+alter table "office_desk"."invoices" drop column "service_provider_invoice_url";
+
+alter table "office_desk"."invoices" add column "amount_paid" numeric(12,2) not null default 0;
+
+alter table "office_desk"."invoices" add column "deleted_at" timestamp with time zone;
+
+alter table "office_desk"."invoices" add column "issued_at" timestamp with time zone;
+
+alter table "office_desk"."invoices" add column "lead_id" uuid;
+
+alter table "office_desk"."invoices" add column "paid_at" timestamp with time zone;
+
+alter table "office_desk"."invoices" add column "payment_method" text;
+
+alter table "office_desk"."invoices" add column "payment_processor" text;
+
+alter table "office_desk"."invoices" add column "paypal_capture_id" text;
+
+alter table "office_desk"."invoices" add column "paypal_error_message" text;
+
+alter table "office_desk"."invoices" add column "paypal_order_id" text;
+
+alter table "office_desk"."invoices" add column "registration_id" uuid not null;
+
+alter table "office_desk"."invoices" add column "stripe_charge_id" text;
+
+alter table "office_desk"."invoices" add column "stripe_error_message" text;
+
+alter table "office_desk"."invoices" add column "stripe_payment_intent_id" text;
+
+alter table "office_desk"."invoices" add column "updated_by" uuid;
+
+alter table "office_desk"."invoices" add column "version_id" uuid default gen_random_uuid();
+
+alter table "office_desk"."invoices" alter column "amount" set data type numeric(12,2) using "amount"::numeric(12,2);
+
+alter table "office_desk"."invoices" alter column "due_date" set data type timestamp with time zone using "due_date"::timestamp with time zone;
+
+alter table "office_desk"."invoices" alter column "invoice_number" drop not null;
+
+alter table "office_desk"."payments" drop column "bank_confirmation";
+
+alter table "office_desk"."payments" drop column "family_account_id";
+
+alter table "office_desk"."payments" drop column "payment_date";
+
+alter table "office_desk"."payments" drop column "payment_type";
+
+alter table "office_desk"."payments" drop column "reference_code";
+
+alter table "office_desk"."payments" add column "deleted_at" timestamp with time zone;
+
+alter table "office_desk"."payments" add column "invoice_id" uuid not null;
+
+alter table "office_desk"."payments" add column "paid_at" timestamp with time zone;
+
+alter table "office_desk"."payments" add column "payment_method" text;
+
+alter table "office_desk"."payments" add column "reference" text;
+
+alter table "office_desk"."payments" alter column "amount" set data type numeric(12,2) using "amount"::numeric(12,2);
+
+alter table "office_desk"."permissions" add column "category" text not null default 'general'::text;
+
+alter table "office_desk"."permissions" add column "name" text not null;
+
+alter table "office_desk"."permissions" enable row level security;
+
+alter table "office_desk"."registrations" drop column "course_id";
+
+alter table "office_desk"."registrations" drop column "financial_status";
+
+alter table "office_desk"."registrations" drop column "internal_notes";
+
+alter table "office_desk"."registrations" drop column "internal_notes_lower";
+
+alter table "office_desk"."registrations" drop column "parent_email";
+
+alter table "office_desk"."registrations" drop column "parent_first_name";
+
+alter table "office_desk"."registrations" drop column "parent_last_name";
+
+alter table "office_desk"."registrations" drop column "parent_phone";
+
+alter table "office_desk"."registrations" drop column "payment_status";
+
+alter table "office_desk"."registrations" drop column "reg_status";
+
+alter table "office_desk"."registrations" drop column "school_year_id";
+
+alter table "office_desk"."registrations" drop column "source";
+
+alter table "office_desk"."registrations" drop column "student_dob";
+
+alter table "office_desk"."registrations" drop column "student_first_name";
+
+alter table "office_desk"."registrations" drop column "student_last_name";
+
+alter table "office_desk"."registrations" drop column "teacher_preference";
+
+alter table "office_desk"."role_permissions" enable row level security;
+
+alter table "office_desk"."user_desk_roles" drop column "created_at";
+
+alter table "office_desk"."user_desk_roles" drop column "tenant_id";
+
+alter table "office_desk"."user_desk_roles" add column "assigned_at" timestamp with time zone not null default now();
+
+alter table "office_desk"."user_desk_roles" add column "assigned_by" uuid;
+
+alter table "office_desk"."user_desk_roles" add column "desk_id" uuid not null;
+
+alter table "office_desk"."user_desk_roles" enable row level security;
+
+alter table "public"."chapter_progress" drop column "completion_percentage";
+
+alter table "public"."chapter_progress" drop column "course_id";
+
+alter table "public"."chapter_progress" drop column "created_at";
+
+alter table "public"."chapter_progress" drop column "enrollment_id";
+
+alter table "public"."chapter_progress" drop column "notes";
+
+alter table "public"."chapter_progress" drop column "organization_id";
+
+alter table "public"."chapter_progress" drop column "resource_completion_count";
+
+alter table "public"."chapter_progress" drop column "started_at";
+
+alter table "public"."chapter_progress" drop column "status";
+
+alter table "public"."chapter_progress" drop column "time_spent_minutes";
+
+alter table "public"."chapter_progress" drop column "total_resources";
+
+alter table "public"."chapter_progress" drop column "updated_at";
+
+alter table "public"."chapter_progress" alter column "completed_at" set default now();
+
+alter table "public"."chapter_progress" alter column "completed_at" set not null;
+
+alter table "public"."ef_call_log" drop column "error_msg";
+
+alter table "public"."ef_call_log" drop column "replay_check_passed";
+
+alter table "public"."ef_call_log" drop column "request_hash";
+
+alter table "public"."ef_call_log" drop column "signature_valid";
+
+alter table "public"."notification_preferences" drop column "class_ids";
+
+alter table "public"."notification_preferences" drop column "class_notification_scope";
+
+alter table "public"."notification_preferences" drop column "clubs_enabled";
+
+alter table "public"."notification_preferences" drop column "core_curriculum_enabled";
+
+alter table "public"."notification_preferences" drop column "email_enabled";
+
+alter table "public"."notification_preferences" drop column "hub_event_types";
+
+alter table "public"."notification_preferences" drop column "in_app_enabled";
+
+alter table "public"."notification_preferences" drop column "news_categories";
+
+alter table "public"."notification_preferences" drop column "push_enabled";
+
+alter table "public"."notification_preferences" drop column "sms_enabled";
+
+alter table "public"."notification_preferences" add column "email" boolean default true;
+
+alter table "public"."notification_preferences" add column "in_app" boolean default true;
+
+alter table "public"."notification_preferences" add column "notification_type_id" text not null;
+
+alter table "public"."notification_preferences" add column "sms" boolean default false;
+
+alter table "public"."notification_preferences" alter column "created_at" drop not null;
+
+alter table "public"."notification_preferences" alter column "created_at" set data type timestamp without time zone using "created_at"::timestamp without time zone;
+
+alter table "public"."notification_preferences" alter column "updated_at" drop not null;
+
+alter table "public"."notification_preferences" alter column "updated_at" set data type timestamp without time zone using "updated_at"::timestamp without time zone;
+
+alter table "public"."notification_types" disable row level security;
+
+alter table "public"."notifications" drop column "data";
+
+alter table "public"."notifications" add column "subject" text;
+
+alter table "public"."payments" drop column "invoice_id";
+
+alter table "public"."payments" drop column "paid_date";
+
+alter table "public"."payments" drop column "payment_method";
+
+alter table "public"."payments" drop column "paypal_transaction_id";
+
+alter table "public"."student_class" drop column "course_id";
+
+alter table "public"."student_class" drop column "registration_id";
+
+alter table "public"."student_class" drop column "status";
+
+alter table "school_desk"."courses" drop column "capacity";
+
+drop type "office_desk"."registration_payment_status";
+
+CREATE UNIQUE INDEX desk_invites_pkey ON office_desk.desk_invites USING btree (id);
+
+CREATE UNIQUE INDEX desk_invites_token_key ON office_desk.desk_invites USING btree (token);
+
+CREATE UNIQUE INDEX desk_roles_desk_id_name_key ON office_desk.desk_roles USING btree (desk_id, name);
+
+CREATE INDEX idx_desk_invites_desk_id ON office_desk.desk_invites USING btree (desk_id);
+
+CREATE INDEX idx_desk_invites_email ON office_desk.desk_invites USING btree (email);
+
+CREATE INDEX idx_desk_invites_status ON office_desk.desk_invites USING btree (status);
+
+CREATE INDEX idx_desk_invites_token ON office_desk.desk_invites USING btree (token);
+
+CREATE INDEX idx_desk_roles_desk_id ON office_desk.desk_roles USING btree (desk_id);
+
+CREATE INDEX idx_desk_roles_tenant_id ON office_desk.desk_roles USING btree (tenant_id);
+
+CREATE INDEX idx_invoices_description_fts ON office_desk.invoices USING gin (to_tsvector('english'::regconfig, COALESCE(description, ''::text)));
+
+CREATE INDEX idx_invoices_lead ON office_desk.invoices USING btree (lead_id);
+
+CREATE INDEX idx_invoices_number_fts ON office_desk.invoices USING gin (to_tsvector('english'::regconfig, COALESCE(invoice_number, ''::text)));
+
+CREATE INDEX idx_invoices_paid_at ON office_desk.invoices USING btree (paid_at) WHERE (paid_at IS NOT NULL);
+
+CREATE INDEX idx_invoices_paypal_order ON office_desk.invoices USING btree (paypal_order_id) WHERE (paypal_order_id IS NOT NULL);
+
+CREATE INDEX idx_invoices_registration ON office_desk.invoices USING btree (registration_id);
+
+CREATE INDEX idx_invoices_status ON office_desk.invoices USING btree (status);
+
+CREATE INDEX idx_invoices_stripe_payment_intent ON office_desk.invoices USING btree (stripe_payment_intent_id) WHERE (stripe_payment_intent_id IS NOT NULL);
+
+CREATE INDEX idx_invoices_tenant ON office_desk.invoices USING btree (tenant_id);
+
+CREATE INDEX idx_invoices_version_id ON office_desk.invoices USING btree (version_id);
+
+CREATE INDEX idx_payments_invoice ON office_desk.payments USING btree (invoice_id);
+
+CREATE INDEX idx_payments_status ON office_desk.payments USING btree (status);
+
+CREATE INDEX idx_payments_tenant ON office_desk.payments USING btree (tenant_id);
+
+CREATE INDEX idx_permission_audit_log_created_at ON office_desk.permission_audit_log USING btree (created_at DESC);
+
+CREATE INDEX idx_permission_audit_log_desk_id ON office_desk.permission_audit_log USING btree (desk_id);
+
+CREATE INDEX idx_role_permissions_role_id ON office_desk.role_permissions USING btree (role_id);
+
+CREATE INDEX idx_user_desk_roles_desk_id ON office_desk.user_desk_roles USING btree (desk_id);
+
+CREATE INDEX idx_user_desk_roles_role_id ON office_desk.user_desk_roles USING btree (role_id);
+
+CREATE INDEX idx_user_desk_roles_user_id ON office_desk.user_desk_roles USING btree (user_id);
+
+CREATE UNIQUE INDEX permission_audit_log_pkey ON office_desk.permission_audit_log USING btree (id);
+
+CREATE UNIQUE INDEX user_desk_roles_user_id_desk_id_key ON office_desk.user_desk_roles USING btree (user_id, desk_id);
+
+CREATE UNIQUE INDEX chapter_progress_student_id_chapter_id_key ON public.chapter_progress USING btree (student_id, chapter_id);
+
+CREATE INDEX idx_chapter_progress_chapter ON public.chapter_progress USING btree (chapter_id);
+
+CREATE INDEX idx_chapter_progress_student ON public.chapter_progress USING btree (student_id);
+
+CREATE INDEX idx_notification_preferences_student_id ON public.notification_preferences USING btree (student_id);
+
+CREATE UNIQUE INDEX __reload_trigger_pkey ON school_desk.__reload_trigger USING btree (id);
+
+alter table "office_desk"."desk_invites" add constraint "desk_invites_pkey" PRIMARY KEY using index "desk_invites_pkey";
+
+alter table "office_desk"."permission_audit_log" add constraint "permission_audit_log_pkey" PRIMARY KEY using index "permission_audit_log_pkey";
+
+alter table "school_desk"."__reload_trigger" add constraint "__reload_trigger_pkey" PRIMARY KEY using index "__reload_trigger_pkey";
+
+alter table "office_desk"."desk_invites" add constraint "desk_invites_desk_id_fkey" FOREIGN KEY (desk_id) REFERENCES office_desk.office_desk(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."desk_invites" validate constraint "desk_invites_desk_id_fkey";
+
+alter table "office_desk"."desk_invites" add constraint "desk_invites_invited_by_fkey" FOREIGN KEY (invited_by) REFERENCES auth.users(id) not valid;
+
+alter table "office_desk"."desk_invites" validate constraint "desk_invites_invited_by_fkey";
+
+alter table "office_desk"."desk_invites" add constraint "desk_invites_role_id_fkey" FOREIGN KEY (role_id) REFERENCES office_desk.desk_roles(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."desk_invites" validate constraint "desk_invites_role_id_fkey";
+
+alter table "office_desk"."desk_invites" add constraint "desk_invites_status_check" CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'expired'::text, 'revoked'::text]))) not valid;
+
+alter table "office_desk"."desk_invites" validate constraint "desk_invites_status_check";
+
+alter table "office_desk"."desk_invites" add constraint "desk_invites_tenant_id_fkey" FOREIGN KEY (tenant_id) REFERENCES public.tenant_lms(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."desk_invites" validate constraint "desk_invites_tenant_id_fkey";
+
+alter table "office_desk"."desk_invites" add constraint "desk_invites_token_key" UNIQUE using index "desk_invites_token_key";
+
+alter table "office_desk"."desk_roles" add constraint "desk_roles_desk_id_fkey" FOREIGN KEY (desk_id) REFERENCES office_desk.office_desk(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."desk_roles" validate constraint "desk_roles_desk_id_fkey";
+
+alter table "office_desk"."desk_roles" add constraint "desk_roles_desk_id_name_key" UNIQUE using index "desk_roles_desk_id_name_key";
+
+alter table "office_desk"."invoice_items" add constraint "invoice_items_invoice_id_fkey" FOREIGN KEY (invoice_id) REFERENCES office_desk.invoices(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."invoice_items" validate constraint "invoice_items_invoice_id_fkey";
+
+alter table "office_desk"."invoices" add constraint "invoices_lead_id_fkey" FOREIGN KEY (lead_id) REFERENCES front_desk.leads(id) not valid;
+
+alter table "office_desk"."invoices" validate constraint "invoices_lead_id_fkey";
+
+alter table "office_desk"."invoices" add constraint "invoices_payment_method_check" CHECK ((payment_method = ANY (ARRAY['card'::text, 'ach'::text, 'paypal'::text]))) not valid;
+
+alter table "office_desk"."invoices" validate constraint "invoices_payment_method_check";
+
+alter table "office_desk"."invoices" add constraint "invoices_payment_processor_check" CHECK ((payment_processor = ANY (ARRAY['stripe'::text, 'paypal'::text]))) not valid;
+
+alter table "office_desk"."invoices" validate constraint "invoices_payment_processor_check";
+
+alter table "office_desk"."invoices" add constraint "invoices_registration_id_fkey" FOREIGN KEY (registration_id) REFERENCES office_desk.registrations(id) not valid;
+
+alter table "office_desk"."invoices" validate constraint "invoices_registration_id_fkey";
+
+alter table "office_desk"."invoices" add constraint "invoices_updated_by_fkey" FOREIGN KEY (updated_by) REFERENCES auth.users(id) not valid;
+
+alter table "office_desk"."invoices" validate constraint "invoices_updated_by_fkey";
+
+alter table "office_desk"."payments" add constraint "payments_invoice_id_fkey" FOREIGN KEY (invoice_id) REFERENCES office_desk.invoices(id) not valid;
+
+alter table "office_desk"."payments" validate constraint "payments_invoice_id_fkey";
+
+alter table "office_desk"."permission_audit_log" add constraint "permission_audit_log_actor_id_fkey" FOREIGN KEY (actor_id) REFERENCES auth.users(id) not valid;
+
+alter table "office_desk"."permission_audit_log" validate constraint "permission_audit_log_actor_id_fkey";
+
+alter table "office_desk"."permission_audit_log" add constraint "permission_audit_log_desk_id_fkey" FOREIGN KEY (desk_id) REFERENCES office_desk.office_desk(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."permission_audit_log" validate constraint "permission_audit_log_desk_id_fkey";
+
+alter table "office_desk"."permission_audit_log" add constraint "permission_audit_log_target_role_id_fkey" FOREIGN KEY (target_role_id) REFERENCES office_desk.desk_roles(id) not valid;
+
+alter table "office_desk"."permission_audit_log" validate constraint "permission_audit_log_target_role_id_fkey";
+
+alter table "office_desk"."permission_audit_log" add constraint "permission_audit_log_target_user_id_fkey" FOREIGN KEY (target_user_id) REFERENCES auth.users(id) not valid;
+
+alter table "office_desk"."permission_audit_log" validate constraint "permission_audit_log_target_user_id_fkey";
+
+alter table "office_desk"."permission_audit_log" add constraint "permission_audit_log_tenant_id_fkey" FOREIGN KEY (tenant_id) REFERENCES public.tenant_lms(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."permission_audit_log" validate constraint "permission_audit_log_tenant_id_fkey";
+
+alter table "office_desk"."user_desk_roles" add constraint "user_desk_roles_assigned_by_fkey" FOREIGN KEY (assigned_by) REFERENCES auth.users(id) not valid;
+
+alter table "office_desk"."user_desk_roles" validate constraint "user_desk_roles_assigned_by_fkey";
+
+alter table "office_desk"."user_desk_roles" add constraint "user_desk_roles_desk_id_fkey" FOREIGN KEY (desk_id) REFERENCES office_desk.office_desk(id) ON DELETE CASCADE not valid;
+
+alter table "office_desk"."user_desk_roles" validate constraint "user_desk_roles_desk_id_fkey";
+
+alter table "office_desk"."user_desk_roles" add constraint "user_desk_roles_user_id_desk_id_key" UNIQUE using index "user_desk_roles_user_id_desk_id_key";
+
+alter table "public"."chapter_progress" add constraint "chapter_progress_student_id_chapter_id_key" UNIQUE using index "chapter_progress_student_id_chapter_id_key";
+
+alter table "public"."notification_preferences" add constraint "notification_preferences_notification_type_id_fkey" FOREIGN KEY (notification_type_id) REFERENCES public.notification_types(id) not valid;
+
+alter table "public"."notification_preferences" validate constraint "notification_preferences_notification_type_id_fkey";
+
+alter table "public"."profiles" add constraint "profiles_tenant_id_fkey" FOREIGN KEY (tenant_id) REFERENCES public.tenant_devotional(id) not valid;
+
+alter table "public"."profiles" validate constraint "profiles_tenant_id_fkey";
+
+alter table "office_desk"."invoices" add constraint "invoices_status_check" CHECK ((status = ANY (ARRAY['draft'::text, 'sent'::text, 'paid'::text, 'overdue'::text, 'cancelled'::text, 'void'::text]))) not valid;
+
+alter table "office_desk"."invoices" validate constraint "invoices_status_check";
+
+alter table "public"."audit_log" add constraint "audit_log_operation_check" CHECK ((operation = ANY (ARRAY['INSERT'::text, 'UPDATE'::text, 'DELETE'::text]))) not valid;
+
+alter table "public"."audit_log" validate constraint "audit_log_operation_check";
+
+alter table "public"."chapter_progress" add constraint "chapter_progress_student_id_fkey" FOREIGN KEY (student_id) REFERENCES public.profiles(id) ON DELETE CASCADE not valid;
+
+alter table "public"."chapter_progress" validate constraint "chapter_progress_student_id_fkey";
+
+alter table "public"."profiles" add constraint "profiles_role_check" CHECK ((role = ANY (ARRAY['student'::text, 'outside_student'::text, 'family'::text, 'alumni'::text, 'teacher'::text, 'expert'::text, 'guest'::text, 'admin'::text, 'learner'::text, 'office'::text, 'front_desk'::text]))) not valid;
+
+alter table "public"."profiles" validate constraint "profiles_role_check";
+
+set check_function_bodies = off;
+
+CREATE OR REPLACE FUNCTION office_desk.create_default_roles(p_desk_id uuid, p_tenant_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+DECLARE
+  v_admin_role_id uuid;
+  v_manager_role_id uuid;
+  v_agent_role_id uuid;
+  v_viewer_role_id uuid;
+BEGIN
+  -- Admin role
+  INSERT INTO office_desk.desk_roles (desk_id, tenant_id, name, description, is_system)
+  VALUES (p_desk_id, p_tenant_id, 'admin', 'Full access to all features', true)
+  RETURNING id INTO v_admin_role_id;
+
+  -- Manager role
+  INSERT INTO office_desk.desk_roles (desk_id, tenant_id, name, description, is_system)
+  VALUES (p_desk_id, p_tenant_id, 'manager', 'Manage team and most features', true)
+  RETURNING id INTO v_manager_role_id;
+
+  -- Agent role
+  INSERT INTO office_desk.desk_roles (desk_id, tenant_id, name, description, is_system)
+  VALUES (p_desk_id, p_tenant_id, 'agent', 'Day-to-day desk operations', true)
+  RETURNING id INTO v_agent_role_id;
+
+  -- Viewer role
+  INSERT INTO office_desk.desk_roles (desk_id, tenant_id, name, description, is_system)
+  VALUES (p_desk_id, p_tenant_id, 'viewer', 'Read-only access', true)
+  RETURNING id INTO v_viewer_role_id;
+
+  -- Assign all permissions to admin
+  INSERT INTO office_desk.role_permissions (role_id, permission_id)
+  SELECT v_admin_role_id, id FROM office_desk.permissions;
+
+  -- Manager permissions (everything except settings.billing and team.edit_roles)
+  INSERT INTO office_desk.role_permissions (role_id, permission_id)
+  SELECT v_manager_role_id, id FROM office_desk.permissions
+  WHERE code NOT IN ('settings.billing', 'team.edit_roles');
+
+  -- Agent permissions (contacts, leads, invoices, reports)
+  INSERT INTO office_desk.role_permissions (role_id, permission_id)
+  SELECT v_agent_role_id, id FROM office_desk.permissions
+  WHERE category IN ('contacts', 'leads', 'invoices', 'reports')
+     OR code IN ('team.view');
+
+  -- Viewer permissions (view only)
+  INSERT INTO office_desk.role_permissions (role_id, permission_id)
+  SELECT v_viewer_role_id, id FROM office_desk.permissions
+  WHERE code LIKE '%.view' OR code = 'team.view';
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION office_desk.get_user_desk_permissions(p_user_id uuid, p_desk_id uuid)
+ RETURNS TABLE(permission_code text)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+AS $function$
+BEGIN
+  RETURN QUERY
+  SELECT DISTINCT p.code
+  FROM office_desk.user_desk_roles udr
+  JOIN office_desk.role_permissions rp ON rp.role_id = udr.role_id
+  JOIN office_desk.permissions p ON p.id = rp.permission_id
+  WHERE udr.user_id = p_user_id AND udr.desk_id = p_desk_id;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION office_desk.get_user_desk_role(p_user_id uuid, p_desk_id uuid)
+ RETURNS TABLE(role_name text, role_id uuid)
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+AS $function$
+BEGIN
+  RETURN QUERY
+  SELECT dr.name, dr.id
+  FROM office_desk.user_desk_roles udr
+  JOIN office_desk.desk_roles dr ON dr.id = udr.role_id
+  WHERE udr.user_id = p_user_id AND udr.desk_id = p_desk_id;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION office_desk.handle_new_desk_roles()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+  PERFORM office_desk.create_default_roles(NEW.id, NEW.tenant_id);
+  RETURN NEW;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION office_desk.log_role_change()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    INSERT INTO office_desk.permission_audit_log (desk_id, tenant_id, actor_id, action, target_user_id, target_role_id, details)
+    VALUES (
+      NEW.desk_id,
+      (SELECT tenant_id FROM office_desk.office_desk WHERE id = NEW.desk_id),
+      COALESCE(NEW.assigned_by, auth.uid()),
+      'role_assigned',
+      NEW.user_id,
+      NEW.role_id,
+      jsonb_build_object('assigned_at', NEW.assigned_at)
+    );
+  ELSIF TG_OP = 'DELETE' THEN
+    INSERT INTO office_desk.permission_audit_log (desk_id, tenant_id, actor_id, action, target_user_id, target_role_id, details)
+    VALUES (
+      OLD.desk_id,
+      (SELECT tenant_id FROM office_desk.office_desk WHERE id = OLD.desk_id),
+      auth.uid(),
+      'role_removed',
+      OLD.user_id,
+      OLD.role_id,
+      jsonb_build_object('removed_at', now())
+    );
+  ELSIF TG_OP = 'UPDATE' AND OLD.role_id IS DISTINCT FROM NEW.role_id THEN
+    INSERT INTO office_desk.permission_audit_log (desk_id, tenant_id, actor_id, action, target_user_id, target_role_id, details)
+    VALUES (
+      NEW.desk_id,
+      (SELECT tenant_id FROM office_desk.office_desk WHERE id = NEW.desk_id),
+      COALESCE(NEW.assigned_by, auth.uid()),
+      'role_changed',
+      NEW.user_id,
+      NEW.role_id,
+      jsonb_build_object('old_role_id', OLD.role_id, 'new_role_id', NEW.role_id)
+    );
+  END IF;
+  RETURN COALESCE(NEW, OLD);
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION office_desk.user_has_permission(p_user_id uuid, p_desk_id uuid, p_permission_code text)
+ RETURNS boolean
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+AS $function$
+DECLARE
+  v_has_permission boolean;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1
+    FROM office_desk.user_desk_roles udr
+    JOIN office_desk.role_permissions rp ON rp.role_id = udr.role_id
+    JOIN office_desk.permissions p ON p.id = rp.permission_id
+    WHERE udr.user_id = p_user_id
+      AND udr.desk_id = p_desk_id
+      AND p.code = p_permission_code
+  ) INTO v_has_permission;
+
+  RETURN v_has_permission;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION postgrest.pre_config()
+ RETURNS void
+ LANGUAGE plpgsql
+AS $function$ BEGIN PERFORM set_config('pgrst.db_schemas', 'public,graphql_public,school_desk,front_desk,office_desk', true); END; $function$
+;
+
+CREATE OR REPLACE FUNCTION public.jwt_tenant_id()
+ RETURNS uuid
+ LANGUAGE sql
+ STABLE
+ SET search_path TO 'public'
+AS $function$
+  SELECT (auth.jwt() -> 'app_metadata' ->> 'tenant_id')::uuid;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.seed_profile_tenant(p_user_id uuid, p_tenant_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+AS $function$ BEGIN PERFORM set_config('app.tenant_assignment_bypass', 'true', true); UPDATE public.profiles SET tenant_id = p_tenant_id WHERE id = p_user_id; END; $function$
+;
+
+grant delete on table "front_desk"."leads" to "anon";
+
+grant insert on table "front_desk"."leads" to "anon";
+
+grant select on table "front_desk"."leads" to "anon";
+
+grant update on table "front_desk"."leads" to "anon";
+
+grant delete on table "front_desk"."leads" to "authenticated";
+
+grant insert on table "front_desk"."leads" to "authenticated";
+
+grant update on table "front_desk"."leads" to "authenticated";
+
+grant insert on table "office_desk"."desk_invites" to "authenticated";
+
+grant select on table "office_desk"."desk_invites" to "authenticated";
+
+grant update on table "office_desk"."desk_invites" to "authenticated";
+
+grant delete on table "office_desk"."desk_roles" to "authenticated";
+
+grant insert on table "office_desk"."desk_roles" to "authenticated";
+
+grant select on table "office_desk"."desk_roles" to "authenticated";
+
+grant update on table "office_desk"."desk_roles" to "authenticated";
+
+grant insert on table "office_desk"."invoices" to "authenticated";
+
+grant select on table "office_desk"."invoices" to "authenticated";
+
+grant update on table "office_desk"."invoices" to "authenticated";
+
+grant delete on table "office_desk"."invoices" to "service_role";
+
+grant insert on table "office_desk"."invoices" to "service_role";
+
+grant references on table "office_desk"."invoices" to "service_role";
+
+grant select on table "office_desk"."invoices" to "service_role";
+
+grant trigger on table "office_desk"."invoices" to "service_role";
+
+grant truncate on table "office_desk"."invoices" to "service_role";
+
+grant update on table "office_desk"."invoices" to "service_role";
+
+grant select on table "office_desk"."payments" to "authenticated";
+
+grant delete on table "office_desk"."payments" to "service_role";
+
+grant insert on table "office_desk"."payments" to "service_role";
+
+grant references on table "office_desk"."payments" to "service_role";
+
+grant select on table "office_desk"."payments" to "service_role";
+
+grant trigger on table "office_desk"."payments" to "service_role";
+
+grant truncate on table "office_desk"."payments" to "service_role";
+
+grant update on table "office_desk"."payments" to "service_role";
+
+grant insert on table "office_desk"."permission_audit_log" to "authenticated";
+
+grant select on table "office_desk"."permission_audit_log" to "authenticated";
+
+grant select on table "office_desk"."permissions" to "authenticated";
+
+grant delete on table "office_desk"."role_permissions" to "authenticated";
+
+grant insert on table "office_desk"."role_permissions" to "authenticated";
+
+grant select on table "office_desk"."role_permissions" to "authenticated";
+
+grant delete on table "office_desk"."user_desk_roles" to "authenticated";
+
+grant insert on table "office_desk"."user_desk_roles" to "authenticated";
+
+grant select on table "office_desk"."user_desk_roles" to "authenticated";
+
+grant update on table "office_desk"."user_desk_roles" to "authenticated";
+
+grant delete on table "public"."audit_log" to "anon";
+
+grant insert on table "public"."audit_log" to "anon";
+
+grant select on table "public"."audit_log" to "anon";
+
+grant update on table "public"."audit_log" to "anon";
+
+grant delete on table "public"."audit_log" to "authenticated";
+
+grant insert on table "public"."audit_log" to "authenticated";
+
+grant update on table "public"."audit_log" to "authenticated";
+
+grant delete on table "public"."bible_plan" to "anon";
+
+grant insert on table "public"."bible_plan" to "anon";
+
+grant select on table "public"."bible_plan" to "anon";
+
+grant update on table "public"."bible_plan" to "anon";
+
+grant delete on table "public"."bible_plan" to "authenticated";
+
+grant insert on table "public"."bible_plan" to "authenticated";
+
+grant select on table "public"."bible_plan" to "authenticated";
+
+grant update on table "public"."bible_plan" to "authenticated";
+
+grant delete on table "public"."book" to "anon";
+
+grant insert on table "public"."book" to "anon";
+
+grant select on table "public"."book" to "anon";
+
+grant update on table "public"."book" to "anon";
+
+grant delete on table "public"."book" to "service_role";
+
+grant insert on table "public"."book" to "service_role";
+
+grant select on table "public"."book" to "service_role";
+
+grant update on table "public"."book" to "service_role";
+
+grant delete on table "public"."booklist" to "anon";
+
+grant insert on table "public"."booklist" to "anon";
+
+grant select on table "public"."booklist" to "anon";
+
+grant update on table "public"."booklist" to "anon";
+
+grant delete on table "public"."booklist" to "service_role";
+
+grant insert on table "public"."booklist" to "service_role";
+
+grant select on table "public"."booklist" to "service_role";
+
+grant update on table "public"."booklist" to "service_role";
+
+grant delete on table "public"."booklist_item" to "anon";
+
+grant insert on table "public"."booklist_item" to "anon";
+
+grant select on table "public"."booklist_item" to "anon";
+
+grant update on table "public"."booklist_item" to "anon";
+
+grant delete on table "public"."booklist_item" to "service_role";
+
+grant insert on table "public"."booklist_item" to "service_role";
+
+grant select on table "public"."booklist_item" to "service_role";
+
+grant update on table "public"."booklist_item" to "service_role";
+
+grant delete on table "public"."capacity_slots" to "anon";
+
+grant insert on table "public"."capacity_slots" to "anon";
+
+grant select on table "public"."capacity_slots" to "anon";
+
+grant update on table "public"."capacity_slots" to "anon";
+
+grant delete on table "public"."capacity_slots" to "authenticated";
+
+grant insert on table "public"."capacity_slots" to "authenticated";
+
+grant delete on table "public"."certificates" to "anon";
+
+grant insert on table "public"."certificates" to "anon";
+
+grant select on table "public"."certificates" to "anon";
+
+grant update on table "public"."certificates" to "anon";
+
+grant delete on table "public"."certificates" to "service_role";
+
+grant insert on table "public"."certificates" to "service_role";
+
+grant update on table "public"."certificates" to "service_role";
+
+grant delete on table "public"."chapter_progress" to "anon";
+
+grant insert on table "public"."chapter_progress" to "anon";
+
+grant select on table "public"."chapter_progress" to "anon";
+
+grant update on table "public"."chapter_progress" to "anon";
+
+grant delete on table "public"."chapters" to "anon";
+
+grant insert on table "public"."chapters" to "anon";
+
+grant select on table "public"."chapters" to "anon";
+
+grant update on table "public"."chapters" to "anon";
+
+grant delete on table "public"."chapters" to "authenticated";
+
+grant insert on table "public"."chapters" to "authenticated";
+
+grant select on table "public"."chapters" to "authenticated";
+
+grant update on table "public"."chapters" to "authenticated";
+
+grant delete on table "public"."chat_preferences" to "anon";
+
+grant insert on table "public"."chat_preferences" to "anon";
+
+grant select on table "public"."chat_preferences" to "anon";
+
+grant update on table "public"."chat_preferences" to "anon";
+
+grant delete on table "public"."chat_preferences" to "service_role";
+
+grant insert on table "public"."chat_preferences" to "service_role";
+
+grant update on table "public"."chat_preferences" to "service_role";
+
+grant delete on table "public"."consent_records" to "anon";
+
+grant insert on table "public"."consent_records" to "anon";
+
+grant select on table "public"."consent_records" to "anon";
+
+grant update on table "public"."consent_records" to "anon";
+
+grant delete on table "public"."consent_records" to "service_role";
+
+grant update on table "public"."consent_records" to "service_role";
+
+grant delete on table "public"."daily_verse" to "anon";
+
+grant insert on table "public"."daily_verse" to "anon";
+
+grant select on table "public"."daily_verse" to "anon";
+
+grant update on table "public"."daily_verse" to "anon";
+
+grant delete on table "public"."daily_verse" to "authenticated";
+
+grant insert on table "public"."daily_verse" to "authenticated";
+
+grant select on table "public"."daily_verse" to "authenticated";
+
+grant update on table "public"."daily_verse" to "authenticated";
+
+grant delete on table "public"."debit_order_history" to "anon";
+
+grant insert on table "public"."debit_order_history" to "anon";
+
+grant select on table "public"."debit_order_history" to "anon";
+
+grant update on table "public"."debit_order_history" to "anon";
+
+grant delete on table "public"."debit_order_history" to "authenticated";
+
+grant insert on table "public"."debit_order_history" to "authenticated";
+
+grant select on table "public"."debit_order_history" to "authenticated";
+
+grant update on table "public"."debit_order_history" to "authenticated";
+
+grant delete on table "public"."debit_orders" to "anon";
+
+grant insert on table "public"."debit_orders" to "anon";
+
+grant select on table "public"."debit_orders" to "anon";
+
+grant update on table "public"."debit_orders" to "anon";
+
+grant references on table "public"."debit_orders" to "authenticated";
+
+grant trigger on table "public"."debit_orders" to "authenticated";
+
+grant truncate on table "public"."debit_orders" to "authenticated";
+
+grant delete on table "public"."devotional_config" to "anon";
+
+grant insert on table "public"."devotional_config" to "anon";
+
+grant select on table "public"."devotional_config" to "anon";
+
+grant update on table "public"."devotional_config" to "anon";
+
+grant delete on table "public"."devotional_config" to "authenticated";
+
+grant insert on table "public"."devotional_config" to "authenticated";
+
+grant select on table "public"."devotional_config" to "authenticated";
+
+grant update on table "public"."devotional_config" to "authenticated";
+
+grant delete on table "public"."devotional_config" to "service_role";
+
+grant insert on table "public"."devotional_config" to "service_role";
+
+grant update on table "public"."devotional_config" to "service_role";
+
+grant delete on table "public"."devotional_item" to "anon";
+
+grant insert on table "public"."devotional_item" to "anon";
+
+grant select on table "public"."devotional_item" to "anon";
+
+grant update on table "public"."devotional_item" to "anon";
+
+grant delete on table "public"."devotional_item" to "authenticated";
+
+grant insert on table "public"."devotional_item" to "authenticated";
+
+grant select on table "public"."devotional_item" to "authenticated";
+
+grant update on table "public"."devotional_item" to "authenticated";
+
+grant delete on table "public"."devotional_item" to "service_role";
+
+grant insert on table "public"."devotional_item" to "service_role";
+
+grant update on table "public"."devotional_item" to "service_role";
+
+grant delete on table "public"."ef_call_log" to "anon";
+
+grant insert on table "public"."ef_call_log" to "anon";
+
+grant select on table "public"."ef_call_log" to "anon";
+
+grant update on table "public"."ef_call_log" to "anon";
+
+grant delete on table "public"."ef_call_log" to "authenticated";
+
+grant insert on table "public"."ef_call_log" to "authenticated";
+
+grant update on table "public"."ef_call_log" to "authenticated";
+
+grant delete on table "public"."enrichment_meta" to "anon";
+
+grant insert on table "public"."enrichment_meta" to "anon";
+
+grant select on table "public"."enrichment_meta" to "anon";
+
+grant update on table "public"."enrichment_meta" to "anon";
+
+grant delete on table "public"."enrichment_meta" to "service_role";
+
+grant insert on table "public"."enrichment_meta" to "service_role";
+
+grant update on table "public"."enrichment_meta" to "service_role";
+
+grant delete on table "public"."enrollment_leads" to "anon";
+
+grant insert on table "public"."enrollment_leads" to "anon";
+
+grant select on table "public"."enrollment_leads" to "anon";
+
+grant update on table "public"."enrollment_leads" to "anon";
+
+grant delete on table "public"."enrollment_leads" to "authenticated";
+
+grant insert on table "public"."enrollment_leads" to "authenticated";
+
+grant update on table "public"."enrollment_leads" to "authenticated";
+
+grant delete on table "public"."family_child" to "anon";
+
+grant insert on table "public"."family_child" to "anon";
+
+grant select on table "public"."family_child" to "anon";
+
+grant update on table "public"."family_child" to "anon";
+
+grant delete on table "public"."family_child" to "authenticated";
+
+grant insert on table "public"."family_child" to "authenticated";
+
+grant update on table "public"."family_child" to "authenticated";
+
+grant delete on table "public"."family_child" to "service_role";
+
+grant insert on table "public"."family_child" to "service_role";
+
+grant update on table "public"."family_child" to "service_role";
+
+grant delete on table "public"."handle_changes" to "anon";
+
+grant insert on table "public"."handle_changes" to "anon";
+
+grant select on table "public"."handle_changes" to "anon";
+
+grant update on table "public"."handle_changes" to "anon";
+
+grant delete on table "public"."handle_changes" to "authenticated";
+
+grant insert on table "public"."handle_changes" to "authenticated";
+
+grant update on table "public"."handle_changes" to "authenticated";
+
+grant delete on table "public"."handle_changes" to "service_role";
+
+grant select on table "public"."handle_changes" to "service_role";
+
+grant update on table "public"."handle_changes" to "service_role";
+
+grant delete on table "public"."invoices" to "anon";
+
+grant insert on table "public"."invoices" to "anon";
+
+grant select on table "public"."invoices" to "anon";
+
+grant update on table "public"."invoices" to "anon";
+
+grant references on table "public"."invoices" to "authenticated";
+
+grant trigger on table "public"."invoices" to "authenticated";
+
+grant truncate on table "public"."invoices" to "authenticated";
+
+grant delete on table "public"."log_events" to "anon";
+
+grant insert on table "public"."log_events" to "anon";
+
+grant select on table "public"."log_events" to "anon";
+
+grant update on table "public"."log_events" to "anon";
+
+grant delete on table "public"."log_events" to "authenticated";
+
+grant insert on table "public"."log_events" to "authenticated";
+
+grant select on table "public"."log_events" to "authenticated";
+
+grant update on table "public"."log_events" to "authenticated";
+
+grant delete on table "public"."message_reactions" to "anon";
+
+grant insert on table "public"."message_reactions" to "anon";
+
+grant select on table "public"."message_reactions" to "anon";
+
+grant update on table "public"."message_reactions" to "anon";
+
+grant delete on table "public"."message_reactions" to "service_role";
+
+grant insert on table "public"."message_reactions" to "service_role";
+
+grant select on table "public"."message_reactions" to "service_role";
+
+grant update on table "public"."message_reactions" to "service_role";
+
+grant delete on table "public"."notification_preferences" to "anon";
+
+grant insert on table "public"."notification_preferences" to "anon";
+
+grant select on table "public"."notification_preferences" to "anon";
+
+grant update on table "public"."notification_preferences" to "anon";
+
+grant delete on table "public"."notification_preferences" to "authenticated";
+
+grant delete on table "public"."notification_types" to "anon";
+
+grant insert on table "public"."notification_types" to "anon";
+
+grant select on table "public"."notification_types" to "anon";
+
+grant update on table "public"."notification_types" to "anon";
+
+grant delete on table "public"."notification_types" to "authenticated";
+
+grant insert on table "public"."notification_types" to "authenticated";
+
+grant select on table "public"."notification_types" to "authenticated";
+
+grant update on table "public"."notification_types" to "authenticated";
+
+grant delete on table "public"."notifications" to "anon";
+
+grant insert on table "public"."notifications" to "anon";
+
+grant select on table "public"."notifications" to "anon";
+
+grant update on table "public"."notifications" to "anon";
+
+grant delete on table "public"."notifications" to "authenticated";
+
+grant insert on table "public"."notifications" to "authenticated";
+
+grant update on table "public"."notifications" to "authenticated";
+
+grant delete on table "public"."notifications" to "service_role";
+
+grant update on table "public"."notifications" to "service_role";
+
+grant delete on table "public"."parent_student_link" to "anon";
+
+grant insert on table "public"."parent_student_link" to "anon";
+
+grant select on table "public"."parent_student_link" to "anon";
+
+grant update on table "public"."parent_student_link" to "anon";
+
+grant delete on table "public"."parent_student_link" to "authenticated";
+
+grant insert on table "public"."parent_student_link" to "authenticated";
+
+grant update on table "public"."parent_student_link" to "authenticated";
+
+grant delete on table "public"."parents" to "anon";
+
+grant insert on table "public"."parents" to "anon";
+
+grant select on table "public"."parents" to "anon";
+
+grant update on table "public"."parents" to "anon";
+
+grant references on table "public"."parents" to "authenticated";
+
+grant trigger on table "public"."parents" to "authenticated";
+
+grant truncate on table "public"."parents" to "authenticated";
+
+grant delete on table "public"."payments" to "anon";
+
+grant insert on table "public"."payments" to "anon";
+
+grant select on table "public"."payments" to "anon";
+
+grant update on table "public"."payments" to "anon";
+
+grant references on table "public"."payments" to "authenticated";
+
+grant trigger on table "public"."payments" to "authenticated";
+
+grant truncate on table "public"."payments" to "authenticated";
+
+grant delete on table "public"."platform_access" to "anon";
+
+grant insert on table "public"."platform_access" to "anon";
+
+grant select on table "public"."platform_access" to "anon";
+
+grant update on table "public"."platform_access" to "anon";
+
+grant delete on table "public"."platform_access" to "authenticated";
+
+grant insert on table "public"."platform_access" to "authenticated";
+
+grant update on table "public"."platform_access" to "authenticated";
+
+grant delete on table "public"."platform_access" to "service_role";
+
+grant insert on table "public"."platform_access" to "service_role";
+
+grant update on table "public"."platform_access" to "service_role";
+
+grant delete on table "public"."profiles" to "anon";
+
+grant insert on table "public"."profiles" to "anon";
+
+grant select on table "public"."profiles" to "anon";
+
+grant update on table "public"."profiles" to "anon";
+
+grant delete on table "public"."profiles" to "authenticated";
+
+grant insert on table "public"."profiles" to "authenticated";
+
+grant update on table "public"."profiles" to "authenticated";
+
+grant delete on table "public"."profiles" to "service_role";
+
+grant delete on table "public"."rate_limit_config" to "anon";
+
+grant insert on table "public"."rate_limit_config" to "anon";
+
+grant select on table "public"."rate_limit_config" to "anon";
+
+grant update on table "public"."rate_limit_config" to "anon";
+
+grant delete on table "public"."role_feature_access" to "anon";
+
+grant insert on table "public"."role_feature_access" to "anon";
+
+grant select on table "public"."role_feature_access" to "anon";
+
+grant update on table "public"."role_feature_access" to "anon";
+
+grant delete on table "public"."role_feature_access" to "authenticated";
+
+grant insert on table "public"."role_feature_access" to "authenticated";
+
+grant select on table "public"."role_feature_access" to "authenticated";
+
+grant update on table "public"."role_feature_access" to "authenticated";
+
+grant delete on table "public"."schedule_slot" to "anon";
+
+grant insert on table "public"."schedule_slot" to "anon";
+
+grant select on table "public"."schedule_slot" to "anon";
+
+grant update on table "public"."schedule_slot" to "anon";
+
+grant delete on table "public"."schedule_slot" to "service_role";
+
+grant insert on table "public"."schedule_slot" to "service_role";
+
+grant update on table "public"."schedule_slot" to "service_role";
+
+grant delete on table "public"."staff_profiles" to "anon";
+
+grant insert on table "public"."staff_profiles" to "anon";
+
+grant update on table "public"."staff_profiles" to "anon";
+
+grant delete on table "public"."staff_profiles" to "authenticated";
+
+grant delete on table "public"."student_class" to "anon";
+
+grant insert on table "public"."student_class" to "anon";
+
+grant select on table "public"."student_class" to "anon";
+
+grant update on table "public"."student_class" to "anon";
+
+grant delete on table "public"."student_class" to "authenticated";
+
+grant insert on table "public"."student_class" to "authenticated";
+
+grant update on table "public"."student_class" to "authenticated";
+
+grant delete on table "public"."student_class" to "service_role";
+
+grant insert on table "public"."student_class" to "service_role";
+
+grant delete on table "public"."students" to "anon";
+
+grant insert on table "public"."students" to "anon";
+
+grant select on table "public"."students" to "anon";
+
+grant update on table "public"."students" to "anon";
+
+grant references on table "public"."students" to "authenticated";
+
+grant trigger on table "public"."students" to "authenticated";
+
+grant truncate on table "public"."students" to "authenticated";
+
+grant delete on table "public"."suppression_records" to "anon";
+
+grant insert on table "public"."suppression_records" to "anon";
+
+grant select on table "public"."suppression_records" to "anon";
+
+grant update on table "public"."suppression_records" to "anon";
+
+grant delete on table "public"."suppression_records" to "service_role";
+
+grant update on table "public"."suppression_records" to "service_role";
+
+grant delete on table "public"."tenant_devotional" to "anon";
+
+grant insert on table "public"."tenant_devotional" to "anon";
+
+grant select on table "public"."tenant_devotional" to "anon";
+
+grant update on table "public"."tenant_devotional" to "anon";
+
+grant delete on table "public"."tenant_devotional" to "authenticated";
+
+grant insert on table "public"."tenant_devotional" to "authenticated";
+
+grant select on table "public"."tenant_devotional" to "authenticated";
+
+grant update on table "public"."tenant_devotional" to "authenticated";
+
+grant delete on table "public"."tenant_devotional" to "service_role";
+
+grant insert on table "public"."tenant_devotional" to "service_role";
+
+grant update on table "public"."tenant_devotional" to "service_role";
+
+grant delete on table "public"."tenant_lms" to "anon";
+
+grant insert on table "public"."tenant_lms" to "anon";
+
+grant select on table "public"."tenant_lms" to "anon";
+
+grant update on table "public"."tenant_lms" to "anon";
+
+grant delete on table "public"."tenant_lms" to "authenticated";
+
+grant insert on table "public"."tenant_lms" to "authenticated";
+
+grant select on table "public"."tenant_lms" to "authenticated";
+
+grant update on table "public"."tenant_lms" to "authenticated";
+
+grant delete on table "public"."tenant_lms" to "service_role";
+
+grant insert on table "public"."tenant_lms" to "service_role";
+
+grant update on table "public"."tenant_lms" to "service_role";
+
+grant delete on table "public"."tenant_mobile" to "anon";
+
+grant insert on table "public"."tenant_mobile" to "anon";
+
+grant select on table "public"."tenant_mobile" to "anon";
+
+grant update on table "public"."tenant_mobile" to "anon";
+
+grant delete on table "public"."tenant_mobile" to "authenticated";
+
+grant insert on table "public"."tenant_mobile" to "authenticated";
+
+grant select on table "public"."tenant_mobile" to "authenticated";
+
+grant update on table "public"."tenant_mobile" to "authenticated";
+
+grant delete on table "public"."tenant_mobile" to "service_role";
+
+grant insert on table "public"."tenant_mobile" to "service_role";
+
+grant update on table "public"."tenant_mobile" to "service_role";
+
+grant delete on table "public"."terms" to "anon";
+
+grant insert on table "public"."terms" to "anon";
+
+grant select on table "public"."terms" to "anon";
+
+grant update on table "public"."terms" to "anon";
+
+grant delete on table "public"."terms" to "service_role";
+
+grant insert on table "public"."terms" to "service_role";
+
+grant update on table "public"."terms" to "service_role";
+
+grant delete on table "public"."video_of_day" to "anon";
+
+grant insert on table "public"."video_of_day" to "anon";
+
+grant select on table "public"."video_of_day" to "anon";
+
+grant update on table "public"."video_of_day" to "anon";
+
+grant delete on table "public"."video_of_day" to "authenticated";
+
+grant insert on table "public"."video_of_day" to "authenticated";
+
+grant select on table "public"."video_of_day" to "authenticated";
+
+grant update on table "public"."video_of_day" to "authenticated";
+
+grant delete on table "public"."vlog" to "anon";
+
+grant insert on table "public"."vlog" to "anon";
+
+grant select on table "public"."vlog" to "anon";
+
+grant update on table "public"."vlog" to "anon";
+
+grant delete on table "public"."vlog" to "authenticated";
+
+grant insert on table "public"."vlog" to "authenticated";
+
+grant select on table "public"."vlog" to "authenticated";
+
+grant update on table "public"."vlog" to "authenticated";
+
+grant delete on table "school_desk"."announcement" to "anon";
+
+grant insert on table "school_desk"."announcement" to "anon";
+
+grant select on table "school_desk"."announcement" to "anon";
+
+grant update on table "school_desk"."announcement" to "anon";
+
+grant delete on table "school_desk"."conversation_members" to "anon";
+
+grant insert on table "school_desk"."conversation_members" to "anon";
+
+grant select on table "school_desk"."conversation_members" to "anon";
+
+grant update on table "school_desk"."conversation_members" to "anon";
+
+grant delete on table "school_desk"."conversations" to "anon";
+
+grant insert on table "school_desk"."conversations" to "anon";
+
+grant select on table "school_desk"."conversations" to "anon";
+
+grant update on table "school_desk"."conversations" to "anon";
+
+grant delete on table "school_desk"."courses" to "anon";
+
+grant insert on table "school_desk"."courses" to "anon";
+
+grant select on table "school_desk"."courses" to "anon";
+
+grant update on table "school_desk"."courses" to "anon";
+
+grant delete on table "school_desk"."courses" to "authenticated";
+
+grant insert on table "school_desk"."courses" to "authenticated";
+
+grant update on table "school_desk"."courses" to "authenticated";
+
+grant delete on table "school_desk"."enrollments" to "anon";
+
+grant insert on table "school_desk"."enrollments" to "anon";
+
+grant select on table "school_desk"."enrollments" to "anon";
+
+grant update on table "school_desk"."enrollments" to "anon";
+
+grant delete on table "school_desk"."enrollments" to "authenticated";
+
+grant insert on table "school_desk"."enrollments" to "authenticated";
+
+grant update on table "school_desk"."enrollments" to "authenticated";
+
+grant delete on table "school_desk"."messages" to "anon";
+
+grant insert on table "school_desk"."messages" to "anon";
+
+grant select on table "school_desk"."messages" to "anon";
+
+grant update on table "school_desk"."messages" to "anon";
+
+grant delete on table "school_desk"."report_cards" to "anon";
+
+grant insert on table "school_desk"."report_cards" to "anon";
+
+grant select on table "school_desk"."report_cards" to "anon";
+
+grant update on table "school_desk"."report_cards" to "anon";
+
+
+  create policy "desk_invites_insert"
+  on "office_desk"."desk_invites"
+  as permissive
+  for insert
+  to public
+with check ((office_desk.user_has_permission(auth.uid(), desk_id, 'team.invite'::text) AND (invited_by = auth.uid()) AND (tenant_id = ( SELECT ((auth.jwt() ->> 'tenant_id'::text))::uuid AS uuid))));
+
+
+
+  create policy "desk_invites_select"
+  on "office_desk"."desk_invites"
+  as permissive
+  for select
+  to public
+using (((desk_id IN ( SELECT ud.desk_id
+   FROM office_desk.user_desks ud
+  WHERE (ud.user_id = auth.uid()))) AND (tenant_id = ( SELECT ((auth.jwt() ->> 'tenant_id'::text))::uuid AS uuid))));
+
+
+
+  create policy "desk_invites_update"
+  on "office_desk"."desk_invites"
+  as permissive
+  for update
+  to public
+using ((desk_id IN ( SELECT ud.desk_id
+   FROM office_desk.user_desks ud
+  WHERE (ud.user_id = auth.uid()))));
+
+
+
+  create policy "desk_roles_insert"
+  on "office_desk"."desk_roles"
+  as permissive
+  for insert
+  to public
+with check (((desk_id IN ( SELECT udr.desk_id
+   FROM (office_desk.user_desk_roles udr
+     JOIN office_desk.desk_roles dr ON ((dr.id = udr.role_id)))
+  WHERE ((udr.user_id = auth.uid()) AND (dr.name = ANY (ARRAY['admin'::text, 'manager'::text]))))) AND (tenant_id = ( SELECT ((auth.jwt() ->> 'tenant_id'::text))::uuid AS uuid))));
+
+
+
+  create policy "desk_roles_select"
+  on "office_desk"."desk_roles"
+  as permissive
+  for select
+  to public
+using (((desk_id IN ( SELECT ud.desk_id
+   FROM office_desk.user_desks ud
+  WHERE (ud.user_id = auth.uid()))) AND (tenant_id = ( SELECT ((auth.jwt() ->> 'tenant_id'::text))::uuid AS uuid))));
+
+
+
+  create policy "inv_office_insert"
+  on "office_desk"."invoices"
+  as permissive
+  for insert
+  to authenticated
+with check (((tenant_id = public.jwt_tenant_id()) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = ANY (ARRAY['office'::text, 'admin'::text])))))));
+
+
+
+  create policy "inv_office_select"
+  on "office_desk"."invoices"
+  as permissive
+  for select
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (deleted_at IS NULL) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = ANY (ARRAY['office'::text, 'admin'::text])))))));
+
+
+
+  create policy "inv_office_update"
+  on "office_desk"."invoices"
+  as permissive
+  for update
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = ANY (ARRAY['office'::text, 'admin'::text])))))));
+
+
+
+  create policy "office_invoices_admin_select"
+  on "office_desk"."invoices"
+  as permissive
+  for select
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (deleted_at IS NULL) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))));
+
+
+
+  create policy "office_invoices_office_select"
+  on "office_desk"."invoices"
+  as permissive
+  for select
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (deleted_at IS NULL) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'office'::text))))));
+
+
+
+  create policy "office_payments_admin_select"
+  on "office_desk"."payments"
+  as permissive
+  for select
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (deleted_at IS NULL) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))));
+
+
+
+  create policy "office_payments_office_select"
+  on "office_desk"."payments"
+  as permissive
+  for select
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (deleted_at IS NULL) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'office'::text))))));
+
+
+
+  create policy "permission_audit_log_insert"
+  on "office_desk"."permission_audit_log"
+  as permissive
+  for insert
+  to public
+with check (((desk_id IN ( SELECT ud.desk_id
+   FROM office_desk.user_desks ud
+  WHERE (ud.user_id = auth.uid()))) AND (tenant_id = ( SELECT ((auth.jwt() ->> 'tenant_id'::text))::uuid AS uuid)) AND (actor_id = auth.uid())));
+
+
+
+  create policy "permission_audit_log_select"
+  on "office_desk"."permission_audit_log"
+  as permissive
+  for select
+  to public
+using (((desk_id IN ( SELECT ud.desk_id
+   FROM office_desk.user_desks ud
+  WHERE (ud.user_id = auth.uid()))) AND (tenant_id = ( SELECT ((auth.jwt() ->> 'tenant_id'::text))::uuid AS uuid))));
+
+
+
+  create policy "permissions_select"
+  on "office_desk"."permissions"
+  as permissive
+  for select
+  to public
+using (true);
+
+
+
+  create policy "role_permissions_delete"
+  on "office_desk"."role_permissions"
+  as permissive
+  for delete
+  to public
+using ((role_id IN ( SELECT udr.desk_id
+   FROM (office_desk.user_desk_roles udr
+     JOIN office_desk.desk_roles dr ON ((dr.id = udr.role_id)))
+  WHERE ((udr.user_id = auth.uid()) AND (dr.name = 'admin'::text)))));
+
+
+
+  create policy "role_permissions_insert"
+  on "office_desk"."role_permissions"
+  as permissive
+  for insert
+  to public
+with check ((role_id IN ( SELECT udr.desk_id
+   FROM (office_desk.user_desk_roles udr
+     JOIN office_desk.desk_roles dr ON ((dr.id = udr.role_id)))
+  WHERE ((udr.user_id = auth.uid()) AND (dr.name = 'admin'::text)))));
+
+
+
+  create policy "role_permissions_select"
+  on "office_desk"."role_permissions"
+  as permissive
+  for select
+  to public
+using ((role_id IN ( SELECT dr.id
+   FROM office_desk.desk_roles dr
+  WHERE (dr.desk_id IN ( SELECT ud.desk_id
+           FROM office_desk.user_desks ud
+          WHERE (ud.user_id = auth.uid()))))));
+
+
+
+  create policy "user_desk_roles_delete"
+  on "office_desk"."user_desk_roles"
+  as permissive
+  for delete
+  to public
+using ((desk_id IN ( SELECT udr.desk_id
+   FROM (office_desk.user_desk_roles udr
+     JOIN office_desk.desk_roles dr ON ((dr.id = udr.role_id)))
+  WHERE ((udr.user_id = auth.uid()) AND (dr.name = 'admin'::text)))));
+
+
+
+  create policy "user_desk_roles_insert"
+  on "office_desk"."user_desk_roles"
+  as permissive
+  for insert
+  to public
+with check ((desk_id IN ( SELECT udr.desk_id
+   FROM (office_desk.user_desk_roles udr
+     JOIN office_desk.desk_roles dr ON ((dr.id = udr.role_id)))
+  WHERE ((udr.user_id = auth.uid()) AND (dr.name = ANY (ARRAY['admin'::text, 'manager'::text]))))));
+
+
+
+  create policy "user_desk_roles_select"
+  on "office_desk"."user_desk_roles"
+  as permissive
+  for select
+  to public
+using ((desk_id IN ( SELECT ud.desk_id
+   FROM office_desk.user_desks ud
+  WHERE (ud.user_id = auth.uid()))));
+
+
+
+  create policy "user_desk_roles_update"
+  on "office_desk"."user_desk_roles"
+  as permissive
+  for update
+  to public
+using ((desk_id IN ( SELECT udr.desk_id
+   FROM (office_desk.user_desk_roles udr
+     JOIN office_desk.desk_roles dr ON ((dr.id = udr.role_id)))
+  WHERE ((udr.user_id = auth.uid()) AND (dr.name = 'admin'::text)))));
+
+
+
+  create policy "Admins can view all progress"
+  on "public"."chapter_progress"
+  as permissive
+  for select
+  to public
+using ((EXISTS ( SELECT 1
+   FROM public.profiles
+  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'admin'::text)))));
+
+
+
+  create policy "Students can view their own progress"
+  on "public"."chapter_progress"
+  as permissive
+  for select
+  to public
+using ((auth.uid() = student_id));
+
+
+
+  create policy "Teachers can view progress for their courses"
+  on "public"."chapter_progress"
+  as permissive
+  for select
+  to public
+using ((EXISTS ( SELECT 1
+   FROM ((school_desk.courses c
+     JOIN public.profiles p ON ((c.teacher_id = p.id)))
+     JOIN public.chapters ch ON ((ch.course_id = c.id)))
+  WHERE ((ch.id = chapter_progress.chapter_id) AND (p.id = auth.uid()) AND (p.role = ANY (ARRAY['teacher'::text, 'admin'::text]))))));
+
+
+
+  create policy "service_role_insert_preferences"
+  on "public"."notification_preferences"
+  as permissive
+  for insert
+  to public
+with check ((auth.role() = 'service_role'::text));
+
+
+
+  create policy "students_manage_preferences"
+  on "public"."notification_preferences"
+  as permissive
+  for all
+  to public
+using ((student_id = auth.uid()));
+
+
+
+  create policy "service_role_insert_notifications"
+  on "public"."notifications"
+  as permissive
+  for insert
+  to public
+with check ((auth.role() = 'service_role'::text));
+
+
+
+  create policy "students_update_own_notifications"
+  on "public"."notifications"
+  as permissive
+  for update
+  to public
+using ((student_id = auth.uid()))
+with check ((student_id = auth.uid()));
+
+
+
+  create policy "students_view_own_notifications"
+  on "public"."notifications"
+  as permissive
+  for select
+  to public
+using ((student_id = auth.uid()));
+
+
+
+  create policy "leads_office_select"
+  on "front_desk"."leads"
+  as permissive
+  for select
+  to authenticated
+using (((tenant_id = (((auth.jwt() -> 'app_metadata'::text) ->> 'tenant_id'::text))::uuid) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'office'::text)))) AND (archived_at IS NULL)));
+
+
+
+  create policy "inv_admin_all"
+  on "office_desk"."invoices"
+  as permissive
+  for all
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))));
+
+
+
+  create policy "cert_admin_all"
+  on "public"."certificates"
+  as permissive
+  for all
+  to authenticated
+using (((tenant_id = public.jwt_tenant_id()) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))))
+with check (((tenant_id = public.jwt_tenant_id()) AND (EXISTS ( SELECT 1
+   FROM public.profiles p
+  WHERE ((p.id = auth.uid()) AND (p.role = 'admin'::text))))));
+
+
+CREATE TRIGGER trg_new_desk_roles AFTER INSERT ON office_desk.office_desk FOR EACH ROW EXECUTE FUNCTION office_desk.handle_new_desk_roles();
+
+CREATE TRIGGER trg_role_change_log AFTER INSERT OR DELETE OR UPDATE ON office_desk.user_desk_roles FOR EACH ROW EXECUTE FUNCTION office_desk.log_role_change();
+
+CREATE TRIGGER trg_chapter_progress_delete_guard BEFORE DELETE ON public.chapter_progress FOR EACH ROW EXECUTE FUNCTION public.check_chapter_progress_delete_allowed();
+
+CREATE TRIGGER trg_chapter_progress_sequence BEFORE INSERT ON public.chapter_progress FOR EACH ROW EXECUTE FUNCTION public.check_chapter_sequence_completion();
+
+CREATE TRIGGER trg_invoices_updated_at BEFORE UPDATE ON office_desk.invoices FOR EACH ROW EXECUTE FUNCTION office_desk.update_invoices_timestamp();
+
+
+

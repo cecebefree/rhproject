@@ -1,0 +1,230 @@
+<!DOCTYPE html><html class="light h-full stitch-anim-fade-in" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Classes</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&amp;family=Source+Sans+3:ital,wght@0,200..900;1,200..900&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#1b1b1b",
+                        "on-primary": "#ffffff",
+                        "tertiary-container": "#1b1b1b",
+                        "surface-tint": "#5e5e5e",
+                        "surface": "#F8F7F4",
+                        "on-tertiary-container": "#848484",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#e2e2e2",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#4c4546",
+                        "secondary": "#0057c0",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#1b1b1b",
+                        "primary-fixed-dim": "#c6c6c6",
+                        "surface-container-high": "#e8e8e8",
+                        "secondary-container": "#006ff0",
+                        "tertiary": "#000000",
+                        "surface-container-low": "#f3f3f3",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dadada",
+                        "on-tertiary-fixed-variant": "#474747",
+                        "background": "#F8F7F4",
+                        "foreground-dark": "#FFFFFF",
+                        "surface-container-highest": "#e2e2e2",
+                        "geist-blue": "#0070F3",
+                        "on-secondary-container": "#fefcff",
+                        "surface-bright": "#f9f9f9",
+                        "border-subtle": "#EAEAEA",
+                        "on-secondary-fixed-variant": "#004397",
+                        "secondary-fixed-dim": "#aec6ff",
+                        "surface-variant": "#e2e2e2",
+                        "on-primary-fixed-variant": "#474747",
+                        "surface-container": "#eeeeee",
+                        "secondary-fixed": "#d8e2ff",
+                        "on-background": "#1a1c1c",
+                        "tertiary-fixed-dim": "#c6c6c6",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#2f3131",
+                        "outline": "#7e7576",
+                        "primary-container": "#1b1b1b",
+                        "inverse-primary": "#c6c6c6",
+                        "on-secondary-fixed": "#001a43",
+                        "background-dark": "#000000",
+                        "inverse-on-surface": "#f0f1f1",
+                        "on-primary-container": "#848484",
+                        "outline-variant": "#cfc4c5",
+                        "on-surface": "#1a1c1c",
+                        "primary": "#000000",
+                        "tertiary-fixed": "#e2e2e2",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "brand-red": "#c22d1f",
+                        "brand-navy": "#273946",
+                        "brand-navy-light": "#3b5163"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "app": "32px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "container-max": "1200px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "20px",
+                        "gutter": "16px",
+                        "item-height": "72px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Source Sans 3", "sans-serif"],
+                        "headline-lg": ["EB Garamond", "serif"],
+                        "label-md": ["Source Sans 3", "sans-serif"],
+                        "body-lg": ["Source Sans 3", "sans-serif"],
+                        "display-lg": ["EB Garamond", "serif"],
+                        "headline-lg-mobile": ["EB Garamond", "serif"],
+                        "headline-md": ["EB Garamond", "serif"],
+                        "code-sm": ["JetBrains Mono", "monospace"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.04em", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "code-sm": ["12px", {"lineHeight": "18px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Source Sans 3', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        .font-serif-custom { font-family: 'EB Garamond', serif; font-weight: 400; }
+        
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar { display: none; }
+        
+        .nav-icon {
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+    </style>
+</head>
+<body class="text-on-surface antialiased h-full">
+<div class="device-container relative pb-20 bg-background"><div class="dynamic-island"></div>
+<!-- TopAppBar -->
+<header class="flex items-center justify-between pt-16 pb-4 w-full sticky top-0 z-40 bg-background px-6">
+<h1 class="text-brand-navy font-serif-custom font-normal tracking-tight" style="font-size: 36px; line-height: 1;">Classes</h1>
+<button class="text-brand-navy hover:opacity-80 transition-opacity focus:outline-none">
+<span class="material-symbols-outlined text-[28px]">calendar_month</span>
+</button>
+</header>
+<!-- Main Content Scrollable Area -->
+<main class="flex-1 w-full px-5 pb-24">
+<p class="text-[11px] tracking-normal text-gray-400 mb-6 font-light px-1 font-body-md uppercase">TODAY'S CLASSES</p>
+<!-- Primary CTA -->
+<button class="w-full bg-brand-red text-white rounded-[16px] py-[14px] px-6 flex items-center justify-center gap-2 mb-6 hover:opacity-90 transition-opacity shadow-sm">
+<svg class="w-5 h-5 nav-icon" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 20V10a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><path d="M7 22v-5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v5"></path></svg>
+<span class="font-body-md text-[16px] font-medium tracking-wide">Go to Class</span>
+</button>
+<!-- Section 1: COMING UP IN CLASSES -->
+<section class="bg-white rounded-[16px] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] mb-6 overflow-hidden">
+<div class="bg-brand-navy px-4 py-4 flex justify-between items-center">
+<h2 class="text-white text-xs tracking-[0.1em] uppercase font-body-md text-[11px]">COMING UP IN CLASSES</h2>
+</div>
+<div class="flex flex-col">
+<!-- Item 1 -->
+<div class="flex items-center justify-between h-[72px] px-4 border-b border-gray-50 group hover:bg-gray-50 transition-colors relative py-4">
+<div class="absolute left-4 top-4 bottom-4 w-[2px] bg-brand-red"></div>
+<div class="flex flex-col justify-center pl-4">
+<span class="font-body-md text-gray-900 text-[13px]">Mathematics</span>
+<span class="font-body-md text-[13px] text-gray-400 mt-0.5">Mr. Olivier · Class A</span>
+</div>
+<span class="bg-brand-red text-white text-[10px] font-medium px-2 py-0.5 rounded-full uppercase tracking-wider font-body-md">LIVE</span>
+</div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between h-[72px] px-4 border-b border-gray-50 group hover:bg-gray-50 transition-colors relative py-4">
+<div class="absolute left-4 top-4 bottom-4 w-[2px] bg-orange-400"></div>
+<div class="flex flex-col justify-center pl-4">
+<span class="font-body-md text-gray-900 text-[13px]">Physical Science</span>
+<span class="font-body-md text-[13px] text-gray-400 mt-0.5">Ms. Pretorius · Class A</span>
+</div>
+<span class="font-body-md text-[13px] text-gray-500">11:00</span>
+</div>
+<!-- Item 3 -->
+<div class="flex items-center justify-between h-[72px] px-4 border-b border-gray-50 group hover:bg-gray-50 transition-colors relative py-4">
+<div class="absolute left-4 top-4 bottom-4 w-[2px] bg-blue-800"></div>
+<div class="flex flex-col justify-center pl-4">
+<span class="font-body-md text-gray-900 text-[13px]">English First Language</span>
+<span class="font-body-md text-[13px] text-gray-400 mt-0.5">Mr. Johnson · Class A</span>
+</div>
+<span class="font-body-md text-[13px] text-gray-500">13:00</span>
+</div>
+<!-- Item 4 -->
+<div class="flex items-center justify-between h-[72px] px-4 group hover:bg-gray-50 transition-colors relative py-4">
+<div class="absolute left-4 top-4 bottom-4 w-[2px] bg-gray-400"></div>
+<div class="flex flex-col justify-center pl-4">
+<span class="font-body-md text-gray-900 text-[13px]">Culinary Club</span>
+<span class="font-body-md text-[13px] text-gray-400 mt-0.5">Chef Tanaka · Tokyo</span>
+</div>
+<span class="font-body-md text-[13px] text-gray-500">15:30</span>
+</div>
+</div>
+</section>
+<!-- Section 2: SUP CLASSES -->
+<section class="bg-brand-navy rounded-[16px] p-5 shadow-sm mb-4">
+<h2 class="text-[11px] tracking-[0.1em] text-gray-400 uppercase mb-4 font-body-md">SUP CLASSES</h2>
+<div class="flex space-x-4">
+<!-- Action Card 1 -->
+<button class="flex-1 bg-brand-navy-light rounded-2xl py-5 flex flex-col items-center justify-center hover:bg-opacity-80 transition-opacity"><span class="material-symbols-outlined text-gray-300 text-[28px] mb-2 font-light">star</span><span class="text-[10px] text-gray-300 tracking-[0.1em] uppercase font-body-md">Enrichment</span></button>
+<!-- Action Card 2 -->
+<button class="flex-1 bg-brand-navy-light rounded-2xl py-5 flex flex-col items-center justify-center hover:bg-opacity-80 transition-opacity"><span class="material-symbols-outlined text-gray-300 text-[28px] mb-2 font-light">verified</span><span class="text-[10px] text-gray-300 tracking-[0.1em] uppercase font-body-md">Clubs</span></button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<div class="fixed bottom-0 left-0 w-full z-50">
+<nav class="bg-white/90 backdrop-blur-md border-t border-gray-100 pb-8 pt-4 px-6 flex justify-between items-center shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] rounded-b-[40px]"><!-- Home -->
+<a class="flex flex-col items-center text-gray-400 hover:text-brand-navy transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">home</span>
+<span class="text-[10px] font-body-md tracking-wide">Home</span>
+</a>
+<!-- Class (Active) -->
+<a class="flex flex-col items-center text-brand-navy" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">work</span>
+<span class="text-[10px] font-body-md font-medium tracking-wide">Class</span>
+</a>
+<!-- Hub -->
+<a class="flex flex-col items-center text-gray-400 hover:text-brand-navy transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">explore</span>
+<span class="text-[10px] font-body-md tracking-wide">Hub</span>
+</a>
+<!-- Chat -->
+<a class="flex flex-col items-center text-gray-400 hover:text-brand-navy transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">chat_bubble</span>
+<span class="text-[10px] font-body-md tracking-wide">Chat</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center text-gray-400 hover:text-brand-navy transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">person</span>
+<span class="text-[10px] font-body-md tracking-wide">Profile</span>
+</a></nav>
+</div>
+</div>
+
+
+</body></html>

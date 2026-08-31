@@ -124,7 +124,7 @@ values ('a0000000-0000-0000-0000-0000000000a1', 'guardian@test.local', 'authenti
 on conflict (id) do nothing;
 
 insert into public.profiles (id, name, role, registration_status, consent_given, tenant_id)
-values ('a0000000-0000-0000-0000-0000000000a1', 'Test Guardian', 'family', 'approved', true,
+values ('a0000000-0000-0000-0000-0000000000a1', 'Test Guardian', 'adult', 'approved', true,
         '00000000-0000-0000-0000-000000000001')
 on conflict (id) do update
   set role = excluded.role,
@@ -144,7 +144,7 @@ values ('a0000000-0000-0000-0000-0000000000a2', 'guardian2@test.local', 'authent
 on conflict (id) do nothing;
 
 insert into public.profiles (id, name, role, registration_status, consent_given, tenant_id)
-values ('a0000000-0000-0000-0000-0000000000a2', 'Unlinked Guardian', 'family', 'approved', true,
+values ('a0000000-0000-0000-0000-0000000000a2', 'Unlinked Guardian', 'adult', 'approved', true,
         '00000000-0000-0000-0000-000000000001')
 on conflict (id) do update
   set role = excluded.role,
