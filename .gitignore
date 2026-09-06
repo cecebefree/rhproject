@@ -15,6 +15,9 @@ dist-ssr
 .env.save
 .env.*
 
+# Next.js
+.next/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -37,3 +40,4 @@ v0-cecebefree-*/
 
 .local-backups/
 test-results/
+test_results.txt
