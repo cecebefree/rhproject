@@ -2,7 +2,8 @@
 // Per-child tabs, ledger — WIRED to real DB
 
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { EmptyState } from '../../src/components/EmptyState';
 import { LoadingState } from '../../src/components/LoadingState';
 import {
@@ -16,6 +17,7 @@ import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 
 export default function FamilyScreen() {
+  const router = useRouter();
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,12 +71,16 @@ export default function FamilyScreen() {
                 <Text style={styles.ledgerNote}>No invoices yet</Text>
               ) : (
                 invoices.slice(0, 3).map((inv) => (
-                  <View key={inv.id} style={styles.ledgerRow}>
+                  <TouchableOpacity
+                    key={inv.id}
+                    style={styles.ledgerRow}
+                    onPress={() => router.push(`/invoice-detail?id=${inv.id}`)}
+                  >
                     <Text style={styles.ledgerLabel}>{inv.description || 'Invoice'}</Text>
                     <Text style={styles.ledgerValue}>
                       R {inv.amount.toLocaleString()} — {inv.status}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 ))
               )}
             </View>

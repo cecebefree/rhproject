@@ -80,9 +80,18 @@ export default function TabLayout() {
         <Tabs.Screen name="family" options={{ href: null }} />
         <Tabs.Screen name="group-chat" options={{ href: null }} />
         <Tabs.Screen name="group-info" options={{ href: null }} />
-        <Tabs.Screen name="certificates" options={{ href: null }} />
+        <Tabs.Screen name="certificates" options={{
+          href: null,
+          title: 'Certificates',
+          tabBarIcon: ({ color, size }) => (
+            <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+              <Path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+            </Svg>
+          ),
+        }} />
         <Tabs.Screen name="class-detail" options={{ href: null }} />
         <Tabs.Screen name="hub-detail" options={{ href: null }} />
+        <Tabs.Screen name="invoice-detail" options={{ href: null }} />
       </Tabs>
     </Suspense>
   );
