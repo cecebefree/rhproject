@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '../components/AdminLayout';
+import { ActivityLogViewer } from '../components/ActivityLogViewer';
 import { fetchServiceDeskStats, type DeskStats } from '../lib/serviceDeskClient';
 
 export default function ServiceDeskPage() {
@@ -14,8 +15,8 @@ export default function ServiceDeskPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <AdminLayout activeDesk="school"><div className="p-8 text-center">Loading...</div></AdminLayout>;
-  if (!stats) return <AdminLayout activeDesk="school"><div className="p-8 text-center text-red-600">Failed to load stats</div></AdminLayout>;
+  if (loading) return <AdminLayout activeDesk="school-desk"><div className="p-8 text-center">Loading...</div></AdminLayout>;
+  if (!stats) return <AdminLayout activeDesk="school-desk"><div className="p-8 text-center text-red-600">Failed to load stats</div></AdminLayout>;
 
   const DESK_SUMMARIES = [
     {
@@ -109,10 +110,7 @@ export default function ServiceDeskPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="rounded-xl p-5" style={{ backgroundColor: '#ffffff', border: '1px solid rgba(195,199,204,0.3)' }}>
-        <h3 className="text-sm font-semibold mb-4" style={{ color: '#1A242B' }}>Recent Activity Across All Desks</h3>
-        <p className="text-sm" style={{ color: '#54626C' }}>Activity feed coming soon — will show real-time updates from all desks.</p>
-      </div>
+      <ActivityLogViewer limit={20} />
     </AdminLayout>
   );
 }

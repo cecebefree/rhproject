@@ -1,6 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { GlobalSearch } from '../features/lms/components/GlobalSearch';
+import { NotificationCenter } from '../features/office-desk/components/NotificationCenter';
 
 export type DeskRole = 'service-desk' | 'front-desk' | 'office-desk' | 'school-desk' | 'crm';
 
@@ -32,6 +33,7 @@ const FOOTER_ITEMS = [
 
 export function AdminLayout({ children, activeDesk }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
   const isSuperAdmin = location.pathname.startsWith('/service/');
   const visibleKeys = isSuperAdmin
@@ -201,7 +203,10 @@ export function AdminLayout({ children, activeDesk }: AdminLayoutProps) {
           </div>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-4" style={{ color: '#112430' }}>
-              <button className="hover:bg-gray-100 transition-colors duration-200 p-2 rounded-full relative cursor-pointer">
+              <button
+                className="hover:bg-gray-100 transition-colors duration-200 p-2 rounded-full relative cursor-pointer"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+              >
                 <span className="material-symbols-outlined">notifications</span>
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: '#C8281E', border: '1px solid #faf9f6' }} />
               </button>
@@ -229,6 +234,9 @@ export function AdminLayout({ children, activeDesk }: AdminLayoutProps) {
           {children}
         </main>
       </div>
+
+      {/* Notification Center */}
+      {notificationsOpen && <NotificationCenter onClose={() => setNotificationsOpen(false)} />}
     </div>
   );
 }
