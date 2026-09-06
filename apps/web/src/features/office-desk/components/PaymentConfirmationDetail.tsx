@@ -255,7 +255,7 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
                   <p className="text-sm text-gray-900">{registration.student_email}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Course</p>
+                  <p className="text-xs text-gray-500">Program</p>
                   <p className="text-sm text-gray-900">{registration.course_name || "—"}</p>
                 </div>
                 <div>

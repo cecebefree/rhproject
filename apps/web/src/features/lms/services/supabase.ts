@@ -834,7 +834,7 @@ export async function getStudentRoster(courseId: string) {
 
 export async function getTeacherCourses(teacherId: string) {
   return supabaseUntyped
-    .from('school_desk.courses')
+    .from('school_desk.programs')
     .select('id, title, status')
     .eq('teacher_id', teacherId)
     .in('status', ['published', 'active']);

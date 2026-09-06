@@ -5,8 +5,8 @@
 | Entity | Description | Key Attributes |
 |--------|-------------|----------------|
 | User | Base user (student, instructor, or admin) | id, email, name, role, created_at |
-| Course | A purchasable learning product | id, title, description, price, status, instructor_id, created_at, updated_at |
-| Chapter | Video unit within a course | id, title, description, video_url, order_index, course_id, created_at |
+| Curriculum | A purchasable learning product | id, title, description, price, status, instructor_id, created_at, updated_at |
+| Chapter | Video unit within a curriculum | id, title, description, video_url, order_index, course_id, created_at |
 | Enrollment | Student's purchased access | id, student_id, course_id, purchased_at, payment_reference |
 | ChapterProgress | Student's completion of a chapter | id, student_id, chapter_id, completed_at |
 | Registration | Admin audit view | id, student_id, course_id, enrolled_at, payment_status |
@@ -14,13 +14,13 @@
 ## Entity Relationships
 
 ```
-User (1) ──┬── (many) Course          [instructor_id]
+User (1) ──┬── (many) Curriculum     [instructor_id]
            ├── (many) Enrollment        [student_id]
            ├── (many) ChapterProgress  [student_id]
            └── (many) Registration     [student_id]
 
-Course (1) ──┬── (many) Chapter        [course_id]
-            └── (many) Enrollment      [course_id]
+Curriculum (1) ──┬── (many) Chapter        [course_id]
+             └── (many) Enrollment      [course_id]
 
 Chapter (1) ─── (many) ChapterProgress [chapter_id]
 ```
@@ -213,12 +213,12 @@ CREATE POLICY "Admins can view all progress" ON public.chapter_progress
 | courses | status | Must be 'draft' or 'published' |
 | chapters | title | Required, non-empty |
 | chapters | video_url | Required, valid URL format |
-| chapters | order_index | Must be >= 0, unique per course |
+| chapters | order_index | Must be >= 0, unique per curriculum |
 | enrollments | payment_reference | Required (after successful payment) |
 
 ## State Transitions
 
-### Course Status
+### Curriculum Status
 ```
 draft → published (instructor publishes)
 published → draft (instructor unpublishes - optional, not in spec)

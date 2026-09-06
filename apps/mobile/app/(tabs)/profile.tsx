@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { EditProfileModal } from '../../src/components/EditProfileModal';
+import { AttendanceSection } from '../../src/components/AttendanceSection';
 import { EnrolledClassesList } from '../../src/components/EnrolledClassesList';
 import { LoadingState } from '../../src/components/LoadingState';
 import { PaymentHistoryList } from '../../src/components/PaymentHistoryList';
@@ -214,7 +215,7 @@ export default function ProfileScreen() {
   // ─── RENDER ───
   return (
     <>
-    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1, paddingBottom: 100 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 100 }}>
       {/* Avatar + Name */}
       <View style={styles.profileHeader}>
         <View style={styles.avatar}>
@@ -361,6 +362,16 @@ function StudentSections({
         </View>
         <View style={styles.sectionCardBody}>
           <EnrolledClassesList classes={enrolledClasses} onClassPress={onClassPress} />
+        </View>
+      </View>
+
+      {/* Attendance */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: '#16a34a' }]}>
+          <Text style={styles.sectionCardTitle}>Attendance</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <AttendanceSection />
         </View>
       </View>
 

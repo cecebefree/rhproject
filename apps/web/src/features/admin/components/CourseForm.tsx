@@ -43,7 +43,7 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
     e.preventDefault();
 
     if (!title.trim()) {
-      setError('Course name is required.');
+      setError('Curriculum name is required.');
       return;
     }
     if (!teacherId) {
@@ -87,14 +87,14 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>{course ? 'Edit Course' : 'Create New Course'}</h2>
+      <h2 style={styles.title}>{course ? 'Edit Curriculum' : 'Create New Curriculum'}</h2>
 
       {error && <div style={styles.error}>{error}</div>}
 
       <form onSubmit={handleSubmit} style={styles.form}>
         {/* Course Name */}
         <div style={styles.field}>
-          <label style={styles.label}>Course Name *</label>
+          <label style={styles.label}>Curriculum Name *</label>
           <input
             type="text"
             value={title}
@@ -111,7 +111,7 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Course description..."
+            placeholder="Curriculum description..."
             rows={4}
             style={styles.textarea}
           />
@@ -191,7 +191,7 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
             Cancel
           </button>
           <button type="submit" disabled={loading} style={styles.submitButton}>
-            {loading ? 'Saving...' : course ? 'Save Changes' : 'Create Course'}
+            {loading ? 'Saving...' : course ? 'Save Changes' : 'Create Curriculum'}
           </button>
         </div>
       </form>

@@ -151,6 +151,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Send auto-reply email (fire-and-forget — don't block response)
+    const recipientName = name?.trim() || 'there';
+    fetch(`${supabaseUrl}/functions/v1/send-auto-reply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceRoleKey}`,
+      },
+      body: JSON.stringify({
+        recipient_email: email.trim().toLowerCase(),
+        recipient_name: recipientName,
+        template_key: 'contact_form_acknowledgement',
+        data: {},
+      }),
+    }).catch((err) => {
+      console.error('Auto-reply email failed (non-blocking):', err);
+    });
+
     // Success
     return NextResponse.json({
       success: true,

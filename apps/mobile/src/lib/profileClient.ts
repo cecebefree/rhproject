@@ -451,6 +451,7 @@ export async function fetchPaymentHistory(): Promise<{
     return { data: [], error: 'Not authenticated' };
   }
 
+  // Fetch from office_desk.payments (invoice-based payments)
   const { data, error } = await supabase
     .from('office_desk.payments')
     .select(
@@ -484,7 +485,7 @@ export async function fetchPaymentHistory(): Promise<{
     }
   }
 
-  const payments: PaymentRecord[] = (data ?? []).map((p) => {
+  const officePayments: PaymentRecord[] = (data ?? []).map((p) => {
     const inv = invoiceMap.get(p.invoice_id);
     return {
       id: p.id,
@@ -500,7 +501,32 @@ export async function fetchPaymentHistory(): Promise<{
     };
   });
 
-  return { data: payments, error: null };
+  // Also fetch debit order payments from public.payments
+  const { data: debitPayments } = await supabase
+    .from('payments')
+    .select('id, amount, status, payment_type, created_at, debit_order_id')
+    .eq('student_id', user.id)
+    .order('created_at', { ascending: false });
+
+  const debitRecords: PaymentRecord[] = (debitPayments ?? []).map((p) => ({
+    id: p.id,
+    amount: p.amount,
+    currency: 'ZAR',
+    status: p.status === 'completed' ? 'confirmed' : (p.status as any),
+    payment_method: 'debit_order',
+    reference: null,
+    paid_at: p.created_at,
+    created_at: p.created_at,
+    description: `Debit Order — ${p.payment_type}`,
+    invoice_number: null,
+  }));
+
+  // Merge and sort by date
+  const allPayments = [...officePayments, ...debitRecords].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
+  return { data: allPayments, error: null };
 }
 
 // ═══════════════════════════════════════════════════════════

@@ -1,4 +1,5 @@
 import { LeadCaptureForm } from '@/components/LeadCaptureForm';
+import { ReserveACallForm } from '@/components/ReserveACallForm';
 
 export default function Home() {
   return (
@@ -123,6 +124,49 @@ export default function Home() {
           </div>
           <div className="mx-auto mt-16 max-w-xl">
             <LeadCaptureForm />
+          </div>
+        </div>
+      </section>
+
+      {/* Reserve a Call Section */}
+      <section className="py-16 sm:py-24">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+              Reserve a Call
+            </h2>
+            <p className="mt-6 text-lg leading-8 text-gray-600">
+              Want to talk it through? Pick a time and we&apos;ll give you a call to discuss
+              your family&apos;s needs, curriculum options, and next steps.
+            </p>
+          </div>
+          <div className="mx-auto mt-16 max-w-xl sm:mt-20 lg:mt-24 lg:max-w-none lg:grid lg:grid-cols-2 lg:gap-12">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">What to expect</h3>
+              <ul className="space-y-3 text-gray-600">
+                <li className="flex items-start gap-3">
+                  <svg className="h-5 w-5 flex-none text-blue-600 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                  </svg>
+                  <span>15-minute introductory call — no commitment</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="h-5 w-5 flex-none text-blue-600 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                  </svg>
+                  <span>Personalized curriculum and pricing guidance</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <svg className="h-5 w-5 flex-none text-blue-600 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                  </svg>
+                  <span>Answer all your questions about Redhouse</span>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <ReserveACallForm />
+            </div>
           </div>
         </div>
       </section>

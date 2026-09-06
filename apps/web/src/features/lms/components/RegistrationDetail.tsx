@@ -172,7 +172,7 @@ export function RegistrationDetail({
                     backgroundColor: isCompleted
                       ? '#27ae60'
                       : isActive
-                        ? '#8b1a2e'
+                        ? '#C8281E'
                         : '#e2e8f0',
                   }}
                 />

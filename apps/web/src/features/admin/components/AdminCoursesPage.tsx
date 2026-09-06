@@ -120,8 +120,8 @@ export default function AdminCoursesPage() {
     <div style={styles.container}>
       <header style={styles.header}>
         <div>
-          <h1 style={styles.title}>Course Management</h1>
-          <p style={styles.subtitle}>Create and manage courses — {profile.name}</p>
+          <h1 style={styles.title}>Curriculum Management</h1>
+          <p style={styles.subtitle}>Create and manage curriculums — {profile.name}</p>
         </div>
         <NotificationCenter userId={profile.id} />
       </header>
@@ -139,7 +139,7 @@ export default function AdminCoursesPage() {
         {/* Create form */}
         {viewMode === 'create' && (
           <div>
-            <button onClick={handleBack} style={styles.backButton}>&larr; Back to courses</button>
+            <button onClick={handleBack} style={styles.backButton}>&larr; Back to curriculums</button>
             <CourseForm
               tenantId={tenantId}
               onSuccess={() => setViewMode('list')}
@@ -151,7 +151,7 @@ export default function AdminCoursesPage() {
         {/* Edit form */}
         {viewMode === 'edit' && selectedCourse && (
           <div>
-            <button onClick={() => setViewMode('detail')} style={styles.backButton}>&larr; Back to course</button>
+            <button onClick={() => setViewMode('detail')} style={styles.backButton}>&larr; Back to curriculum</button>
             <CourseForm
               tenantId={tenantId}
               course={selectedCourse}
@@ -164,7 +164,7 @@ export default function AdminCoursesPage() {
         {/* Detail view */}
         {viewMode === 'detail' && selectedCourse && (
           <div>
-            <button onClick={handleBack} style={styles.backButton}>&larr; Back to courses</button>
+            <button onClick={handleBack} style={styles.backButton}>&larr; Back to curriculums</button>
 
             {/* Course header */}
             <div style={styles.detailHeader}>
@@ -262,7 +262,7 @@ export default function AdminCoursesPage() {
         )}
 
         {loadingCourse && (
-          <div style={styles.loadingOverlay}>Loading course details...</div>
+          <div style={styles.loadingOverlay}>Loading curriculum details...</div>
         )}
       </main>
     </div>

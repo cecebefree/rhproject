@@ -5,6 +5,7 @@ import {
   listCourses,
   listInstructors,
   deleteCourse,
+  getCourseDeletionWarnings,
   updateCourse,
   type Course,
   type CourseStatus,
@@ -47,7 +48,32 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
   }
 
   const handleDelete = async (courseId: string) => {
-    if (!confirm('Delete this course? This cannot be undone.')) return;
+    // Check for family/adult profile links before confirming
+    const warnings = await getCourseDeletionWarnings(courseId);
+    const course = courses.find(c => c.id === courseId);
+
+    if (warnings.blocking) {
+      const parts: string[] = [];
+      if (warnings.parentLinks) parts.push(`${warnings.parentLinks} parent/guardian link(s)`);
+      if (warnings.familyLinks) parts.push(`${warnings.familyLinks} family account link(s)`);
+      alert(
+        `Cannot delete "${course?.name ?? 'this curriculum'}":\n\n` +
+        `${warnings.studentCount} student(s) enrolled with linked family profiles:\n` +
+        parts.map(p => `  - ${p}`).join('\n') +
+        `\n\nUnlink families and remove enrollments before deleting.`
+      );
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Delete "${course?.name ?? 'this curriculum'}"?\n\n` +
+      (warnings.studentCount > 0
+        ? `${warnings.studentCount} student(s) enrolled (no family links).\n\n`
+        : '') +
+      `This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
     setDeleting(courseId);
     const { error } = await deleteCourse(courseId);
     if (error) {
@@ -74,7 +100,7 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
       <div style={styles.controls}>
         <input
           type="text"
-          placeholder="Search courses..."
+          placeholder="Search curriculums..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={styles.searchInput}
@@ -99,20 +125,20 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
           ))}
         </select>
         <button onClick={onCreateNew} style={styles.createButton}>
-          + New Course
+          + New Curriculum
         </button>
       </div>
 
       {/* Table */}
       {loading ? (
-        <div style={styles.loading}>Loading courses...</div>
+        <div style={styles.loading}>Loading curriculums...</div>
       ) : courses.length === 0 ? (
-        <div style={styles.empty}>No courses found. Create your first course to get started.</div>
+        <div style={styles.empty}>No curriculums found. Create your first curriculum to get started.</div>
       ) : (
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={styles.th}>Course Name</th>
+              <th style={styles.th}>Curriculum Name</th>
               <th style={styles.th}>Instructor</th>
               <th style={styles.th}>Price</th>
               <th style={styles.th}>Status</th>

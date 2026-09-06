@@ -202,7 +202,138 @@ async function handleCheckoutSessionCompleted(session: Record<string, unknown>) 
   const paymentIntent = session.payment_intent as string | null;
   const amountTotal = session.amount_total as number | null;
   const currency = session.currency as string | null;
+  const metadata = session.metadata as Record<string, string> | undefined;
+  const leadId = metadata?.lead_id;
 
+  console.log(`checkout.session.completed: ${sessionId} (lead_id: ${leadId || "none"})`);
+
+  // ── PATH A: Website registration lead (lead_id in metadata) ──
+  if (leadId) {
+    // Look up the lead from front_desk.leads
+    const { data: lead, error: leadError } = await supabase
+      .schema("front_desk")
+      .from("leads")
+      .select("id, tenant_id, name, email, phone, notes")
+      .eq("id", leadId)
+      .single();
+
+    if (leadError || !lead) {
+      console.error("Lead not found for lead_id:", leadId, leadError);
+      await logWebhookEvent("checkout.session.completed.lead_not_found", { sessionId, leadId });
+      return { received: true };
+    }
+
+    // Create office_desk.registrations
+    const { data: reg, error: regError } = await supabase
+      .schema("office_desk")
+      .from("registrations")
+      .insert({
+        tenant_id: lead.tenant_id,
+        lead_reference_id: lead.id,
+        student_name: lead.name || "Student",
+        student_email: lead.email || "",
+        student_phone: lead.phone || null,
+        course_name: null,
+        status: "active",
+        notes: `Created from registration payment. Stripe session: ${sessionId}`,
+        payment_attached_at: new Date().toISOString(),
+        stripe_charge_id: paymentIntent,
+      })
+      .select("id")
+      .single();
+
+    if (regError) {
+      console.error("Registration insert failed:", regError);
+      await logWebhookEvent("checkout.session.completed.reg_failed", { sessionId, leadId, error: regError.message });
+      return { received: true };
+    }
+
+    console.log(`Registration ${reg.id} created from lead ${leadId}`);
+
+    // Create office_desk.invoices
+    const { error: invError } = await supabase
+      .schema("office_desk")
+      .from("invoices")
+      .insert({
+        tenant_id: lead.tenant_id,
+        registration_id: reg.id,
+        lead_id: lead.id,
+        amount: amountTotal || 0,
+        currency: currency?.toUpperCase() || "USD",
+        status: "paid",
+        paid_at: new Date().toISOString(),
+        stripe_charge_id: paymentIntent,
+        stripe_payment_intent_id: paymentIntent,
+      });
+
+    if (invError) {
+      console.error("Invoice insert failed:", invError);
+      await logWebhookEvent("checkout.session.completed.inv_failed", { sessionId, leadId, regId: reg.id, error: invError.message });
+    } else {
+      console.log(`Invoice created for registration ${reg.id}`);
+    }
+
+    // Update lead status to converted
+    await supabase
+      .schema("front_desk")
+      .from("leads")
+      .update({
+        status: "registered",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", leadId);
+
+    // Auto-create student + enrollment from registration
+    try {
+      const { data: studentResult, error: studentError } = await supabase
+        .rpc("create_student_from_registration", { p_registration_id: reg.id });
+
+      if (studentError) {
+        console.error("Student creation from registration failed:", studentError);
+        await logWebhookEvent("checkout.session.completed.student_failed", {
+          sessionId,
+          leadId,
+          regId: reg.id,
+          error: studentError.message,
+        });
+      } else {
+        console.log(`Student created from registration ${reg.id}:`, studentResult);
+      }
+    } catch (studentErr) {
+      console.error("Student creation error:", studentErr);
+    }
+
+    // Send confirmation email via send-auto-reply
+    try {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+      const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY && lead.email) {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-auto-reply`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({
+            recipient_email: lead.email,
+            recipient_name: lead.name || "there",
+            template_key: "registration_confirmation",
+            data: {
+              student_name: lead.name || "Student",
+              course_name: "their selected course",
+            },
+          }),
+        });
+        console.log(`Registration confirmation email sent to ${lead.email}`);
+      }
+    } catch (emailErr) {
+      console.error("Failed to send registration confirmation email:", emailErr);
+    }
+
+    return { received: true };
+  }
+
+  // ── PATH B: Legacy payment_requests flow ──
   const { data: existingRequest } = await supabase
     .from("school_desk.payment_requests")
     .select("id, status, registration_id, tenant_id")

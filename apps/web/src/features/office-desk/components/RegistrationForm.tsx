@@ -93,7 +93,7 @@ export function RegistrationForm({
     if (!form.student_name.trim()) return 'Student name is required';
     if (!form.student_email.trim()) return 'Student email is required';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.student_email)) return 'Invalid email address';
-    if (!form.course_name.trim()) return 'Course name is required';
+    if (!form.course_name.trim()) return 'Program / Subject name is required';
     if (invoice.amount <= 0) return 'Amount must be greater than 0';
     if (!payment.token) return 'Payment token is required (complete payment first)';
     return null;
@@ -267,13 +267,13 @@ export function RegistrationForm({
         </div>
       </fieldset>
 
-      {/* Course Details */}
+      {/* Program / Subject Details */}
       <fieldset className="space-y-4">
-        <legend className="text-sm font-medium text-gray-700">Course Details</legend>
+        <legend className="text-sm font-medium text-gray-700">Program / Subject Details</legend>
 
         <div>
           <label htmlFor="course_name" className="block text-sm font-medium text-gray-700">
-            Course *
+            Program / Subject *
           </label>
           <input
             id="course_name"
@@ -282,7 +282,7 @@ export function RegistrationForm({
             value={form.course_name}
             onChange={(e) => updateForm('course_name', e.target.value)}
             className="mt-1 block w-full rounded border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="e.g. Grade 10 Mathematics"
+            placeholder="e.g. Cambridge Grade 10 Mathematics"
           />
         </div>
 

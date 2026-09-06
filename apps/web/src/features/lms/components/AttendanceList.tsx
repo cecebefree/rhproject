@@ -125,7 +125,7 @@ export function AttendanceList({ tenantId, onSelect }: AttendanceListProps) {
       <div style={styles.filters}>
         <input
           type="text"
-          placeholder="Search by course name or date..."
+          placeholder="Search by subject name or date..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={styles.search}

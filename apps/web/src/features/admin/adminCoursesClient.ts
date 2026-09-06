@@ -176,20 +176,91 @@ export async function updateCourse(
 }
 
 export async function deleteCourse(courseId: string) {
-  // Check enrollment count first
-  const { count } = await supabase
+  // Check for linked family accounts and adult profiles via students enrolled in this course
+  const { data: enrolledStudents } = await supabase
     .from('student_class')
-    .select('id', { count: 'exact', head: true })
+    .select('student_id')
     .eq('class_id', courseId);
 
-  if ((count ?? 0) > 0) {
-    return { error: { message: 'Cannot delete course with active enrollments' } };
+  if (!enrolledStudents?.length) {
+    return supabase
+      .from('school_desk.courses')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', courseId);
+  }
+
+  const studentIds = enrolledStudents.map(e => e.student_id);
+
+  // Check parent_student_link (adult profiles linked to enrolled students)
+  const { count: parentCount } = await supabase
+    .from('parent_student_link')
+    .select('id', { count: 'exact', head: true })
+    .in('student_id', studentIds);
+
+  // Check family_child (family accounts linked to enrolled students)
+  const { count: familyCount } = await supabase
+    .from('family_child')
+    .select('child_id', { count: 'exact', head: true })
+    .in('child_id', studentIds);
+
+  // Check office_desk.family_accounts via registration_reference
+  const { count: familyAccountCount } = await supabase
+    .from('office_desk.family_accounts')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', (await supabase.from('school_desk.courses').select('tenant_id').eq('id', courseId).single()).data?.tenant_id ?? '');
+
+  const totalLinked = (parentCount ?? 0) + (familyCount ?? 0);
+
+  if (totalLinked > 0) {
+    const parts: string[] = [];
+    if (parentCount) parts.push(`${parentCount} parent/guardian link(s)`);
+    if (familyCount) parts.push(`${familyCount} family account link(s)`);
+    return {
+      error: {
+        message: `Cannot delete: ${enrolledStudents.length} student(s) enrolled with linked family profiles (${parts.join(', ')}). Unlink families and remove enrollments first.`,
+      },
+    };
   }
 
   return supabase
     .from('school_desk.courses')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', courseId);
+}
+
+export async function getCourseDeletionWarnings(courseId: string): Promise<{
+  studentCount: number;
+  parentLinks: number;
+  familyLinks: number;
+  blocking: boolean;
+}> {
+  const { data: enrolledStudents } = await supabase
+    .from('student_class')
+    .select('student_id')
+    .eq('class_id', courseId);
+
+  if (!enrolledStudents?.length) {
+    return { studentCount: 0, parentLinks: 0, familyLinks: 0, blocking: false };
+  }
+
+  const studentIds = enrolledStudents.map(e => e.student_id);
+
+  const { count: parentLinks } = await supabase
+    .from('parent_student_link')
+    .select('id', { count: 'exact', head: true })
+    .in('student_id', studentIds);
+
+  const { count: familyLinks } = await supabase
+    .from('family_child')
+    .select('child_id', { count: 'exact', head: true })
+    .in('child_id', studentIds);
+
+  return {
+    studentCount: enrolledStudents.length,
+    parentLinks: parentLinks ?? 0,
+    familyLinks: familyLinks ?? 0,
+    blocking: (parentLinks ?? 0) + (familyLinks ?? 0) > 0,
+  };
 }
 
 // ═══════════════════════════════════════════════════════════

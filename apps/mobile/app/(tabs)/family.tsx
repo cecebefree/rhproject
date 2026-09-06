@@ -1,16 +1,50 @@
 // Family variant — Design 6
-// Per-child tabs, ledger (PLANNED — seed only)
+// Per-child tabs, ledger — WIRED to real DB
 
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
-import { GroupCard } from '../../src/components/GroupCard';
-import { SEED_GROUPS } from '../../src/seed/groups';
-import { SEED_USER } from '../../src/seed/user';
+import { LoadingState } from '../../src/components/LoadingState';
+import {
+  fetchFamilyChildren,
+  fetchFamilyInvoices,
+  type ChildProfile,
+  type InvoiceRecord,
+} from '../../src/lib/familyClient';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 
 export default function FamilyScreen() {
+  const [children, setChildren] = useState<ChildProfile[]>([]);
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  async function loadData() {
+    setLoading(true);
+    setError(null);
+    try {
+      const [childrenData, invoicesData] = await Promise.all([
+        fetchFamilyChildren(),
+        fetchFamilyInvoices(),
+      ]);
+      setChildren(childrenData);
+      setInvoices(invoicesData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load family data');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) return <LoadingState />;
+  if (error) return <EmptyState message={error} />;
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -18,37 +52,35 @@ export default function FamilyScreen() {
         <Text style={styles.subtitle}>Linked children</Text>
       </View>
 
-      {/* Child tab */}
-      <View style={styles.childSection}>
-        <Text style={styles.childName}>{SEED_USER.name}</Text>
-        <Text style={styles.childRole}>
-          {SEED_USER.role} · {SEED_USER.curriculum}
-        </Text>
+      {children.length === 0 ? (
+        <EmptyState message="No children linked to your account yet." />
+      ) : (
+        children.map((child) => (
+          <View key={child.id} style={styles.childSection}>
+            <Text style={styles.childName}>{child.name}</Text>
+            <Text style={styles.childRole}>
+              {child.grade || 'No grade'} · {child.curriculum || 'No curriculum'}
+            </Text>
 
-        {/* Ledger — PLANNED, seed only */}
-        <View style={styles.ledger}>
-          <Text style={styles.ledgerTitle}>Account</Text>
-          <View style={styles.ledgerRow}>
-            <Text style={styles.ledgerLabel}>Invoice</Text>
-            <Text style={styles.ledgerValue}>INV-2026-001 (sample)</Text>
+            {/* Ledger */}
+            <View style={styles.ledger}>
+              <Text style={styles.ledgerTitle}>Account</Text>
+              {invoices.length === 0 ? (
+                <Text style={styles.ledgerNote}>No invoices yet</Text>
+              ) : (
+                invoices.slice(0, 3).map((inv) => (
+                  <View key={inv.id} style={styles.ledgerRow}>
+                    <Text style={styles.ledgerLabel}>{inv.description || 'Invoice'}</Text>
+                    <Text style={styles.ledgerValue}>
+                      R {inv.amount.toLocaleString()} — {inv.status}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </View>
           </View>
-          <View style={styles.ledgerRow}>
-            <Text style={styles.ledgerLabel}>Amount</Text>
-            <Text style={styles.ledgerValue}>R 12,500 (sample)</Text>
-          </View>
-          <View style={styles.ledgerRow}>
-            <Text style={styles.ledgerLabel}>Payment Status</Text>
-            <Text style={styles.ledgerValue}>Pending (sample)</Text>
-          </View>
-          <Text style={styles.ledgerNote}>Coming soon — full invoice tracking in next phase</Text>
-        </View>
-
-        {/* Groups */}
-        <Text style={styles.sectionTitle}>Groups</Text>
-        {SEED_GROUPS.map((group) => (
-          <GroupCard key={group.id} name={group.name} category={group.category} lead={group.lead} />
-        ))}
-      </View>
+        ))
+      )}
     </ScrollView>
   );
 }
@@ -115,14 +147,7 @@ const styles = StyleSheet.create({
   },
   ledgerNote: {
     fontSize: typography.sizes.caption,
-    color: colors.champagneDark,
-    marginTop: spacing.sm,
+    color: colors.charcoalLight,
     fontStyle: 'italic',
-  },
-  sectionTitle: {
-    fontSize: typography.sizes.h3,
-    fontWeight: typography.weights.semibold,
-    color: colors.charcoal,
-    marginBottom: spacing.sm,
   },
 });

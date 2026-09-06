@@ -30,7 +30,7 @@ export function GradebookForm({
   onSuccess,
   onCancel,
 }: GradebookFormProps) {
-  const [courses, setCourses] = useState<Array<{ id: string; title: string }>>([]);
+  const [programs, setPrograms] = useState<Array<{ id: string; title: string }>>([]);
   const [assignments, setAssignments] = useState<Array<{ id: string; title: string; max_score: number; weight: number }>>([]);
   const [studentGrades, setStudentGrades] = useState<StudentGrade[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export function GradebookForm({
   const [selectedAssignmentId, setSelectedAssignmentId] = useState('');
 
   useEffect(() => {
-    loadCourses();
+    loadPrograms();
   }, [userId]);
 
   useEffect(() => {
@@ -57,18 +57,18 @@ export function GradebookForm({
     }
   }, [selectedCourseId, selectedAssignmentId]);
 
-  async function loadCourses() {
+  async function loadPrograms() {
     try {
       const { data: enrollments } = await import('../services/supabase').then((m) =>
         m.supabaseUntyped
-          .from('school_desk.courses')
+          .from('school_desk.programs')
           .select('id, title')
           .eq('teacher_id', userId)
           .in('status', ['published', 'active']),
       );
-      setCourses(enrollments || []);
+      setPrograms(enrollments || []);
     } catch (err: any) {
-      setError(err.message || 'Failed to load courses');
+      setError(err.message || 'Failed to load programs');
     }
   }
 
@@ -237,8 +237,8 @@ export function GradebookForm({
               required
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              <option value="">Select course</option>
-              {courses.map((course) => (
+              <option value="">Select program</option>
+              {programs.map((course) => (
                 <option key={course.id} value={course.id}>
                   {course.title}
                 </option>

@@ -13,6 +13,7 @@ import {
 } from '../services/supabase';
 import { RegistrationDetail } from '../components/RegistrationDetail';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { supabase } from '../services/supabase';
 
 interface DeskContext {
   tenantId: string;
@@ -56,6 +57,8 @@ export default function OfficeDeskRegistrationsPage() {
   const [statusFilter, setStatusFilter] = useState<RegistrationStatus | ''>('');
   const [selected, setSelected] = useState<Registration | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [reminderRunning, setReminderRunning] = useState(false);
+  const [reminderResult, setReminderResult] = useState<string | null>(null);
 
   // Load registrations
   useEffect(() => {
@@ -126,6 +129,26 @@ export default function OfficeDeskRegistrationsPage() {
     );
   }
 
+  async function handleRunReminder() {
+    setReminderRunning(true);
+    setReminderResult(null);
+
+    const { data, error } = await supabase.rpc('pending_payment_reminder' as any);
+
+    if (error) {
+      setReminderResult(`Error: ${error.message}`);
+    } else {
+      const rows = (data as any[]) ?? [];
+      if (rows.length === 0) {
+        setReminderResult('No registrations pending payment for >24 hours.');
+      } else {
+        setReminderResult(`Sent ${rows.length} reminder(s) for: ${rows.map((r: any) => r.student_name).join(', ')}`);
+      }
+    }
+
+    setReminderRunning(false);
+  }
+
   return (
     <div>
       {/* Controls */}
@@ -149,7 +172,24 @@ export default function OfficeDeskRegistrationsPage() {
             </option>
           ))}
         </select>
+        <button
+          onClick={handleRunReminder}
+          disabled={reminderRunning}
+          className="px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50"
+          style={{ backgroundColor: '#D97706' }}
+        >
+          {reminderRunning ? 'Checking...' : 'Check Pending Payments'}
+        </button>
       </div>
+
+      {reminderResult && (
+        <div className="mt-2 px-3 py-2 text-sm rounded-lg" style={{
+          backgroundColor: reminderResult.startsWith('Error') ? '#fee2e2' : '#d1fae5',
+          color: reminderResult.startsWith('Error') ? '#991b1b' : '#065f46',
+        }}>
+          {reminderResult}
+        </div>
+      )}
 
       {/* Table */}
       {loading ? (

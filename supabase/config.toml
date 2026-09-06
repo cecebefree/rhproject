@@ -483,3 +483,12 @@ enabled = true
 [auth.hook.custom_access_token]
 enabled = true
 uri = "pg-functions://postgres/public/custom_access_token_hook"
+
+[functions.sync-website-lead]
+verify_jwt = false
+
+[functions.send-auto-reply]
+verify_jwt = false
+
+[testing]
+enabled = true

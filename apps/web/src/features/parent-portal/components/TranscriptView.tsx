@@ -89,7 +89,7 @@ export function TranscriptView({
     text += `${'='.repeat(50)}\n\n`;
     text += `Student: ${studentName}\n`;
     text += `Date: ${new Date().toLocaleDateString()}\n\n`;
-    text += `COURSES\n`;
+    text += `SUBJECTS\n`;
     text += `${'-'.repeat(50)}\n`;
 
     for (const course of transcript.courses) {
@@ -158,7 +158,7 @@ export function TranscriptView({
               : '--'}
           </div>
           <div className="text-sm opacity-75 mt-2">
-            {transcript.courses.length} courses completed
+            {transcript.courses.length} subjects completed
           </div>
         </div>
       )}
@@ -166,7 +166,7 @@ export function TranscriptView({
       {/* Transcript Table */}
       {!transcript || transcript.courses.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          No courses or grades found.
+          No subjects or grades found.
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -174,7 +174,7 @@ export function TranscriptView({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Course
+                  Subject
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                   Weighted Average

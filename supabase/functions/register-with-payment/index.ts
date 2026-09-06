@@ -304,6 +304,58 @@ Deno.serve(async (req) => {
     );
   }
 
+  // ── Rate limit check ──────────────────────────────────────
+  try {
+    const { data: allowed } = await supabase.rpc("check_rate_limit" as any, {
+      p_caller: `register-with-payment:${callerIp}`,
+      p_tenant: null,
+    });
+    if (allowed === false) {
+      return new Response(
+        JSON.stringify({ status: "error", code: "RATE_LIMITED", message: "Too many requests. Please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" } }
+      );
+    }
+  } catch {
+    // Fail-open: proceed if rate limit check errors
+  }
+
+  // ── Turnstile verification ────────────────────────────────
+  const TURNSTILE_SECRET = Deno.env.get("TURNSTILE_SECRET_KEY");
+  const turnstileToken = typeof (body as any)?.turnstile_token === "string" ? (body as any).turnstile_token.trim() : null;
+  if (TURNSTILE_SECRET && !turnstileToken) {
+    return new Response(
+      JSON.stringify({ status: "error", code: "TURNSTILE_REQUIRED", message: "CAPTCHA verification required" }),
+      { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+  if (TURNSTILE_SECRET && turnstileToken) {
+    try {
+      const ipHeader = req.headers.get("cf-connecting-ip") || undefined;
+      const formBody = new URLSearchParams();
+      formBody.append("secret", TURNSTILE_SECRET);
+      formBody.append("response", turnstileToken);
+      if (ipHeader) formBody.append("remoteip", ipHeader);
+      const verifyRes = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+        method: "POST",
+        body: formBody,
+      });
+      const verifyData = await verifyRes.json();
+      if (!(verifyData as any)?.success) {
+        return new Response(
+          JSON.stringify({ status: "error", code: "TURNSTILE_FAILED", message: "CAPTCHA verification failed" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } catch {
+      // Fail-open: if Turnstile service is unreachable, proceed
+    }
+  }
+
+  // ── Enumeration protection ─────────────────────────────────
+  // Generic error message for all auth failures to prevent email enumeration
+  const GENERIC_AUTH_ERROR = "Registration could not be completed. Please try again or contact support.";
+
   const validation = validateInput(body);
   if (!validation.valid) {
     return new Response(
@@ -325,8 +377,8 @@ Deno.serve(async (req) => {
   if (tenantError || !tenant) {
     await logFailedEnrollment(regInput.tenant_id, regInput, payInput, "TENANT_NOT_FOUND", "Tenant not found", callerIp);
     return new Response(
-      JSON.stringify({ status: "error", code: "TENANT_NOT_FOUND", message: "Tenant not found" }),
-      { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ status: "error", code: "REGISTRATION_FAILED", message: GENERIC_AUTH_ERROR }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -346,8 +398,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         status: "error",
-        code: "DUPLICATE_EMAIL",
-        message: "A registration with this email already exists",
+        code: "REGISTRATION_FAILED",
+        message: GENERIC_AUTH_ERROR,
         existing_registration_id: existingReg.id,
       }),
       { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }

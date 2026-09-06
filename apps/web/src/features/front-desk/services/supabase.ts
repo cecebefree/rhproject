@@ -19,6 +19,9 @@ export interface Lead {
   email: string | null;
   phone: string | null;
   source: string | null;
+  tags: string[] | null;
+  time_zone: string | null;
+  assigned_to: string | null;
   notes: string | null;
   status: 'enquiry' | 'qualified' | 'invoiced' | 'handed_off';
   created_at: string;

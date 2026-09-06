@@ -216,7 +216,7 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
                 Payment
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Student / Course
+                Student / Program
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Amount

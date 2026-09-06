@@ -1,291 +1,116 @@
-// Office Desk page — Row 78 Invoices tab + Row 53 Registrations + Row 27 Billing
-// Row 3: URL-based routing with nested routes
-// Row 2: Search & Filtering integration
-
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
-import { DeskBreadcrumb } from '../../../components/DeskBreadcrumb';
-import { useNavigateTo } from '../../../hooks/useNavigateTo';
-import { DESK_TAB_LABELS, type DeskTab } from '../../../hooks/useRouting';
-import { ArchiveReport } from '../../front-desk/components/ArchiveReport';
-import { InvoiceCreate } from '../../office-desk/components/InvoiceCreate';
-import { InvoiceDetail } from '../../office-desk/components/InvoiceDetail';
-import { InvoiceList } from '../../office-desk/components/InvoiceList';
-import { SubscriptionManager } from '../../office-desk/components/SubscriptionManager';
-import { SearchBar } from '../../office-desk/components/SearchBar';
-import { AdvancedFilterPanel } from '../../office-desk/components/AdvancedFilterPanel';
-import { useSearch } from '../../../hooks/useSearch';
-import { NotificationCenter } from '../../../components/NotificationCenter';
-import { supabase } from '../services/supabase';
+import { AdminLayout } from '../../../components/AdminLayout';
 
-interface Profile {
-  id: string;
-  name: string;
-  role: string;
-  tenant_id: string | null;
-}
+type MainTab = 'enrollment' | 'user-profiles' | 'family-accounts' | 'ledger' | 'school-admin' | 'accounting' | 'payment-analytics';
+type SubTab = 'debit-orders' | 'invoices' | 'contracts';
 
-/**
- * OfficeDeskPage now uses URL-based routing via <Outlet />.
- * Tab navigation is handled by child routes.
- * This component provides the shell: header, nav, and breadcrumb.
- */
+const MAIN_TABS: { key: MainTab; label: string }[] = [
+  { key: 'enrollment', label: 'ENROLLMENT' },
+  { key: 'user-profiles', label: 'USER PROFILES' },
+  { key: 'family-accounts', label: 'FAMILY ACCOUNTS' },
+  { key: 'ledger', label: 'LEDGER' },
+  { key: 'school-admin', label: 'SCHOOL ADMINISTRATION' },
+  { key: 'accounting', label: 'ACCOUNTING' },
+  { key: 'payment-analytics', label: 'PAYMENT ANALYTICS' },
+];
+
+const SUB_TABS: { key: SubTab; label: string; route: string }[] = [
+  { key: 'debit-orders', label: 'Debit Orders', route: 'debit-orders' },
+  { key: 'invoices', label: 'Invoices & Statements', route: 'invoices' },
+  { key: 'contracts', label: 'Contracts', route: 'contracts' },
+];
+
 export default function OfficeDeskPage() {
   const { deskId } = useParams<{ deskId: string }>();
   const navigate = useNavigate();
-  const { navigateToDeskTab } = useNavigateTo();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [mainTab, setMainTab] = useState<MainTab>('family-accounts');
 
-  // Determine current tab from URL
-  const location = window.location.pathname;
-  const basePattern = `/lms/office-desk/${deskId ?? ''}`;
-  const pathSuffix = location.replace(basePattern, '').replace(/^\//, '');
-  const firstSegment = pathSuffix.split('/')[0] as DeskTab;
-  const activeTab: DeskTab = DESK_TAB_LABELS[firstSegment] ? firstSegment : 'leads';
-
-  // Search functionality
-  const searchHook = useSearch({
-    tenantId: deskId || '',
-    userId: profile?.id || '',
-    defaultEntityType: 'all',
-  });
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadProfile() {
-      setLoading(true);
-      setError(null);
-
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-      if (userError || !user) {
-        if (!cancelled) {
-          setError('Not authenticated');
-          setLoading(false);
-        }
-        return;
-      }
-
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, name, role, tenant_id')
-        .eq('id', user.id)
-        .single();
-
-      if (!cancelled) {
-        if (profileError) {
-          setError(profileError.message);
-        } else if (profileData.role !== 'office' && profileData.role !== 'admin') {
-          setError('Access denied. Office Desk is for office and admin users only.');
-        } else {
-          setProfile(profileData);
-        }
-        setLoading(false);
-      }
-    }
-
-    loadProfile();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  // If no deskId in URL, redirect to leads tab with profile's tenant
-  useEffect(() => {
-    if (!loading && profile?.tenant_id && !deskId) {
-      navigate(`/lms/office-desk/${profile.tenant_id}/leads`, { replace: true });
-    }
-  }, [loading, profile, deskId, navigate]);
-
-  const handleTabChange = (tab: DeskTab) => {
-    if (deskId) {
-      navigateToDeskTab(deskId, tab);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loading}>
-          <p>Loading Office Desk...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.error}>
-          <h2>Unable to load</h2>
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.error}>
-          <h2>Access denied</h2>
-          <p>Profile not found.</p>
-        </div>
-      </div>
-    );
-  }
+  // Derive active sub-tab from URL
+  const currentPath = window.location.pathname;
+  const activeSubTab = SUB_TABS.find((t) => currentPath.includes(t.route))?.key ?? 'invoices';
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h1 style={styles.title}>Office Desk</h1>
-            <p style={styles.subtitle}>Billing &amp; Administration — {profile.name}</p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {deskId && profile && (
-              <div style={{ flex: 1, maxWidth: '500px' }}>
-                <SearchBar
-                  query={searchHook.query}
-                  entityType={searchHook.entityType}
-                  suggestions={searchHook.suggestions}
-                  searchHistory={searchHook.searchHistory}
-                  loadingSuggestions={searchHook.loadingSuggestions}
-                  onQueryChange={searchHook.setQuery}
-                  onSearch={searchHook.executeSearch}
-                  onEntityTypeChange={searchHook.setEntityType}
-                  onFetchSuggestions={searchHook.fetchSuggestions}
-                  onApplyHistory={searchHook.applySavedSearch}
-                  onQuickFilter={(filters) => {
-                    searchHook.setFilters(filters as Record<string, unknown>);
-                    searchHook.executeSearch({ filters: filters as Record<string, unknown> });
-                  }}
-                  onShowFilters={() => setShowFilters(!showFilters)}
-                  hasActiveFilters={Object.keys(searchHook.filters).length > 0}
-                />
-              </div>
-            )}
-            <NotificationCenter userId={profile.id} />
-          </div>
+    <AdminLayout activeDesk="office-desk">
+      {/* Header + Buttons */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
+        <div>
+          <h2 className="mb-1" style={{ fontFamily: '"EB Garamond", serif', fontSize: '36px', lineHeight: '44px', fontWeight: 500, color: '#273946', letterSpacing: '-0.01em' }}>
+            Office Desk
+          </h2>
+          <p style={{ fontSize: '14px', lineHeight: '20px', color: '#54626C' }}>
+            Manage family accounts, invoices, and financial records.
+          </p>
         </div>
-      </header>
-
-      {/* Advanced Filters Panel */}
-      {showFilters && deskId && profile && (
-        <AdvancedFilterPanel
-          entityType={searchHook.entityType}
-          filters={searchHook.filters}
-          onFiltersChange={searchHook.setFilters}
-          onApply={searchHook.executeSearch}
-          onClear={() => {
-            searchHook.setFilters({});
-            searchHook.executeSearch({ filters: {} });
-          }}
-          onClose={() => setShowFilters(false)}
-        />
-      )}
-
-      <nav style={styles.nav}>
-        {(Object.keys(DESK_TAB_LABELS) as DeskTab[]).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            style={activeTab === tab ? styles.navButtonActive : styles.navButton}
-            onClick={() => handleTabChange(tab)}
-          >
-            {DESK_TAB_LABELS[tab]}
+        <div className="flex gap-3">
+          <button className="px-4 py-2 rounded flex items-center gap-2 transition-colors"
+            style={{ border: '1px solid #273946', color: '#273946', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(39,57,70,0.05)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>filter_list</span>
+            Filter
           </button>
-        ))}
-      </nav>
-
-      {deskId && (
-        <div style={styles.breadcrumbContainer}>
-          <DeskBreadcrumb deskName="Office Desk" tabLabel={DESK_TAB_LABELS[activeTab]} />
+          <button className="px-4 py-2 rounded flex items-center gap-2 shadow-sm transition-colors"
+            style={{ backgroundColor: '#273946', color: '#ffffff', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#112430'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#273946'; }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+            New Enrollment
+          </button>
         </div>
-      )}
+      </div>
 
-      <main style={styles.main}>
-        {/* Render child routes via Outlet, or fallback to default views */}
-        {deskId ? (
-          <Outlet context={{ tenantId: profile.tenant_id, deskId }} />
-        ) : (
-          <div style={styles.loading}>Loading...</div>
-        )}
-      </main>
-    </div>
+      {/* Main Tabs */}
+      <div className="overflow-x-auto shrink-0">
+        <nav className="flex" style={{ borderBottom: '1px solid rgba(39,57,70,0.1)' }}>
+          {MAIN_TABS.map((tab) => {
+            const isActive = tab.key === mainTab;
+            return (
+              <button key={tab.key} onClick={() => setMainTab(tab.key)}
+                className="px-6 py-3 whitespace-nowrap transition-colors relative"
+                style={{
+                  fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif',
+                  color: isActive ? '#273946' : '#54626C',
+                  backgroundColor: isActive ? '#ffffff' : 'transparent',
+                  borderTop: isActive ? '1px solid rgba(39,57,70,0.1)' : '1px solid transparent',
+                  borderLeft: isActive ? '1px solid rgba(39,57,70,0.1)' : '1px solid transparent',
+                  borderRight: isActive ? '1px solid rgba(39,57,70,0.1)' : '1px solid transparent',
+                  borderRadius: isActive ? '0.25rem 0.25rem 0 0' : undefined,
+                  zIndex: isActive ? 10 : undefined,
+                }}>
+                {isActive && (
+                  <span className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: '#E8A020' }} />
+                )}
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Sub Tabs */}
+      <div className="flex items-center gap-6 overflow-x-auto shrink-0 pb-1"
+        style={{ borderBottom: '1px solid rgba(195,199,204,0.2)' }}>
+        {SUB_TABS.map((tab) => {
+          const isActive = tab.key === activeSubTab;
+          return (
+            <button key={tab.key} onClick={() => navigate(`/service/office-desk/${tab.route}`)}
+              className="whitespace-nowrap py-3 px-1 transition-colors"
+              style={{
+                fontFamily: '"EB Garamond", serif', fontSize: '14px', fontWeight: isActive ? 700 : 500,
+                color: isActive ? '#273946' : '#54626C',
+                borderBottom: isActive ? '2px solid #E8A020' : '2px solid transparent',
+              }}>
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Content — renders child routes via Outlet, or default view */}
+      <div className="flex-1 overflow-y-auto min-h-0 pb-12">
+        <Outlet context={{ tenantId: deskId, mainTab, subTab: activeSubTab }} />
+      </div>
+    </AdminLayout>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#f5f5f5',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  },
-  header: {
-    backgroundColor: '#2d3748',
-    color: 'white',
-    padding: '24px',
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    margin: '0 0 4px 0',
-  },
-  subtitle: {
-    fontSize: '14px',
-    opacity: 0.9,
-    margin: '0',
-  },
-  nav: {
-    display: 'flex',
-    backgroundColor: '#1a202c',
-    padding: '0 24px',
-    gap: '4px',
-  },
-  navButton: {
-    padding: '12px 24px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: '#a0aec0',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    borderBottom: '2px solid transparent',
-  },
-  navButtonActive: {
-    padding: '12px 24px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    color: 'white',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    borderBottom: '2px solid #4299e1',
-  },
-  breadcrumbContainer: {
-    padding: '12px 24px 0',
-    backgroundColor: 'white',
-    borderBottom: '1px solid #e2e8f0',
-  },
-  main: {
-    padding: '24px',
-  },
-  loading: {
-    padding: '48px',
-    textAlign: 'center',
-    color: '#718096',
-  },
-  error: {
-    padding: '48px',
-    textAlign: 'center',
-    color: '#e53e3e',
-  },
-};

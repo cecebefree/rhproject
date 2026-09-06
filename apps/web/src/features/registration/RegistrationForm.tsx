@@ -357,7 +357,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: '10px',
     padding: '14px 16px',
-    border: '2px solid #1a2330',
+    border: '2px solid #273946',
     borderRadius: '8px',
     cursor: 'pointer',
     transition: 'border-color 150ms, background-color 150ms',
@@ -365,7 +365,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   radioInput: {
     margin: 0,
-    accentColor: '#1a2330',
+    accentColor: '#273946',
   },
   radioLabel: {
     display: 'block',
@@ -381,7 +381,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   submit: {
     padding: '14px 24px',
-    backgroundColor: '#1a2330',
+    backgroundColor: '#273946',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',

@@ -279,6 +279,21 @@ async function createPayPalOrder(params: {
 // ═══════════════════════════════════════════════════════════
 
 async function handleSubmit(req: Request): Promise<Response> {
+  const ipAddress = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
+
+  // ── Rate limit check ──────────────────────────────────────
+  try {
+    const { data: allowed } = await supabase.rpc("check_rate_limit" as any, {
+      p_caller: `website-lead:${ipAddress}`,
+      p_tenant: null,
+    });
+    if (allowed === false) {
+      return reject(429, "rate_limited", "Too many requests. Please try again later.");
+    }
+  } catch {
+    // Fail-open: proceed if rate limit check errors
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -324,7 +339,6 @@ async function handleSubmit(req: Request): Promise<Response> {
   const intakeGroup = typeof body.child_intake_group === "string" ? body.child_intake_group.trim() : null;
   const zoneSelection = typeof body.zone_selection === "number" ? body.zone_selection : null;
   const turnstileToken = typeof body.turnstile_token === "string" ? body.turnstile_token.trim() : null;
-  const ipAddress = req.headers.get("cf-connecting-ip") || req.headers.get("x-forwarded-for")?.split(",")[0] || null;
 
   // 1. Insert into website_leads
   const { data: lead, error: insertErr } = await supabase

@@ -1,0 +1,194 @@
+Connecting to local database...
+psql:/Users/ce/dev/rhproject-new/supabase/tests/000_pgtap_setup.sql:4: NOTICE:  extension "pgtap" already exists, skipping
+/Users/ce/dev/rhproject-new/supabase/tests/000_pgtap_setup.sql ........................ ok
+/Users/ce/dev/rhproject-new/supabase/tests/00_rls_enabled.sql ......................... ok
+/Users/ce/dev/rhproject-new/supabase/tests/012_rls_denial_proofs.sql .................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/013_cross_tenant_office.sql ................ ok
+/Users/ce/dev/rhproject-new/supabase/tests/01_profiles_self_read.sql .................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/027_student_class_test.sql ................. 
+# Failed test 4: "all three policies exist"
+#     Extra policies:
+#         sc_adult_read
+#         student_class_read
+# Looks like you failed 1 test of 4
+Failed 1/4 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/02_student_devotional_blocked.sql .......... ok
+/Users/ce/dev/rhproject-new/supabase/tests/035_platform_access_test.sql ............... ok
+/Users/ce/dev/rhproject-new/supabase/tests/036_notifications_test.sql ................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/038_realtime_test.sql ...................... ok
+/Users/ce/dev/rhproject-new/supabase/tests/03_admin_devotional_visible.sql ............ ok
+/Users/ce/dev/rhproject-new/supabase/tests/041_announcements_test.sql ................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/04_admin_all_bypass.sql .................... ok
+/Users/ce/dev/rhproject-new/supabase/tests/059_chat_tables_test.sql ................... ok
+/Users/ce/dev/rhproject-new/supabase/tests/05_jwt_hook_injection.sql .................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/062_handle_system.test.sql ................. 
+# Failed test 23: "E17: authenticated direct UPDATE on profiles denied"
+#       caught: no exception
+#       wanted: 42501
+# Failed test 24: "E18: authenticated UPDATE(handle) denied even with IS NULL guard"
+#       caught: no exception
+#       wanted: 42501
+# Looks like you failed 2 tests of 24
+Failed 2/24 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/062a_set_handle_ef_test.sql ................ 
+# Failed test 17: "T15: authenticated direct UPDATE on profiles denied"
+#       caught: no exception
+#       wanted: 42501
+# Failed test 19: "T17: authenticated has no UPDATE privilege on profiles (post-076)"
+# Looks like you failed 2 tests of 19
+Failed 2/19 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/063_family_ledger_test.sql ................. 
+# Failed test 5: "family INSERT on report_cards is rejected by RLS"
+#       caught: 42P17: infinite recursion detected in policy for relation "student_class"
+#       wanted: 42501
+# Looks like you failed 1 test of 16
+Failed 1/16 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/065_r18_rpc_test.sql ....................... 
+# Failed test 8: "AC-8: nonexistent card returns same error as cross-tenant (no existence oracle)"
+#       caught: P0001: Report card not found
+#       wanted: an exception: Report card not found or not accessible
+# Failed test 10: "AC-2b: released_at is stamped"
+#         have: false
+#         want: true
+# Failed test 11: "AC-2c: released_by matches office caller"
+#         have: NULL
+#         want: 00000000-0000-0000-0000-0000000000ff
+# Failed test 13: "AC-9: double-release rejected (card already visible)"
+#       caught: no exception
+#       wanted: an exception
+# Looks like you failed 4 tests of 13
+Failed 4/13 subtests 
+psql:/Users/ce/dev/rhproject-new/supabase/tests/06_jwt_hook_fail_loud.sql:11: NOTICE:  extension "pgtap" already exists, skipping
+/Users/ce/dev/rhproject-new/supabase/tests/06_jwt_hook_fail_loud.sql .................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/078_leads_test.sql ......................... 
+# Failed test 1: "authenticated has SELECT grant on leads (post-096)"
+#     Extra privileges:
+#         DELETE
+#         INSERT
+#         UPDATE
+# Failed test 2: "anon has no per-table privileges on leads"
+#     Extra privileges:
+#         DELETE
+#         INSERT
+#         SELECT
+#         UPDATE
+# Failed test 5: "authenticated UPDATE on leads throws 42501"
+#       caught: no exception
+#       wanted: 42501
+# Looks like you failed 3 tests of 8
+Failed 3/8 subtests 
+psql:/Users/ce/dev/rhproject-new/supabase/tests/07_tenant_assignment_immutable_test.sql:7: NOTICE:  extension "pgtap" already exists, skipping
+/Users/ce/dev/rhproject-new/supabase/tests/07_tenant_assignment_immutable_test.sql .... ok
+/Users/ce/dev/rhproject-new/supabase/tests/080_column_grants_test.sql ................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/096_leads_read_test.sql .................... 
+# Failed test 1: "authenticated has SELECT grant on leads (096 grant, R2)"
+#     Extra privileges:
+#         DELETE
+#         INSERT
+#         UPDATE
+# Looks like you failed 1 test of 8
+Failed 1/8 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/107_callback_fields_test.sql ............... ok
+/Users/ce/dev/rhproject-new/supabase/tests/109_leads_archive_test.sql ................. ok
+/Users/ce/dev/rhproject-new/supabase/tests/110_ef_rate_limit_test.sql ................. ok
+psql:/Users/ce/dev/rhproject-new/supabase/tests/111_office_desk_rls_test.sql:89: ERROR:  relation "office_desk.family_accounts" does not exist
+LINE 1: INSERT INTO office_desk.family_accounts (id, tenant_id, fami...
+                    ^
+/Users/ce/dev/rhproject-new/supabase/tests/111_office_desk_rls_test.sql ............... 
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 10/10 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/112_profiles_rls_test.sql .................. 
+# Failed test 6: "student UPDATE on other profile denied"
+#       caught: no exception
+#       wanted: 42501
+# Looks like you failed 1 test of 8
+Failed 1/8 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/114_ef_call_log_rls_test.sql ............... 
+# Failed test 5: "teacher UPDATE on ef_call_log denied"
+#       caught: no exception
+#       wanted: 42501
+# Failed test 6: "teacher DELETE on ef_call_log denied"
+#       caught: no exception
+#       wanted: 42501
+# Looks like you failed 2 tests of 6
+Failed 2/6 subtests 
+/Users/ce/dev/rhproject-new/supabase/tests/115_rate_limit_config_rls_test.sql ......... ok
+/Users/ce/dev/rhproject-new/supabase/tests/116_registration_payment_columns_test.sql .. ok
+/Users/ce/dev/rhproject-new/supabase/tests/117_registration_paypal_column_test.sql .... ok
+psql:/Users/ce/dev/rhproject-new/supabase/tests/145_failed_enrollments_test.sql:8: ERROR:  function row_security_enabled(regclass) does not exist
+LINE 1: SELECT (row_security_enabled(to_regclass(p_schema || '.' || ...
+                ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+QUERY:  SELECT (row_security_enabled(to_regclass(p_schema || '.' || p_table)))
+CONTEXT:  PL/pgSQL function is_rls_enabled(name,name,text) line 5 at SQL statement
+/Users/ce/dev/rhproject-new/supabase/tests/145_failed_enrollments_test.sql ............ 
+# Failed test 1: "Table office_desk.failed_enrollments exists"
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 12/12 subtests 
+psql:/Users/ce/dev/rhproject-new/supabase/tests/190_notification_preferences_test.sql:132: ERROR:  function public.get_or_create_notification_preferences(unknown) does not exist
+LINE 2:   (SELECT class_notification_scope FROM public.get_or_create...
+                                                ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+/Users/ce/dev/rhproject-new/supabase/tests/190_notification_preferences_test.sql ...... 
+# Failed test 3: "class_notification_scope column exists"
+# Failed test 4: "core_curriculum_enabled column exists"
+# Failed test 5: "clubs_enabled column exists"
+# Failed test 6: "class_ids column exists"
+# Failed test 7: "hub_event_types column exists"
+# Failed test 8: "news_categories column exists"
+# Failed test 9: "CHECK class_notification_scope rejects invalid value"
+#       caught: 42703: column "class_notification_scope" of relation "notification_preferences" does not exist
+#       wanted: 23514
+# Failed test 10: "student1 can insert own notification_preferences"
+#     died: 23502: null value in column "notification_type_id" of relation "notification_preferences" violates not-null constraint
+#         SCHEMA:     public
+#         TABLE:      notification_preferences
+#         COLUMN:     notification_type_id
+#         CONTEXT:
+#             SQL statement "INSERT INTO public.notification_preferences (student_id) VALUES ('a1000000-0000-0000-0000-000000000001')"
+#             PL/pgSQL function lives_ok(text,text) line 14 at EXECUTE
+# Failed test 11: "student1 reads exactly 1 own prefs row"
+#         have: 0
+#         want: 1
+# Failed test 13: "student1 can update own prefs"
+#     died: 42703: column "class_notification_scope" of relation "notification_preferences" does not exist
+#         CONTEXT:
+#             PL/pgSQL function lives_ok(text,text) line 14 at EXECUTE
+Dubious, test returned 3 (wstat 768, 0x300)
+Failed 11/14 subtests 
+
+Test Summary Report
+-------------------
+/Users/ce/dev/rhproject-new/supabase/tests/027_student_class_test.sql               (Wstat: 0 Tests: 4 Failed: 1)
+  Failed test:  4
+/Users/ce/dev/rhproject-new/supabase/tests/062_handle_system.test.sql               (Wstat: 0 Tests: 24 Failed: 2)
+  Failed tests:  23-24
+/Users/ce/dev/rhproject-new/supabase/tests/062a_set_handle_ef_test.sql              (Wstat: 0 Tests: 19 Failed: 2)
+  Failed tests:  17, 19
+/Users/ce/dev/rhproject-new/supabase/tests/063_family_ledger_test.sql               (Wstat: 0 Tests: 16 Failed: 1)
+  Failed test:  5
+/Users/ce/dev/rhproject-new/supabase/tests/065_r18_rpc_test.sql                     (Wstat: 0 Tests: 13 Failed: 4)
+  Failed tests:  8, 10-11, 13
+/Users/ce/dev/rhproject-new/supabase/tests/078_leads_test.sql                       (Wstat: 0 Tests: 8 Failed: 3)
+  Failed tests:  1-2, 5
+/Users/ce/dev/rhproject-new/supabase/tests/096_leads_read_test.sql                  (Wstat: 0 Tests: 8 Failed: 1)
+  Failed test:  1
+/Users/ce/dev/rhproject-new/supabase/tests/111_office_desk_rls_test.sql             (Wstat: 768 (exited 3) Tests: 0 Failed: 0)
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 10 tests but ran 0.
+/Users/ce/dev/rhproject-new/supabase/tests/112_profiles_rls_test.sql                (Wstat: 0 Tests: 8 Failed: 1)
+  Failed test:  6
+/Users/ce/dev/rhproject-new/supabase/tests/114_ef_call_log_rls_test.sql             (Wstat: 0 Tests: 6 Failed: 2)
+  Failed tests:  5-6
+/Users/ce/dev/rhproject-new/supabase/tests/145_failed_enrollments_test.sql          (Wstat: 768 (exited 3) Tests: 1 Failed: 1)
+  Failed test:  1
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 12 tests but ran 1.
+/Users/ce/dev/rhproject-new/supabase/tests/190_notification_preferences_test.sql    (Wstat: 768 (exited 3) Tests: 13 Failed: 10)
+  Failed tests:  3-11, 13
+  Non-zero exit status: 3
+  Parse errors: Bad plan.  You planned 14 tests but ran 13.
+Files=35, Tests=341,  1 wallclock secs ( 0.04 usr  0.04 sys +  0.11 cusr  0.07 csys =  0.26 CPU)
+Result: FAIL
+error running container: exit 1
+Try rerunning the command with --debug to troubleshoot the error.

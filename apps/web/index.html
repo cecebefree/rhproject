@@ -4,8 +4,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Redhouse Web</title>
+
+    <!-- Favicon & Icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CDN (matches stitch exactly) -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "text-main": "#1A242B",
+              "brand-navy": "#273946",
+              "brand-red": "#C8281E",
+              "brand-gold": "#E8A020",
+              "surface-cream": "#F8F7F4",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-low": "#f4f3f0",
+              "surface-container": "#efeeeb",
+              "surface-container-high": "#e9e8e5",
+              "surface-container-highest": "#e3e2df",
+              "surface-dim": "#dbdad7",
+              "surface-bright": "#faf9f6",
+              "on-surface": "#1a1c1a",
+              "on-surface-variant": "#43474b",
+              "on-primary": "#ffffff",
+              "primary": "#112430",
+              "primary-container": "#273946",
+              "outline": "#73777c",
+              "outline-variant": "#c3c7cc",
+              "text-muted": "#54626C",
+            },
+            fontFamily: {
+              "display-lg": ["EB Garamond"],
+              "headline-lg": ["EB Garamond"],
+              "headline-md": ["EB Garamond"],
+              "body-lg": ["Source Sans 3"],
+              "body-md": ["Source Sans 3"],
+              "body-sm": ["Source Sans 3"],
+              "label-caps": ["Source Sans 3"],
+              "total-numeric": ["EB Garamond"],
+            },
+            fontSize: {
+              "display-lg": ["36px", { lineHeight: "44px", letterSpacing: "-0.01em", fontWeight: "500" }],
+              "headline-lg": ["24px", { lineHeight: "32px", letterSpacing: "0.01em", fontWeight: "500" }],
+              "headline-md": ["20px", { lineHeight: "28px", fontWeight: "500" }],
+              "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+              "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+              "body-sm": ["12px", { lineHeight: "18px", fontWeight: "400" }],
+              "label-caps": ["11px", { lineHeight: "16px", letterSpacing: "0.12em", fontWeight: "600" }],
+              "total-numeric": ["22px", { lineHeight: "28px", letterSpacing: "-0.02em", fontWeight: "400" }],
+            },
+          }
+        }
+      }
+    </script>
+
+    <style>
+      body { background-color: #F8F7F4; color: #1A242B; }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
   </head>
-  <body>
+  <body class="font-body-md text-body-md">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

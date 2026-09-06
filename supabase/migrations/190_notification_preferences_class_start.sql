@@ -152,3 +152,18 @@ GRANT EXECUTE ON FUNCTION public.get_or_create_notification_preferences(UUID) TO
 GRANT EXECUTE ON FUNCTION public.get_or_create_notification_preferences(UUID) TO service_role;
 
 COMMIT;
+
+-- Add missing column if not exists
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+    AND table_name = 'notification_preferences'
+    AND column_name = 'class_notification_scope'
+  ) THEN
+    ALTER TABLE public.notification_preferences
+      ADD COLUMN class_notification_scope text DEFAULT 'all' 
+      CHECK (class_notification_scope IN ('all', 'enrolled', 'none'));
+  END IF;
+END $$;

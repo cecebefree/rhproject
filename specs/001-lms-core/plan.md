@@ -6,7 +6,7 @@
 
 ## Summary
 
-Core LMS functionality for Redhouse: students self-register, purchase course access, watch video chapters sequentially, and track progress; instructors create and manage courses with chapters; admins view all registrations and student progress. Implemented as a React web application with Supabase backend, using Row-Level Security for authorization and Supabase-generated TypeScript types.
+Core LMS functionality for Redhouse: students self-register, purchase curriculum access, watch video chapters sequentially, and track progress; instructors create and manage curriculums with chapters; admins view all registrations and student progress. Implemented as a React web application with Supabase backend, using Row-Level Security for authorization and Supabase-generated TypeScript types.
 
 ## Technical Context
 

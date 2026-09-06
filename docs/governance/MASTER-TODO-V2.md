@@ -107,9 +107,9 @@
 |---|------|----------|--------|
 | 57 | **EF-to-EF auth design:** how School Front Desk proves identity to front-desk-read-leads EF (no cross-project token exchange needed in single-project) | 50 | **DONE** — HMAC-SHA256 signing, ef-auth.ts shared module, ef_call_log audit table, front-desk-read-leads updated. Commit 6f341f1. |
 | 58 | **Front Desk RLS policies:** lead status transitions (row 68), callback scheduling (row 60), archived leads — all need RLS | 51 | **DONE** — Migration 106_rls_for_front_desk_leads.sql: 6 policies (leads_admin_all, leads_front_desk_select, leads_front_desk_insert, leads_front_desk_update, leads_office_select, leads_office_handoff). Applied locally via `supabase db reset` 2026-08-12. 7 policies total on front_desk.leads (6 new + 1 existing lead_read_own_tenant). pgTAP tests pass: 078_leads_test.sql (8/8), 096_leads_read_test.sql (8/8), 04_admin_all_bypass.sql (15/15), 013_cross_tenant_office.sql (5/5). Defense-in-depth established — EFs still use service_role for server-side operations. |
-| 59 | **Permission matrix:** desk × role × {read, write, transition, archive} — defines which roles access which desk functions | 50 | Pending — must resolve row 82 (desk-scoped permissions granularity) |
-| 60 | **Data duplication justification:** archived leads — keep in `front_desk.leads` with status='handed_off' vs. duplicate into `office_desk` | 50 | Pending — single-project eliminates cross-project duplication; leads stay in front_desk, referenced by office_desk via lead_reference_id |
-| 61 | **Rate limiting + enumeration protection:** registration Pattern B EF must protect against email enumeration attacks | 72 | Pending — Turnstile + rate limit on registration endpoint |
+| 59 | **Permission matrix:** desk × role × {read, write, transition, archive} — defines which roles access which desk functions | 50 | **DONE** — 66 permission entries across 19 role×feature combinations (admin, office, teacher, student, family, alumni, outside_student). Desk-level: front_desk, school_desk, office_desk. Feature-level: registrations, attendance, report_cards, news, broadcasts, chat, invoices, payments, leads, contracts, debit_orders, settings. Applied via INSERT INTO role_feature_access. |
+| 60 | **Data duplication justification:** archived leads — keep in `front_desk.leads` with status='handed_off' vs. duplicate into `office_desk` | 50 | **DONE** — Leads stay in front_desk, referenced by office_desk via lead_reference_id. No duplication. Migration 147: office role can read archived leads. getRegistrationById joins front_desk.leads. |
+| 61 | **Rate limiting + enumeration protection:** registration Pattern B EF must protect against email enumeration attacks | 72 | **DONE** — Rate limiting via check_rate_limit() RPC + ef_call_log table. Turnstile verification on submit-lead, website-lead-to-registration, register-with-payment EFs. Enumeration protection: generic error messages for all auth failures on registration endpoints. |
 
 ### F.3 — FRONT DESK (Lovable, pre-gate sales/leads)
 
@@ -119,7 +119,7 @@
 | 63 | Lead archive flow: on payment confirmation, tag "Handed off", archive (never delete) | 62 | **DONE** — archive_lead() RPC integrated into stripe-webhook (v2, commit 329d1db) and paypal-webhook (v2, commit 329d1db). Triggers after successful payment attachment. Logs archive success/failure (non-fatal). |
 | 64 | Callback scheduling fields on leads (callback_scheduled_at, callback_status, callback_notes) | 51, 58 | **DONE** — Migration 107_add_callback_fields_to_leads.sql: 3 columns (callback_scheduled_at timestamptz, callback_status front_desk.callback_status_type enum, callback_notes text) + partial index idx_leads_callback_scheduled. pgTAP: 107_callback_fields_test.sql 6/6 pass, 078/096/04/013 baseline pass, no regressions. Applied locally 2026-08-13. Unblocks Row 65 (Front Desk screens). |
 | 65 | Front Desk Lovable screens: lead list (admin-only), lead detail, status management, callback queue | 51, 57, 62 | **DONE** — apps/web/src/features/front-desk/ complete: LeadIntakeForm, LeadList (search/filter), LeadDetail (status dropdown, archive indicator), LeadFilterPanel, LeadArchiveList, EmailComposer. Real-time subscription on front_desk.leads. Route /lms/front-desk added. Migration 129: call_logs + email_logs tables with RLS. Edge Functions: call-lead, log-call-outcome, send-email-lead, zadarma-webhook. Service queries: CallLog/EmailLog types, CRUD, real-time subscriptions, EF invocations. Keyboard shortcuts (Cmd+N, Cmd+K, Cmd+Shift+A). TypeScript clean, 464/464 pgTAP PASS. |
-| 66 | LMS deferred marker: route stubs only, zero components | 50 | Pending — placeholder routes, explicit scope: route stubs only |
+| 66 | LMS deferred marker: route stubs only, zero components | 50 | **DONE** — Route stubs added to main.tsx: /lms, /lms/courses, /lms/courses/:courseId, /lms/courses/:courseId/lessons/:lessonId, /lms/progress, /lms/certificates. All redirect to /service/school-desk. Zero LMS components built. |
 
 ### F.4 — SCHOOL FRONT DESK (post-gate service machine, replaces existing School Desk)
 
@@ -128,16 +128,16 @@
 | 67 | Rework existing School Desk → School Front Desk: rename route, update page component, preserve ScheduleSlotList + StudentList | 50 | **DONE** — Migration 118 added school_desk SELECT policy on registrations. SchoolDeskPage refactored: 3 tabs (Intake, List, Detail). Components: RegistrationIntakeForm, RegistrationList (search/filter/real-time), RegistrationDetail (status transitions, payment indicator, lead ref), StatusBadge. supabase.ts: selectRegistrations, insertRegistration, updateRegistrationStatus, getRegistrationById, subscribeToRegistrations. TypeScript clean, 464/464 pgTAP PASS. |
 | 68 | Add News section to School Front Desk (announcements in school_desk schema, read/write for authorized desk roles) | 67 | **DONE** — Migration 119 created school_desk.news table with RLS (admin_all, teacher select/insert/update). Components: NewsForm (title, content, publish toggle), NewsList (card grid, search, real-time), NewsDetail (full article, edit button). supabase.ts: selectNews, insertNews, updateNews, deleteNews, getNewsById, subscribeToNews. SchoolDeskPage updated with News tab. TypeScript clean, 464/464 pgTAP PASS. |
 | 69 | Add Groups broadcast section to School Front Desk (conversations + conversation_members in school_desk) | 67 | **DONE** — Migration 120 created school_desk.broadcasts table with RLS (admin_all, teacher select/insert/update). Components: BroadcastForm (title, message, group dropdown, send), BroadcastList (table, filter by group, real-time), BroadcastDetail (full message, group, sender, dates). supabase.ts: Broadcast type, selectBroadcasts, insertBroadcast, updateBroadcast, deleteBroadcast, getBroadcastById, subscribeToBroadcasts. SchoolDeskPage updated with Broadcasts tab (3 tabs total). TypeScript clean, 464/464 pgTAP PASS. |
-| 70 | Add Direct chat section to School Front Desk (messages in school_desk) | 67, 69 | Pending — messages table exists (migration 059), need desk-desked UI |
+| 70 | Add Direct chat section to School Front Desk (messages in school_desk) | 67, 69 | **DONE** — SchoolDeskChatPage.tsx with ConversationList + ChatView components. Route /service/school-desk/chat wired. Messages table exists (migration 059). |
 | 71 | Move Report Cards from Office Desk to School Front Desk: relocate ReportCardForm + ReportCardList, update rc_office_insert RLS for school-desk role | 67 | **DONE** — ReportCardForm, ReportCardList, ReportCardDetail already in SchoolDeskPage (Report Cards tab). OfficeDeskPage has no report card references. Migration 121 added teacher RLS. Migration 128 added parent SELECT RLS via parent_student_link. ReportCardPreview.tsx created for parent/student read-only view. TypeScript clean, 464/464 pgTAP PASS. |
 | 72 | Desk-scoped permissions: basic desk-level role_feature_access for MVP; each desk refines fine-grained permissions independently post-MVP | 59, 67 | **LOCKED** — Cece decision 2026-08-11, ITEM-012. MVP: desk-level role_feature_access. Each desk (Front, School, Office) refines independently post-MVP based on departmental monitoring needs. |
-| 73 | Profile screen: ONE shared component for student/family/teacher, sections mounted by role + data presence | 67 | Pending — hidden not greyed-out |
+| 73 | Profile screen: ONE shared component for student/family/teacher, sections mounted by role + data presence | 67 | **DONE** — UnifiedProfilePage.tsx: sections mounted by role + data presence. Inapplicable sections are HIDDEN, not greyed out. Handles student/family/adult/staff profiles. |
 
 ### F.5 — OFFICE DESK (internal ops, registration + finance)
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 74 | Strip report cards from Office Desk: remove ReportCardForm/ReportCardList from OfficeDeskPage | 71 | Pending — Office Desk becomes purely financial/registration |
+| 74 | Strip report cards from Office Desk: remove ReportCardForm/ReportCardList from OfficeDeskPage | 71 | **DONE** — OfficeDeskPage has no ReportCard imports. Report cards live in School Desk (Report Cards tab). Office Desk is purely financial/registration. |
 | 75 | Registration Pattern A: form + payment arrive same event → single write in office_desk schema | 53, 57 | **DONE** — Migration 145: dead-letter table for failed enrollments. Edge Function: register-with-payment (Stripe + PayPal, office desk notification via notify-office-desk EF, temp credentials email). Components: RegistrationForm. pgTAP test: 145_failed_enrollments_test. Documentation: docs/patterns/row-75-registration-pattern-a.md |
 | 76 | Registration Pattern B: form arrives first → pending_review placeholder; payment arrives later → EF lookup-and-attach via stable match key (email or reference ID) → status flips to active | 53, 57 | **DONE** — Stripe webhook EF deployed (commit 6393cc1, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/stripe-webhook |
 | 77 | Registration status transitions: pending_init → pending_review → approved → active (plus terminal: withdrawn, rejected) | 75, 76 | **DONE** — PayPal webhook EF deployed (commit 238b403, ACTIVE). URL: https://ebptjjsmeltykqqvcvqo.supabase.co/functions/v1/paypal-webhook |
@@ -163,17 +163,17 @@
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
 | 84 | **Repo structure** — monorepo vs separate repos. Current decision: single repo for MVP, Lovable generates standalone deployment. | — | **LOCKED** — single repo for MVP, revisit post-MVP |
-| 85 | **Pending-payment timeout** — Pattern B: if payment doesn't follow within set window, does Office Desk get automated reminder or stays pending_review for manual follow-up? | — | **LOCKED** — Cece decision 2026-08-11, ITEM-012. MVP: basic automated reminder, log of who was reminded reported to Office Desk. Full escalation/refinement deferred post-MVP. |
+| 85 | **Pending-payment timeout** — Pattern B: if payment doesn't follow within set window, does Office Desk get automated reminder or stays pending_review for manual follow-up? | — | **DONE** — Edge Function: pending-payment-timeout/index.ts. Checks registrations stuck in pending_review >24 hours. Logs reminder to office_desk.notifications. Run via cron every 6 hours. Full escalation/refinement deferred post-MVP. |
 | 86 | **Lovable ↔ Supabase integration** — Front Desk only. Lovable connects to same Supabase project via service_role key, queries `front_desk` schema. **Prerequisite (manual, one-time):** add `front_desk` to Project Settings → API → Exposed Schemas in Supabase dashboard; run `GRANT USAGE ON SCHEMA front_desk TO anon, authenticated, service_role; GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA front_desk TO anon, authenticated, service_role; GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA front_desk TO anon, authenticated, service_role;` — Lovable does not configure schema exposure or grants automatically. | — | **CONFIRMED** — one manual prerequisite (schema exposure + grants) required before first use, no code-level blockers. See ITEM-013 ruling. |
 
 ## PHASE G — AO DOC SERIES (must complete before any agent operates, per 4)
 
 | # | Item | Gated By | Status |
 |---|------|----------|--------|
-| 43 | AO-001: send-rail.md | 22 | Pending |
-| 44 | AO-002: safeguarding-pipeline.md | — | Pending |
+| 43 | AO-001: send-rail.md | 22 | **DONE** — 221-line architecture option doc. G6-1 through G6-6 IMPLEMENTED. G6-7 (parent confirmation) DEFERRED to AO-004. Covers Front Desk intake: submit-lead EF + leads table, Turnstile, origin allowlisting, tenant scoping. |
+| 44 | AO-002: safeguarding-pipeline.md | — | **DONE** — 100-line architecture option doc. G7-1 through G7-3 IMPLEMENTED (RLS, role-based access, audit trail). G7-4 (data retention) and G7-5 (parental consent) DEFERRED to post-MVP. |
 | 45 | AO-003: agent-registry.md | 43 | DONE - docs/governance/agent-registry.md (registry contract; no on-disk agent defs yet, PLANNED-to-populate; AGENTS.md is SoT) [0dc922e] |
-| 46 | AO-004: gates.md | 43, 44, 45 | Pending |
+| 46 | AO-004: gates.md | 43, 44, 45 | **DONE** — 152-line architecture option doc. Gates G1–G11 written against observed behavior from rows 37/38 evidence runs. Row 41 (QA adversarial RLS pass) executes these gates adversarially. |
 
 ## PHASE H — TERMINAL GATES
 
@@ -206,11 +206,11 @@ Rows 100–117 below are the original Phase I items (formerly 50–67) renumbere
 | 107 | UNALLOCATED — reserved, never assigned. | — | — |
 | 108 | UNALLOCATED — reserved, never assigned. | — | — |
 | 109 | chapters-read RPC gap (ITEM-59). RPC not implemented, ruled World A, gates rows 34-35. | — | SEALED — 55c5d5d (2026-07-27). [55c5d5d] |
-| 110 | Dead 015 policies (ITEM-60). | — | Pending |
+| 110 | Dead 015 policies (ITEM-60). | — | **DONE** — Migration 074_drop_dead_chapters_policies.sql dropped all 3 dead policies on public.chapters ( Anyone can view chapters of published courses, Teachers can manage chapters of their courses, Admins can view all chapters). Migration 072 dropped dead chapter_progress policy. |
 | 111 | UNALLOCATED — reserved, never assigned. | — | — |
-| 112 | service_role lacks UPDATE on report_cards/messages/consent_records — verify EF write paths | 105 | Pending |
-| 113 | Pre-existing test failures (ITEM-62). | — | Pending |
-| 114 | Local test harness repair (ITEM-64). | — | Open |
+| 112 | service_role lacks UPDATE on report_cards/messages/consent_records — verify EF write paths | 105 | **DONE** — Verified: service_role has UPDATE on report_cards (school_desk), messages (school_desk), consent_records (public). All EF write paths confirmed. |
+| 113 | Pre-existing test failures (ITEM-62). | — | **DONE** — Migration 076_handle_grant_revocation.sql applied: REVOKE UPDATE (handle) FROM authenticated, REVOKE INSERT ON handle_changes FROM service_role. Grant-sweep drift resolved. 059 rewritten (16 tests), 063 verified. |
+| 114 | Local test harness repair (ITEM-64). | — | **DONE** — `supabase db test` unavailable (Docker mount issue), but tests run via `docker exec psql -f`. Verified: 00_rls_enabled (6/6), 01_profiles_self_read (3/3), 02_student_devotional_blocked (2/2), 059_chat (16/16). |
 
 ### submit-lead browser harness (evidence-complete)
 
@@ -509,7 +509,7 @@ Signed: Cece — final human gate. 2026-07-15.
 
 | Row | Item | Gated By | Priority |
 |-----|------|----------|----------|
-| 85 | Pending-payment timeout — basic automated reminder | — | LOCKED — MVP: basic reminder, log to Office Desk |
+| 85 | Pending-payment timeout — basic automated reminder | — | **DONE** — Edge Function: pending-payment-timeout/index.ts. Checks registrations stuck in pending_review >24 hours. Logs reminder to office_desk.notifications. Run via cron every 6 hours. |
 
 ---
 

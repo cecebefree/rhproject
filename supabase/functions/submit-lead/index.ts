@@ -158,16 +158,20 @@ Deno.serve(async (req) => {
   if (regErr) return reject(500, "registration_check_failed", headers);
 
 
-  const { error: insertErr } = await admin.schema("front_desk").from("leads").insert({
-    tenant_id: tenant.id,
-    name,
-    email,
-    phone,
-    notes,
-    existing_profile: isRegistered === true,
+  const { data: leadId, error: insertErr } = await admin.rpc("insert_lead", {
+    p_tenant_id: tenant.id,
+    p_name: name,
+    p_email: email,
+    p_phone: phone,
+    p_notes: notes,
+    p_source: "contact_form",
+    p_source_type: "website",
+    p_tags: [],
+    p_status: "enquiry",
+    p_time_zone: null,
+    p_existing_profile: isRegistered === true,
   });
   if (insertErr) return reject(500, "lead_insert_failed", headers);
 
-
-  return new Response(JSON.stringify({ status: "received" }), { status: 201, headers });
+  return new Response(JSON.stringify({ status: "received", lead_id: leadId }), { status: 201, headers });
 });

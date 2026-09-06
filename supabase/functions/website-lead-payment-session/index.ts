@@ -96,7 +96,10 @@ async function createStripeCheckoutSession(params: {
     );
     form.append("line_items[0][price_data][unit_amount]", String(params.amountCents));
     form.append("line_items[0][quantity]", "1");
-    form.append("success_url", `${SITE_URL}/register/success?session_id={CHECKOUT_SESSION_ID}`);
+    const successUrl = params.leadId
+      ? `${SITE_URL}/register/success?session_id={CHECKOUT_SESSION_ID}&lead_id=${params.leadId}`
+      : `${SITE_URL}/register/success?session_id={CHECKOUT_SESSION_ID}`;
+    form.append("success_url", successUrl);
     form.append("cancel_url", `${SITE_URL}/register/cancel`);
 
     if (params.leadId) {
@@ -187,7 +190,7 @@ async function createPayPalOrder(params: {
           brand_name: "Redhouse",
           landing_page: "BILLING",
           user_action: "PAY_NOW",
-          return_url: `${SITE_URL}/register/success?provider=paypal`,
+          return_url: `${SITE_URL}/register/success?provider=paypal${params.leadId ? `&lead_id=${params.leadId}` : ""}`,
           cancel_url: `${SITE_URL}/register/cancel?provider=paypal`,
         },
       }),
@@ -278,7 +281,43 @@ async function handleCreateSession(req: Request): Promise<Response> {
     ? body.family_preferred_currency.trim().toUpperCase()
     : "USD";
 
-  const leadId = typeof body.lead_id === "string" ? body.lead_id.trim() : undefined;
+  // Resolve tenant (first active tenant)
+  const { data: tenant } = await supabase
+    .schema("public")
+    .from("tenant_devotional")
+    .select("id")
+    .eq("is_active", true)
+    .limit(1)
+    .single();
+
+  const tenantId = tenant?.id;
+
+  // Save lead to front_desk.leads before creating payment session
+  let leadId: string | undefined;
+  if (tenantId) {
+    const { data: lead, error: leadError } = await supabase
+      .schema("front_desk")
+      .from("leads")
+      .insert({
+        tenant_id: tenantId,
+        name: child_name,
+        email: family_email,
+        source: "Registration Form",
+        source_type: "registration_form",
+        status: "enquiry",
+        notes: `Registration for ${child_name} (DOB: ${child_dob}). Fee: $${(amount_cents / 100).toFixed(2)} ${currency}. Payment: ${payment_method}`,
+        tags: ["Registration", payment_method === "stripe" ? "Stripe" : "PayPal"],
+      })
+      .select("id")
+      .single();
+
+    if (!leadError && lead) {
+      leadId = lead.id;
+    } else {
+      console.error("Failed to save lead:", leadError);
+      // Continue with payment session even if lead save fails
+    }
+  }
 
   let result: { url?: string; error?: string };
 
@@ -325,12 +364,14 @@ async function handleCreateSession(req: Request): Promise<Response> {
     child_name,
     payment_method,
     amount_cents,
+    lead_id: leadId,
   });
 
   return jsonResp({
     status: "success",
     redirect_url: result.url,
     payment_method,
+    lead_id: leadId,
   });
 }
 

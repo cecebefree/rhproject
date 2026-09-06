@@ -1,6 +1,6 @@
 // Parent Portal Page — Row 75
 // Read-only view of student progress for parents
-// Auth gate: role='parent' only
+// Auth gate: role='family' or role='parent' (supports both)
 
 import { useEffect, useState } from 'react';
 import { ParentDashboard } from '../components/ParentDashboard';
@@ -57,7 +57,7 @@ export default function ParentPortalPage() {
       if (!cancelled) {
         if (profileError) {
           setError(profileError.message);
-        } else if (profileData.role !== 'parent') {
+        } else if (profileData.role !== 'family' && profileData.role !== 'parent') {
           setError('Access denied. Parent Portal is for parents and guardians only.');
         } else {
           setProfile(profileData);

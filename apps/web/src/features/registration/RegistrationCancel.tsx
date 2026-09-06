@@ -98,7 +98,7 @@ const styles: Record<string, React.CSSProperties> = {
   title: {
     fontSize: '22px',
     fontWeight: 'bold',
-    color: '#1a2330',
+    color: '#273946',
     margin: '0 0 8px 0',
   },
   subtitle: {
@@ -128,7 +128,7 @@ const styles: Record<string, React.CSSProperties> = {
   retryLink: {
     display: 'block',
     padding: '12px',
-    backgroundColor: '#1a2330',
+    backgroundColor: '#273946',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',
@@ -141,7 +141,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'block',
     padding: '12px',
     backgroundColor: 'transparent',
-    color: '#1a2330',
+    color: '#273946',
     border: '1px solid #d1d5db',
     borderRadius: '8px',
     fontSize: '14px',

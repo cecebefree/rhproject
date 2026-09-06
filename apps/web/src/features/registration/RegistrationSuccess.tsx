@@ -47,7 +47,7 @@ export default function RegistrationSuccess() {
       if (cancelled) return;
 
       if (data?.archived_at && data?.registration_id) {
-        // Lead archived → registration created
+        // Lead archived → registration created (legacy path)
         const { data: reg } = await supabase
           .schema('office_desk')
           .from('registrations')
@@ -61,6 +61,26 @@ export default function RegistrationSuccess() {
               ? { student_name: reg.student_name, student_email: reg.student_email, status: reg.status }
               : { student_name: data.child_name || 'Student', student_email: data.family_email || '', status: 'created' }
           );
+          setPollStatus('confirmed');
+        }
+        return;
+      }
+
+      // Check office_desk.registrations directly (webhook may have created it)
+      const { data: reg } = await supabase
+        .schema('office_desk')
+        .from('registrations')
+        .select('student_name, student_email, status')
+        .eq('lead_reference_id', leadId)
+        .single();
+
+      if (reg) {
+        if (!cancelled) {
+          setRegistration({
+            student_name: reg.student_name,
+            student_email: reg.student_email,
+            status: reg.status,
+          });
           setPollStatus('confirmed');
         }
         return;
@@ -154,6 +174,22 @@ export default function RegistrationSuccess() {
 
         {/* Actions */}
         <div style={styles.actions}>
+          {pollStatus === 'confirmed' && (
+            <div style={styles.downloadBox}>
+              <p style={styles.downloadTitle}>Download the Redhouse App</p>
+              <p style={styles.downloadSubtitle}>
+                Access your child's schedule, grades, and more from your phone.
+              </p>
+              <div style={styles.downloadButtons}>
+                <a href="https://apps.apple.com/app/redhouse" style={styles.downloadBtn} target="_blank" rel="noopener noreferrer">
+                  App Store
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.redhouse" style={styles.downloadBtn} target="_blank" rel="noopener noreferrer">
+                  Google Play
+                </a>
+              </div>
+            </div>
+          )}
           <Link to="/register" style={styles.link}>
             Register another child
           </Link>
@@ -220,7 +256,7 @@ const styles: Record<string, React.CSSProperties> = {
   title: {
     fontSize: '22px',
     fontWeight: 'bold',
-    color: '#1a2330',
+    color: '#273946',
     margin: '0 0 8px 0',
   },
   subtitle: {
@@ -296,7 +332,7 @@ const styles: Record<string, React.CSSProperties> = {
   link: {
     display: 'block',
     padding: '12px',
-    backgroundColor: '#1a2330',
+    backgroundColor: '#273946',
     color: '#fff',
     border: 'none',
     borderRadius: '8px',
@@ -309,7 +345,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'block',
     padding: '12px',
     backgroundColor: 'transparent',
-    color: '#1a2330',
+    color: '#273946',
     border: '1px solid #d1d5db',
     borderRadius: '8px',
     fontSize: '14px',
@@ -325,5 +361,39 @@ const styles: Record<string, React.CSSProperties> = {
   supportLink: {
     color: '#2563eb',
     textDecoration: 'underline',
+  },
+  downloadBox: {
+    backgroundColor: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: '8px',
+    padding: '16px',
+    marginBottom: '16px',
+    textAlign: 'center',
+  },
+  downloadTitle: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#166534',
+    margin: '0 0 4px 0',
+  },
+  downloadSubtitle: {
+    fontSize: '13px',
+    color: '#166534',
+    margin: '0 0 12px 0',
+  },
+  downloadButtons: {
+    display: 'flex',
+    gap: '8px',
+    justifyContent: 'center',
+  },
+  downloadBtn: {
+    display: 'inline-block',
+    padding: '8px 16px',
+    backgroundColor: '#166534',
+    color: '#fff',
+    borderRadius: '6px',
+    fontSize: '13px',
+    fontWeight: '600',
+    textDecoration: 'none',
   },
 };

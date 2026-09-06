@@ -4,6 +4,23 @@
 
 ---
 
+## Terminology (NON-NEGOTIABLE)
+
+**NEVER use "courses" in the system.** The correct terms are:
+
+| Term | Meaning |
+|------|---------|
+| **Core** | Core Curriculums — Cambridge, IB, KABV, Home School. Each has subject selections/allocations per grade. |
+| **Sub** | Supplemental Education — Clubs (Junior/Mid/Senior school) + Enrichment Courses (Junior/Senior school, self-learn with test & certificate). |
+| **Student** | Profile type: Internal, External, Alumni |
+| **Adult** | Profile type: father, mother, guardian, sponsor, grandparent, other |
+| **Staff** | Profile type: teacher, administrator, expert, wellness coach, guest |
+
+**School has 5 parts:** CRM, Website, Mobile, Service Desks, LMS.
+**LMS is NOT built in MVP** — it is the only module added after MVP.
+
+---
+
 ## Current State: Mid-Migration
 
 Single Vite + React 19 app at repo root. Migration to pnpm + Turborepo monorepo is **in progress but not complete**.
@@ -20,7 +37,7 @@ repo root/           # Vite app (redhouse-temp)
 
 **What's done vs planned:**
 - `apps/web/` scaffold exists but is not the active app — `src/` at root is
-- `supabase/migrations/013-018` exist (LMS tables: users_profiles, courses, chapters, enrollments, chapter_progress)
+- `supabase/migrations/013-018` exist (LMS tables: users_profiles, curriculums, chapters, enrollments, chapter_progress)
 - `packages/`, `tenants/`, `supabase/functions/`, `Makefile`, `biome.json`, `turbo.json` do NOT exist yet
 
 ---

@@ -35,7 +35,7 @@ export function GradebookList({
   onEnterGrades,
   onCreateAssignment,
 }: GradebookListProps) {
-  const [courses, setCourses] = useState<Array<{ id: string; title: string }>>([]);
+  const [programs, setPrograms] = useState<Array<{ id: string; title: string }>>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [gradebook, setGradebook] = useState<Gradebook[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,10 +81,10 @@ export function GradebookList({
   async function loadData() {
     setLoading(true);
     try {
-      const [coursesResult, assignmentsResult, gradebookResult] = await Promise.all([
+      const [programsResult, assignmentsResult, gradebookResult] = await Promise.all([
         import('../services/supabase').then((m) =>
           m.supabaseUntyped
-            .from('school_desk.courses')
+            .from('school_desk.programs')
             .select('id, title')
             .eq('teacher_id', userId)
             .in('status', ['published', 'active']),
@@ -93,7 +93,7 @@ export function GradebookList({
         selectGradebook(tenantId),
       ]);
 
-      setCourses(coursesResult.data || []);
+      setPrograms(programsResult.data || []);
       setAssignments(assignmentsResult.data || []);
       setGradebook(gradebookResult.data || []);
     } catch (err: any) {
@@ -105,8 +105,8 @@ export function GradebookList({
 
   function getCourseSummary(): CourseSummary[] {
     const filteredCourses = selectedCourseId
-      ? courses.filter((c) => c.id === selectedCourseId)
-      : courses;
+      ? programs.filter((c) => c.id === selectedCourseId)
+      : programs;
 
     return filteredCourses.map((course) => {
       const courseAssignments = assignments.filter((a) => a.course_id === course.id);
@@ -183,7 +183,7 @@ export function GradebookList({
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Search courses..."
+          placeholder="Search subjects..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -196,8 +196,8 @@ export function GradebookList({
           onChange={(e) => setSelectedCourseId(e.target.value || null)}
           className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
-          <option value="">All Courses</option>
-          {courses.map((course) => (
+          <option value="">All Programs</option>
+          {programs.map((course) => (
             <option key={course.id} value={course.id}>
               {course.title}
             </option>
@@ -207,7 +207,7 @@ export function GradebookList({
 
       {filteredSummaries.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          {search ? 'No courses match your search.' : 'No courses found.'}
+          {search ? 'No programs match your search.' : 'No programs found.'}
         </div>
       ) : (
         <div className="overflow-x-auto">

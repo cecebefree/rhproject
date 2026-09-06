@@ -94,7 +94,7 @@ const styles: Record<string, React.CSSProperties> = {
   title: {
     fontSize: '24px',
     fontWeight: 'bold',
-    color: '#1a2330',
+    color: '#273946',
     margin: '0 0 8px 0',
   },
   subtitle: {
