@@ -3,10 +3,10 @@
 
 begin;
 
-alter table public.conversations
+alter table school_desk.conversations
   add column media_enabled boolean not null default false;
 
-comment on column public.conversations.media_enabled is
+comment on column school_desk.conversations.media_enabled is
   'Media dial per ITEM-001 S2. false = text+emoji only (demo default). true = image/video/attachment enabled.';
 
 commit;

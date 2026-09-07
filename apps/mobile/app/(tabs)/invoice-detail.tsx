@@ -84,8 +84,8 @@ export default function InvoiceDetailScreen() {
   }
 
   if (loading) return <LoadingState />;
-  if (error) return <EmptyState message={error} />;
-  if (!invoice) return <EmptyState message="Invoice not found" />;
+  if (error) return <EmptyState title="Error" message={error} />;
+  if (!invoice) return <EmptyState title="Not Found" message="Invoice not found" />;
 
   const balance = invoice.amount - invoice.amount_paid;
 

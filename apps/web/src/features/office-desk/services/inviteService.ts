@@ -281,7 +281,5 @@ function generateInviteToken(): string {
 
 export async function sendInviteEmail(invite: DeskInvite, deskName: string): Promise<{ error: Error | null }> {
   // Placeholder: In production, call an Edge Function or email service
-  console.log(`Invite email would be sent to ${invite.email} for desk "${deskName}"`);
-  console.log(`Accept link: ${window.location.origin}/invite/${invite.token}`);
   return { error: null };
 }

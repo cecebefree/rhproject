@@ -75,7 +75,7 @@ export function GlobalSearch() {
   }
 
   async function searchLeads(q: string): Promise<SearchResult[]> {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .schema('front_desk')
       .from('leads')
       .select('id, name, email, status')
@@ -110,7 +110,7 @@ export function GlobalSearch() {
   }
 
   async function searchRegistrations(q: string): Promise<SearchResult[]> {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .schema('office_desk')
       .from('registrations')
       .select('id, student_name, student_email, status')

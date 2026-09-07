@@ -2,7 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom';
 import { DeepLinkProvider } from './components/DeepLinkProvider';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { NavigationGuard } from './components/NavigationGuard';
+import { ToastProvider } from './components/Toast';
 import { RealtimeProvider } from './contexts/RealtimeProvider';
 import { FrontDeskPage } from './features/front-desk';
 import FrontDeskLeadDetailPage from './features/front-desk/pages/FrontDeskLeadDetailPage';
@@ -153,6 +155,10 @@ if (!root) throw new Error('Root element not found');
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

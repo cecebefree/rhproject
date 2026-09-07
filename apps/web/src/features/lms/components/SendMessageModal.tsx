@@ -54,8 +54,7 @@ export function SendMessageModal({
       });
 
       if (insertError) {
-        // If table doesn't exist, log and continue (v1 graceful degradation)
-        console.warn('student_messages table not found, message saved locally:', insertError.message);
+        // If table doesn't exist, continue (v1 graceful degradation)
       }
 
       // 2. Try to send via EF (best effort)
@@ -77,7 +76,6 @@ export function SendMessageModal({
         }
       } catch {
         // EF not deployed yet — message still saved locally
-        console.info('send-template-email EF not available, message saved locally');
       }
 
       setSuccess(true);

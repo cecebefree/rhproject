@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../../../components/Toast';
 import { useBulkSelection } from './BulkSelectionContext';
 import { bulkDelete, undoBulkOperation } from '../services/bulkOperationsService';
 
@@ -9,6 +10,7 @@ interface BulkDeleteModalProps {
 }
 
 export default function BulkDeleteModal({ isOpen, onClose, onSuccess }: BulkDeleteModalProps) {
+  const { toast } = useToast();
   const { selectedIds, entityType, tenantId, deselectAll } = useBulkSelection();
   const [loading, setLoading] = useState(false);
   const [operationId, setOperationId] = useState<string | null>(null);
@@ -33,10 +35,10 @@ export default function BulkDeleteModal({ isOpen, onClose, onSuccess }: BulkDele
           onSuccess();
         }, 30000);
       } else {
-        alert(`Failed to delete records: ${result.errors[0]?.error || 'Unknown error'}`);
+        toast(`Failed to delete records: ${result.errors[0]?.error || 'Unknown error'}`, 'error');
       }
     } catch (err) {
-      alert('Failed to delete records');
+      toast('Failed to delete records', 'error');
     } finally {
       setLoading(false);
     }
@@ -53,10 +55,10 @@ export default function BulkDeleteModal({ isOpen, onClose, onSuccess }: BulkDele
         setOperationId(null);
         onSuccess();
       } else {
-        alert('Failed to undo operation');
+        toast('Failed to undo operation', 'error');
       }
     } catch (err) {
-      alert('Failed to undo operation');
+      toast('Failed to undo operation', 'error');
     } finally {
       setLoading(false);
     }

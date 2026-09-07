@@ -72,7 +72,8 @@ export default function TeacherDashboardPage() {
 
     // Load programs assigned to this teacher
     const { data: coursesData } = await supabase
-      .from('school_desk.programs')
+      .schema('school_desk')
+      .from('programs')
       .select('id, title, status')
       .eq('teacher_id', user.id)
       .in('status', ['published', 'active']);

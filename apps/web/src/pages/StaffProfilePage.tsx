@@ -131,7 +131,7 @@ export default function StaffProfilePage() {
     setIsMyStudentsOpen(true);
   };
 
-  const handleEditReportCard = (student: { name: string; initials: string; grade: string }) => {
+  const handleEditReportCard = (student: { name: string; initials: string; grade: string; subject?: string }) => {
     setIsMyStudentsOpen(false);
     setEditReportStudent({ ...student, subject: 'Physics HL' });
     setIsEditReportOpen(true);

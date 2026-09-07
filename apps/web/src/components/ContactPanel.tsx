@@ -5,14 +5,14 @@ interface ContactActivity {
   label: string;
   description: string;
   timestamp: string;
-  icon: string;
+  icon?: string;
 }
 
 interface ContactPanelProps {
   isOpen: boolean;
   onClose: () => void;
   profileName: string;
-  profileType: 'Student' | 'Parent' | 'Guardian';
+  profileType: 'Student' | 'Parent' | 'Guardian' | 'Adult' | 'Staff' | 'Family';
   mainContact: {
     name: string;
     role: string;

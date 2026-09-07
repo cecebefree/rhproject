@@ -44,7 +44,7 @@ export function AttendanceSection({ studentId }: Props) {
   }
 
   if (loading) return <LoadingState />;
-  if (error) return <EmptyState message={error} />;
+  if (error) return <EmptyState title="Error" message={error} />;
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -81,7 +81,7 @@ export function AttendanceSection({ studentId }: Props) {
 
       {/* Recent records */}
       {records.length === 0 ? (
-        <EmptyState message="No attendance records yet." />
+        <EmptyState title="No Records" message="No attendance records yet." />
       ) : (
         records.slice(0, 10).map((record) => (
           <View key={record.id} style={styles.recordRow}>

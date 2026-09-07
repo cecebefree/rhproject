@@ -189,7 +189,7 @@ export async function deleteCourse(courseId: string) {
       .eq('id', courseId);
   }
 
-  const studentIds = enrolledStudents.map(e => e.student_id);
+  const studentIds = enrolledStudents.map((e: any) => e.student_id);
 
   // Check parent_student_link (adult profiles linked to enrolled students)
   const { count: parentCount } = await supabase
@@ -243,7 +243,7 @@ export async function getCourseDeletionWarnings(courseId: string): Promise<{
     return { studentCount: 0, parentLinks: 0, familyLinks: 0, blocking: false };
   }
 
-  const studentIds = enrolledStudents.map(e => e.student_id);
+  const studentIds = enrolledStudents.map((e: any) => e.student_id);
 
   const { count: parentLinks } = await supabase
     .from('parent_student_link')

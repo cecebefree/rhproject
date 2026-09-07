@@ -184,7 +184,6 @@ export default function EmailTemplateManagementPage() {
       variables: Record<string, string>;
     }) => {
       // TODO: Implement actual scheduling via edge function
-      console.log('Schedule email:', data);
       refreshUsages();
       return { error: null };
     },

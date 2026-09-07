@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../../../components/Toast';
 import { useBulkSelection } from './BulkSelectionContext';
 import { bulkEdit, type BulkEditValues, getTeamMembers } from '../services/bulkOperationsService';
 
@@ -17,6 +18,7 @@ const STATUS_OPTIONS = {
 const CATEGORY_OPTIONS = ['education', 'consulting', 'coaching', 'other'];
 
 export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditModalProps) {
+  const { toast } = useToast();
   const { selectedIds, entityType, tenantId } = useBulkSelection();
   const [loading, setLoading] = useState(false);
   const [teamMembers, setTeamMembers] = useState<Array<{ id: string; full_name: string; email: string }>>([]);
@@ -56,10 +58,10 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
         onSuccess();
         onClose();
       } else {
-        alert(`Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`);
+        toast(`Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`, 'info');
       }
     } catch (err) {
-      alert('Failed to update records');
+      toast('Failed to update records', 'error');
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 // DebitOrderList — table view of debit orders with search, status filter, real-time, execute action
 
 import { useEffect, useState } from 'react';
+import { useToast } from '../../../components/Toast';
 import { supabase } from '../services/supabase';
 
 interface DebitOrder {
@@ -47,6 +48,7 @@ function formatCurrency(amount: number): string {
 }
 
 export function DebitOrderList({ tenantId }: { tenantId: string }) {
+  const { toast } = useToast();
   const [orders, setOrders] = useState<DebitOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -106,7 +108,7 @@ export function DebitOrderList({ tenantId }: { tenantId: string }) {
     setExecutingId(null);
 
     if (error) {
-      alert(`Error: ${error.message}`);
+      toast(`Error: ${error.message}`, 'error');
     }
   }
 

@@ -12,6 +12,8 @@ export default function FamilyProfilePage() {
   const [isContactPanelOpen, setIsContactPanelOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Personal & Academic');
 
+  const TABS = ['Personal & Academic', 'Invoices & Payments', 'Documents', 'Activity'];
+
   useEffect(() => {
     if (!familyId) return;
     setLoading(true);
@@ -24,8 +26,13 @@ export default function FamilyProfilePage() {
       .finally(() => setLoading(false));
   }, [familyId]);
 
+  const family = familyData;
+
   if (loading) return <AdminLayout activeDesk="crm"><div className="p-8 text-center">Loading...</div></AdminLayout>;
-  if (error || !familyData) return <AdminLayout activeDesk="crm"><div className="p-8 text-center text-red-600">{error || 'Not found'}</div></AdminLayout>;
+  if (error || !family) return <AdminLayout activeDesk="crm"><div className="p-8 text-center text-red-600">{error || 'Not found'}</div></AdminLayout>;
+
+  const familyInvoices: any[] = [];
+  const familyPayments: any[] = [];
 
   const contactActivities = [
     { type: 'attendance' as const, label: 'ACCOUNT NOTE', description: 'All paperwork verified and up to date for the current academic year.', timestamp: '15 May 2024' },
@@ -51,9 +58,9 @@ export default function FamilyProfilePage() {
           </div>
           <div>
             <h1 className="mb-2" style={{ fontFamily: '"EB Garamond", serif', fontSize: '36px', fontWeight: 500, lineHeight: '44px', color: '#1A242B', letterSpacing: '-0.01em' }}>
-              {family.name}
+              {family.family.name}
             </h1>
-            <p className="text-sm" style={{ color: '#54626C' }}>Family Account • ID: {family.id}</p>
+            <p className="text-sm" style={{ color: '#54626C' }}>Family Account • ID: {family.family.id}</p>
           </div>
         </div>
         <button
@@ -99,11 +106,11 @@ export default function FamilyProfilePage() {
         <h2 className="mb-6" style={{ fontFamily: '"EB Garamond", serif', fontSize: '20px', fontWeight: 500, color: '#1A242B' }}>Family Overview</h2>
         <div className="rounded p-8 grid grid-cols-1 md:grid-cols-5 gap-8" style={{ backgroundColor: '#ffffff', border: '1px solid rgba(195,199,204,0.2)' }}>
           {[
-            { label: 'Enrollment Date', value: new Date(family.created_at).toLocaleDateString() },
-            { label: 'Family Code', value: family.family_code || 'N/A' },
-            { label: 'Status', value: family.status },
-            { label: 'Tenant ID', value: family.tenant_id?.substring(0, 8) || 'N/A' },
-            { label: 'Account ID', value: family.id?.substring(0, 8) || 'N/A' },
+            { label: 'Enrollment Date', value: new Date(family.family.created_at).toLocaleDateString() },
+            { label: 'Family Code', value: family.family.family_code || 'N/A' },
+            { label: 'Status', value: family.family.status },
+            { label: 'Tenant ID', value: family.family.tenant_id?.substring(0, 8) || 'N/A' },
+            { label: 'Account ID', value: family.family.id?.substring(0, 8) || 'N/A' },
           ].map((item) => (
             <div key={item.label}>
               <p className="mb-1 uppercase" style={{ fontSize: '11px', letterSpacing: '0.12em', fontWeight: 600, color: '#54626C' }}>{item.label}</p>
@@ -279,7 +286,7 @@ export default function FamilyProfilePage() {
           <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col gap-3">
               <label className="uppercase" style={{ fontSize: '11px', letterSpacing: '0.12em', fontWeight: 600, color: '#54626C' }}>Family Account</label>
-              <div style={{ fontFamily: '"EB Garamond", serif', fontSize: '20px', fontWeight: 500, color: '#273946' }}>{family.family_code || family.id?.substring(0, 8) || 'N/A'}</div>
+              <div style={{ fontFamily: '"EB Garamond", serif', fontSize: '20px', fontWeight: 500, color: '#273946' }}>{family.family.family_code || family.family.id?.substring(0, 8) || 'N/A'}</div>
               <p className="text-xs" style={{ color: '#54626C' }}>Adults in Account: {familyData.adults.length}</p>
             </div>
             <div className="flex flex-col gap-3">
@@ -338,7 +345,7 @@ export default function FamilyProfilePage() {
             <div className="grid grid-cols-2 gap-6">
               <div className="p-4 rounded" style={{ backgroundColor: 'rgba(244,243,240,0.3)', border: '1px solid rgba(195,199,204,0.1)' }}>
                 <p className="mb-1 uppercase" style={{ fontSize: '11px', letterSpacing: '0.12em', fontWeight: 600, color: '#54626C' }}>Account Integrity</p>
-                <p className="text-sm" style={{ color: '#1A242B' }}>ID: {family.id?.substring(0, 8) || 'N/A'} • Good Standing</p>
+                <p className="text-sm" style={{ color: '#1A242B' }}>ID: {family.family.id?.substring(0, 8) || 'N/A'} • Good Standing</p>
               </div>
               <div className="p-4 rounded" style={{ backgroundColor: 'rgba(244,243,240,0.3)', border: '1px solid rgba(195,199,204,0.1)' }}>
                 <p className="mb-1 uppercase" style={{ fontSize: '11px', letterSpacing: '0.12em', fontWeight: 600, color: '#54626C' }}>Siblings</p>
@@ -358,7 +365,7 @@ export default function FamilyProfilePage() {
       <ContactPanel
         isOpen={isContactPanelOpen}
         onClose={() => setIsContactPanelOpen(false)}
-        profileName={family.family_code || family.name}
+        profileName={family.family.family_code || family.family.name}
         profileType="Family"
         mainContact={{
           name: 'Sarah Montgomery',

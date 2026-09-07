@@ -47,7 +47,7 @@ export default function SchoolDeskPage() {
 
     const [studentsRes, programsRes] = await Promise.all([
       supabase.from('students').select('*').order('created_at', { ascending: false }),
-      supabase.from('school_desk.programs').select('id, title, status, type').eq('status', 'published'),
+      supabase.schema('school_desk').from('programs').select('id, title, status, type').eq('status', 'published'),
     ]);
 
     if (studentsRes.error) {

@@ -9,11 +9,13 @@ interface EditReportCardModalProps {
   subject: string;
 }
 
-const TERMS = [
-  { id: 1, label: 'Term 1', status: 'editable' as const },
-  { id: 2, label: 'Term 2', status: 'editable' as const },
-  { id: 3, label: 'Term 3', status: 'locked' as const },
-  { id: 4, label: 'Term 4', status: 'locked' as const },
+type TermStatus = 'editable' | 'locked' | 'submitted';
+
+const TERMS: { id: number; label: string; status: TermStatus }[] = [
+  { id: 1, label: 'Term 1', status: 'editable' },
+  { id: 2, label: 'Term 2', status: 'editable' },
+  { id: 3, label: 'Term 3', status: 'locked' },
+  { id: 4, label: 'Term 4', status: 'locked' },
 ];
 
 export default function EditReportCardModal({ isOpen, onClose, studentName, studentInitials, grade, subject }: EditReportCardModalProps) {

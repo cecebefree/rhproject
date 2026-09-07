@@ -184,7 +184,7 @@ export default function StudentProfilePage() {
                 {enrollments.map((e) => (
                   <div key={e.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                     <div>
-                      <p className="text-sm font-medium">{e.programs?.title ?? 'Unknown Program'}</p>
+                      <p className="text-sm font-medium">{(e as any).programs?.title ?? 'Unknown Program'}</p>
                       <p className="text-xs" style={{ color: '#54626C' }}>Enrolled: {formatDate(e.purchased_at)}</p>
                     </div>
                     <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}>Active</span>

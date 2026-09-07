@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useToast } from '../../../components/Toast';
 import { useBulkSelection } from './BulkSelectionContext';
 import { bulkStatusChange } from '../services/bulkOperationsService';
 
@@ -30,6 +31,7 @@ const STATUS_OPTIONS = {
 };
 
 export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: BulkStatusChangeModalProps) {
+  const { toast } = useToast();
   const { selectedIds, entityType, tenantId } = useBulkSelection();
   const [loading, setLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
@@ -37,7 +39,7 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStatus) {
-      alert('Please select a status');
+      toast('Please select a status', 'info');
       return;
     }
 
@@ -50,10 +52,10 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
         onSuccess();
         onClose();
       } else {
-        alert(`Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`);
+        toast(`Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`, 'info');
       }
     } catch (err) {
-      alert('Failed to update status');
+      toast('Failed to update status', 'error');
     } finally {
       setLoading(false);
     }

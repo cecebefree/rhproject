@@ -45,7 +45,7 @@ export default function FamilyScreen() {
   }
 
   if (loading) return <LoadingState />;
-  if (error) return <EmptyState message={error} />;
+  if (error) return <EmptyState title="Error" message={error} />;
 
   return (
     <ScrollView style={styles.container}>
@@ -55,7 +55,7 @@ export default function FamilyScreen() {
       </View>
 
       {children.length === 0 ? (
-        <EmptyState message="No children linked to your account yet." />
+        <EmptyState title="No Children" message="No children linked to your account yet." />
       ) : (
         children.map((child) => (
           <View key={child.id} style={styles.childSection}>

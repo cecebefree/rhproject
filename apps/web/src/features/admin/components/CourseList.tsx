@@ -1,6 +1,7 @@
 // CourseList — Table view of courses with search, filter, actions (Rows 99-101)
 
 import { useEffect, useState } from 'react';
+import { useToast } from '../../../components/Toast';
 import {
   listCourses,
   listInstructors,
@@ -19,6 +20,7 @@ interface CourseListProps {
 }
 
 export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps) {
+  const { toast } = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,17 +58,15 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
       const parts: string[] = [];
       if (warnings.parentLinks) parts.push(`${warnings.parentLinks} parent/guardian link(s)`);
       if (warnings.familyLinks) parts.push(`${warnings.familyLinks} family account link(s)`);
-      alert(
-        `Cannot delete "${course?.name ?? 'this curriculum'}":\n\n` +
-        `${warnings.studentCount} student(s) enrolled with linked family profiles:\n` +
-        parts.map(p => `  - ${p}`).join('\n') +
-        `\n\nUnlink families and remove enrollments before deleting.`
+      toast(
+        `Cannot delete "${course?.title ?? 'this curriculum'}": ${warnings.studentCount} student(s) enrolled with linked family profiles. Unlink families and remove enrollments before deleting.`,
+        'error'
       );
       return;
     }
 
     const confirmed = window.confirm(
-      `Delete "${course?.name ?? 'this curriculum'}"?\n\n` +
+      `Delete "${course?.title ?? 'this curriculum'}"?\n\n` +
       (warnings.studentCount > 0
         ? `${warnings.studentCount} student(s) enrolled (no family links).\n\n`
         : '') +
@@ -77,7 +77,7 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
     setDeleting(courseId);
     const { error } = await deleteCourse(courseId);
     if (error) {
-      alert(error.message);
+      toast(error.message, 'error');
     } else {
       setCourses((prev) => prev.filter((c) => c.id !== courseId));
     }

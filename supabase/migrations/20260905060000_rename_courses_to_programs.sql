@@ -11,8 +11,8 @@ ALTER SEQUENCE IF EXISTS school_desk.courses_id_seq RENAME TO programs_id_seq;
 
 -- 3. Update index names
 ALTER INDEX IF EXISTS school_desk.courses_pkey RENAME TO programs_pkey;
-ALTER INDEX IF EXISTS IF EXISTS idx_courses_status RENAME TO idx_programs_status;
-ALTER INDEX IF EXISTS IF EXISTS idx_courses_teacher RENAME TO idx_programs_teacher;
+ALTER INDEX IF EXISTS idx_courses_status RENAME TO idx_programs_status;
+ALTER INDEX IF EXISTS idx_courses_teacher RENAME TO idx_programs_teacher;
 
 -- 4. Update constraint names
 ALTER TABLE school_desk.programs DROP CONSTRAINT IF EXISTS courses_price_check;
@@ -88,11 +88,10 @@ CREATE POLICY programs_no_core_outside ON school_desk.programs
   USING (NOT EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role = 'outside_student')
     OR (type <> 'core' AND open_to_outside = true));
 
-CREATE POLICY programs_adult_enrolled_read ON school_desk.programs
-  FOR SELECT TO authenticated
-  USING (is_family_enrolled_in_course(id));
+-- 7. Update function references (drop policy first, then recreate function and policy)
+DROP POLICY IF EXISTS programs_adult_enrolled_read ON school_desk.programs;
+DROP FUNCTION IF EXISTS is_family_enrolled_in_course(p_course_id uuid);
 
--- 7. Update function references
 CREATE OR REPLACE FUNCTION is_family_enrolled_in_course(p_program_id uuid)
 RETURNS boolean
 LANGUAGE sql
@@ -107,6 +106,10 @@ AS $$
       AND pr.role = 'family'
   );
 $$;
+
+CREATE POLICY programs_adult_enrolled_read ON school_desk.programs
+  FOR SELECT TO authenticated
+  USING (is_family_enrolled_in_course(id));
 
 -- 8. Create backward-compatible view for existing code
 CREATE OR REPLACE VIEW school_desk.courses AS

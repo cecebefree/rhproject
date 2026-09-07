@@ -1,5 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from './ErrorBoundary';
 import { GlobalSearch } from '../features/lms/components/GlobalSearch';
 import { NotificationCenter } from '../features/office-desk/components/NotificationCenter';
 
@@ -231,7 +232,9 @@ export function AdminLayout({ children, activeDesk }: AdminLayoutProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-hidden flex flex-col p-4 md:p-8 pt-6 max-w-[1600px] mx-auto w-full gap-4 sm:gap-6">
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
 

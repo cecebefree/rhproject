@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useToast } from '../../../components/Toast';
 import { useBulkSelection } from './BulkSelectionContext';
 import { bulkAssign, getTeamMembers } from '../services/bulkOperationsService';
 
@@ -15,6 +16,7 @@ interface TeamMember {
 }
 
 export default function BulkAssignModal({ isOpen, onClose, onSuccess }: BulkAssignModalProps) {
+  const { toast } = useToast();
   const { selectedIds, entityType, tenantId } = useBulkSelection();
   const [loading, setLoading] = useState(false);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
@@ -29,7 +31,7 @@ export default function BulkAssignModal({ isOpen, onClose, onSuccess }: BulkAssi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedMember) {
-      alert('Please select a team member');
+      toast('Please select a team member', 'info');
       return;
     }
 
@@ -42,10 +44,10 @@ export default function BulkAssignModal({ isOpen, onClose, onSuccess }: BulkAssi
         onSuccess();
         onClose();
       } else {
-        alert(`Assigned ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`);
+        toast(`Assigned ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`, 'info');
       }
     } catch (err) {
-      alert('Failed to assign records');
+      toast('Failed to assign records', 'error');
     } finally {
       setLoading(false);
     }

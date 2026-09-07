@@ -45,7 +45,8 @@ export function CourseCongratulations({ studentId, courseId }: CourseCongratulat
 
       // Get program title
       const { data: course } = await supabase
-        .from("school_desk.programs" as any)
+        .schema("school_desk")
+        .from("programs")
         .select("title")
         .eq("id", courseId)
         .single();
