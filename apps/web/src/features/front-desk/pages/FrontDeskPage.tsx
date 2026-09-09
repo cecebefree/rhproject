@@ -1,12 +1,29 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../../components/AdminLayout';
-import { supabase, type Lead, subscribeToLeads } from '../services/supabase';
-import { LeadIntakeForm } from '../components/LeadIntakeForm';
 import { useRealtimeContext } from '../../../contexts/RealtimeProvider';
+import { LeadIntakeForm } from '../components/LeadIntakeForm';
+import {
+  PIPELINE_STAGE_COLORS,
+  type Lead,
+  type PipelineType,
+  subscribeToLeads,
+  supabase,
+} from '../services/supabase';
 
 type MainTab = 'overview' | 'crm' | 'public-leads' | 'marketing' | 'careers';
-type SubTab = 'all' | 'call' | 'email' | 'contact-form' | 'enrollment-call' | 'live-call' | 'chat-bot' | 'marketing' | 'reserve-call';
+type SubTab =
+  | 'all'
+  | 'call'
+  | 'email'
+  | 'contact-form'
+  | 'enrollment-call'
+  | 'live-call'
+  | 'chat-bot'
+  | 'marketing'
+  | 'reserve-call';
+
+type PipelineFilter = 'all' | PipelineType;
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'overview', label: 'OVERVIEW' },
@@ -26,6 +43,13 @@ const SUB_TABS: { key: SubTab; label: string }[] = [
   { key: 'chat-bot', label: 'Chat Bot' },
   { key: 'reserve-call', label: 'Reserve a Call' },
   { key: 'marketing', label: 'Marketing' },
+];
+
+const PIPELINE_TABS: { key: PipelineFilter; label: string }[] = [
+  { key: 'all', label: 'All Pipelines' },
+  { key: 'general_enquiry', label: 'General Enquiry' },
+  { key: 'registration', label: 'Registration' },
+  { key: 'career', label: 'Career' },
 ];
 
 const SOURCE_FILTER_MAP: Record<SubTab, string | null> = {
@@ -70,11 +94,15 @@ function formatDate(dateStr: string): string {
   yesterday.setDate(yesterday.getDate() - 1);
   const isYesterday = date.toDateString() === yesterday.toDateString();
 
-  const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const time = date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
 
   if (isToday) return `Today, ${time}`;
   if (isYesterday) return `Yesterday, ${time}`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + `, ${time}`;
+  return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${time}`;
 }
 
 function getSourceIcon(source: string | null): string {
@@ -103,6 +131,7 @@ export function FrontDeskPage() {
   const { userId } = useRealtimeContext();
   const [mainTab, setMainTab] = useState<MainTab>('public-leads');
   const [subTab, setSubTab] = useState<SubTab>('all');
+  const [pipelineFilter, setPipelineFilter] = useState<PipelineFilter>('all');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +141,9 @@ export function FrontDeskPage() {
   // Resolve tenant ID from current user's JWT
   useEffect(() => {
     async function getTenant() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user?.app_metadata?.tenant_id) {
         setTenantId(user.app_metadata.tenant_id);
       }
@@ -136,6 +167,10 @@ export function FrontDeskPage() {
       query = query.eq('source', sourceFilter);
     }
 
+    if (pipelineFilter !== 'all') {
+      query = query.eq('pipeline', pipelineFilter);
+    }
+
     const { data, error: fetchError } = await query;
 
     if (fetchError) {
@@ -144,7 +179,7 @@ export function FrontDeskPage() {
       setLeads(data || []);
     }
     setLoading(false);
-  }, [subTab]);
+  }, [subTab, pipelineFilter]);
 
   useEffect(() => {
     fetchLeads();
@@ -156,9 +191,7 @@ export function FrontDeskPage() {
       if (payload.eventType === 'INSERT') {
         setLeads((prev) => [payload.new, ...prev]);
       } else if (payload.eventType === 'UPDATE') {
-        setLeads((prev) =>
-          prev.map((l) => (l.id === payload.new.id ? payload.new : l))
-        );
+        setLeads((prev) => prev.map((l) => (l.id === payload.new.id ? payload.new : l)));
       } else if (payload.eventType === 'DELETE') {
         setLeads((prev) => prev.filter((l) => l.id !== payload.old?.id));
       }
@@ -182,7 +215,17 @@ export function FrontDeskPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
-          <h2 className="mb-1" style={{ fontFamily: '"EB Garamond", serif', fontSize: '36px', lineHeight: '44px', fontWeight: 500, color: '#273946', letterSpacing: '-0.01em' }}>
+          <h2
+            className="mb-1"
+            style={{
+              fontFamily: '"EB Garamond", serif',
+              fontSize: '36px',
+              lineHeight: '44px',
+              fontWeight: 500,
+              color: '#273946',
+              letterSpacing: '-0.01em',
+            }}
+          >
             Front Desk
           </h2>
           <p style={{ fontSize: '14px', lineHeight: '20px', color: '#54626C' }}>
@@ -190,22 +233,50 @@ export function FrontDeskPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button
+          <button type="button"
             onClick={() => fetchLeads()}
             className="px-4 py-2 rounded flex items-center gap-2 transition-colors"
-            style={{ border: '1px solid #273946', color: '#273946', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(39,57,70,0.05)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>refresh</span>
+            style={{
+              border: '1px solid #273946',
+              color: '#273946',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.12em',
+              fontFamily: '"Source Sans 3", sans-serif',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(39,57,70,0.05)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+              refresh
+            </span>
             Refresh
           </button>
-          <button
+          <button type="button"
             onClick={() => setShowNewLeadModal(true)}
             className="px-4 py-2 rounded flex items-center gap-2 shadow-sm transition-colors"
-            style={{ backgroundColor: '#273946', color: '#ffffff', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#112430'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#273946'; }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+            style={{
+              backgroundColor: '#273946',
+              color: '#ffffff',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.12em',
+              fontFamily: '"Source Sans 3", sans-serif',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#112430';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#273946';
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+              add
+            </span>
             New Lead
           </button>
         </div>
@@ -217,10 +288,15 @@ export function FrontDeskPage() {
           {MAIN_TABS.map((tab) => {
             const isActive = tab.key === mainTab;
             return (
-              <button key={tab.key} onClick={() => setMainTab(tab.key)}
+              <button type="button"
+                key={tab.key}
+                onClick={() => setMainTab(tab.key)}
                 className="px-6 py-3 whitespace-nowrap transition-colors relative"
                 style={{
-                  fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  letterSpacing: '0.12em',
+                  fontFamily: '"Source Sans 3", sans-serif',
                   color: isActive ? '#273946' : '#54626C',
                   backgroundColor: isActive ? '#ffffff' : 'transparent',
                   borderTop: isActive ? '1px solid rgba(39,57,70,0.1)' : '1px solid transparent',
@@ -228,9 +304,13 @@ export function FrontDeskPage() {
                   borderRight: isActive ? '1px solid rgba(39,57,70,0.1)' : '1px solid transparent',
                   borderRadius: isActive ? '0.25rem 0.25rem 0 0' : undefined,
                   zIndex: isActive ? 10 : undefined,
-                }}>
+                }}
+              >
                 {isActive && (
-                  <span className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: '#E8A020' }} />
+                  <span
+                    className="absolute top-0 left-0 w-full h-1"
+                    style={{ backgroundColor: '#E8A020' }}
+                  />
                 )}
                 {tab.label}
               </button>
@@ -240,18 +320,53 @@ export function FrontDeskPage() {
       </div>
 
       {/* Sub Tabs */}
-      <div className="flex items-center gap-6 overflow-x-auto shrink-0 pb-1"
-        style={{ borderBottom: '1px solid rgba(195,199,204,0.2)' }}>
+      <div
+        className="flex items-center gap-6 overflow-x-auto shrink-0 pb-1"
+        style={{ borderBottom: '1px solid rgba(195,199,204,0.2)' }}
+      >
         {SUB_TABS.map((tab) => {
           const isActive = tab.key === subTab;
           return (
-            <button key={tab.key} onClick={() => setSubTab(tab.key)}
+            <button type="button"
+              key={tab.key}
+              onClick={() => setSubTab(tab.key)}
               className="whitespace-nowrap py-3 px-1 transition-colors"
               style={{
-                fontFamily: '"EB Garamond", serif', fontSize: '14px', fontWeight: isActive ? 700 : 500,
+                fontFamily: '"EB Garamond", serif',
+                fontSize: '14px',
+                fontWeight: isActive ? 700 : 500,
                 color: isActive ? '#273946' : '#54626C',
                 borderBottom: isActive ? '2px solid #E8A020' : '2px solid transparent',
-              }}>
+              }}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Pipeline Tabs */}
+      <div
+        className="flex items-center gap-4 overflow-x-auto shrink-0 pb-1"
+        style={{ borderBottom: '1px solid rgba(195,199,204,0.15)' }}
+      >
+        <span style={{ fontSize: '11px', fontWeight: 600, color: '#54626C', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+          Pipeline:
+        </span>
+        {PIPELINE_TABS.map((tab) => {
+          const isActive = tab.key === pipelineFilter;
+          return (
+            <button type="button"
+              key={tab.key}
+              onClick={() => setPipelineFilter(tab.key)}
+              className="whitespace-nowrap py-2 px-3 rounded transition-colors"
+              style={{
+                fontSize: '12px',
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? '#ffffff' : '#54626C',
+                backgroundColor: isActive ? '#273946' : 'rgba(39,57,70,0.05)',
+              }}
+            >
               {tab.label}
             </button>
           );
@@ -263,49 +378,111 @@ export function FrontDeskPage() {
         {/* Stats Bar */}
         <div className="flex items-center gap-6 px-1">
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#54626C' }}>people</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: '16px', color: '#54626C' }}
+            >
+              people
+            </span>
             <span style={{ fontSize: '12px', color: '#54626C' }}>
               <span style={{ fontWeight: 600, color: '#1A242B' }}>{totalLeads}</span> leads
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#54626C' }}>assignment_ind</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: '16px', color: '#54626C' }}
+            >
+              assignment_ind
+            </span>
             <span style={{ fontSize: '12px', color: '#54626C' }}>
               <span style={{ fontWeight: 600, color: '#1A242B' }}>{assignedCount}</span> assigned
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#54626C' }}>event</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: '16px', color: '#54626C' }}
+            >
+              event
+            </span>
             <span style={{ fontSize: '12px', color: '#54626C' }}>
-              <span style={{ fontWeight: 600, color: '#1A242B' }}>{callbackCount}</span> callbacks scheduled
+              <span style={{ fontWeight: 600, color: '#1A242B' }}>{callbackCount}</span> callbacks
+              scheduled
             </span>
           </div>
         </div>
 
         {/* Leads Table */}
-        <div className="overflow-hidden rounded-xl" style={{ backgroundColor: '#ffffff', border: '1px solid rgba(39,57,70,0.1)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-          <div className="px-6 py-4 flex justify-between items-center" style={{ borderBottom: '1px solid rgba(195,199,204,0.2)', backgroundColor: '#faf9f6' }}>
-            <h3 style={{ fontFamily: '"EB Garamond", serif', fontSize: '20px', lineHeight: '28px', fontWeight: 500, color: '#1A242B' }}>
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid rgba(39,57,70,0.1)',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          }}
+        >
+          <div
+            className="px-6 py-4 flex justify-between items-center"
+            style={{ borderBottom: '1px solid rgba(195,199,204,0.2)', backgroundColor: '#faf9f6' }}
+          >
+            <h3
+              style={{
+                fontFamily: '"EB Garamond", serif',
+                fontSize: '20px',
+                lineHeight: '28px',
+                fontWeight: 500,
+                color: '#1A242B',
+              }}
+            >
               Incoming Leads
             </h3>
           </div>
           <div className="overflow-x-auto">
             {loading ? (
-              <div className="p-8 text-center" style={{ color: '#54626C' }}>Loading leads...</div>
+              <div className="p-8 text-center" style={{ color: '#54626C' }}>
+                Loading leads...
+              </div>
             ) : error ? (
-              <div className="p-8 text-center" style={{ color: '#C8281E' }}>Error: {error}</div>
+              <div className="p-8 text-center" style={{ color: '#C8281E' }}>
+                Error: {error}
+              </div>
             ) : leads.length === 0 ? (
               <div className="p-8 text-center" style={{ color: '#54626C' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'rgba(39,57,70,0.15)', display: 'block', marginBottom: '8px' }}>inbox</span>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: '48px',
+                    color: 'rgba(39,57,70,0.15)',
+                    display: 'block',
+                    marginBottom: '8px',
+                  }}
+                >
+                  inbox
+                </span>
                 No leads found
               </div>
             ) : (
               <table className="w-full text-left" style={{ borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(195,199,204,0.2)', backgroundColor: '#F8F7F4' }}>
-                    {['Date', 'Lead', 'Source', 'Status', 'Callback', 'Assigned'].map((h) => (
-                      <th key={h} className={`py-3 px-6 font-semibold ${h === 'Assigned' ? 'text-right' : ''}`}
-                        style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', color: '#54626C', fontFamily: '"Source Sans 3", sans-serif' }}>
+                  <tr
+                    style={{
+                      borderBottom: '1px solid rgba(195,199,204,0.2)',
+                      backgroundColor: '#F8F7F4',
+                    }}
+                  >
+                    {['Date', 'Lead', 'Pipeline', 'Status', 'Callback', 'Assigned'].map((h) => (
+                      <th
+                        key={h}
+                        className={`py-3 px-6 font-semibold ${h === 'Assigned' ? 'text-right' : ''}`}
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          letterSpacing: '0.12em',
+                          color: '#54626C',
+                          fontFamily: '"Source Sans 3", sans-serif',
+                        }}
+                      >
                         {h}
                       </th>
                     ))}
@@ -314,7 +491,8 @@ export function FrontDeskPage() {
                 <tbody>
                   {leads.map((lead) => {
                     const statusColor = STATUS_COLORS[lead.status] || STATUS_COLORS.enquiry;
-                    const hasCallback = lead.callback_scheduled_at && lead.callback_status === 'scheduled';
+                    const hasCallback =
+                      lead.callback_scheduled_at && lead.callback_status === 'scheduled';
                     const callbackDate = hasCallback ? new Date(lead.callback_scheduled_at!) : null;
                     const isCallbackPast = callbackDate ? callbackDate < new Date() : false;
 
@@ -322,23 +500,42 @@ export function FrontDeskPage() {
                       <tr
                         key={lead.id}
                         onClick={() => handleLeadClick(lead.id)}
+                        onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleLeadClick(lead.id); } }}
                         className="cursor-pointer transition-colors"
                         style={{ borderBottom: '1px solid rgba(195,199,204,0.1)' }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f4f3f0'; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent'; }}>
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLTableRowElement).style.backgroundColor =
+                            '#f4f3f0';
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLTableRowElement).style.backgroundColor =
+                            'transparent';
+                        }}
+                      >
                         <td className="py-4 px-6" style={{ color: '#54626C', fontSize: '12px' }}>
                           {formatRelativeTime(lead.created_at)}
                         </td>
                         <td className="py-4 px-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                              style={{ backgroundColor: 'rgba(39,57,70,0.05)', border: '1px solid rgba(39,57,70,0.1)' }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#273946' }}>
+                            <div
+                              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                              style={{
+                                backgroundColor: 'rgba(39,57,70,0.05)',
+                                border: '1px solid rgba(39,57,70,0.1)',
+                              }}
+                            >
+                              <span
+                                className="material-symbols-outlined"
+                                style={{ fontSize: '14px', color: '#273946' }}
+                              >
                                 {getSourceIcon(lead.source)}
                               </span>
                             </div>
                             <div>
-                              <div className="font-medium" style={{ color: '#273946', fontSize: '13px' }}>
+                              <div
+                                className="font-medium"
+                                style={{ color: '#273946', fontSize: '13px' }}
+                              >
                                 {lead.name || 'Unknown'}
                               </div>
                               <div style={{ color: '#54626C', fontSize: '11px' }}>
@@ -348,31 +545,69 @@ export function FrontDeskPage() {
                           </div>
                         </td>
                         <td className="py-4 px-6">
-                          <span style={{ fontSize: '12px', color: '#54626C' }}>
-                            {lead.source || '—'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded"
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                letterSpacing: '0.05em',
+                                backgroundColor: PIPELINE_STAGE_COLORS[lead.pipeline_stage]?.bg || '#F3F4F6',
+                                color: PIPELINE_STAGE_COLORS[lead.pipeline_stage]?.text || '#6B7280',
+                              }}
+                            >
+                              {(lead.pipeline || 'general_enquiry').replace('_', ' ')}
+                            </span>
+                            {lead.pipeline_stage && lead.pipeline_stage !== 'new' && (
+                              <span style={{ fontSize: '10px', color: '#54626C' }}>
+                                {lead.pipeline_stage.replace('_', ' ')}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-4 px-6">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded"
+                          <span
+                            className="inline-flex items-center px-2 py-0.5 rounded"
                             style={{
-                              fontSize: '10px', fontWeight: 600, letterSpacing: '0.05em',
+                              fontSize: '10px',
+                              fontWeight: 600,
+                              letterSpacing: '0.05em',
                               fontFamily: '"Source Sans 3", sans-serif',
                               backgroundColor: statusColor.bg,
                               color: statusColor.text,
                               border: `1px solid ${statusColor.border}`,
-                            }}>
+                            }}
+                          >
                             {lead.status}
                           </span>
                         </td>
                         <td className="py-4 px-6">
                           {hasCallback ? (
                             <div className="flex items-center gap-1">
-                              <span className="material-symbols-outlined" style={{ fontSize: '14px', color: isCallbackPast ? '#C8281E' : '#22C55E' }}>
+                              <span
+                                className="material-symbols-outlined"
+                                style={{
+                                  fontSize: '14px',
+                                  color: isCallbackPast ? '#C8281E' : '#22C55E',
+                                }}
+                              >
                                 {isCallbackPast ? 'warning' : 'check_circle'}
                               </span>
-                              <span style={{ fontSize: '11px', color: isCallbackPast ? '#C8281E' : '#54626C' }}>
-                                {callbackDate?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}{' '}
-                                {callbackDate?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                              <span
+                                style={{
+                                  fontSize: '11px',
+                                  color: isCallbackPast ? '#C8281E' : '#54626C',
+                                }}
+                              >
+                                {callbackDate?.toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                })}{' '}
+                                {callbackDate?.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true,
+                                })}
                               </span>
                             </div>
                           ) : (
@@ -381,8 +616,16 @@ export function FrontDeskPage() {
                         </td>
                         <td className="py-4 px-6 text-right" style={{ fontSize: '12px' }}>
                           {lead.assigned_to ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded"
-                              style={{ fontSize: '10px', fontWeight: 600, backgroundColor: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.3)' }}>
+                            <span
+                              className="inline-flex items-center px-2 py-0.5 rounded"
+                              style={{
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                backgroundColor: 'rgba(34,197,94,0.1)',
+                                color: '#22C55E',
+                                border: '1px solid rgba(34,197,94,0.3)',
+                              }}
+                            >
                               Assigned
                             </span>
                           ) : (
@@ -399,11 +642,34 @@ export function FrontDeskPage() {
         </div>
 
         {/* Activity Feed */}
-        <div className="overflow-hidden rounded-xl" style={{ backgroundColor: '#ffffff', border: '1px solid rgba(39,57,70,0.1)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-          <div className="px-6 py-4 flex justify-between items-center" style={{ borderBottom: '1px solid rgba(195,199,204,0.2)', backgroundColor: '#faf9f6' }}>
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{
+            backgroundColor: '#ffffff',
+            border: '1px solid rgba(39,57,70,0.1)',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          }}
+        >
+          <div
+            className="px-6 py-4 flex justify-between items-center"
+            style={{ borderBottom: '1px solid rgba(195,199,204,0.2)', backgroundColor: '#faf9f6' }}
+          >
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#273946' }}>rss_feed</span>
-              <h3 style={{ fontFamily: '"EB Garamond", serif', fontSize: '20px', lineHeight: '28px', fontWeight: 500, color: '#1A242B' }}>
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: '18px', color: '#273946' }}
+              >
+                rss_feed
+              </span>
+              <h3
+                style={{
+                  fontFamily: '"EB Garamond", serif',
+                  fontSize: '20px',
+                  lineHeight: '28px',
+                  fontWeight: 500,
+                  color: '#1A242B',
+                }}
+              >
                 Recent Activity
               </h3>
             </div>
@@ -413,30 +679,45 @@ export function FrontDeskPage() {
               <div
                 key={lead.id}
                 onClick={() => handleLeadClick(lead.id)}
-                className="flex gap-4 relative cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors">
+                onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleLeadClick(lead.id); } }}
+                className="flex gap-4 relative cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+              >
                 {i < Math.min(leads.length, 5) - 1 && (
-                  <div className="absolute left-6 top-10 bottom-[-16px] w-px" style={{ backgroundColor: 'rgba(195,199,204,0.3)' }} />
+                  <div
+                    className="absolute left-6 top-10 bottom-[-16px] w-px"
+                    style={{ backgroundColor: 'rgba(195,199,204,0.3)' }}
+                  />
                 )}
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10"
-                  style={{ backgroundColor: '#ffffff', border: '1px solid #c3c7cc' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: '14px', color: '#273946' }}>
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10"
+                  style={{ backgroundColor: '#ffffff', border: '1px solid #c3c7cc' }}
+                >
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: '14px', color: '#273946' }}
+                  >
                     {getSourceIcon(lead.source)}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p style={{ fontSize: '13px', lineHeight: '18px', color: '#1A242B' }}>
-                    <span className="font-semibold" style={{ color: '#273946' }}>{lead.name || 'Unknown'}</span>
-                    {' '}via <span style={{ fontWeight: 600 }}>{lead.source || 'Unknown'}</span>
+                    <span className="font-semibold" style={{ color: '#273946' }}>
+                      {lead.name || 'Unknown'}
+                    </span>{' '}
+                    via <span style={{ fontWeight: 600 }}>{lead.source || 'Unknown'}</span>
                   </p>
                   <p className="mt-0.5" style={{ fontSize: '11px', color: '#54626C' }}>
                     {formatRelativeTime(lead.created_at)} · {lead.status}
-                    {lead.callback_scheduled_at && ` · Callback ${formatRelativeTime(lead.callback_scheduled_at)}`}
+                    {lead.callback_scheduled_at &&
+                      ` · Callback ${formatRelativeTime(lead.callback_scheduled_at)}`}
                   </p>
                 </div>
               </div>
             ))}
             {leads.length === 0 && (
-              <p className="text-center" style={{ color: '#54626C', fontSize: '13px' }}>No activity yet</p>
+              <p className="text-center" style={{ color: '#54626C', fontSize: '13px' }}>
+                No activity yet
+              </p>
             )}
           </div>
         </div>
@@ -448,16 +729,33 @@ export function FrontDeskPage() {
           <div
             className="absolute inset-0 bg-black bg-opacity-40"
             onClick={() => setShowNewLeadModal(false)}
+            onKeyDown={(e) => { if (e.key === 'Escape') setShowNewLeadModal(false); }}
           />
-          <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+          <div
+            className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6"
+            style={{ maxHeight: '90vh', overflowY: 'auto' }}
+          >
             <div className="flex items-center justify-between mb-4">
-              <h3 style={{ fontFamily: '"EB Garamond", serif', fontSize: '20px', fontWeight: 500, color: '#1A242B' }}>
+              <h3
+                style={{
+                  fontFamily: '"EB Garamond", serif',
+                  fontSize: '20px',
+                  fontWeight: 500,
+                  color: '#1A242B',
+                }}
+              >
                 New Lead
               </h3>
-              <button
+              <button type="button"
                 onClick={() => setShowNewLeadModal(false)}
-                className="p-1 rounded hover:bg-gray-100 transition-colors">
-                <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#54626C' }}>close</span>
+                className="p-1 rounded hover:bg-gray-100 transition-colors"
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: '20px', color: '#54626C' }}
+                >
+                  close
+                </span>
               </button>
             </div>
             <LeadIntakeForm

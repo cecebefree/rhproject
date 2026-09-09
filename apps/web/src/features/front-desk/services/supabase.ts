@@ -32,13 +32,73 @@ export interface Lead {
   callback_scheduled_at: string | null;
   callback_status: string | null;
   callback_notes: string | null;
+  // Pipeline fields
+  pipeline: 'general_enquiry' | 'registration' | 'career';
+  pipeline_stage: PipelineStage;
+  pipeline_notes: string | null;
+  pipeline_updated_at: string | null;
+  source_type: string | null;
 }
 
 export type LeadStatus = Lead['status'];
 
+export type PipelineType = 'general_enquiry' | 'registration' | 'career';
+
+export type PipelineStage =
+  | 'new' | 'contacted' | 'qualified' | 'resolved'
+  | 'fee_captured' | 'handed_off'
+  | 'reviewed' | 'interview' | 'hired' | 'rejected'
+  | 'archived';
+
 export type ArchiveReason = 'enrolled' | 'withdrawn' | 'inactive' | 'duplicate' | 'other';
 
 export const LEAD_STATUSES: LeadStatus[] = ['enquiry', 'qualified', 'invoiced', 'handed_off'];
+
+export const PIPELINE_TYPES: { value: PipelineType; label: string }[] = [
+  { value: 'general_enquiry', label: 'General Enquiry' },
+  { value: 'registration', label: 'Registration' },
+  { value: 'career', label: 'Career' },
+];
+
+export const PIPELINE_STAGES: Record<PipelineType, { value: PipelineStage; label: string }[]> = {
+  general_enquiry: [
+    { value: 'new', label: 'New' },
+    { value: 'contacted', label: 'Contacted' },
+    { value: 'qualified', label: 'Qualified' },
+    { value: 'resolved', label: 'Resolved' },
+    { value: 'archived', label: 'Archived' },
+  ],
+  registration: [
+    { value: 'new', label: 'New' },
+    { value: 'contacted', label: 'Contacted' },
+    { value: 'qualified', label: 'Qualified' },
+    { value: 'fee_captured', label: 'Fee Captured' },
+    { value: 'handed_off', label: 'Handed Off to School Desk' },
+    { value: 'archived', label: 'Archived' },
+  ],
+  career: [
+    { value: 'new', label: 'New' },
+    { value: 'reviewed', label: 'Reviewed' },
+    { value: 'interview', label: 'Interview' },
+    { value: 'hired', label: 'Hired' },
+    { value: 'rejected', label: 'Rejected' },
+    { value: 'archived', label: 'Archived' },
+  ],
+};
+
+export const PIPELINE_STAGE_COLORS: Record<PipelineStage, { bg: string; text: string }> = {
+  new: { bg: '#EBF5FF', text: '#1D4ED8' },
+  contacted: { bg: '#FFF7ED', text: '#C2410C' },
+  qualified: { bg: '#F0FDF4', text: '#15803D' },
+  resolved: { bg: '#F5F3FF', text: '#6D28D9' },
+  fee_captured: { bg: '#ECFDF5', text: '#047857' },
+  handed_off: { bg: '#FEF3C7', text: '#92400E' },
+  reviewed: { bg: '#EFF6FF', text: '#1E40AF' },
+  interview: { bg: '#FDF4FF', text: '#9333EA' },
+  hired: { bg: '#D1FAE5', text: '#065F46' },
+  rejected: { bg: '#FEE2E2', text: '#991B1B' },
+  archived: { bg: '#F3F4F6', text: '#6B7280' },
+};
 
 export const ARCHIVE_REASONS: ArchiveReason[] = [
   'enrolled',
@@ -202,6 +262,87 @@ export function subscribeToArchivedLeads(
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PIPELINE FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+
+export async function moveLeadToPipeline(
+  leadId: string,
+  pipeline: PipelineType,
+  notes?: string
+) {
+  return supabase.rpc('move_lead_to_pipeline', {
+    p_lead_id: leadId,
+    p_pipeline: pipeline,
+    p_notes: notes || null,
+  });
+}
+
+export async function advanceLeadPipeline(
+  leadId: string,
+  newStage: PipelineStage,
+  notes?: string
+) {
+  return supabase.rpc('advance_lead_pipeline', {
+    p_lead_id: leadId,
+    p_new_stage: newStage,
+    p_notes: notes || null,
+  });
+}
+
+export async function archiveLeadToPipeline(
+  leadId: string,
+  archiveReason: string,
+  sentiment?: 'positive' | 'neutral' | 'negative',
+  enquiryType?: string,
+  outcomeSummary?: string
+) {
+  return supabase.rpc('archive_lead_to_pipeline', {
+    p_lead_id: leadId,
+    p_archive_reason: archiveReason,
+    p_sentiment: sentiment || 'neutral',
+    p_enquiry_type: enquiryType || null,
+    p_outcome_summary: outcomeSummary || null,
+  });
+}
+
+export async function selectPipelineLeads(
+  tenantId: string,
+  pipeline: PipelineType,
+  stage?: PipelineStage
+) {
+  let query = supabase
+    .from('front_desk.leads')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .eq('pipeline', pipeline)
+    .is('archived_at', null)
+    .order('pipeline_updated_at', { ascending: false });
+
+  if (stage) {
+    query = query.eq('pipeline_stage', stage);
+  }
+
+  return query;
+}
+
+export async function selectPipelineArchive(
+  tenantId: string,
+  pipeline?: PipelineType
+) {
+  let query = supabase
+    .from('front_desk.pipeline_archive')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('archived_at', { ascending: false });
+
+  if (pipeline) {
+    query = query.eq('pipeline', pipeline);
+  }
+
+  return query;
 }
 
 // ═══════════════════════════════════════════════════════════
