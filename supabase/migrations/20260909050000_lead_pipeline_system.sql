@@ -127,7 +127,7 @@ BEGIN
     RAISE EXCEPTION 'advance_lead_pipeline: caller profile not found';
   END IF;
 
-  IF v_caller.role NOT IN ('admin', 'front_desk') THEN
+  IF v_caller.role NOT IN ('admin', 'front_desk', 'office') THEN
     RAISE EXCEPTION 'advance_lead_pipeline: role % not authorized', v_caller.role;
   END IF;
 
@@ -157,12 +157,21 @@ BEGIN
       END IF;
   END CASE;
 
-  -- Update lead
+  -- Update lead pipeline stage and status
   UPDATE front_desk.leads
      SET pipeline_stage = p_new_stage,
          pipeline_notes = COALESCE(p_notes, pipeline_notes),
          pipeline_updated_at = now(),
-         updated_at = now()
+         updated_at = now(),
+         -- Also update status for handoff scenarios
+         status = CASE
+           WHEN p_new_stage = 'handed_off' THEN 'handed_off'
+           WHEN p_new_stage = 'qualified' THEN 'qualified'
+           WHEN p_new_stage = 'fee_captured' THEN 'invoiced'
+           WHEN p_new_stage = 'hired' THEN 'qualified'
+           WHEN p_new_stage = 'rejected' THEN 'enquiry'
+           ELSE status
+         END
    WHERE id = p_lead_id
    RETURNING * INTO v_lead;
 
@@ -195,7 +204,7 @@ BEGIN
     RAISE EXCEPTION 'move_lead_to_pipeline: caller profile not found';
   END IF;
 
-  IF v_caller.role NOT IN ('admin', 'front_desk') THEN
+  IF v_caller.role NOT IN ('admin', 'front_desk', 'office') THEN
     RAISE EXCEPTION 'move_lead_to_pipeline: role % not authorized', v_caller.role;
   END IF;
 
