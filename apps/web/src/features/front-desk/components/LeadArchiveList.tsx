@@ -27,6 +27,7 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
     setLoading(false);
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId triggers archived lead load
   useEffect(() => {
     loadArchivedLeads();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -106,8 +107,7 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
                   <td style={{ padding: '8px', textAlign: 'right' }}>
                     {confirmRestoreId === lead.id ? (
                       <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                        <button
-                          type="button"
+                        <button type="button"
                           onClick={() => handleRestore(lead.id)}
                           disabled={restoring === lead.id}
                           style={{
@@ -122,8 +122,7 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
                         >
                           {restoring === lead.id ? 'Restoring...' : 'Confirm'}
                         </button>
-                        <button
-                          type="button"
+                        <button type="button"
                           onClick={() => setConfirmRestoreId(null)}
                           disabled={restoring === lead.id}
                           style={{
@@ -139,8 +138,7 @@ export function LeadArchiveList({ tenantId }: LeadArchiveListProps) {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
+                      <button type="button"
                         onClick={() => setConfirmRestoreId(lead.id)}
                         style={{
                           padding: '4px 12px',

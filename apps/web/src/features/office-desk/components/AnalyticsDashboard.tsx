@@ -4,15 +4,15 @@
 
 import { useMemo } from 'react';
 import {
-  AreaChart,
   Area,
-  BarChart,
+  AreaChart,
   Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
 } from 'recharts';
 import { useAnalytics, useMetricCalculation } from '../../../hooks/useAnalytics';
 import { formatCurrency } from '../../../lib/format';
@@ -37,18 +37,13 @@ function MetricCard({ title, value, change, icon, color }: MetricCardProps) {
           <p className="text-sm text-gray-500">{title}</p>
           <p className="text-2xl font-bold mt-1">{value}</p>
           {change !== undefined && (
-            <p
-              className={`text-sm mt-1 ${
-                change >= 0 ? 'text-green-600' : 'text-red-600'
-              }`}
-            >
-              {change >= 0 ? '+' : ''}{change}% vs last period
+            <p className={`text-sm mt-1 ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {change >= 0 ? '+' : ''}
+              {change}% vs last period
             </p>
           )}
         </div>
-        <div
-          className={`w-12 h-12 rounded-full flex items-center justify-center ${color}`}
-        >
+        <div className={`w-12 h-12 rounded-full flex items-center justify-center ${color}`}>
           <span className="text-xl">{icon}</span>
         </div>
       </div>
@@ -98,9 +93,7 @@ function RevenueChart({ data }: RevenueChartProps) {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" />
             <YAxis />
-            <Tooltip
-              formatter={(value) => formatCurrency(Number(value || 0))}
-            />
+            <Tooltip formatter={(value) => formatCurrency(Number(value || 0))} />
             <Area
               type="monotone"
               dataKey="total"
@@ -198,7 +191,7 @@ function ActivityFeed({ activities }: ActivityFeedProps) {
       <div className="space-y-3">
         {activities.map((activity, index) => (
           <div
-            key={index}
+            key={`${activity.event_type}-${index}`}
             className="flex items-center justify-between py-2 border-b last:border-0"
           >
             <div className="flex items-center space-x-3">
@@ -213,9 +206,7 @@ function ActivityFeed({ activities }: ActivityFeedProps) {
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium">
-                  {activity.event_type.replace(/_/g, ' ')}
-                </p>
+                <p className="text-sm font-medium">{activity.event_type.replace(/_/g, ' ')}</p>
                 {activity.page_path && (
                   <p className="text-xs text-gray-500">{activity.page_path}</p>
                 )}
@@ -254,16 +245,12 @@ export default function AnalyticsDashboard({ tenantId }: AnalyticsDashboardProps
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        {error}
-      </div>
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
     );
   }
 
   if (!metrics) {
-    return (
-      <div className="text-center py-8 text-gray-500">No analytics data available</div>
-    );
+    return <div className="text-center py-8 text-gray-500">No analytics data available</div>;
   }
 
   return (
@@ -272,34 +259,31 @@ export default function AnalyticsDashboard({ tenantId }: AnalyticsDashboardProps
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Analytics Overview</h2>
         <div className="flex items-center space-x-2">
-          <button
+          <button type="button"
             onClick={() => setDateRangePreset('week')}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
           >
             7 Days
           </button>
-          <button
+          <button type="button"
             onClick={() => setDateRangePreset('month')}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
           >
             30 Days
           </button>
-          <button
+          <button type="button"
             onClick={() => setDateRangePreset('quarter')}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
           >
             90 Days
           </button>
-          <button
+          <button type="button"
             onClick={() => setDateRangePreset('year')}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
           >
             1 Year
           </button>
-          <button
-            onClick={refresh}
-            className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-          >
+          <button type="button" onClick={refresh} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
             Refresh
           </button>
         </div>

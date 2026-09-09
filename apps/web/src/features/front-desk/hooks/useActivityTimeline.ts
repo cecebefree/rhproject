@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '../services/supabase';
+import { useCallback, useEffect, useState } from 'react';
 import type { TimelineEvent } from '../../../types/front-desk';
+import { supabase } from '../services/supabase';
 
 interface UseActivityTimelineResult {
   timeline: TimelineEvent[];

@@ -2,7 +2,7 @@
 // Row 94 — /register/success page: payment confirmation + registration status polling
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 
 type PollStatus = 'polling' | 'confirmed' | 'not_found' | 'error';
@@ -58,8 +58,16 @@ export default function RegistrationSuccess() {
         if (!cancelled) {
           setRegistration(
             reg
-              ? { student_name: reg.student_name, student_email: reg.student_email, status: reg.status }
-              : { student_name: data.child_name || 'Student', student_email: data.family_email || '', status: 'created' }
+              ? {
+                  student_name: reg.student_name,
+                  student_email: reg.student_email,
+                  status: reg.status,
+                }
+              : {
+                  student_name: data.child_name || 'Student',
+                  student_email: data.family_email || '',
+                  status: 'created',
+                }
           );
           setPollStatus('confirmed');
         }
@@ -181,10 +189,20 @@ export default function RegistrationSuccess() {
                 Access your child's schedule, grades, and more from your phone.
               </p>
               <div style={styles.downloadButtons}>
-                <a href="https://apps.apple.com/app/redhouse" style={styles.downloadBtn} target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://apps.apple.com/app/redhouse"
+                  style={styles.downloadBtn}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   App Store
                 </a>
-                <a href="https://play.google.com/store/apps/details?id=com.redhouse" style={styles.downloadBtn} target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.redhouse"
+                  style={styles.downloadBtn}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Google Play
                 </a>
               </div>
@@ -203,7 +221,8 @@ export default function RegistrationSuccess() {
           Did not receive an email? Check your spam folder or{' '}
           <a href="mailto:support@redhouse.com" style={styles.supportLink}>
             contact support
-          </a>.
+          </a>
+          .
         </p>
       </div>
     </div>

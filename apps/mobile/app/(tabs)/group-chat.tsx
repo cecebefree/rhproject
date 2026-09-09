@@ -1,24 +1,58 @@
 // GroupChatScreen — Chat adjustments
-// Chat view with send states, messages from seed
+// Chat view with send states, messages from real DB
+// WIRED to real DB — group_messages + group_conversations via groupChatClient
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { EmptyState } from '../../src/components/EmptyState';
-import { SendIndicator } from '../../src/components/chat-ui';
-import { SEED_MESSAGES } from '../../src/seed/messages';
+import { LoadingState } from '../../src/components/LoadingState';
+import { fetchGroupMessages, type GroupMessage } from '../../src/lib/groupChatClient';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 
 export default function GroupChatScreen() {
-  const [sendState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const [messages, setMessages] = useState<GroupMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [inputText, setInputText] = useState('');
+
+  useEffect(() => {
+    if (!groupId) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchGroupMessages(groupId);
+        if (!cancelled) setMessages(data);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load messages');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [groupId]);
+
+  if (loading) return <LoadingState />;
+  if (error) return <EmptyState title="Error" message={error} />;
 
   return (
     <View style={styles.container}>
       {/* Messages */}
       <ScrollView style={styles.messagesContainer}>
-        {SEED_MESSAGES.length > 0 ? (
-          SEED_MESSAGES.map((msg) => (
+        {messages.length > 0 ? (
+          messages.map((msg) => (
             <View
               key={msg.id}
               style={[styles.messageBubble, msg.isOwn ? styles.ownBubble : styles.otherBubble]}
@@ -41,6 +75,8 @@ export default function GroupChatScreen() {
           style={styles.input}
           placeholder="Type a message..."
           placeholderTextColor={colors.charcoalLight}
+          value={inputText}
+          onChangeText={setInputText}
         />
         <TouchableOpacity style={styles.sendButton}>
           <Text style={styles.sendText}>Send</Text>

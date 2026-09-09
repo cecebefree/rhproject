@@ -10,6 +10,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   throw new Error('Admin Supabase client init failed: env vars required');
 }
 
+// Untyped client for school_desk schema (not in shared Database type)
 // biome-ignore lint/suspicious/noExplicitAny: school_desk schema not in shared types
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY) as any;
 
@@ -96,16 +97,15 @@ export async function listCourses(options?: {
 
   if (error) return { data: null, error, count: 0 };
 
-  // biome-ignore lint/suspicious/noExplicitAny: complex join result
-  const courses = (data ?? []).map((row: any) => ({
+  const courses = (data ?? []).map((row: Record<string, unknown>) => ({
     ...row,
-    instructor_name: row.profiles?.name ?? 'Unassigned',
-    enrollment_count: row.student_class?.[0]?.count ?? 0,
+    instructor_name: ((row.profiles as Record<string, unknown>)?.name as string) ?? 'Unassigned',
+    enrollment_count: ((row.student_class as Array<Record<string, unknown>>)?.[0]?.count as number) ?? 0,
     profiles: undefined,
     student_class: undefined,
   }));
 
-  return { data: courses as Course[], error: null, count: count ?? courses.length };
+  return { data: courses as unknown as Course[], error: null, count: count ?? courses.length };
 }
 
 export async function getCourse(courseId: string) {
@@ -121,12 +121,11 @@ export async function getCourse(courseId: string) {
 
   if (error) return { data: null, error };
 
-  // biome-ignore lint/suspicious/noExplicitAny: complex join result
-  const row = data as any;
+  const row = data as Record<string, unknown> & { profiles?: Record<string, unknown> | null; student_class?: Array<Record<string, unknown>> | null };
   const course: Course = {
-    ...row,
-    instructor_name: row.profiles?.name ?? 'Unassigned',
-    enrollment_count: row.student_class?.[0]?.count ?? 0,
+    ...(row as unknown as Course),
+    instructor_name: (row.profiles?.name as string) ?? 'Unassigned',
+    enrollment_count: (row.student_class?.[0]?.count as number) ?? 0,
   };
 
   return { data: course, error: null };
@@ -165,7 +164,7 @@ export async function updateCourse(
     teacher_id?: string;
     capacity?: number | null;
     status?: CourseStatus;
-  },
+  }
 ) {
   return supabase
     .from('school_desk.courses')
@@ -189,7 +188,7 @@ export async function deleteCourse(courseId: string) {
       .eq('id', courseId);
   }
 
-  const studentIds = enrolledStudents.map((e: any) => e.student_id);
+  const studentIds = enrolledStudents.map((e: { student_id: string }) => e.student_id);
 
   // Check parent_student_link (adult profiles linked to enrolled students)
   const { count: parentCount } = await supabase
@@ -207,7 +206,11 @@ export async function deleteCourse(courseId: string) {
   const { count: familyAccountCount } = await supabase
     .from('office_desk.family_accounts')
     .select('id', { count: 'exact', head: true })
-    .eq('tenant_id', (await supabase.from('school_desk.courses').select('tenant_id').eq('id', courseId).single()).data?.tenant_id ?? '');
+    .eq(
+      'tenant_id',
+      (await supabase.from('school_desk.courses').select('tenant_id').eq('id', courseId).single())
+        .data?.tenant_id ?? ''
+    );
 
   const totalLinked = (parentCount ?? 0) + (familyCount ?? 0);
 
@@ -243,7 +246,7 @@ export async function getCourseDeletionWarnings(courseId: string): Promise<{
     return { studentCount: 0, parentLinks: 0, familyLinks: 0, blocking: false };
   }
 
-  const studentIds = enrolledStudents.map((e: any) => e.student_id);
+  const studentIds = enrolledStudents.map((e: { student_id: string }) => e.student_id);
 
   const { count: parentLinks } = await supabase
     .from('parent_student_link')
@@ -319,8 +322,5 @@ export async function addScheduleSlot(slot: {
 }
 
 export async function deleteScheduleSlot(slotId: string) {
-  return supabase
-    .from('school_desk.course_schedule')
-    .delete()
-    .eq('id', slotId);
+  return supabase.from('school_desk.course_schedule').delete().eq('id', slotId);
 }

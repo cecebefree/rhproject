@@ -48,13 +48,9 @@ export async function encryptValue(value: string, encryptionKey?: string): Promi
   const keyData = encoder.encode(key.padEnd(32, '0').slice(0, 32));
   const iv = crypto.getRandomValues(new Uint8Array(12));
 
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'AES-GCM' },
-    false,
-    ['encrypt']
-  );
+  const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, [
+    'encrypt',
+  ]);
 
   const encrypted = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv },
@@ -81,26 +77,20 @@ export async function decryptValue(encrypted: string, encryptionKey?: string): P
 
   // Decode from base64
   const combined = new Uint8Array(
-    atob(encrypted).split('').map((c) => c.charCodeAt(0))
+    atob(encrypted)
+      .split('')
+      .map((c) => c.charCodeAt(0))
   );
 
   // Extract IV and encrypted data
   const iv = combined.slice(0, 12);
   const encryptedData = combined.slice(12);
 
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'AES-GCM' },
-    false,
-    ['decrypt']
-  );
+  const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'AES-GCM' }, false, [
+    'decrypt',
+  ]);
 
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv },
-    cryptoKey,
-    encryptedData
-  );
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, encryptedData);
 
   return new TextDecoder().decode(decrypted);
 }
@@ -230,10 +220,7 @@ export async function getTwoFactorStatus(userId: string): Promise<TwoFactorStatu
  * Initiate 2FA setup - generates secret, QR code URL, and backup codes
  * Does NOT save to database yet - call confirmTwoFactorSetup after verification
  */
-export function initiateTwoFactorSetup(
-  userId: string,
-  email: string
-): TwoFactorSetupResult {
+export function initiateTwoFactorSetup(userId: string, email: string): TwoFactorSetupResult {
   const secret = generateSecret();
   const qrCodeUrl = generateQrCodeUrl(secret, email);
   const backupCodes = generateBackupCodes();

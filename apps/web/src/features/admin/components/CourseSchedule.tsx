@@ -3,10 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import {
-  listSchedule,
+  type CourseSchedule as ScheduleType,
   addScheduleSlot,
   deleteScheduleSlot,
-  type CourseSchedule as ScheduleType,
+  listSchedule,
 } from '../adminCoursesClient';
 
 interface CourseScheduleProps {
@@ -27,6 +27,7 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
   const [location, setLocation] = useState('');
   const [recurring, setRecurring] = useState<'none' | 'weekly' | 'monthly'>('none');
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: courseId triggers reload
   useEffect(() => {
     loadSlots();
   }, [courseId]);
@@ -73,14 +74,14 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
 
   function formatTime(time: string): string {
     const [h, m] = time.split(':');
-    const hour = parseInt(h, 10);
+    const hour = Number.parseInt(h, 10);
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const h12 = hour % 12 || 12;
     return `${h12}:${m} ${ampm}`;
   }
 
   function formatDate(dateStr: string): string {
-    return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+    return new Date(`${dateStr}T00:00:00`).toLocaleDateString('en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -96,10 +97,7 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
     <div>
       <div style={styles.header}>
         <h3 style={styles.title}>Class Schedule</h3>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          style={styles.addButton}
-        >
+        <button type="button" onClick={() => setShowForm(!showForm)} style={styles.addButton}>
           {showForm ? 'Cancel' : '+ Add Class'}
         </button>
       </div>
@@ -109,8 +107,9 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
         <form onSubmit={handleAdd} style={styles.form}>
           <div style={styles.formRow}>
             <div style={styles.field}>
-              <label style={styles.label}>Date *</label>
+              <label htmlFor="class-date" style={styles.label}>Date *</label>
               <input
+                id="class-date"
                 type="date"
                 value={classDate}
                 onChange={(e) => setClassDate(e.target.value)}
@@ -119,8 +118,9 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
               />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Start Time *</label>
+              <label htmlFor="start-time" style={styles.label}>Start Time *</label>
               <input
+                id="start-time"
                 type="time"
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
@@ -129,8 +129,9 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
               />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>End Time *</label>
+              <label htmlFor="end-time" style={styles.label}>End Time *</label>
               <input
+                id="end-time"
                 type="time"
                 value={endTime}
                 onChange={(e) => setEndTime(e.target.value)}
@@ -141,8 +142,9 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
           </div>
           <div style={styles.formRow}>
             <div style={{ ...styles.field, flex: 1 }}>
-              <label style={styles.label}>Location (optional)</label>
+              <label htmlFor="location" style={styles.label}>Location (optional)</label>
               <input
+                id="location"
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
@@ -151,8 +153,9 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
               />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Recurring</label>
+              <label htmlFor="recurring" style={styles.label}>Recurring</label>
               <select
+                id="recurring"
                 value={recurring}
                 onChange={(e) => setRecurring(e.target.value as typeof recurring)}
                 style={styles.select}
@@ -173,7 +176,9 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
 
       {/* Schedule list */}
       {slots.length === 0 ? (
-        <div style={styles.empty}>No classes scheduled yet. Add your first class session above.</div>
+        <div style={styles.empty}>
+          No classes scheduled yet. Add your first class session above.
+        </div>
       ) : (
         <div style={styles.slotList}>
           {slots.map((slot) => (
@@ -183,17 +188,12 @@ export function CourseSchedule({ courseId, tenantId }: CourseScheduleProps) {
                 <div style={styles.slotTime}>
                   {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
                 </div>
-                {slot.location && (
-                  <div style={styles.slotLocation}>📍 {slot.location}</div>
-                )}
+                {slot.location && <div style={styles.slotLocation}>📍 {slot.location}</div>}
                 {slot.recurring !== 'none' && (
                   <span style={styles.recurringBadge}>{slot.recurring}</span>
                 )}
               </div>
-              <button
-                onClick={() => handleDelete(slot.id)}
-                style={styles.deleteButton}
-              >
+              <button type="button" onClick={() => handleDelete(slot.id)} style={styles.deleteButton}>
                 Remove
               </button>
             </div>

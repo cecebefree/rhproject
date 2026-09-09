@@ -11,6 +11,7 @@ import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
+import { fetchScheduleBySection, type ScheduleEvent } from '../../src/lib/scheduleClient';
 
 interface EnrichmentCourse {
   id: string;
@@ -70,6 +71,25 @@ export default function HubScreen() {
   const [slotsByCourse, setSlotsByCourse] = useState<Map<string, ScheduleSlot[]>>(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadHubSchedule() {
+      const { events, error: fetchError } = await fetchScheduleBySection('hub', '');
+      if (!cancelled) {
+        setScheduleEvents(events);
+        if (fetchError) {
+          setScheduleError(fetchError);
+        }
+      }
+    }
+
+    loadHubSchedule();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -179,6 +199,37 @@ export default function HubScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Enrichment</Text>
       </View>
+
+      {/* Schedule Events from Schedule Client */}
+      {scheduleEvents.length > 0 && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Scheduled Events</Text>
+          {scheduleEvents.slice(0, 6).map((event) => (
+            <TouchableOpacity
+              key={event.id}
+              style={styles.card}
+              activeOpacity={0.7}
+            >
+              <View style={styles.cardHeader}>
+                <Text style={styles.subject}>{event.title}</Text>
+                <View style={[styles.badge, styles.badgeEnrichment]}>
+                  <Text style={styles.badgeText}>Club</Text>
+                </View>
+              </View>
+              <Text style={styles.schedule}>
+                {event.day_of_week != null ? DAY_NAMES[event.day_of_week] : ''}
+                {event.start_time ? ` · ${formatTime(event.start_time)}` : ''}
+                {event.end_time ? `–${formatTime(event.end_time)}` : ''}
+              </Text>
+              {event.description ? (
+                <Text style={styles.description} numberOfLines={2}>
+                  {event.description}
+                </Text>
+              ) : null}
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       {loading ? (
         <SectionLoader />

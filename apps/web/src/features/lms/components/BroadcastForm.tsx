@@ -1,7 +1,7 @@
 // BroadcastForm — create broadcast to a group
 // Row 68: Form with title, message, group dropdown, send button
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { insertBroadcast } from '../services/supabase';
 
 interface BroadcastFormProps {
@@ -16,12 +16,7 @@ interface Group {
   category: string;
 }
 
-export function BroadcastForm({
-  tenantId,
-  userId,
-  onSuccess,
-  onCancel,
-}: BroadcastFormProps) {
+export function BroadcastForm({ tenantId, userId, onSuccess, onCancel }: BroadcastFormProps) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [groupId, setGroupId] = useState('');
   const [title, setTitle] = useState('');
@@ -35,10 +30,7 @@ export function BroadcastForm({
 
     async function loadGroups() {
       const { data, error } = await import('../services/supabase').then((m) =>
-        m.supabaseUntyped
-          .from('school_desk.conversations')
-          .select('id, category')
-          .order('category'),
+        m.supabaseUntyped.from('school_desk.conversations').select('id, category').order('category')
       );
 
       if (!cancelled) {
@@ -91,11 +83,12 @@ export function BroadcastForm({
 
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.field}>
-          <label style={styles.label}>Group *</label>
+          <label htmlFor="broadcast-group" style={styles.label}>Group *</label>
           {loadingGroups ? (
             <div style={styles.loadingText}>Loading groups...</div>
           ) : (
             <select
+              id="broadcast-group"
               value={groupId}
               onChange={(e) => setGroupId(e.target.value)}
               required
@@ -112,8 +105,9 @@ export function BroadcastForm({
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Title *</label>
+          <label htmlFor="broadcast-title" style={styles.label}>Title *</label>
           <input
+            id="broadcast-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -123,8 +117,9 @@ export function BroadcastForm({
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Message *</label>
+          <label htmlFor="broadcast-message" style={styles.label}>Message *</label>
           <textarea
+            id="broadcast-message"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             required
@@ -135,19 +130,11 @@ export function BroadcastForm({
 
         <div style={styles.buttonRow}>
           {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              style={styles.cancelButton}
-            >
+            <button type="button" onClick={onCancel} style={styles.cancelButton}>
               Cancel
             </button>
           )}
-          <button
-            type="submit"
-            disabled={loading || loadingGroups}
-            style={styles.submitButton}
-          >
+          <button type="submit" disabled={loading || loadingGroups} style={styles.submitButton}>
             {loading ? 'Sending...' : 'Send Broadcast'}
           </button>
         </div>

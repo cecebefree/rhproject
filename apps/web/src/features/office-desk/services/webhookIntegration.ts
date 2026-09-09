@@ -71,7 +71,11 @@ export async function fireLeadUpdated(
   });
 }
 
-export async function fireLeadConverted(tenantId: string, lead: Record<string, unknown>, registrationId: string) {
+export async function fireLeadConverted(
+  tenantId: string,
+  lead: Record<string, unknown>,
+  registrationId: string
+) {
   return emitWebhookEvent(tenantId, 'LEAD_CONVERTED', {
     lead_id: lead.id,
     name: lead.name,

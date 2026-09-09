@@ -1,6 +1,6 @@
 // TouchLongPress — Hook for long-press context menus (Row 6)
 
-import { useRef, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 interface LongPressOptions {
   onLongPress: (e: React.TouchEvent | React.MouseEvent) => void;
@@ -48,38 +48,32 @@ export function useLongPress({
     [onLongPress, delay]
   );
 
-  const stop = useCallback(
-    (e: React.TouchEvent | React.MouseEvent) => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    },
-    []
-  );
+  const stop = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
 
-  const move = useCallback(
-    (e: React.TouchEvent) => {
-      if (timerRef.current) {
-        // Cancel long press if finger moves too much
-        const touch = e.touches[0];
-        const target = targetRef.current as HTMLElement | null;
-        if (target) {
-          const rect = target.getBoundingClientRect();
-          if (
-            touch.clientX < rect.left - 10 ||
-            touch.clientX > rect.right + 10 ||
-            touch.clientY < rect.top - 10 ||
-            touch.clientY > rect.bottom + 10
-          ) {
-            clearTimeout(timerRef.current);
-            timerRef.current = null;
-          }
+  const move = useCallback((e: React.TouchEvent) => {
+    if (timerRef.current) {
+      // Cancel long press if finger moves too much
+      const touch = e.touches[0];
+      const target = targetRef.current as HTMLElement | null;
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        if (
+          touch.clientX < rect.left - 10 ||
+          touch.clientX > rect.right + 10 ||
+          touch.clientY < rect.top - 10 ||
+          touch.clientY > rect.bottom + 10
+        ) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
         }
       }
-    },
-    []
-  );
+    }
+  }, []);
 
   useEffect(() => {
     return () => {

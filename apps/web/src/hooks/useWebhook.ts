@@ -208,7 +208,7 @@ export function useWebhookEvents(
     setLoading(true);
     setError(null);
 
-    let result;
+    let result: Awaited<ReturnType<typeof selectWebhookEvents>> | Awaited<ReturnType<typeof selectAllWebhookEvents>>;
     if (webhookId) {
       result = await selectWebhookEvents(webhookId);
     } else {

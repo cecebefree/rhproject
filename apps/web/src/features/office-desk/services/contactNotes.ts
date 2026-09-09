@@ -53,17 +53,18 @@ export interface ContactActivityLogEntry {
   created_at: string;
 }
 
-export type ActivityAction = 'note_created' | 'note_updated' | 'note_deleted' | 'contact_updated' | 'contact_archived';
+export type ActivityAction =
+  | 'note_created'
+  | 'note_updated'
+  | 'note_deleted'
+  | 'contact_updated'
+  | 'contact_archived';
 
 // ═══════════════════════════════════════════════════════════
 // NOTE QUERIES
 // ═══════════════════════════════════════════════════════════
 
-export async function selectNotesByContact(
-  contactId: string,
-  limit = 20,
-  offset = 0
-) {
+export async function selectNotesByContact(contactId: string, limit = 20, offset = 0) {
   // Fetch notes first
   const { data: notes, error } = await supabase
     .from('office_desk.contact_notes')
@@ -79,14 +80,8 @@ export async function selectNotesByContact(
   const notesWithRelations = await Promise.all(
     notes.map(async (note) => {
       const [mentionsResult, attachmentsResult] = await Promise.all([
-        supabase
-          .from('office_desk.contact_note_mentions')
-          .select('*')
-          .eq('note_id', note.id),
-        supabase
-          .from('office_desk.contact_note_attachments')
-          .select('*')
-          .eq('note_id', note.id),
+        supabase.from('office_desk.contact_note_mentions').select('*').eq('note_id', note.id),
+        supabase.from('office_desk.contact_note_attachments').select('*').eq('note_id', note.id),
       ]);
       return {
         ...note,
@@ -110,14 +105,8 @@ export async function getNoteById(noteId: string) {
   if (error || !note) return { data: note, error };
 
   const [mentionsResult, attachmentsResult] = await Promise.all([
-    supabase
-      .from('office_desk.contact_note_mentions')
-      .select('*')
-      .eq('note_id', noteId),
-    supabase
-      .from('office_desk.contact_note_attachments')
-      .select('*')
-      .eq('note_id', noteId),
+    supabase.from('office_desk.contact_note_mentions').select('*').eq('note_id', noteId),
+    supabase.from('office_desk.contact_note_attachments').select('*').eq('note_id', noteId),
   ]);
 
   return {
@@ -189,24 +178,15 @@ export async function insertMentions(noteId: string, userIds: string[]) {
     user_id: userId,
   }));
 
-  return supabase
-    .from('office_desk.contact_note_mentions')
-    .insert(mentions)
-    .select();
+  return supabase.from('office_desk.contact_note_mentions').insert(mentions).select();
 }
 
 export async function deleteMentions(noteId: string) {
-  return supabase
-    .from('office_desk.contact_note_mentions')
-    .delete()
-    .eq('note_id', noteId);
+  return supabase.from('office_desk.contact_note_mentions').delete().eq('note_id', noteId);
 }
 
 export async function getMentionsByNote(noteId: string) {
-  return supabase
-    .from('office_desk.contact_note_mentions')
-    .select('*')
-    .eq('note_id', noteId);
+  return supabase.from('office_desk.contact_note_mentions').select('*').eq('note_id', noteId);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -234,10 +214,7 @@ export async function insertAttachment(attachment: {
 }
 
 export async function deleteAttachment(attachmentId: string) {
-  return supabase
-    .from('office_desk.contact_note_attachments')
-    .delete()
-    .eq('id', attachmentId);
+  return supabase.from('office_desk.contact_note_attachments').delete().eq('id', attachmentId);
 }
 
 export async function getAttachmentsByNote(noteId: string) {
@@ -252,11 +229,7 @@ export async function getAttachmentsByNote(noteId: string) {
 // ACTIVITY LOG QUERIES
 // ═══════════════════════════════════════════════════════════
 
-export async function selectActivityLog(
-  contactId: string,
-  limit = 50,
-  offset = 0
-) {
+export async function selectActivityLog(contactId: string, limit = 50, offset = 0) {
   return supabase
     .from('office_desk.contact_activity_log')
     .select('*')
@@ -299,7 +272,12 @@ export function subscribeToContactNotes(
     .channel(`contact_notes-${contactId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'contact_notes', filter: `contact_id=eq.${contactId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'contact_notes',
+        filter: `contact_id=eq.${contactId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
@@ -307,13 +285,22 @@ export function subscribeToContactNotes(
 
 export function subscribeToContactActivity(
   contactId: string,
-  callback: (payload: { eventType: string; new: ContactActivityLogEntry; old: ContactActivityLogEntry | null }) => void
+  callback: (payload: {
+    eventType: string;
+    new: ContactActivityLogEntry;
+    old: ContactActivityLogEntry | null;
+  }) => void
 ) {
   return supabase
     .channel(`contact_activity-${contactId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'contact_activity_log', filter: `contact_id=eq.${contactId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'contact_activity_log',
+        filter: `contact_id=eq.${contactId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();

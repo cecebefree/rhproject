@@ -3,11 +3,11 @@
 
 import { useState } from 'react';
 import {
-  createPaymentIntent,
-  confirmPayment,
   type Invoice,
-  type PaymentProcessor,
   type PaymentMethod,
+  type PaymentProcessor,
+  confirmPayment,
+  createPaymentIntent,
 } from '../services/supabase';
 
 interface PaymentFormProps {
@@ -130,9 +130,8 @@ export function PaymentForm({
       {availableProcessors.length > 1 && (
         <div style={{ display: 'flex', gap: '8px' }}>
           {availableProcessors.map((proc) => (
-            <button
+            <button type="button"
               key={proc}
-              type="button"
               onClick={() => setSelectedProcessor(proc)}
               style={{
                 flex: 1,
@@ -155,10 +154,11 @@ export function PaymentForm({
       {/* Stripe payment method */}
       {selectedProcessor === 'stripe' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <label style={{ fontSize: '14px', fontWeight: '500', color: '#4a5568' }}>
+          <label htmlFor="payment-method" style={{ fontSize: '14px', fontWeight: '500', color: '#4a5568' }}>
             Payment Method
           </label>
           <select
+            id="payment-method"
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
             style={{
@@ -179,26 +179,30 @@ export function PaymentForm({
 
       {/* PayPal info */}
       {selectedProcessor === 'paypal' && (
-        <div style={{
-          padding: '12px 16px',
-          backgroundColor: '#fffbeb',
-          borderRadius: '8px',
-          fontSize: '13px',
-          color: '#92400e',
-        }}>
+        <div
+          style={{
+            padding: '12px 16px',
+            backgroundColor: '#fffbeb',
+            borderRadius: '8px',
+            fontSize: '13px',
+            color: '#92400e',
+          }}
+        >
           You will be redirected to PayPal to complete the payment securely.
         </div>
       )}
 
       {/* Error display */}
       {error && (
-        <div style={{
-          padding: '12px 16px',
-          backgroundColor: '#fee2e2',
-          borderRadius: '8px',
-          fontSize: '13px',
-          color: '#991b1b',
-        }}>
+        <div
+          style={{
+            padding: '12px 16px',
+            backgroundColor: '#fee2e2',
+            borderRadius: '8px',
+            fontSize: '13px',
+            color: '#991b1b',
+          }}
+        >
           {error}
         </div>
       )}
@@ -218,8 +222,7 @@ export function PaymentForm({
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-        <button
-          type="button"
+        <button type="button"
           onClick={onCancel}
           disabled={status === 'processing'}
           style={{
@@ -235,8 +238,7 @@ export function PaymentForm({
           Cancel
         </button>
         {status !== 'succeeded' && status !== 'requires_action' && (
-          <button
-            type="button"
+          <button type="button"
             onClick={handleSubmit}
             disabled={status === 'processing' || amountDue <= 0}
             style={{

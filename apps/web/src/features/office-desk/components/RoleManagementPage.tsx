@@ -1,15 +1,15 @@
 // RoleManagementPage — Manage desk roles and their permissions
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  selectDeskRoles,
-  selectAllPermissions,
-  selectRolePermissions,
-  setRolePermissions,
-  createDeskRole,
-  deleteDeskRole,
   type DeskRole,
   type Permission,
+  createDeskRole,
+  deleteDeskRole,
+  selectAllPermissions,
+  selectDeskRoles,
+  selectRolePermissions,
+  setRolePermissions,
 } from '../services/rbac';
 
 interface RoleManagementPageProps {
@@ -103,23 +103,37 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
   };
 
   // Group permissions by category
-  const permissionsByCategory = permissions.reduce((acc, perm) => {
-    if (!acc[perm.category]) acc[perm.category] = [];
-    acc[perm.category].push(perm);
-    return acc;
-  }, {} as Record<string, Permission[]>);
+  const permissionsByCategory = permissions.reduce(
+    (acc, perm) => {
+      if (!acc[perm.category]) acc[perm.category] = [];
+      acc[perm.category].push(perm);
+      return acc;
+    },
+    {} as Record<string, Permission[]>
+  );
 
   if (isLoading) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading roles...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading roles...</div>
+    );
   }
 
   return (
     <div style={{ display: 'flex', gap: '24px', maxWidth: '1000px' }}>
       {/* Roles List */}
       <div style={{ width: '280px', flexShrink: 0 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>Roles</h3>
-          <button
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px',
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>
+            Roles
+          </h3>
+          <button type="button"
             onClick={() => setShowNewRole(true)}
             style={{
               padding: '4px 8px',
@@ -150,7 +164,7 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
                 fontSize: '13px',
               }}
             />
-            <button
+            <button type="button"
               onClick={handleCreateRole}
               disabled={!newRoleName.trim()}
               style={{
@@ -165,9 +179,19 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
             >
               Add
             </button>
-            <button
-              onClick={() => { setShowNewRole(false); setNewRoleName(''); }}
-              style={{ padding: '6px 10px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer' }}
+            <button type="button"
+              onClick={() => {
+                setShowNewRole(false);
+                setNewRoleName('');
+              }}
+              style={{
+                padding: '6px 10px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '4px',
+                backgroundColor: 'white',
+                fontSize: '12px',
+                cursor: 'pointer',
+              }}
             >
               Cancel
             </button>
@@ -179,6 +203,11 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
             <div
               key={role.id}
               onClick={() => setSelectedRole(role)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedRole(role); } }}
+              // biome-ignore lint/a11y/useSemanticElements: custom styled role selector, <option> cannot be styled
+              role="option"
+              aria-selected={selectedRole?.id === role.id}
+              tabIndex={0}
               style={{
                 padding: '10px 12px',
                 borderRadius: '6px',
@@ -191,12 +220,17 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
               }}
             >
               <div>
-                <div style={{ fontSize: '14px', fontWeight: '500', color: '#2d3748' }}>{role.name}</div>
+                <div style={{ fontSize: '14px', fontWeight: '500', color: '#2d3748' }}>
+                  {role.name}
+                </div>
                 {role.is_system && <div style={{ fontSize: '11px', color: '#a0aec0' }}>System</div>}
               </div>
               {!role.is_system && (
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDeleteRole(role); }}
+                <button type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteRole(role);
+                  }}
                   style={{
                     padding: '2px 6px',
                     border: 'none',
@@ -218,11 +252,18 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
       <div style={{ flex: 1 }}>
         {selectedRole ? (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px',
+              }}
+            >
               <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>
                 {selectedRole.name} — Permissions
               </h3>
-              <button
+              <button type="button"
                 onClick={handleSavePermissions}
                 disabled={saving}
                 style={{
@@ -241,14 +282,31 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
             </div>
 
             {error && (
-              <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '14px', marginBottom: '16px' }}>
+              <div
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#fee2e2',
+                  color: '#991b1b',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  marginBottom: '16px',
+                }}
+              >
                 {error}
               </div>
             )}
 
             {Object.entries(permissionsByCategory).map(([category, perms]) => (
               <div key={category} style={{ marginBottom: '20px' }}>
-                <h4 style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>
+                <h4
+                  style={{
+                    margin: '0 0 8px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    color: '#718096',
+                    textTransform: 'uppercase',
+                  }}
+                >
                   {category}
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -274,7 +332,11 @@ export function RoleManagementPage({ deskId, tenantId }: RoleManagementPageProps
                       />
                       <div>
                         <div style={{ fontSize: '14px', color: '#2d3748' }}>{perm.name}</div>
-                        {perm.description && <div style={{ fontSize: '12px', color: '#718096' }}>{perm.description}</div>}
+                        {perm.description && (
+                          <div style={{ fontSize: '12px', color: '#718096' }}>
+                            {perm.description}
+                          </div>
+                        )}
                       </div>
                     </label>
                   ))}

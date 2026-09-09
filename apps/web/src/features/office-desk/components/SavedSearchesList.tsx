@@ -54,10 +54,24 @@ export function SavedSearchesList({
   };
 
   return (
-    <div style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: 'white' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+    <div
+      style={{
+        padding: '16px',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        backgroundColor: 'white',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '12px',
+        }}
+      >
         <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Saved Searches</h3>
-        <button
+        <button type="button"
           onClick={() => setShowCreateForm(!showCreateForm)}
           style={{
             padding: '6px 12px',
@@ -75,13 +89,15 @@ export function SavedSearchesList({
 
       {/* Create Form */}
       {showCreateForm && (
-        <div style={{
-          padding: '12px',
-          backgroundColor: '#f7fafc',
-          borderRadius: '6px',
-          marginBottom: '12px',
-          border: '1px solid #e2e8f0',
-        }}>
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: '#f7fafc',
+            borderRadius: '6px',
+            marginBottom: '12px',
+            border: '1px solid #e2e8f0',
+          }}
+        >
           <div style={{ marginBottom: '8px' }}>
             <input
               type="text"
@@ -112,7 +128,7 @@ export function SavedSearchesList({
               }}
             />
           </div>
-          <button
+          <button type="button"
             onClick={handleCreate}
             disabled={saving || !newName.trim()}
             style={{
@@ -133,14 +149,16 @@ export function SavedSearchesList({
 
       {/* Saved Searches List */}
       {savedSearches.length === 0 ? (
-        <div style={{
-          padding: '24px',
-          textAlign: 'center',
-          color: '#718096',
-          backgroundColor: '#f7fafc',
-          borderRadius: '6px',
-          fontSize: '14px',
-        }}>
+        <div
+          style={{
+            padding: '24px',
+            textAlign: 'center',
+            color: '#718096',
+            backgroundColor: '#f7fafc',
+            borderRadius: '6px',
+            fontSize: '14px',
+          }}
+        >
           No saved searches yet. Use the search bar and save your frequent queries.
         </div>
       ) : (
@@ -159,27 +177,33 @@ export function SavedSearchesList({
               }}
             >
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}
+                >
                   <span style={{ fontWeight: '600', fontSize: '14px' }}>{search.name}</span>
-                  <span style={{
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    fontWeight: '500',
-                    backgroundColor: '#edf2f7',
-                    color: '#4a5568',
-                  }}>
-                    {ENTITY_LABELS[search.entity_type]}
-                  </span>
-                  {search.is_default && (
-                    <span style={{
+                  <span
+                    style={{
                       padding: '2px 6px',
                       borderRadius: '4px',
                       fontSize: '11px',
                       fontWeight: '500',
-                      backgroundColor: '#3182ce',
-                      color: 'white',
-                    }}>
+                      backgroundColor: '#edf2f7',
+                      color: '#4a5568',
+                    }}
+                  >
+                    {ENTITY_LABELS[search.entity_type]}
+                  </span>
+                  {search.is_default && (
+                    <span
+                      style={{
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontSize: '11px',
+                        fontWeight: '500',
+                        backgroundColor: '#3182ce',
+                        color: 'white',
+                      }}
+                    >
                       Default
                     </span>
                   )}
@@ -194,14 +218,12 @@ export function SavedSearchesList({
                   {search.last_used_at && (
                     <span>Last used: {new Date(search.last_used_at).toLocaleDateString()}</span>
                   )}
-                  {search.search_query && (
-                    <span>Query: "{search.search_query}"</span>
-                  )}
+                  {search.search_query && <span>Query: "{search.search_query}"</span>}
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button
+                <button type="button"
                   onClick={() => onApply(search)}
                   style={{
                     padding: '6px 12px',
@@ -215,7 +237,7 @@ export function SavedSearchesList({
                 >
                   Apply
                 </button>
-                <button
+                <button type="button"
                   onClick={() => handleDelete(search.id)}
                   style={{
                     padding: '6px 12px',

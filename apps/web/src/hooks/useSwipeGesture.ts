@@ -1,6 +1,6 @@
 // SwipeGestureHandler — Hook for swipe left/right actions (Row 6)
 
-import { useRef, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 interface SwipeGestureOptions {
   onSwipeLeft?: () => void;
@@ -42,28 +42,31 @@ export function useSwipeGesture({
     swipeOffset.current = 0;
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!touchStart.current) return;
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!touchStart.current) return;
 
-    touchEnd.current = {
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY,
-    };
+      touchEnd.current = {
+        x: e.targetTouches[0].clientX,
+        y: e.targetTouches[0].clientY,
+      };
 
-    const deltaX = touchEnd.current.x - touchStart.current.x;
-    const deltaY = touchEnd.current.y - touchStart.current.y;
+      const deltaX = touchEnd.current.x - touchStart.current.x;
+      const deltaY = touchEnd.current.y - touchStart.current.y;
 
-    // Determine if this is a horizontal swipe
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-      isSwiping.current = true;
-      swipeDirection.current = deltaX > 0 ? 'right' : 'left';
-      swipeOffset.current = deltaX;
+      // Determine if this is a horizontal swipe
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+        isSwiping.current = true;
+        swipeDirection.current = deltaX > 0 ? 'right' : 'left';
+        swipeOffset.current = deltaX;
 
-      if (preventScroll) {
-        e.preventDefault();
+        if (preventScroll) {
+          e.preventDefault();
+        }
       }
-    }
-  }, [preventScroll]);
+    },
+    [preventScroll]
+  );
 
   const handleTouchEnd = useCallback(() => {
     if (!touchStart.current || !touchEnd.current) return;

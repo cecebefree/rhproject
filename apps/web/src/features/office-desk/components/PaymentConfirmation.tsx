@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import {
+  PAYMENT_STATUS_COLORS,
+  PAYMENT_STATUS_LABELS,
   type PaymentStatus,
   type PaymentWithInvoice,
-  PAYMENT_STATUS_LABELS,
-  PAYMENT_STATUS_COLORS,
   selectPayments,
   subscribeToPayments,
-} from "../services/supabase";
-import PaymentConfirmationDetail from "./PaymentConfirmationDetail";
+} from '../services/supabase';
+import PaymentConfirmationDetail from './PaymentConfirmationDetail';
 
 interface PaymentFilters {
-  status: PaymentStatus | "all";
+  status: PaymentStatus | 'all';
   method: string;
   search: string;
 }
@@ -23,12 +23,12 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
   const [payments, setPayments] = useState<PaymentWithInvoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<PaymentFilters>({
-    status: "all",
-    method: "",
-    search: "",
+    status: 'all',
+    method: '',
+    search: '',
   });
   const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
-  const [counts, setCounts] = useState<Record<PaymentStatus | "all", number>>({
+  const [counts, setCounts] = useState<Record<PaymentStatus | 'all', number>>({
     all: 0,
     pending: 0,
     confirmed: 0,
@@ -41,12 +41,12 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
     setLoading(true);
     try {
       const { data, error } = await selectPayments(tenantId, {
-        status: filters.status === "all" ? undefined : filters.status,
+        status: filters.status === 'all' ? undefined : filters.status,
         method: filters.method || undefined,
         search: filters.search || undefined,
       });
       if (error) {
-        console.error("Failed to fetch payments:", error);
+        console.error('Failed to fetch payments:', error);
         return;
       }
       setPayments(data || []);
@@ -61,7 +61,7 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
 
   const fetchCounts = useCallback(async () => {
     if (!tenantId) return;
-    for (const status of ["pending", "confirmed", "failed", "refunded"] as PaymentStatus[]) {
+    for (const status of ['pending', 'confirmed', 'failed', 'refunded'] as PaymentStatus[]) {
       const { count } = await selectPayments(tenantId, { status });
       setCounts((prev) => ({ ...prev, [status]: count || 0 }));
     }
@@ -100,29 +100,29 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
   };
 
   const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-ZA", {
-      style: "currency",
-      currency: currency || "ZAR",
+    return new Intl.NumberFormat('en-ZA', {
+      style: 'currency',
+      currency: currency || 'ZAR',
     }).format(amount);
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "—";
-    return new Date(dateStr).toLocaleDateString("en-ZA", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
   const statusTabs = [
-    { key: "all", label: "All", count: counts.all },
-    { key: "pending", label: "Pending", count: counts.pending },
-    { key: "confirmed", label: "Confirmed", count: counts.confirmed },
-    { key: "failed", label: "Failed", count: counts.failed },
-    { key: "refunded", label: "Refunded", count: counts.refunded },
+    { key: 'all', label: 'All', count: counts.all },
+    { key: 'pending', label: 'Pending', count: counts.pending },
+    { key: 'confirmed', label: 'Confirmed', count: counts.confirmed },
+    { key: 'failed', label: 'Failed', count: counts.failed },
+    { key: 'refunded', label: 'Refunded', count: counts.refunded },
   ] as const;
 
   return (
@@ -134,35 +134,33 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
             Review and confirm incoming payments for your registrations
           </p>
         </div>
-        <button
-          type="button"
+        <button type="button"
           onClick={handleRefresh}
           disabled={loading}
           className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
         >
-          {loading ? "Loading..." : "Refresh"}
+          {loading ? 'Loading...' : 'Refresh'}
         </button>
       </div>
 
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {statusTabs.map((tab) => (
-            <button
+            <button type="button"
               key={tab.key}
-              type="button"
-              onClick={() => handleFilterChange("status", tab.key)}
+              onClick={() => handleFilterChange('status', tab.key)}
               className={`whitespace-nowrap border-b-2 py-3 px-1 text-sm font-medium ${
                 filters.status === tab.key
-                  ? "border-blue-500 text-blue-600"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               }`}
             >
               {tab.label}
               <span
                 className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
                   filters.status === tab.key
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-gray-100 text-gray-600"
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'bg-gray-100 text-gray-600'
                 }`}
               >
                 {tab.count}
@@ -178,7 +176,7 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
             type="text"
             placeholder="Search by reference or invoice number..."
             value={filters.search}
-            onChange={(e) => handleFilterChange("search", e.target.value)}
+            onChange={(e) => handleFilterChange('search', e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
           />
           <svg
@@ -198,7 +196,7 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
         </div>
         <select
           value={filters.method}
-          onChange={(e) => handleFilterChange("method", e.target.value)}
+          onChange={(e) => handleFilterChange('method', e.target.value)}
           className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">All Methods</option>
@@ -251,28 +249,27 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
                   key={payment.id}
                   onClick={() => handleRowClick(payment.id)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") handleRowClick(payment.id);
+                    if (e.key === 'Enter' || e.key === ' ') handleRowClick(payment.id);
                   }}
                   className="hover:bg-gray-50 cursor-pointer"
                   tabIndex={0}
-                  role="button"
                 >
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">
-                      {payment.invoice?.invoice_number || "—"}
+                      {payment.invoice?.invoice_number || '—'}
                     </div>
                     <div className="text-sm text-gray-500">
                       {payment.payment_method
-                        ? payment.payment_method.replace("_", " ").toUpperCase()
-                        : "—"}
+                        ? payment.payment_method.replace('_', ' ').toUpperCase()
+                        : '—'}
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {payment.invoice?.registration?.student_name || "—"}
+                      {payment.invoice?.registration?.student_name || '—'}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {payment.invoice?.registration?.course_name || "—"}
+                      {payment.invoice?.registration?.course_name || '—'}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
@@ -291,9 +288,8 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
                     {formatDate(payment.created_at)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    {payment.status === "pending" && (
-                      <button
-                        type="button"
+                    {payment.status === 'pending' && (
+                      <button type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRowClick(payment.id);
@@ -303,9 +299,8 @@ export default function PaymentConfirmation({ tenantId }: PaymentConfirmationPro
                         Review
                       </button>
                     )}
-                    {payment.status !== "pending" && (
-                      <button
-                        type="button"
+                    {payment.status !== 'pending' && (
+                      <button type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRowClick(payment.id);

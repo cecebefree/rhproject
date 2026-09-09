@@ -65,10 +65,7 @@ export const TEMPLATE_USAGE_STATUS_LABELS: Record<TemplateUsageStatus, string> =
 /**
  * Substitute {{variable_name}} placeholders with values
  */
-export function substituteVariables(
-  text: string,
-  variables: Record<string, string>
-): string {
+export function substituteVariables(text: string, variables: Record<string, string>): string {
   return text.replace(/\{\{(\w+)\}\}/g, (match, key) => {
     return variables[key] !== undefined ? variables[key] : match;
   });
@@ -151,10 +148,7 @@ export async function insertTemplate(
     .single();
 }
 
-export async function updateTemplate(
-  templateId: string,
-  updates: EmailTemplateUpdateInput
-) {
+export async function updateTemplate(templateId: string, updates: EmailTemplateUpdateInput) {
   return supabase
     .from('office_desk.email_templates')
     .update({
@@ -197,10 +191,7 @@ export async function logTemplateUsage(
     .single();
 }
 
-export async function updateTemplateUsageStatus(
-  usageId: string,
-  status: TemplateUsageStatus
-) {
+export async function updateTemplateUsageStatus(usageId: string, status: TemplateUsageStatus) {
   return supabase
     .from('office_desk.email_template_usage')
     .update({ status })
@@ -209,11 +200,7 @@ export async function updateTemplateUsageStatus(
     .single();
 }
 
-export async function selectTemplateUsage(
-  templateId: string,
-  limit = 50,
-  offset = 0
-) {
+export async function selectTemplateUsage(templateId: string, limit = 50, offset = 0) {
   return supabase
     .from('office_desk.email_template_usage')
     .select('*')
@@ -294,7 +281,12 @@ export function subscribeToTemplates(
     .channel(`email_templates-${tenantId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'email_templates', filter: `tenant_id=eq.${tenantId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'email_templates',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
@@ -302,13 +294,22 @@ export function subscribeToTemplates(
 
 export function subscribeToTemplateUsage(
   tenantId: string,
-  callback: (payload: { eventType: string; new: EmailTemplateUsage; old: EmailTemplateUsage | null }) => void
+  callback: (payload: {
+    eventType: string;
+    new: EmailTemplateUsage;
+    old: EmailTemplateUsage | null;
+  }) => void
 ) {
   return supabase
     .channel(`email_template_usage-${tenantId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'email_template_usage', filter: `tenant_id=eq.${tenantId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'email_template_usage',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();

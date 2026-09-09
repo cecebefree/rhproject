@@ -4,7 +4,13 @@
 export interface ContractPDFData {
   contractId: string;
   title: string;
-  terms: any;
+  terms: {
+    clauses?: Array<string | { text?: string; title?: string }>;
+    monthly_amount?: number;
+    amount?: number;
+    duration_months?: number;
+    duration?: number;
+  };
   startDate: string | null;
   endDate: string | null;
   studentName: string;
@@ -77,16 +83,24 @@ export function generateContractHTML(data: ContractPDFData): string {
         </div>
       </div>
 
-      ${clauses.length > 0 ? `
+      ${
+        clauses.length > 0
+          ? `
         <div class="section">
           <h2>Terms & Conditions</h2>
-          ${clauses.map((c: any, i: number) => `
+          ${clauses
+            .map(
+              (c: string | { text?: string; title?: string }, i: number) => `
             <div class="clause">
               <strong>${i + 1}.</strong> ${typeof c === 'string' ? c : c.text || c.title || JSON.stringify(c)}
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
-      ` : ''}
+      `
+          : ''
+      }
 
       <div class="signature">
         <div class="sig-block">

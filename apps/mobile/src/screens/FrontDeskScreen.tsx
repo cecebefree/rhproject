@@ -139,6 +139,10 @@ export function FrontDeskScreen() {
       <FlatList
         data={filteredLeads}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        initialNumToRender={5}
         renderItem={({ item }) => <LeadRow lead={item} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}

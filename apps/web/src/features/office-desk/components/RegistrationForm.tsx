@@ -355,8 +355,7 @@ export function RegistrationForm({
 
       {/* Submit */}
       <div className="flex gap-3">
-        <button
-          type="submit"
+        <button type="submit"
           disabled={status === 'submitting'}
           className="rounded bg-blue-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >

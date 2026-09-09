@@ -1,7 +1,7 @@
 // ProtectedRoute — Wrapper component that checks permissions before rendering children
 
-import type { PermissionCode } from '../services/rbac';
 import { useRbac } from '../../../hooks/useRbac';
+import type { PermissionCode } from '../services/rbac';
 import { PermissionDenied } from './PermissionDenied';
 
 interface ProtectedRouteProps {
@@ -29,7 +29,11 @@ export function ProtectedRoute({
   });
 
   if (isLoading) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading permissions...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>
+        Loading permissions...
+      </div>
+    );
   }
 
   if (error) {
@@ -43,9 +47,7 @@ export function ProtectedRoute({
 
   // Check multiple permissions
   if (permissions) {
-    const hasAccess = requireAll
-      ? hasAllPermissions(permissions)
-      : hasAnyPermission(permissions);
+    const hasAccess = requireAll ? hasAllPermissions(permissions) : hasAnyPermission(permissions);
 
     if (!hasAccess) {
       return fallback || <PermissionDenied permission={permissions.join(', ')} />;

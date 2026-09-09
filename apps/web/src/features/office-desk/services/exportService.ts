@@ -98,9 +98,7 @@ function escapeCSV(value: unknown): string {
 
 function arrayToCSV(data: Record<string, unknown>[], columns: string[]): string {
   const headers = columns.join(',');
-  const rows = data.map((row) =>
-    columns.map((col) => escapeCSV(row[col])).join(',')
-  );
+  const rows = data.map((row) => columns.map((col) => escapeCSV(row[col])).join(','));
   return [headers, ...rows].join('\n');
 }
 
@@ -118,7 +116,8 @@ export async function exportToCSV(options: ExportOptions): Promise<ExportResult>
     const selectedColumns = columns || defaultColumns[entity_type];
 
     // Build query based on entity type
-    let query;
+    // biome-ignore lint/suspicious/noExplicitAny: supabaseUntyped is untyped for office_desk/front_desk schemas
+    let query: any;
     switch (entity_type) {
       case 'contacts':
         query = supabaseUntyped
@@ -185,11 +184,23 @@ export async function exportToCSV(options: ExportOptions): Promise<ExportResult>
 // PDF EXPORT (using browser print)
 // ═══════════════════════════════════════════════════════════
 
-function generatePDFHTML(data: Record<string, unknown>[], columns: string[], title: string): string {
-  const headers = columns.map((col) => `<th style="padding: 8px; border-bottom: 2px solid #333; text-align: left; background: #f5f5f5;">${col}</th>`).join('');
-  const rows = data.map((row) =>
-    `<tr>${columns.map((col) => `<td style="padding: 8px; border-bottom: 1px solid #ddd;">${escapeCSV(row[col])}</td>`).join('')}</tr>`
-  ).join('');
+function generatePDFHTML(
+  data: Record<string, unknown>[],
+  columns: string[],
+  title: string
+): string {
+  const headers = columns
+    .map(
+      (col) =>
+        `<th style="padding: 8px; border-bottom: 2px solid #333; text-align: left; background: #f5f5f5;">${col}</th>`
+    )
+    .join('');
+  const rows = data
+    .map(
+      (row) =>
+        `<tr>${columns.map((col) => `<td style="padding: 8px; border-bottom: 1px solid #ddd;">${escapeCSV(row[col])}</td>`).join('')}</tr>`
+    )
+    .join('');
 
   return `
 <!DOCTYPE html>
@@ -229,7 +240,8 @@ export async function exportToPDF(options: ExportOptions): Promise<ExportResult>
     const selectedColumns = columns || defaultColumns[entity_type];
 
     // Build query based on entity type
-    let query;
+    // biome-ignore lint/suspicious/noExplicitAny: supabaseUntyped is untyped for office_desk/front_desk schemas
+    let query: any;
     switch (entity_type) {
       case 'contacts':
         query = supabaseUntyped
@@ -334,12 +346,10 @@ export async function getReportTemplate(templateId: string) {
     .single();
 }
 
-export async function createReportTemplate(template: Omit<ReportTemplate, 'id' | 'created_at' | 'updated_at'>) {
-  return supabaseUntyped
-    .from('office_desk.report_templates')
-    .insert(template)
-    .select()
-    .single();
+export async function createReportTemplate(
+  template: Omit<ReportTemplate, 'id' | 'created_at' | 'updated_at'>
+) {
+  return supabaseUntyped.from('office_desk.report_templates').insert(template).select().single();
 }
 
 export async function updateReportTemplate(templateId: string, updates: Partial<ReportTemplate>) {
@@ -352,10 +362,7 @@ export async function updateReportTemplate(templateId: string, updates: Partial<
 }
 
 export async function deleteReportTemplate(templateId: string) {
-  return supabaseUntyped
-    .from('office_desk.report_templates')
-    .delete()
-    .eq('id', templateId);
+  return supabaseUntyped.from('office_desk.report_templates').delete().eq('id', templateId);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -378,12 +385,10 @@ export async function getScheduledReport(reportId: string) {
     .single();
 }
 
-export async function createScheduledReport(report: Omit<ScheduledReport, 'id' | 'created_at' | 'updated_at' | 'template'>) {
-  return supabaseUntyped
-    .from('office_desk.scheduled_reports')
-    .insert(report)
-    .select()
-    .single();
+export async function createScheduledReport(
+  report: Omit<ScheduledReport, 'id' | 'created_at' | 'updated_at' | 'template'>
+) {
+  return supabaseUntyped.from('office_desk.scheduled_reports').insert(report).select().single();
 }
 
 export async function updateScheduledReport(reportId: string, updates: Partial<ScheduledReport>) {
@@ -396,10 +401,7 @@ export async function updateScheduledReport(reportId: string, updates: Partial<S
 }
 
 export async function deleteScheduledReport(reportId: string) {
-  return supabaseUntyped
-    .from('office_desk.scheduled_reports')
-    .delete()
-    .eq('id', reportId);
+  return supabaseUntyped.from('office_desk.scheduled_reports').delete().eq('id', reportId);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -416,11 +418,7 @@ export async function selectReportLogs(tenantId: string, limit = 50) {
 }
 
 export async function createReportLog(log: Omit<ReportLog, 'id' | 'created_at'>) {
-  return supabaseUntyped
-    .from('office_desk.report_logs')
-    .insert(log)
-    .select()
-    .single();
+  return supabaseUntyped.from('office_desk.report_logs').insert(log).select().single();
 }
 
 export async function updateReportLog(logId: string, updates: Partial<ReportLog>) {

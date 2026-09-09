@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import {
-  type PaymentWithInvoice,
-  PAYMENT_STATUS_LABELS,
   PAYMENT_STATUS_COLORS,
-  getPaymentById,
+  PAYMENT_STATUS_LABELS,
+  type PaymentWithInvoice,
   confirmPaymentManual,
+  getPaymentById,
   refundPayment,
   retryPayment,
-} from "../services/supabase";
+} from '../services/supabase';
 
 interface Props {
   paymentId: string;
@@ -20,20 +20,20 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notes, setNotes] = useState("");
-  const [refundReason, setRefundReason] = useState("");
-  const [refundAmount, setRefundAmount] = useState("");
+  const [notes, setNotes] = useState('');
+  const [refundReason, setRefundReason] = useState('');
+  const [refundAmount, setRefundAmount] = useState('');
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [showRetryForm, setShowRetryForm] = useState(false);
-  const [retryToken, setRetryToken] = useState("");
+  const [retryToken, setRetryToken] = useState('');
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
   const fetchPayment = useCallback(async () => {
     setLoading(true);
     const { data, error: fetchError } = await getPaymentById(paymentId);
     if (fetchError) {
-      console.error("Failed to fetch payment:", fetchError);
-      setError("Failed to load payment details");
+      console.error('Failed to fetch payment:', fetchError);
+      setError('Failed to load payment details');
     } else {
       setPayment(data);
     }
@@ -45,12 +45,18 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
   }, [fetchPayment]);
 
   const formatCurrency = (amount: number, currency: string) =>
-    new Intl.NumberFormat("en-ZA", { style: "currency", currency: currency || "ZAR" }).format(amount);
+    new Intl.NumberFormat('en-ZA', { style: 'currency', currency: currency || 'ZAR' }).format(
+      amount
+    );
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "—";
-    return new Date(dateStr).toLocaleDateString("en-ZA", {
-      year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-ZA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -63,13 +69,13 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
       if (result.error) {
         setError(result.error);
       } else {
-        setActionSuccess("Payment confirmed successfully");
-        setNotes("");
+        setActionSuccess('Payment confirmed successfully');
+        setNotes('');
         onRefresh();
         await fetchPayment();
       }
     } catch {
-      setError("Failed to confirm payment");
+      setError('Failed to confirm payment');
     } finally {
       setActionLoading(false);
     }
@@ -80,19 +86,23 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
     setActionLoading(true);
     setError(null);
     try {
-      const result = await refundPayment(payment.id, refundReason, refundAmount ? Number(refundAmount) : undefined);
+      const result = await refundPayment(
+        payment.id,
+        refundReason,
+        refundAmount ? Number(refundAmount) : undefined
+      );
       if (result.error) {
         setError(result.error);
       } else {
-        setActionSuccess("Payment refunded successfully");
-        setRefundReason("");
-        setRefundAmount("");
+        setActionSuccess('Payment refunded successfully');
+        setRefundReason('');
+        setRefundAmount('');
         setShowRefundForm(false);
         onRefresh();
         await fetchPayment();
       }
     } catch {
-      setError("Failed to refund payment");
+      setError('Failed to refund payment');
     } finally {
       setActionLoading(false);
     }
@@ -107,26 +117,27 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
       if (result.error) {
         setError(result.error);
       } else {
-        setActionSuccess("Payment retry submitted successfully");
-        setRetryToken("");
+        setActionSuccess('Payment retry submitted successfully');
+        setRetryToken('');
         setShowRetryForm(false);
         onRefresh();
         await fetchPayment();
       }
     } catch {
-      setError("Failed to retry payment");
+      setError('Failed to retry payment');
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleBackdropKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") onClose();
+    if (e.key === 'Escape') onClose();
   };
 
   if (loading) {
     return (
       <div
+        // biome-ignore lint/a11y/useSemanticElements: role="dialog" is accessible and matches existing styling
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         role="dialog"
         aria-modal="true"
@@ -142,6 +153,7 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
   if (error && !payment) {
     return (
       <div
+        // biome-ignore lint/a11y/useSemanticElements: role="dialog" is accessible and matches existing styling
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
         role="dialog"
         aria-modal="true"
@@ -149,8 +161,7 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
       >
         <div className="bg-white rounded-lg p-8 text-center">
           <p className="text-red-600">{error}</p>
-          <button
-            type="button"
+          <button type="button"
             onClick={onClose}
             className="mt-4 px-4 py-2 text-sm text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
           >
@@ -165,15 +176,16 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
 
   const invoice = payment.invoice;
   const registration = invoice?.registration;
-  const isPending = payment.status === "pending";
-  const isFailed = payment.status === "failed";
-  const isConfirmed = payment.status === "confirmed";
+  const isPending = payment.status === 'pending';
+  const isFailed = payment.status === 'failed';
+  const isConfirmed = payment.status === 'confirmed';
 
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={onClose}
       onKeyDown={handleBackdropKeyDown}
+      // biome-ignore lint/a11y/useSemanticElements: role="dialog" is accessible and matches existing styling
       role="dialog"
       aria-modal="true"
       aria-label="Payment details"
@@ -181,6 +193,7 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
       <div
         className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
           <div>
@@ -190,17 +203,29 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PAYMENT_STATUS_COLORS[payment.status]}`}>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${PAYMENT_STATUS_COLORS[payment.status]}`}
+            >
               {PAYMENT_STATUS_LABELS[payment.status]}
             </span>
-            <button
-              type="button"
+            <button type="button"
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600"
               aria-label="Close"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -229,12 +254,12 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
             <div>
               <p className="text-sm font-medium text-gray-700">Method</p>
               <p className="mt-1 text-sm text-gray-900">
-                {payment.payment_method?.replace("_", " ").toUpperCase() || "—"}
+                {payment.payment_method?.replace('_', ' ').toUpperCase() || '—'}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-700">Reference</p>
-              <p className="mt-1 text-sm text-gray-900">{payment.reference || "—"}</p>
+              <p className="mt-1 text-sm text-gray-900">{payment.reference || '—'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-700">Paid At</p>
@@ -256,7 +281,7 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Program</p>
-                  <p className="text-sm text-gray-900">{registration.course_name || "—"}</p>
+                  <p className="text-sm text-gray-900">{registration.course_name || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Registration Status</p>
@@ -272,15 +297,17 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-gray-500">Invoice Number</p>
-                  <p className="text-sm text-gray-900">{invoice.invoice_number || "—"}</p>
+                  <p className="text-sm text-gray-900">{invoice.invoice_number || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Description</p>
-                  <p className="text-sm text-gray-900">{invoice.description || "—"}</p>
+                  <p className="text-sm text-gray-900">{invoice.description || '—'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Invoice Amount</p>
-                  <p className="text-sm text-gray-900">{formatCurrency(invoice.amount, payment.currency)}</p>
+                  <p className="text-sm text-gray-900">
+                    {formatCurrency(invoice.amount, payment.currency)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Status</p>
@@ -315,20 +342,18 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
                   rows={2}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                 />
-                <button
-                  type="button"
+                <button type="button"
                   onClick={handleConfirm}
                   disabled={actionLoading}
                   className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
                 >
-                  {actionLoading ? "Confirming..." : "Confirm Payment"}
+                  {actionLoading ? 'Confirming...' : 'Confirm Payment'}
                 </button>
               </div>
             )}
 
             {isConfirmed && !showRefundForm && (
-              <button
-                type="button"
+              <button type="button"
                 onClick={() => setShowRefundForm(true)}
                 className="px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-md hover:bg-red-50"
               >
@@ -354,20 +379,18 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                 />
                 <div className="flex gap-2">
-                  <button
-                    type="button"
+                  <button type="button"
                     onClick={handleRefund}
                     disabled={actionLoading || !refundReason}
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
                   >
-                    {actionLoading ? "Processing..." : "Submit Refund"}
+                    {actionLoading ? 'Processing...' : 'Submit Refund'}
                   </button>
-                  <button
-                    type="button"
+                  <button type="button"
                     onClick={() => {
                       setShowRefundForm(false);
-                      setRefundReason("");
-                      setRefundAmount("");
+                      setRefundReason('');
+                      setRefundAmount('');
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                   >
@@ -378,8 +401,7 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
             )}
 
             {isFailed && !showRetryForm && (
-              <button
-                type="button"
+              <button type="button"
                 onClick={() => setShowRetryForm(true)}
                 className="px-4 py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50"
               >
@@ -398,19 +420,17 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
                 />
                 <div className="flex gap-2">
-                  <button
-                    type="button"
+                  <button type="button"
                     onClick={handleRetry}
                     disabled={actionLoading}
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
                   >
-                    {actionLoading ? "Retrying..." : "Submit Retry"}
+                    {actionLoading ? 'Retrying...' : 'Submit Retry'}
                   </button>
-                  <button
-                    type="button"
+                  <button type="button"
                     onClick={() => {
                       setShowRetryForm(false);
-                      setRetryToken("");
+                      setRetryToken('');
                     }}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
                   >
@@ -420,15 +440,14 @@ export default function PaymentConfirmationDetail({ paymentId, onClose, onRefres
               </div>
             )}
 
-            {payment.status === "refunded" && (
+            {payment.status === 'refunded' && (
               <p className="text-sm text-gray-500 italic">This payment has been refunded.</p>
             )}
           </div>
         </div>
 
         <div className="flex justify-end px-6 py-4 border-t border-gray-200">
-          <button
-            type="button"
+          <button type="button"
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
           >

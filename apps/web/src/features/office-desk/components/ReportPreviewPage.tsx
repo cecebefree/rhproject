@@ -1,9 +1,9 @@
 // ReportPreviewPage — Preview and export report data (Row 12)
 
 import { useEffect, useState } from 'react';
-import { supabaseUntyped } from '../services/supabase';
-import type { ExportEntityType } from '../services/exportService';
 import { useExport } from '../../../hooks/useExport';
+import type { ExportEntityType } from '../services/exportService';
+import { supabaseUntyped } from '../services/supabase';
 
 interface ReportPreviewPageProps {
   tenantId: string;
@@ -29,7 +29,12 @@ const COLUMN_LABELS: Record<string, string> = {
   updated_at: 'Updated',
 };
 
-export function ReportPreviewPage({ tenantId, userId, deskId, entityType }: ReportPreviewPageProps) {
+export function ReportPreviewPage({
+  tenantId,
+  userId,
+  deskId,
+  entityType,
+}: ReportPreviewPageProps) {
   const { exportData, exporting, error } = useExport({ tenantId, userId, deskId });
   const [data, setData] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +44,8 @@ export function ReportPreviewPage({ tenantId, userId, deskId, entityType }: Repo
     async function loadData() {
       setLoading(true);
 
-      let query;
+      // biome-ignore lint/suspicious/noExplicitAny: supabaseUntyped is untyped for office_desk/front_desk schemas
+      let query: any;
       switch (entityType) {
         case 'contacts':
         case 'leads':
@@ -80,7 +86,14 @@ export function ReportPreviewPage({ tenantId, userId, deskId, entityType }: Repo
 
   return (
     <div style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+        }}
+      >
         <div>
           <h2 style={{ margin: 0, fontSize: '24px', fontWeight: '600' }}>
             {entityType.charAt(0).toUpperCase() + entityType.slice(1)} Report
@@ -90,7 +103,7 @@ export function ReportPreviewPage({ tenantId, userId, deskId, entityType }: Repo
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
+          <button type="button"
             onClick={handleExportCSV}
             disabled={exporting || data.length === 0}
             style={{
@@ -106,7 +119,7 @@ export function ReportPreviewPage({ tenantId, userId, deskId, entityType }: Repo
           >
             {exporting ? 'Exporting...' : 'Export CSV'}
           </button>
-          <button
+          <button type="button"
             onClick={handleExportPDF}
             disabled={exporting || data.length === 0}
             style={{
@@ -126,15 +139,27 @@ export function ReportPreviewPage({ tenantId, userId, deskId, entityType }: Repo
       </div>
 
       {error && (
-        <div style={{ padding: '12px', backgroundColor: '#fed7d7', color: '#9b2c2c', borderRadius: '6px', marginBottom: '16px' }}>
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: '#fed7d7',
+            color: '#9b2c2c',
+            borderRadius: '6px',
+            marginBottom: '16px',
+          }}
+        >
           {error}
         </div>
       )}
 
       {loading ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>Loading report data...</div>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>
+          Loading report data...
+        </div>
       ) : data.length === 0 ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>No data available for this report</div>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>
+          No data available for this report
+        </div>
       ) : (
         <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
@@ -158,7 +183,7 @@ export function ReportPreviewPage({ tenantId, userId, deskId, entityType }: Repo
             </thead>
             <tbody>
               {data.map((row, idx) => (
-                <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? 'white' : '#f7fafc' }}>
+                <tr key={JSON.stringify(row)} style={{ backgroundColor: idx % 2 === 0 ? 'white' : '#f7fafc' }}>
                   {columns.map((col) => (
                     <td
                       key={col}

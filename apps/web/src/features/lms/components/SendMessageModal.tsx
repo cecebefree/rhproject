@@ -59,7 +59,9 @@ export function SendMessageModal({
 
       // 2. Try to send via EF (best effort)
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (session?.access_token) {
           await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-template-email`, {
             method: 'POST',
@@ -92,7 +94,9 @@ export function SendMessageModal({
       <div style={styles.modal}>
         <div style={styles.modalHeader}>
           <h3 style={styles.modalTitle}>Send Message to {studentName}</h3>
-          <button onClick={onCancel} style={styles.closeButton}>&times;</button>
+          <button type="button" onClick={onCancel} style={styles.closeButton}>
+            &times;
+          </button>
         </div>
 
         {success ? (
@@ -103,12 +107,11 @@ export function SendMessageModal({
           <div style={styles.form}>
             {/* Channel selector */}
             <div style={styles.field}>
-              <label style={styles.label}>Channel</label>
-              <div style={styles.channelRow}>
+              <label htmlFor="send-message-channel" style={styles.label}>Channel</label>
+              <div id="send-message-channel" style={styles.channelRow}>
                 {(['email', 'sms', 'in_app'] as Channel[]).map((ch) => (
-                  <button
+                  <button type="button"
                     key={ch}
-                    type="button"
                     onClick={() => setChannel(ch)}
                     style={channel === ch ? styles.channelActive : styles.channelButton}
                   >
@@ -120,8 +123,9 @@ export function SendMessageModal({
 
             {/* Subject */}
             <div style={styles.field}>
-              <label style={styles.label}>Subject</label>
+              <label htmlFor="send-message-subject" style={styles.label}>Subject</label>
               <input
+                id="send-message-subject"
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
@@ -132,8 +136,9 @@ export function SendMessageModal({
 
             {/* Body */}
             <div style={styles.field}>
-              <label style={styles.label}>Message</label>
+              <label htmlFor="send-message-body" style={styles.label}>Message</label>
               <textarea
+                id="send-message-body"
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="Type your message..."
@@ -145,10 +150,10 @@ export function SendMessageModal({
             {error && <div style={styles.errorBox}>{error}</div>}
 
             <div style={styles.actions}>
-              <button onClick={onCancel} style={styles.cancelButton}>
+              <button type="button" onClick={onCancel} style={styles.cancelButton}>
                 Cancel
               </button>
-              <button
+              <button type="button"
                 onClick={handleSend}
                 disabled={sending || !subject.trim() || !body.trim()}
                 style={styles.sendButton}

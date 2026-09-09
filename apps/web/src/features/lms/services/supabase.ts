@@ -63,7 +63,7 @@ export interface Registration {
 export async function selectRegistrations(
   tenantId: string,
   search?: string,
-  statusFilter?: RegistrationStatus,
+  statusFilter?: RegistrationStatus
 ) {
   let query = supabaseUntyped
     .from('office_desk.registrations')
@@ -73,9 +73,7 @@ export async function selectRegistrations(
     .order('created_at', { ascending: false });
 
   if (search) {
-    query = query.or(
-      `student_name.ilike.%${search}%,student_email.ilike.%${search}%`,
-    );
+    query = query.or(`student_name.ilike.%${search}%,student_email.ilike.%${search}%`);
   }
 
   if (statusFilter) {
@@ -110,10 +108,7 @@ export async function insertRegistration(reg: {
     .single();
 }
 
-export async function updateRegistrationStatus(
-  registrationId: string,
-  status: RegistrationStatus,
-) {
+export async function updateRegistrationStatus(registrationId: string, status: RegistrationStatus) {
   return supabaseUntyped
     .from('office_desk.registrations')
     .update({ status, updated_at: new Date().toISOString() })
@@ -135,14 +130,14 @@ export function subscribeToRegistrations(
     eventType: string;
     new: Registration;
     old: Registration | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('office_desk.registrations-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'office_desk', table: 'registrations' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -166,7 +161,7 @@ export interface News {
 export async function selectNews(
   tenantId: string,
   search?: string,
-  options?: { includeDrafts?: boolean; createdBy?: string },
+  options?: { includeDrafts?: boolean; createdBy?: string }
 ) {
   let query = supabaseUntyped
     .from('school_desk.news')
@@ -217,7 +212,7 @@ export async function updateNews(
     title?: string;
     content?: string;
     publish?: boolean;
-  },
+  }
 ) {
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -226,9 +221,7 @@ export async function updateNews(
   if (updates.title !== undefined) updateData.title = updates.title;
   if (updates.content !== undefined) updateData.content = updates.content;
   if (updates.publish !== undefined) {
-    updateData.published_at = updates.publish
-      ? new Date().toISOString()
-      : null;
+    updateData.published_at = updates.publish ? new Date().toISOString() : null;
   }
 
   return supabaseUntyped
@@ -260,14 +253,14 @@ export function subscribeToNews(
     eventType: string;
     new: News;
     old: News | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('school_desk.news-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'school_desk', table: 'news' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -295,7 +288,7 @@ export interface BroadcastWithGroup extends Broadcast {
 
 export async function selectBroadcasts(
   tenantId: string,
-  options?: { groupId?: string; includeDrafts?: boolean },
+  options?: { groupId?: string; includeDrafts?: boolean }
 ) {
   let query = supabaseUntyped
     .from('school_desk.broadcasts')
@@ -344,7 +337,7 @@ export async function updateBroadcast(
     title?: string;
     message?: string;
     send?: boolean;
-  },
+  }
 ) {
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -385,14 +378,14 @@ export function subscribeToBroadcasts(
     eventType: string;
     new: Broadcast;
     old: Broadcast | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('school_desk.broadcasts-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'school_desk', table: 'broadcasts' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -425,7 +418,7 @@ export interface ReportCardWithRelations extends ReportCard {
 
 export async function selectReportCards(
   tenantId: string,
-  options?: { courseId?: string; createdBy?: string },
+  options?: { courseId?: string; createdBy?: string }
 ) {
   let query = supabaseUntyped
     .from('school_desk.report_cards')
@@ -469,7 +462,7 @@ export async function updateReportCard(
   updates: {
     grade?: string;
     feedback?: string;
-  },
+  }
 ) {
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -499,14 +492,14 @@ export function subscribeToReportCards(
     eventType: string;
     new: ReportCard;
     old: ReportCard | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('school_desk.report_cards-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'school_desk', table: 'report_cards' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -577,7 +570,7 @@ export async function updatePaymentRequest(
     status?: PaymentRequestStatus;
     stripe_session_id?: string;
     stripe_payment_url?: string;
-  },
+  }
 ) {
   const updateData: Record<string, unknown> = {};
 
@@ -625,14 +618,14 @@ export function subscribeToPaymentRequests(
     eventType: string;
     new: PaymentRequest;
     old: PaymentRequest | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('school_desk.payment_requests-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'school_desk', table: 'payment_requests' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -643,7 +636,9 @@ export async function createPaymentSession(payload: {
   currency: string;
   description?: string;
 }) {
-  const { data: { session } } = await supabaseUntyped.auth.getSession();
+  const {
+    data: { session },
+  } = await supabaseUntyped.auth.getSession();
   if (!session?.access_token) {
     return { data: null, error: { message: 'Not authenticated' } };
   }
@@ -657,7 +652,7 @@ export async function createPaymentSession(payload: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
-    },
+    }
   );
 
   const result = await response.json();
@@ -697,7 +692,7 @@ export interface AttendanceWithRelations extends Attendance {
 
 export async function selectAttendance(
   tenantId: string,
-  options?: { courseId?: string; classDate?: string; startDate?: string; endDate?: string },
+  options?: { courseId?: string; classDate?: string; startDate?: string; endDate?: string }
 ) {
   let query = supabaseUntyped
     .from('school_desk.attendance')
@@ -749,7 +744,7 @@ export async function insertAttendance(record: {
 
 export async function updateAttendance(
   attendanceId: string,
-  updates: { status?: AttendanceStatus; notes?: string },
+  updates: { status?: AttendanceStatus; notes?: string }
 ) {
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -781,14 +776,14 @@ export function subscribeToAttendance(
     eventType: string;
     new: Attendance;
     old: Attendance | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('school_desk.attendance-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'school_desk', table: 'attendance' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -798,7 +793,9 @@ export async function markAttendanceBulk(payload: {
   class_date: string;
   marks: Array<{ student_id: string; status: AttendanceStatus; notes?: string }>;
 }) {
-  const { data: { session } } = await supabaseUntyped.auth.getSession();
+  const {
+    data: { session },
+  } = await supabaseUntyped.auth.getSession();
   if (!session?.access_token) {
     return { data: null, error: { message: 'Not authenticated' } };
   }
@@ -812,7 +809,7 @@ export async function markAttendanceBulk(payload: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
-    },
+    }
   );
 
   const result = await response.json();
@@ -863,10 +860,7 @@ export interface AssignmentWithRelations extends Assignment {
   courses?: { id: string; title: string } | null;
 }
 
-export async function selectAssignments(
-  tenantId: string,
-  options?: { courseId?: string },
-) {
+export async function selectAssignments(tenantId: string, options?: { courseId?: string }) {
   let query = supabaseUntyped
     .from('school_desk.assignments')
     .select('*, courses!course_id(id, title)')
@@ -916,7 +910,7 @@ export async function updateAssignment(
     max_score?: number;
     weight?: number;
     due_date?: string;
-  },
+  }
 ) {
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -963,7 +957,7 @@ export interface GradebookWithRelations extends Gradebook {
 
 export async function selectGradebook(
   tenantId: string,
-  options?: { courseId?: string; assignmentId?: string; studentId?: string },
+  options?: { courseId?: string; assignmentId?: string; studentId?: string }
 ) {
   let query = supabaseUntyped
     .from('school_desk.gradebook')
@@ -1017,7 +1011,7 @@ export async function insertGrade(grade: {
 
 export async function updateGrade(
   gradeId: string,
-  updates: { score?: number | null; feedback?: string },
+  updates: { score?: number | null; feedback?: string }
 ) {
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -1049,7 +1043,9 @@ export async function getStudentGrades(courseId: string, studentId: string) {
 }
 
 export async function calculateGrade(courseId: string, studentId: string) {
-  const { data: { session } } = await supabaseUntyped.auth.getSession();
+  const {
+    data: { session },
+  } = await supabaseUntyped.auth.getSession();
   if (!session?.access_token) {
     return { data: null, error: { message: 'Not authenticated' } };
   }
@@ -1063,7 +1059,7 @@ export async function calculateGrade(courseId: string, studentId: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ course_id: courseId, student_id: studentId }),
-    },
+    }
   );
 
   const result = await response.json();
@@ -1080,14 +1076,14 @@ export function subscribeToGradebook(
     eventType: string;
     new: Gradebook;
     old: Gradebook | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('school_desk.gradebook-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'school_desk', table: 'gradebook' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -1097,14 +1093,14 @@ export function subscribeToAssignments(
     eventType: string;
     new: Assignment;
     old: Assignment | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('school_desk.assignments-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'school_desk', table: 'assignments' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }
@@ -1132,7 +1128,7 @@ export async function getStudentTranscript(studentId: string, tenantId: string) 
   const transcript = [];
 
   for (const enrollment of enrollments) {
-    const course = enrollment.courses as any;
+    const course = enrollment.courses as { id: string; title: string; teacher_id: string } | null;
     if (!course) continue;
 
     // Get grades for this course
@@ -1153,7 +1149,7 @@ export async function getStudentTranscript(studentId: string, tenantId: string) 
 
     if (grades) {
       for (const grade of grades) {
-        const assignment = grade.assignments as any;
+        const assignment = grade.assignments as { max_score: number; weight: number } | null;
         if (assignment && grade.score !== null) {
           const normalizedScore = (grade.score / assignment.max_score) * 100;
           totalWeightedScore += normalizedScore * assignment.weight;
@@ -1162,9 +1158,8 @@ export async function getStudentTranscript(studentId: string, tenantId: string) 
       }
     }
 
-    const weightedAverage = totalWeight > 0
-      ? Math.round((totalWeightedScore / totalWeight) * 100) / 100
-      : null;
+    const weightedAverage =
+      totalWeight > 0 ? Math.round((totalWeightedScore / totalWeight) * 100) / 100 : null;
 
     const getLetterGrade = (avg: number): string => {
       if (avg >= 93) return 'A';
@@ -1271,7 +1266,7 @@ export async function getChildProgress(studentId: string) {
   const courses = [];
 
   for (const enrollment of enrollments) {
-    const course = enrollment.courses as any;
+    const course = enrollment.courses as { id: string; title: string; teacher_id: string } | null;
     if (!course) continue;
 
     // Get teacher name
@@ -1296,7 +1291,7 @@ export async function getChildProgress(studentId: string) {
 
     if (grades) {
       for (const grade of grades) {
-        const assignment = grade.assignments as any;
+        const assignment = grade.assignments as { max_score: number; weight: number } | null;
         if (assignment && grade.score !== null) {
           const normalizedScore = (grade.score / assignment.max_score) * 100;
           totalWeightedScore += normalizedScore * assignment.weight;
@@ -1305,9 +1300,8 @@ export async function getChildProgress(studentId: string) {
       }
     }
 
-    const weightedAverage = totalWeight > 0
-      ? Math.round((totalWeightedScore / totalWeight) * 100) / 100
-      : null;
+    const weightedAverage =
+      totalWeight > 0 ? Math.round((totalWeightedScore / totalWeight) * 100) / 100 : null;
 
     // Get attendance stats
     const { data: attendance } = await supabaseUntyped
@@ -1319,7 +1313,7 @@ export async function getChildProgress(studentId: string) {
 
     let attendancePct = null;
     if (attendance && attendance.length > 0) {
-      const presentCount = attendance.filter((a: any) => a.status === 'present').length;
+      const presentCount = attendance.filter((a: { status: string }) => a.status === 'present').length;
       attendancePct = Math.round((presentCount / attendance.length) * 100);
     }
 
@@ -1338,9 +1332,10 @@ export async function getChildProgress(studentId: string) {
     .filter((c) => c.weighted_average !== null)
     .map((c) => c.weighted_average!);
 
-  const overallGpa = validAverages.length > 0
-    ? Math.round(validAverages.reduce((a, b) => a + b, 0) / validAverages.length)
-    : null;
+  const overallGpa =
+    validAverages.length > 0
+      ? Math.round(validAverages.reduce((a, b) => a + b, 0) / validAverages.length)
+      : null;
 
   // Get student name
   const { data: student } = await supabaseUntyped
@@ -1360,10 +1355,7 @@ export async function getChildProgress(studentId: string) {
   };
 }
 
-export async function getChildAttendance(
-  studentId: string,
-  options?: { courseId?: string },
-) {
+export async function getChildAttendance(studentId: string, options?: { courseId?: string }) {
   let query = supabaseUntyped
     .from('school_desk.attendance')
     .select('*, courses!course_id(id, title)')
@@ -1398,7 +1390,7 @@ export async function getChildTranscript(studentId: string) {
   const transcript = [];
 
   for (const enrollment of enrollments) {
-    const course = enrollment.courses as any;
+    const course = enrollment.courses as { id: string; title: string; teacher_id: string } | null;
     if (!course) continue;
 
     // Get grades
@@ -1416,7 +1408,7 @@ export async function getChildTranscript(studentId: string) {
 
     if (grades) {
       for (const grade of grades) {
-        const assignment = grade.assignments as any;
+        const assignment = grade.assignments as { max_score: number; weight: number } | null;
         if (assignment && grade.score !== null) {
           const normalizedScore = (grade.score / assignment.max_score) * 100;
           totalWeightedScore += normalizedScore * assignment.weight;
@@ -1425,9 +1417,8 @@ export async function getChildTranscript(studentId: string) {
       }
     }
 
-    const weightedAverage = totalWeight > 0
-      ? Math.round((totalWeightedScore / totalWeight) * 100) / 100
-      : null;
+    const weightedAverage =
+      totalWeight > 0 ? Math.round((totalWeightedScore / totalWeight) * 100) / 100 : null;
 
     transcript.push({
       course_id: course.id,
@@ -1443,9 +1434,10 @@ export async function getChildTranscript(studentId: string) {
     .filter((c) => c.weighted_average !== null)
     .map((c) => c.weighted_average!);
 
-  const overallGpa = validAverages.length > 0
-    ? Math.round(validAverages.reduce((a, b) => a + b, 0) / validAverages.length)
-    : null;
+  const overallGpa =
+    validAverages.length > 0
+      ? Math.round(validAverages.reduce((a, b) => a + b, 0) / validAverages.length)
+      : null;
 
   return {
     data: {
@@ -1475,14 +1467,14 @@ export function subscribeToParentStudentLink(
     eventType: string;
     new: ParentStudentLink;
     old: ParentStudentLink | null;
-  }) => void,
+  }) => void
 ) {
   return supabaseUntyped
     .channel('parent_student_link-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'parent_student_link' },
-      callback as (payload: Record<string, unknown>) => void,
+      callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
 }

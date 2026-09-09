@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import {
-  selectAssignments,
-  selectGradebook,
-  getStudentRoster,
-  insertGrade,
-  updateGrade,
   type Assignment,
   type Gradebook,
+  getStudentRoster,
+  insertGrade,
+  selectAssignments,
+  selectGradebook,
+  updateGrade,
 } from '../services/supabase';
 
 interface GradebookFormProps {
@@ -24,14 +25,11 @@ interface StudentGrade {
   existingGradeId?: string;
 }
 
-export function GradebookForm({
-  tenantId,
-  userId,
-  onSuccess,
-  onCancel,
-}: GradebookFormProps) {
+export function GradebookForm({ tenantId, userId, onSuccess, onCancel }: GradebookFormProps) {
   const [programs, setPrograms] = useState<Array<{ id: string; title: string }>>([]);
-  const [assignments, setAssignments] = useState<Array<{ id: string; title: string; max_score: number; weight: number }>>([]);
+  const [assignments, setAssignments] = useState<
+    Array<{ id: string; title: string; max_score: number; weight: number }>
+  >([]);
   const [studentGrades, setStudentGrades] = useState<StudentGrade[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingRoster, setLoadingRoster] = useState(false);
@@ -41,6 +39,7 @@ export function GradebookForm({
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [selectedAssignmentId, setSelectedAssignmentId] = useState('');
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: userId triggers program load
   useEffect(() => {
     loadPrograms();
   }, [userId]);
@@ -64,11 +63,11 @@ export function GradebookForm({
           .from('school_desk.programs')
           .select('id, title')
           .eq('teacher_id', userId)
-          .in('status', ['published', 'active']),
+          .in('status', ['published', 'active'])
       );
       setPrograms(enrollments || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load programs');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load programs');
     }
   }
 
@@ -79,8 +78,8 @@ export function GradebookForm({
       setAssignments(data || []);
       setSelectedAssignmentId('');
       setStudentGrades([]);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load assignments');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load assignments');
     }
   }
 
@@ -100,10 +99,10 @@ export function GradebookForm({
         gradesMap.set(g.student_id, g);
       }
 
-      const merged: StudentGrade[] = roster.map((r: any) => {
+      const merged: StudentGrade[] = roster.map((r: { student_id: string; profiles?: { name?: string; email?: string } | null }) => {
         const studentId = r.student_id;
         const existing = gradesMap.get(studentId);
-        const profile = r.profiles as any;
+        const profile = r.profiles;
         return {
           studentId,
           studentName: profile?.name || profile?.email || studentId,
@@ -114,22 +113,20 @@ export function GradebookForm({
       });
 
       setStudentGrades(merged);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load roster');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load roster');
     } finally {
       setLoadingRoster(false);
     }
   }
 
   function handleScoreChange(studentId: string, score: string) {
-    setStudentGrades((prev) =>
-      prev.map((g) => (g.studentId === studentId ? { ...g, score } : g)),
-    );
+    setStudentGrades((prev) => prev.map((g) => (g.studentId === studentId ? { ...g, score } : g)));
   }
 
   function handleFeedbackChange(studentId: string, feedback: string) {
     setStudentGrades((prev) =>
-      prev.map((g) => (g.studentId === studentId ? { ...g, feedback } : g)),
+      prev.map((g) => (g.studentId === studentId ? { ...g, feedback } : g))
     );
   }
 
@@ -141,14 +138,12 @@ export function GradebookForm({
       prev.map((g) => ({
         ...g,
         score: g.score || assignment.max_score.toString(),
-      })),
+      }))
     );
   }
 
   function handleClearAll() {
-    setStudentGrades((prev) =>
-      prev.map((g) => ({ ...g, score: '', feedback: '' })),
-    );
+    setStudentGrades((prev) => prev.map((g) => ({ ...g, score: '', feedback: '' })));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -168,11 +163,11 @@ export function GradebookForm({
       let upsertCount = 0;
 
       for (const sg of studentGrades) {
-        const scoreValue = sg.score ? parseFloat(sg.score) : null;
+        const scoreValue = sg.score ? Number.parseFloat(sg.score) : null;
 
         if (scoreValue !== null && (scoreValue < 0 || scoreValue > assignment.max_score)) {
           throw new Error(
-            `Score for ${sg.studentName} must be between 0 and ${assignment.max_score}`,
+            `Score for ${sg.studentName} must be between 0 and ${assignment.max_score}`
           );
         }
 
@@ -202,8 +197,8 @@ export function GradebookForm({
       setStudentGrades([]);
 
       if (onSuccess) onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save grades');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to save grades');
     } finally {
       setLoading(false);
     }
@@ -230,8 +225,9 @@ export function GradebookForm({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Course *</label>
+            <label htmlFor="gradebook-course" className="block text-sm font-medium text-gray-700">Course *</label>
             <select
+              id="gradebook-course"
               value={selectedCourseId}
               onChange={(e) => setSelectedCourseId(e.target.value)}
               required
@@ -247,8 +243,9 @@ export function GradebookForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Assignment *</label>
+            <label htmlFor="gradebook-assignment" className="block text-sm font-medium text-gray-700">Assignment *</label>
             <select
+              id="gradebook-assignment"
               value={selectedAssignmentId}
               onChange={(e) => setSelectedAssignmentId(e.target.value)}
               required
@@ -267,7 +264,8 @@ export function GradebookForm({
 
         {selectedAssignment && (
           <div className="bg-gray-50 p-3 rounded-md text-sm text-gray-600">
-            <strong>{selectedAssignment.title}</strong> — Max Score: {selectedAssignment.max_score} | Weight: {assignments.find((a) => a.id === selectedAssignmentId)?.weight || 1.0}x
+            <strong>{selectedAssignment.title}</strong> — Max Score: {selectedAssignment.max_score}{' '}
+            | Weight: {assignments.find((a) => a.id === selectedAssignmentId)?.weight || 1.0}x
           </div>
         )}
 
@@ -282,15 +280,13 @@ export function GradebookForm({
                 {studentGrades.length} students
               </span>
               <div className="space-x-2">
-                <button
-                  type="button"
+                <button type="button"
                   onClick={handleMarkAllPresent}
                   className="text-sm text-indigo-600 hover:text-indigo-800"
                 >
                   Fill Max Score
                 </button>
-                <button
-                  type="button"
+                <button type="button"
                   onClick={handleClearAll}
                   className="text-sm text-red-600 hover:text-red-800"
                 >
@@ -349,24 +345,25 @@ export function GradebookForm({
           </div>
         )}
 
-        {selectedCourseId && selectedAssignmentId && !loadingRoster && studentGrades.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No students enrolled in this course.
-          </div>
-        )}
+        {selectedCourseId &&
+          selectedAssignmentId &&
+          !loadingRoster &&
+          studentGrades.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No students enrolled in this course.
+            </div>
+          )}
 
         <div className="flex justify-end space-x-3 pt-4">
           {onCancel && (
-            <button
-              type="button"
+            <button type="button"
               onClick={onCancel}
               className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Cancel
             </button>
           )}
-          <button
-            type="submit"
+          <button type="submit"
             disabled={loading || !selectedAssignmentId || studentGrades.length === 0}
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >

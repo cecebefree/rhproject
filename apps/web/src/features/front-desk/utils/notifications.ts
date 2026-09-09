@@ -14,7 +14,9 @@ const toastListeners: Set<ToastListener> = new Set();
 export function showToast(message: string, type: ToastType = 'info', duration = 3000) {
   const id = Math.random().toString(36).substr(2, 9);
   const toast: Toast = { id, type, message, duration };
-  toastListeners.forEach((listener) => listener(toast));
+  for (const listener of toastListeners) {
+    listener(toast);
+  }
   return id;
 }
 

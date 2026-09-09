@@ -1,10 +1,10 @@
 // InviteAcceptPage — Page for accepting desk invitations
 
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { getInviteByToken, acceptInvite } from '../services/inviteService';
-import { supabase } from '../services/supabase';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { acceptInvite, getInviteByToken } from '../services/inviteService';
 import type { DeskInvite } from '../services/inviteService';
+import { supabase } from '../services/supabase';
 
 export function InviteAcceptPage() {
   const { token } = useParams<{ token: string }>();
@@ -41,7 +41,9 @@ export function InviteAcceptPage() {
     setAccepting(true);
     setError(null);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       // Redirect to login with return URL
       navigate(`/login?redirect=/invite/${token}`);
@@ -64,7 +66,14 @@ export function InviteAcceptPage() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+        }}
+      >
         <div style={{ textAlign: 'center', color: '#718096' }}>Loading invitation...</div>
       </div>
     );
@@ -72,10 +81,19 @@ export function InviteAcceptPage() {
 
   if (error && !invite) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+        }}
+      >
         <div style={{ textAlign: 'center', maxWidth: '400px', padding: '40px' }}>
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
-          <h2 style={{ margin: '0 0 8px', fontSize: '20px', color: '#2d3748' }}>Invalid Invitation</h2>
+          <h2 style={{ margin: '0 0 8px', fontSize: '20px', color: '#2d3748' }}>
+            Invalid Invitation
+          </h2>
           <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>{error}</p>
         </div>
       </div>
@@ -83,61 +101,92 @@ export function InviteAcceptPage() {
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f7fafc' }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '12px',
-        padding: '40px',
-        maxWidth: '440px',
-        width: '100%',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        textAlign: 'center',
-      }}>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: '#f7fafc',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          padding: '40px',
+          maxWidth: '440px',
+          width: '100%',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          textAlign: 'center',
+        }}
+      >
         {success ? (
           <>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              backgroundColor: '#d1fae5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28px',
-              margin: '0 auto 20px',
-            }}>
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                backgroundColor: '#d1fae5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '28px',
+                margin: '0 auto 20px',
+              }}
+            >
               ✓
             </div>
-            <h2 style={{ margin: '0 0 8px', fontSize: '20px', color: '#2d3748' }}>Welcome to the Team!</h2>
-            <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>Redirecting to your desk...</p>
+            <h2 style={{ margin: '0 0 8px', fontSize: '20px', color: '#2d3748' }}>
+              Welcome to the Team!
+            </h2>
+            <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>
+              Redirecting to your desk...
+            </p>
           </>
         ) : (
           <>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              backgroundColor: '#ebf8ff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '28px',
-              margin: '0 auto 20px',
-            }}>
+            <div
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                backgroundColor: '#ebf8ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '28px',
+                margin: '0 auto 20px',
+              }}
+            >
               📧
             </div>
-            <h2 style={{ margin: '0 0 8px', fontSize: '20px', color: '#2d3748' }}>You're Invited!</h2>
+            <h2 style={{ margin: '0 0 8px', fontSize: '20px', color: '#2d3748' }}>
+              You're Invited!
+            </h2>
             <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#718096' }}>
-              You've been invited to join <strong>{invite?.desk_id || 'a desk'}</strong> as a <strong>{invite?.role?.name || 'member'}</strong>.
+              You've been invited to join <strong>{invite?.desk_id || 'a desk'}</strong> as a{' '}
+              <strong>{invite?.role?.name || 'member'}</strong>.
             </p>
 
             {error && (
-              <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '14px', marginBottom: '16px', textAlign: 'left' }}>
+              <div
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#fee2e2',
+                  color: '#991b1b',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  marginBottom: '16px',
+                  textAlign: 'left',
+                }}
+              >
                 {error}
               </div>
             )}
 
-            <button
+            <button type="button"
               onClick={handleAccept}
               disabled={accepting}
               style={{

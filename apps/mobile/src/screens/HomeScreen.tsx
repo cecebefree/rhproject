@@ -5,6 +5,7 @@
 
 import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   Modal,
   StyleSheet,
@@ -18,12 +19,17 @@ import { useHomeFilter } from '../hooks/useHomeFilter';
 import { supabase } from '../services/supabase';
 import { spacing } from '../theme/spacing';
 import { typography } from '../theme/typography';
+import type { ScheduleEvent } from '../lib/scheduleClient';
+import type { NewsArticle } from '../lib/newsClient';
+import { fetchTodayDevotional, type DevotionalData } from '../lib/devotionalClient';
+import { isFeatureEnabled } from '../config/tenant';
 
 const BRAND_NAVY = '#273946';
 const BRAND_RED = '#C8281E';
 const BRAND_CREAM = '#F8F7F4';
 const TEXT_SECONDARY = '#8b939e';
 const ACCENT_ORANGE = '#E8A020';
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 interface Greeting {
   text: string;
@@ -37,13 +43,31 @@ function getGreeting(): Greeting {
   return { text: 'Good Evening', name: '' };
 }
 
-export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: () => void } = {}) {
+export function HomeScreen({
+  onNavigateToCalendar,
+  onNavigateToDevotional,
+  scheduleEvents = [],
+  scheduleError = null,
+  newsArticles = [],
+  newsLoading = false,
+}: {
+  onNavigateToCalendar?: () => void;
+  onNavigateToDevotional?: () => void;
+  scheduleEvents?: ScheduleEvent[];
+  scheduleError?: string | null;
+  newsArticles?: NewsArticle[];
+  newsLoading?: boolean;
+} = {}) {
   const { classes, loading, error } = useHomeFilter();
   const [userName, setUserName] = useState('');
   const [devotionalExpanded, setDevotionalExpanded] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [devotional, setDevotional] = useState<DevotionalData | null>(null);
+  const [devotionalLoading, setDevotionalLoading] = useState(true);
+  const [devotionalError, setDevotionalError] = useState<string | null>(null);
 
   const greeting = getGreeting();
+  const devotionalEnabled = isFeatureEnabled('devotional');
 
   useEffect(() => {
     async function loadUser() {
@@ -63,6 +87,28 @@ export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: ()
     loadUser();
   }, []);
 
+  useEffect(() => {
+    if (!devotionalEnabled) return;
+
+    let cancelled = false;
+
+    async function loadDevotional() {
+      setDevotionalLoading(true);
+      const result = await fetchTodayDevotional();
+      if (cancelled) return;
+
+      if (result.error) {
+        setDevotionalError(result.error);
+      } else {
+        setDevotional(result.data);
+      }
+      setDevotionalLoading(false);
+    }
+
+    loadDevotional();
+    return () => { cancelled = true; };
+  }, [devotionalEnabled]);
+
   if (loading) {
     return <LoadingState />;
   }
@@ -72,6 +118,10 @@ export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: ()
       <FlatList
         data={classes}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        initialNumToRender={5}
         ListHeaderComponent={
           <View>
             {/* Header */}
@@ -110,41 +160,74 @@ export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: ()
             </View>
 
             {/* Daily Devotional */}
-            <View style={styles.devotionalCard}>
-              <Text style={styles.devotionalLabel}>DAILY DEVOTIONAL</Text>
-              <Text style={styles.devotionalVerse}>John 10:10 TPT</Text>
-              <Text
-                style={styles.devotionalText}
-                numberOfLines={devotionalExpanded ? undefined : 3}
-              >
-                &quot;A thief has only one thing in mind — he wants to steal,
-                slaughter, destroy. But I have come to give you everything in
-                abundance, more than you expect — life in fullness until you
-                overflow!&quot;
-              </Text>
+            {devotionalEnabled && (
               <TouchableOpacity
-                onPress={() => setDevotionalExpanded(!devotionalExpanded)}
+                style={styles.devotionalCard}
+                activeOpacity={1}
+                onPress={onNavigateToDevotional}
               >
-                <Text style={styles.devotionalToggle}>
-                  {devotionalExpanded ? 'READ LESS' : 'READ MORE'}
-                </Text>
-              </TouchableOpacity>
+                <Text style={styles.devotionalLabel}>DAILY DEVOTIONAL</Text>
+                {devotionalLoading ? (
+                  <View style={styles.devotionalLoading}>
+                    <ActivityIndicator size="small" color="#8899aa" />
+                  </View>
+                ) : devotionalError ? (
+                  <Text style={styles.devotionalVerse}>{devotionalError}</Text>
+                ) : devotional?.verse ? (
+                  <>
+                    <Text style={styles.devotionalVerse}>
+                      {devotional.verse.ref ?? 'Verse of the Day'}
+                    </Text>
+                    <Text
+                      style={styles.devotionalText}
+                      numberOfLines={devotionalExpanded ? undefined : 3}
+                    >
+                      {devotional.verse.content ?? ''}
+                    </Text>
+                    {devotional.verse.title ? (
+                      <Text style={styles.devotionalToggle}>
+                        {devotional.verse.title}
+                      </Text>
+                    ) : null}
+                    <TouchableOpacity
+                      onPress={() => setDevotionalExpanded(!devotionalExpanded)}
+                    >
+                      <Text style={styles.devotionalToggle}>
+                        {devotionalExpanded ? 'READ LESS' : 'READ MORE'}
+                      </Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <Text style={styles.devotionalVerse}>
+                    No verse today
+                  </Text>
+                )}
 
-              <View style={styles.devotionalActions}>
-                <TouchableOpacity style={styles.devotionalAction}>
-                  <Text style={styles.devotionalActionIcon}>♫</Text>
-                  <Text style={styles.devotionalActionLabel}>Music</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.devotionalAction}>
-                  <Text style={styles.devotionalActionIcon}>📖</Text>
-                  <Text style={styles.devotionalActionLabel}>Bible</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.devotionalAction}>
-                  <Text style={styles.devotionalActionIcon}>▶</Text>
-                  <Text style={styles.devotionalActionLabel}>Vlog</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+                <View style={styles.devotionalActions}>
+                  <TouchableOpacity
+                    style={styles.devotionalAction}
+                    onPress={onNavigateToDevotional}
+                  >
+                    <Text style={styles.devotionalActionIcon}>♫</Text>
+                    <Text style={styles.devotionalActionLabel}>Music</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.devotionalAction}
+                    onPress={onNavigateToDevotional}
+                  >
+                    <Text style={styles.devotionalActionIcon}>📖</Text>
+                    <Text style={styles.devotionalActionLabel}>Bible</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.devotionalAction}
+                    onPress={onNavigateToDevotional}
+                  >
+                    <Text style={styles.devotionalActionIcon}>▶</Text>
+                    <Text style={styles.devotionalActionLabel}>Vlog</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            )}
 
             {/* Coming Up */}
             <View style={styles.section}>
@@ -158,6 +241,20 @@ export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: ()
                 <View style={styles.sectionEmpty}>
                   <Text style={styles.sectionEmptyText}>Loading...</Text>
                 </View>
+              ) : scheduleEvents.length > 0 ? (
+                scheduleEvents.slice(0, 6).map((event) => (
+                  <View key={event.id} style={styles.scheduleItem}>
+                    <View style={[styles.scheduleDot, { backgroundColor: event.color ?? BRAND_RED }]} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.scheduleTitle}>{event.title}</Text>
+                      <Text style={styles.scheduleTeacher}>
+                        {event.source === 'lms' ? String(event.meta?.course_type ?? 'Class') : event.source === 'ott' ? 'Club' : 'Group'}
+                        {event.day_of_week != null ? ` · ${DAY_NAMES[event.day_of_week]}` : ''}
+                        {event.start_time ? ` · ${event.start_time}` : ''}
+                      </Text>
+                    </View>
+                  </View>
+                ))
               ) : classes.length > 0 ? (
                 classes.slice(0, 4).map((cls) => (
                   <View key={cls.id} style={styles.scheduleItem}>
@@ -175,6 +272,11 @@ export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: ()
                   <Text style={styles.sectionEmptyText}>No classes scheduled</Text>
                 </View>
               )}
+              {scheduleError ? (
+                <View style={styles.sectionEmpty}>
+                  <Text style={styles.sectionEmptyText}>{scheduleError}</Text>
+                </View>
+              ) : null}
             </View>
 
             {/* School News */}
@@ -185,9 +287,27 @@ export function HomeScreen({ onNavigateToCalendar }: { onNavigateToCalendar?: ()
                   <Text style={styles.sectionSeeAll}>See all</Text>
                 </TouchableOpacity>
               </View>
-              <View style={styles.sectionEmpty}>
-                <Text style={styles.sectionEmptyText}>No announcements</Text>
-              </View>
+              {newsLoading ? (
+                <View style={styles.sectionEmpty}>
+                  <ActivityIndicator size="small" color="#8899aa" />
+                </View>
+              ) : newsArticles.length > 0 ? (
+                newsArticles.map((article) => (
+                  <View key={article.id} style={styles.newsItem}>
+                    <Text style={styles.newsTitle}>{article.title}</Text>
+                    <Text style={styles.newsDate}>
+                      {new Date(article.published_at ?? article.created_at).toLocaleDateString()}
+                    </Text>
+                    <Text style={styles.newsContent} numberOfLines={2}>
+                      {article.content}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.sectionEmpty}>
+                  <Text style={styles.sectionEmptyText}>No announcements</Text>
+                </View>
+              )}
             </View>
 
             {/* Empty state */}
@@ -338,6 +458,10 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.medium,
     marginBottom: spacing.md,
   },
+  devotionalLoading: {
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+  },
   devotionalActions: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -442,5 +566,28 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.body,
     color: TEXT_SECONDARY,
     textAlign: 'center',
+  },
+  newsItem: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0f0f0',
+  },
+  newsTitle: {
+    fontSize: 13,
+    fontWeight: typography.weights.medium,
+    color: BRAND_NAVY,
+    marginBottom: 2,
+  },
+  newsDate: {
+    fontSize: 11,
+    color: TEXT_SECONDARY,
+    fontWeight: typography.weights.regular,
+    marginBottom: 4,
+  },
+  newsContent: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+    lineHeight: 18,
   },
 });

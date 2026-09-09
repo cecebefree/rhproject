@@ -1,8 +1,8 @@
 // RichTextEditor — Markdown-based rich text editor with toolbar and mentions
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { renderMarkdownSimple, extractMentions } from '../services/richTextEditor';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useResponsive } from '../../../components/MobileNav';
+import { extractMentions, renderMarkdownSimple } from '../services/richTextEditor';
 
 interface RichTextEditorProps {
   value: string;
@@ -48,106 +48,119 @@ export function RichTextEditor({
   const isOverLimit = charCount > maxLength;
 
   // Handle toolbar button clicks
-  const handleToolbarClick = useCallback((prefix: string, suffix: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  const handleToolbarClick = useCallback(
+    (prefix: string, suffix: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = value.substring(start, end);
-    const newText = value.substring(0, start) + prefix + selectedText + suffix + value.substring(end);
-    onChange(newText);
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = value.substring(start, end);
+      const newText =
+        value.substring(0, start) + prefix + selectedText + suffix + value.substring(end);
+      onChange(newText);
 
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = start + prefix.length;
-      textarea.selectionEnd = end + prefix.length;
-    }, 0);
-  }, [value, onChange]);
+      // Restore cursor position
+      setTimeout(() => {
+        textarea.focus();
+        textarea.selectionStart = start + prefix.length;
+        textarea.selectionEnd = end + prefix.length;
+      }, 0);
+    },
+    [value, onChange]
+  );
 
   // Handle mention search
-  const handleInput = useCallback(async (newValue: string) => {
-    onChange(newValue);
+  const handleInput = useCallback(
+    async (newValue: string) => {
+      onChange(newValue);
 
-    // Detect @mention trigger
-    const textarea = textareaRef.current;
-    if (!textarea || !onMentionSearch) return;
+      // Detect @mention trigger
+      const textarea = textareaRef.current;
+      if (!textarea || !onMentionSearch) return;
 
-    const cursorPos = textarea.selectionStart;
-    const textBeforeCursor = newValue.substring(0, cursorPos);
-    const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
+      const cursorPos = textarea.selectionStart;
+      const textBeforeCursor = newValue.substring(0, cursorPos);
+      const mentionMatch = textBeforeCursor.match(/@(\w*)$/);
 
-    if (mentionMatch) {
-      const query = mentionMatch[1];
-      setMentionQuery(query);
-      setShowMentions(true);
-      setMentionIndex(0);
-      const results = await onMentionSearch(query);
-      setMentionResults(results);
-    } else {
-      setShowMentions(false);
-      setMentionQuery(null);
-    }
-  }, [onChange, onMentionSearch]);
+      if (mentionMatch) {
+        const query = mentionMatch[1];
+        setMentionQuery(query);
+        setShowMentions(true);
+        setMentionIndex(0);
+        const results = await onMentionSearch(query);
+        setMentionResults(results);
+      } else {
+        setShowMentions(false);
+        setMentionQuery(null);
+      }
+    },
+    [onChange, onMentionSearch]
+  );
 
   // Insert mention
-  const insertMention = useCallback((user: { id: string; name: string }) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  const insertMention = useCallback(
+    (user: { id: string; name: string }) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
 
-    const cursorPos = textarea.selectionStart;
-    const textBeforeCursor = value.substring(0, cursorPos);
-    const textAfterCursor = value.substring(cursorPos);
-    const mentionStart = textBeforeCursor.lastIndexOf('@');
-    const newText = textBeforeCursor.substring(0, mentionStart) + `@${user.name} ` + textAfterCursor;
-    onChange(newText);
-    setShowMentions(false);
+      const cursorPos = textarea.selectionStart;
+      const textBeforeCursor = value.substring(0, cursorPos);
+      const textAfterCursor = value.substring(cursorPos);
+      const mentionStart = textBeforeCursor.lastIndexOf('@');
+      const newText = `${textBeforeCursor.substring(0, mentionStart)}@${user.name} ${textAfterCursor}`;
+      onChange(newText);
+      setShowMentions(false);
 
-    setTimeout(() => {
-      textarea.focus();
-      const newPos = mentionStart + user.name.length + 2;
-      textarea.selectionStart = newPos;
-      textarea.selectionEnd = newPos;
-    }, 0);
-  }, [value, onChange]);
+      setTimeout(() => {
+        textarea.focus();
+        const newPos = mentionStart + user.name.length + 2;
+        textarea.selectionStart = newPos;
+        textarea.selectionEnd = newPos;
+      }, 0);
+    },
+    [value, onChange]
+  );
 
   // Handle keyboard shortcuts
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (showMentions) {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setMentionIndex((i) => Math.min(i + 1, mentionResults.length - 1));
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setMentionIndex((i) => Math.max(i - 1, 0));
-      } else if (e.key === 'Enter' && mentionResults[mentionIndex]) {
-        e.preventDefault();
-        insertMention(mentionResults[mentionIndex]);
-      } else if (e.key === 'Escape') {
-        setShowMentions(false);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (showMentions) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setMentionIndex((i) => Math.min(i + 1, mentionResults.length - 1));
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setMentionIndex((i) => Math.max(i - 1, 0));
+        } else if (e.key === 'Enter' && mentionResults[mentionIndex]) {
+          e.preventDefault();
+          insertMention(mentionResults[mentionIndex]);
+        } else if (e.key === 'Escape') {
+          setShowMentions(false);
+        }
+        return;
       }
-      return;
-    }
 
-    // Cmd/Ctrl + B for bold
-    if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-      e.preventDefault();
-      handleToolbarClick('**', '**');
-    }
-    // Cmd/Ctrl + I for italic
-    if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
-      e.preventDefault();
-      handleToolbarClick('*', '*');
-    }
-    // Cmd/Ctrl + K for link
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      handleToolbarClick('[', '](url)');
-    }
-    // Cmd/Ctrl + Z for undo (browser default)
-    // Cmd/Ctrl + Shift + Z for redo (browser default)
-  }, [showMentions, mentionResults, mentionIndex, insertMention, handleToolbarClick]);
+      // Cmd/Ctrl + B for bold
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        handleToolbarClick('**', '**');
+      }
+      // Cmd/Ctrl + I for italic
+      if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
+        e.preventDefault();
+        handleToolbarClick('*', '*');
+      }
+      // Cmd/Ctrl + K for link
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        handleToolbarClick('[', '](url)');
+      }
+      // Cmd/Ctrl + Z for undo (browser default)
+      // Cmd/Ctrl + Shift + Z for redo (browser default)
+    },
+    [showMentions, mentionResults, mentionIndex, insertMention, handleToolbarClick]
+  );
 
   // Handle file drop
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -159,40 +172,47 @@ export function RichTextEditor({
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    if (!onFileUpload) return;
-
-    const files = Array.from(e.dataTransfer.files);
-    for (const file of files) {
-      const result = await onFileUpload(file);
-      if (result) {
-        const link = `[${result.file_name}](${result.file_url})`;
-        onChange(value + '\n' + link);
-      }
-    }
-  }, [value, onChange, onFileUpload]);
-
-  // Handle paste for files
-  const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
-    if (!onFileUpload) return;
-
-    const files = Array.from(e.clipboardData.files);
-    if (files.length > 0) {
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
       e.preventDefault();
+      setIsDragging(false);
+
+      if (!onFileUpload) return;
+
+      const files = Array.from(e.dataTransfer.files);
       for (const file of files) {
         const result = await onFileUpload(file);
         if (result) {
           const link = `[${result.file_name}](${result.file_url})`;
-          onChange(value + '\n' + link);
+          onChange(`${value}\n${link}`);
         }
       }
-    }
-  }, [value, onChange, onFileUpload]);
+    },
+    [value, onChange, onFileUpload]
+  );
+
+  // Handle paste for files
+  const handlePaste = useCallback(
+    async (e: React.ClipboardEvent) => {
+      if (!onFileUpload) return;
+
+      const files = Array.from(e.clipboardData.files);
+      if (files.length > 0) {
+        e.preventDefault();
+        for (const file of files) {
+          const result = await onFileUpload(file);
+          if (result) {
+            const link = `[${result.file_name}](${result.file_url})`;
+            onChange(`${value}\n${link}`);
+          }
+        }
+      }
+    },
+    [value, onChange, onFileUpload]
+  );
 
   // Auto-resize textarea
+  // biome-ignore lint/correctness/useExhaustiveDependencies: value triggers resize
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -204,27 +224,30 @@ export function RichTextEditor({
   return (
     <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', overflow: 'hidden' }}>
       {/* Toolbar */}
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: isMobile ? 'column' : 'row',
-        gap: isMobile ? '4px' : '2px', 
-        padding: isMobile ? '8px' : '8px', 
-        borderBottom: '1px solid #e2e8f0', 
-        backgroundColor: '#f7fafc',
-        flexWrap: isMobile ? 'wrap' : 'nowrap',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '4px' : '2px',
+          padding: isMobile ? '8px' : '8px',
+          borderBottom: '1px solid #e2e8f0',
+          backgroundColor: '#f7fafc',
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
+        }}
+      >
         {/* Main toolbar buttons */}
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: isMobile ? 'row' : 'row',
-          gap: '2px',
-          flexWrap: 'wrap',
-          flex: 1,
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: isMobile ? 'row' : 'row',
+            gap: '2px',
+            flexWrap: 'wrap',
+            flex: 1,
+          }}
+        >
           {TOOLBAR_ITEMS.map((item) => (
-            <button
+            <button type="button"
               key={item.title}
-              type="button"
               title={item.title}
               onClick={() => handleToolbarClick(item.prefix, item.suffix)}
               disabled={disabled}
@@ -246,10 +269,9 @@ export function RichTextEditor({
             </button>
           ))}
         </div>
-        
+
         {/* Preview toggle */}
-        <button
-          type="button"
+        <button type="button"
           onClick={() => setShowPreview(!showPreview)}
           style={{
             padding: isMobile ? '10px 12px' : '4px 8px',
@@ -284,6 +306,7 @@ export function RichTextEditor({
               fontSize: '14px',
               lineHeight: '1.5',
             }}
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional — renders user-authored rich text content via renderMarkdownSimple
             dangerouslySetInnerHTML={{ __html: renderMarkdownSimple(value) }}
           />
         ) : (
@@ -313,42 +336,51 @@ export function RichTextEditor({
 
         {/* Drag overlay */}
         {isDragging && (
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundColor: 'rgba(49, 130, 206, 0.1)',
-            border: '2px dashed #3182ce',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            color: '#3182ce',
-            pointerEvents: 'none',
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundColor: 'rgba(49, 130, 206, 0.1)',
+              border: '2px dashed #3182ce',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              color: '#3182ce',
+              pointerEvents: 'none',
+            }}
+          >
             Drop files here to attach
           </div>
         )}
 
         {/* Mention autocomplete */}
         {showMentions && mentionResults.length > 0 && (
-          <div style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: '12px',
-            backgroundColor: 'white',
-            border: '1px solid #e2e8f0',
-            borderRadius: '6px',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-            maxHeight: '200px',
-            overflow: 'auto',
-            minWidth: '200px',
-            zIndex: 10,
-          }}>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: '12px',
+              backgroundColor: 'white',
+              border: '1px solid #e2e8f0',
+              borderRadius: '6px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              maxHeight: '200px',
+              overflow: 'auto',
+              minWidth: '200px',
+              zIndex: 10,
+            }}
+          >
             {mentionResults.map((user, idx) => (
               <div
                 key={user.id}
                 onClick={() => insertMention(user)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); insertMention(user); } }}
+                // biome-ignore lint/a11y/useSemanticElements: custom styled mention dropdown, <option> cannot be styled
+                role="option"
+                aria-selected={idx === mentionIndex}
+                tabIndex={-1}
                 style={{
                   padding: '8px 12px',
                   cursor: 'pointer',
@@ -364,17 +396,21 @@ export function RichTextEditor({
       </div>
 
       {/* Footer */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        padding: '8px 12px',
-        borderTop: '1px solid #e2e8f0',
-        backgroundColor: '#f7fafc',
-        fontSize: '12px',
-        color: isOverLimit ? '#e53e3e' : '#718096',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          padding: '8px 12px',
+          borderTop: '1px solid #e2e8f0',
+          backgroundColor: '#f7fafc',
+          fontSize: '12px',
+          color: isOverLimit ? '#e53e3e' : '#718096',
+        }}
+      >
         <span>Markdown supported • @mention users</span>
-        <span>{charCount}/{maxLength}</span>
+        <span>
+          {charCount}/{maxLength}
+        </span>
       </div>
     </div>
   );

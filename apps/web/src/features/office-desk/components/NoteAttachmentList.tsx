@@ -28,7 +28,11 @@ function formatFileSize(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function NoteAttachmentList({ attachments, onRemove, editable = false }: NoteAttachmentListProps) {
+export function NoteAttachmentList({
+  attachments,
+  onRemove,
+  editable = false,
+}: NoteAttachmentListProps) {
   if (attachments.length === 0) return null;
 
   return (
@@ -67,8 +71,7 @@ export function NoteAttachmentList({ attachments, onRemove, editable = false }: 
             {formatFileSize(attachment.file_size)}
           </span>
           {editable && onRemove && (
-            <button
-              type="button"
+            <button type="button"
               onClick={() => onRemove(attachment.id)}
               style={{
                 padding: '2px 6px',

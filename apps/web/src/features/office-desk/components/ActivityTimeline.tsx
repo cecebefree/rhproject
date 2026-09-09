@@ -1,10 +1,10 @@
 // ActivityTimeline — Display chronological activity log for a contact
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
+  type ContactActivityLogEntry,
   selectActivityLog,
   subscribeToContactActivity,
-  type ContactActivityLogEntry,
 } from '../services/contactNotes';
 
 interface ActivityTimelineProps {
@@ -49,7 +49,7 @@ function getActionSummary(entry: ContactActivityLogEntry): string {
   if (!data) return '';
 
   if (entry.action === 'note_created' && typeof data.preview === 'string') {
-    return data.preview.length > 100 ? data.preview.slice(0, 100) + '...' : data.preview;
+    return data.preview.length > 100 ? `${data.preview.slice(0, 100)}...` : data.preview;
   }
 
   return '';
@@ -61,20 +61,23 @@ export function ActivityTimeline({ contactId, deskId }: ActivityTimelineProps) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchEntries = useCallback(async (offset = 0) => {
-    const { data, error: fetchError } = await selectActivityLog(contactId, 30, offset);
-    if (fetchError) {
-      setError(fetchError.message);
-      return;
-    }
-    if (offset === 0) {
-      setEntries(data || []);
-    } else {
-      setEntries((prev) => [...prev, ...(data || [])]);
-    }
-    setHasMore((data?.length || 0) === 30);
-    setIsLoading(false);
-  }, [contactId]);
+  const fetchEntries = useCallback(
+    async (offset = 0) => {
+      const { data, error: fetchError } = await selectActivityLog(contactId, 30, offset);
+      if (fetchError) {
+        setError(fetchError.message);
+        return;
+      }
+      if (offset === 0) {
+        setEntries(data || []);
+      } else {
+        setEntries((prev) => [...prev, ...(data || [])]);
+      }
+      setHasMore((data?.length || 0) === 30);
+      setIsLoading(false);
+    },
+    [contactId]
+  );
 
   // Initial fetch
   useEffect(() => {
@@ -99,18 +102,35 @@ export function ActivityTimeline({ contactId, deskId }: ActivityTimelineProps) {
   };
 
   if (isLoading) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading activity...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>
+        Loading activity...
+      </div>
+    );
   }
 
   if (error) {
-    return <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px' }}>{error}</div>;
+    return (
+      <div
+        style={{
+          padding: '12px',
+          backgroundColor: '#fee2e2',
+          color: '#991b1b',
+          borderRadius: '6px',
+        }}
+      >
+        {error}
+      </div>
+    );
   }
 
   if (entries.length === 0) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: '#718096' }}>
         <p style={{ fontSize: '14px', margin: 0 }}>No activity yet</p>
-        <p style={{ fontSize: '13px', margin: '4px 0 0', color: '#a0aec0' }}>Changes to this contact will appear here</p>
+        <p style={{ fontSize: '13px', margin: '4px 0 0', color: '#a0aec0' }}>
+          Changes to this contact will appear here
+        </p>
       </div>
     );
   }
@@ -128,32 +148,40 @@ export function ActivityTimeline({ contactId, deskId }: ActivityTimelineProps) {
           }}
         >
           {/* Icon */}
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            backgroundColor: '#f7fafc',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '14px',
-            flexShrink: 0,
-          }}>
+          <div
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              backgroundColor: '#f7fafc',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              flexShrink: 0,
+            }}
+          >
             {ACTION_ICONS[entry.action] || '📋'}
           </div>
 
           {/* Content */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
+            >
               <span style={{ fontSize: '13px', color: '#2d3748', fontWeight: '500' }}>
                 {ACTION_LABELS[entry.action] || entry.action}
               </span>
-              <span style={{ fontSize: '12px', color: '#a0aec0', flexShrink: 0, marginLeft: '8px' }}>
+              <span
+                style={{ fontSize: '12px', color: '#a0aec0', flexShrink: 0, marginLeft: '8px' }}
+              >
                 {formatRelativeTime(entry.created_at)}
               </span>
             </div>
             {getActionSummary(entry) && (
-              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#718096', lineHeight: '1.4' }}>
+              <p
+                style={{ margin: '4px 0 0', fontSize: '12px', color: '#718096', lineHeight: '1.4' }}
+              >
                 {getActionSummary(entry)}
               </p>
             )}
@@ -163,8 +191,7 @@ export function ActivityTimeline({ contactId, deskId }: ActivityTimelineProps) {
 
       {/* Load more */}
       {hasMore && (
-        <button
-          type="button"
+        <button type="button"
           onClick={loadMore}
           style={{
             padding: '8px',

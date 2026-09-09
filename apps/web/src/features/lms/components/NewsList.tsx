@@ -23,10 +23,7 @@ export function NewsList({ tenantId, onSelect }: NewsListProps) {
       setLoading(true);
       setError(null);
 
-      const { data, error: fetchError } = await selectNews(
-        tenantId,
-        search || undefined,
-      );
+      const { data, error: fetchError } = await selectNews(tenantId, search || undefined);
 
       if (!cancelled) {
         if (fetchError) {
@@ -44,14 +41,13 @@ export function NewsList({ tenantId, onSelect }: NewsListProps) {
     };
   }, [tenantId, search]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId triggers subscription setup
   useEffect(() => {
     const channel = subscribeToNews((payload) => {
       if (payload.eventType === 'INSERT') {
         setNews((prev) => [payload.new, ...prev]);
       } else if (payload.eventType === 'UPDATE') {
-        setNews((prev) =>
-          prev.map((n) => (n.id === payload.new.id ? payload.new : n)),
-        );
+        setNews((prev) => prev.map((n) => (n.id === payload.new.id ? payload.new : n)));
       } else if (payload.eventType === 'DELETE') {
         setNews((prev) => prev.filter((n) => n.id !== payload.old?.id));
       }
@@ -78,18 +74,12 @@ export function NewsList({ tenantId, onSelect }: NewsListProps) {
       {loading && <div style={styles.loading}>Loading...</div>}
       {error && <div style={styles.error}>{error}</div>}
 
-      {!loading && news.length === 0 && (
-        <div style={styles.empty}>No news articles found</div>
-      )}
+      {!loading && news.length === 0 && <div style={styles.empty}>No news articles found</div>}
 
       {!loading && news.length > 0 && (
         <div style={styles.grid}>
           {news.map((item) => (
-            <div
-              key={item.id}
-              style={styles.card}
-              onClick={() => onSelect?.(item)}
-            >
+            <button type="button" key={item.id} style={styles.card} onClick={() => onSelect?.(item)}>
               <h3 style={styles.cardTitle}>{item.title}</h3>
               <p style={styles.cardExcerpt}>
                 {item.content.substring(0, 120)}
@@ -97,13 +87,11 @@ export function NewsList({ tenantId, onSelect }: NewsListProps) {
               </p>
               <div style={styles.cardMeta}>
                 <span style={styles.cardDate}>
-                  {item.published_at
-                    ? new Date(item.published_at).toLocaleDateString()
-                    : 'Draft'}
+                  {item.published_at ? new Date(item.published_at).toLocaleDateString() : 'Draft'}
                 </span>
                 {!item.published_at && <span style={styles.draftBadge}>Draft</span>}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

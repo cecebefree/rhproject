@@ -157,6 +157,10 @@ export function OfficeDeskScreen() {
       <FlatList
         data={invoices}
         keyExtractor={(item) => item.id}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        initialNumToRender={5}
         renderItem={({ item }) => <InvoiceRow invoice={item} />}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}

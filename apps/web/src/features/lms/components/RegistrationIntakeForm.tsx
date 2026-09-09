@@ -9,10 +9,7 @@ interface RegistrationIntakeFormProps {
   onSuccess?: () => void;
 }
 
-export function RegistrationIntakeForm({
-  tenantId,
-  onSuccess,
-}: RegistrationIntakeFormProps) {
+export function RegistrationIntakeForm({ tenantId, onSuccess }: RegistrationIntakeFormProps) {
   const [studentName, setStudentName] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [studentPhone, setStudentPhone] = useState('');
@@ -62,8 +59,9 @@ export function RegistrationIntakeForm({
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.row}>
           <div style={styles.field}>
-            <label style={styles.label}>Student Name *</label>
+            <label htmlFor="reg-student-name" style={styles.label}>Student Name *</label>
             <input
+              id="reg-student-name"
               type="text"
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
@@ -72,8 +70,9 @@ export function RegistrationIntakeForm({
             />
           </div>
           <div style={styles.field}>
-            <label style={styles.label}>Student Email *</label>
+            <label htmlFor="reg-student-email" style={styles.label}>Student Email *</label>
             <input
+              id="reg-student-email"
               type="email"
               value={studentEmail}
               onChange={(e) => setStudentEmail(e.target.value)}
@@ -85,8 +84,9 @@ export function RegistrationIntakeForm({
 
         <div style={styles.row}>
           <div style={styles.field}>
-            <label style={styles.label}>Phone</label>
+            <label htmlFor="reg-phone" style={styles.label}>Phone</label>
             <input
+              id="reg-phone"
               type="tel"
               value={studentPhone}
               onChange={(e) => setStudentPhone(e.target.value)}
@@ -94,8 +94,9 @@ export function RegistrationIntakeForm({
             />
           </div>
           <div style={styles.field}>
-            <label style={styles.label}>Course</label>
+            <label htmlFor="reg-course" style={styles.label}>Course</label>
             <input
+              id="reg-course"
               type="text"
               value={courseName}
               onChange={(e) => setCourseName(e.target.value)}
@@ -105,8 +106,9 @@ export function RegistrationIntakeForm({
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Notes</label>
+          <label htmlFor="reg-notes" style={styles.label}>Notes</label>
           <textarea
+            id="reg-notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}

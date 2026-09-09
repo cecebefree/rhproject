@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  getStudentTranscript,
-  getStudentGrades,
-  calculateGrade,
   type Gradebook,
+  calculateGrade,
+  getStudentGrades,
+  getStudentTranscript,
 } from '../services/supabase';
 
 interface StudentTranscriptProps {
@@ -39,6 +39,7 @@ export function StudentTranscript({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: studentId/tenantId trigger transcript load
   useEffect(() => {
     loadTranscript();
   }, [studentId, tenantId]);
@@ -59,20 +60,22 @@ export function StudentTranscript({
       for (const course of data) {
         const { data: grades } = await getStudentGrades(course.course_id, studentId);
 
-        const assignments = (grades || []).map((g: any) => {
-          const assignment = g.assignments;
+        const assignments = (grades || []).map((g: Record<string, unknown>) => {
+          const assignment = g.assignments as Record<string, unknown> | undefined;
+          const score = g.score as number | null;
+          const maxScore = (assignment?.max_score as number) || 100;
           const percentage =
-            g.score !== null && assignment?.max_score > 0
-              ? Math.round((g.score / assignment.max_score) * 100)
+            score !== null && maxScore > 0
+              ? Math.round((score / maxScore) * 100)
               : null;
 
           return {
-            title: assignment?.title || 'Unknown',
-            score: g.score,
-            max_score: assignment?.max_score || 100,
-            weight: assignment?.weight || 1.0,
+            title: (assignment?.title as string) || 'Unknown',
+            score,
+            max_score: maxScore,
+            weight: (assignment?.weight as number) || 1.0,
             percentage,
-            feedback: g.feedback,
+            feedback: g.feedback as string | null,
           };
         });
 
@@ -87,8 +90,8 @@ export function StudentTranscript({
       }
 
       setTranscript(enrichedTranscript);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load transcript');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load transcript');
     } finally {
       setLoading(false);
     }
@@ -109,9 +112,7 @@ export function StudentTranscript({
   }
 
   function getOverallGPA(): number | null {
-    const validCourses = transcript.filter(
-      (c) => c.weighted_average !== null,
-    );
+    const validCourses = transcript.filter((c) => c.weighted_average !== null);
     if (validCourses.length === 0) return null;
 
     const total = validCourses.reduce((sum, c) => sum + c.weighted_average!, 0);
@@ -146,12 +147,10 @@ export function StudentTranscript({
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
-          <h2 className="text-lg font-medium text-gray-900">
-            Transcript — {studentName}
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900">Transcript — {studentName}</h2>
         </div>
       </div>
 
@@ -164,9 +163,7 @@ export function StudentTranscript({
       {overallGPA !== null && (
         <div className="mb-6 p-4 bg-indigo-50 rounded-lg">
           <div className="text-sm text-indigo-700">Overall GPA</div>
-          <div className="text-2xl font-bold text-indigo-900">
-            {getGpaLabel(overallGPA)}
-          </div>
+          <div className="text-2xl font-bold text-indigo-900">{getGpaLabel(overallGPA)}</div>
           <div className="text-sm text-indigo-600 mt-1">
             {transcript.filter((c) => c.weighted_average !== null).length} courses
           </div>
@@ -180,17 +177,13 @@ export function StudentTranscript({
       ) : (
         <div className="space-y-6">
           {transcript.map((course) => (
-            <div
-              key={course.course_id}
-              className="border rounded-lg p-4"
-            >
+            <div key={course.course_id} className="border rounded-lg p-4">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="text-md font-semibold text-gray-900">
-                    {course.course_title}
-                  </h3>
+                  <h3 className="text-md font-semibold text-gray-900">{course.course_title}</h3>
                   <p className="text-sm text-gray-500">
-                    {course.grade_count} graded {course.grade_count === 1 ? 'assignment' : 'assignments'}
+                    {course.grade_count} graded{' '}
+                    {course.grade_count === 1 ? 'assignment' : 'assignments'}
                   </p>
                 </div>
                 <div className="text-right">
@@ -206,14 +199,10 @@ export function StudentTranscript({
                         : 'text-gray-400'
                     }`}
                   >
-                    {course.weighted_average !== null
-                      ? `${course.weighted_average}%`
-                      : '--'}
+                    {course.weighted_average !== null ? `${course.weighted_average}%` : '--'}
                   </div>
                   {course.grade_letter && (
-                    <div className="text-sm font-medium text-gray-700">
-                      {course.grade_letter}
-                    </div>
+                    <div className="text-sm font-medium text-gray-700">{course.grade_letter}</div>
                   )}
                 </div>
               </div>
@@ -242,7 +231,8 @@ export function StudentTranscript({
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {course.assignments.map((a, idx) => (
-                        <tr key={idx}>
+                        // eslint-disable-next-line react/no-array-index-key
+                        <tr key={`${a.title}-${idx}`}>
                           <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                             {a.title}
                           </td>

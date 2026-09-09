@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { AdminLayout } from '../../../components/AdminLayout';
 
-type MainTab = 'enrollment' | 'user-profiles' | 'family-accounts' | 'ledger' | 'school-admin' | 'accounting' | 'payment-analytics';
+type MainTab =
+  | 'enrollment'
+  | 'user-profiles'
+  | 'family-accounts'
+  | 'ledger'
+  | 'school-admin'
+  | 'accounting'
+  | 'payment-analytics';
 type SubTab = 'debit-orders' | 'invoices' | 'contracts';
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
@@ -35,7 +42,17 @@ export default function OfficeDeskPage() {
       {/* Header + Buttons */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
-          <h2 className="mb-1" style={{ fontFamily: '"EB Garamond", serif', fontSize: '36px', lineHeight: '44px', fontWeight: 500, color: '#273946', letterSpacing: '-0.01em' }}>
+          <h2
+            className="mb-1"
+            style={{
+              fontFamily: '"EB Garamond", serif',
+              fontSize: '36px',
+              lineHeight: '44px',
+              fontWeight: 500,
+              color: '#273946',
+              letterSpacing: '-0.01em',
+            }}
+          >
             Office Desk
           </h2>
           <p style={{ fontSize: '14px', lineHeight: '20px', color: '#54626C' }}>
@@ -43,18 +60,48 @@ export default function OfficeDeskPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="px-4 py-2 rounded flex items-center gap-2 transition-colors"
-            style={{ border: '1px solid #273946', color: '#273946', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(39,57,70,0.05)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>filter_list</span>
+          <button type="button"
+            className="px-4 py-2 rounded flex items-center gap-2 transition-colors"
+            style={{
+              border: '1px solid #273946',
+              color: '#273946',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.12em',
+              fontFamily: '"Source Sans 3", sans-serif',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(39,57,70,0.05)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+              filter_list
+            </span>
             Filter
           </button>
-          <button className="px-4 py-2 rounded flex items-center gap-2 shadow-sm transition-colors"
-            style={{ backgroundColor: '#273946', color: '#ffffff', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif' }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#112430'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#273946'; }}>
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add</span>
+          <button type="button"
+            className="px-4 py-2 rounded flex items-center gap-2 shadow-sm transition-colors"
+            style={{
+              backgroundColor: '#273946',
+              color: '#ffffff',
+              fontSize: '11px',
+              fontWeight: 600,
+              letterSpacing: '0.12em',
+              fontFamily: '"Source Sans 3", sans-serif',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#112430';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#273946';
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+              add
+            </span>
             New Enrollment
           </button>
         </div>
@@ -66,10 +113,15 @@ export default function OfficeDeskPage() {
           {MAIN_TABS.map((tab) => {
             const isActive = tab.key === mainTab;
             return (
-              <button key={tab.key} onClick={() => setMainTab(tab.key)}
+              <button type="button"
+                key={tab.key}
+                onClick={() => setMainTab(tab.key)}
                 className="px-6 py-3 whitespace-nowrap transition-colors relative"
                 style={{
-                  fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', fontFamily: '"Source Sans 3", sans-serif',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  letterSpacing: '0.12em',
+                  fontFamily: '"Source Sans 3", sans-serif',
                   color: isActive ? '#273946' : '#54626C',
                   backgroundColor: isActive ? '#ffffff' : 'transparent',
                   borderTop: isActive ? '1px solid rgba(39,57,70,0.1)' : '1px solid transparent',
@@ -77,9 +129,13 @@ export default function OfficeDeskPage() {
                   borderRight: isActive ? '1px solid rgba(39,57,70,0.1)' : '1px solid transparent',
                   borderRadius: isActive ? '0.25rem 0.25rem 0 0' : undefined,
                   zIndex: isActive ? 10 : undefined,
-                }}>
+                }}
+              >
                 {isActive && (
-                  <span className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: '#E8A020' }} />
+                  <span
+                    className="absolute top-0 left-0 w-full h-1"
+                    style={{ backgroundColor: '#E8A020' }}
+                  />
                 )}
                 {tab.label}
               </button>
@@ -89,18 +145,25 @@ export default function OfficeDeskPage() {
       </div>
 
       {/* Sub Tabs */}
-      <div className="flex items-center gap-6 overflow-x-auto shrink-0 pb-1"
-        style={{ borderBottom: '1px solid rgba(195,199,204,0.2)' }}>
+      <div
+        className="flex items-center gap-6 overflow-x-auto shrink-0 pb-1"
+        style={{ borderBottom: '1px solid rgba(195,199,204,0.2)' }}
+      >
         {SUB_TABS.map((tab) => {
           const isActive = tab.key === activeSubTab;
           return (
-            <button key={tab.key} onClick={() => navigate(`/service/office-desk/${tab.route}`)}
+            <button type="button"
+              key={tab.key}
+              onClick={() => navigate(`/service/office-desk/${tab.route}`)}
               className="whitespace-nowrap py-3 px-1 transition-colors"
               style={{
-                fontFamily: '"EB Garamond", serif', fontSize: '14px', fontWeight: isActive ? 700 : 500,
+                fontFamily: '"EB Garamond", serif',
+                fontSize: '14px',
+                fontWeight: isActive ? 700 : 500,
                 color: isActive ? '#273946' : '#54626C',
                 borderBottom: isActive ? '2px solid #E8A020' : '2px solid transparent',
-              }}>
+              }}
+            >
               {tab.label}
             </button>
           );

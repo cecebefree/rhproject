@@ -76,15 +76,16 @@ export class OptimisticUpdateManager {
    * Get pending updates for a specific record.
    */
   getPendingForRecord<T>(table: string, recordId: string): OptimisticUpdate<T>[] {
-    return Array.from(this.updates.values())
-      .filter(u => u.table === table && u.recordId === recordId && u.status === 'pending') as OptimisticUpdate<T>[];
+    return Array.from(this.updates.values()).filter(
+      (u) => u.table === table && u.recordId === recordId && u.status === 'pending'
+    ) as OptimisticUpdate<T>[];
   }
 
   /**
    * Get all pending updates.
    */
   getAllPending(): OptimisticUpdate[] {
-    return Array.from(this.updates.values()).filter(u => u.status === 'pending');
+    return Array.from(this.updates.values()).filter((u) => u.status === 'pending');
   }
 
   /**

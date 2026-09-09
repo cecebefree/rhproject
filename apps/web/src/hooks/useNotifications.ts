@@ -1,14 +1,14 @@
 // useNotifications — hook for fetching + subscribing to notifications (Row 74)
 // Wraps the existing notification service from office-desk
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
+  type Notification,
   getNotifications,
   getUnreadCount,
-  markAsRead,
   markAllAsRead,
+  markAsRead,
   subscribeToNotifications,
-  type Notification,
 } from '../features/office-desk/services/notifications';
 
 interface UseNotificationsReturn {
@@ -77,7 +77,7 @@ export function useNotifications(userId: string | null): UseNotificationsReturn 
   const markRead = useCallback(async (id: string) => {
     await markAsRead(id);
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)),
+      prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
@@ -86,7 +86,7 @@ export function useNotifications(userId: string | null): UseNotificationsReturn 
     if (!userId) return;
     await markAllAsRead(userId);
     setNotifications((prev) =>
-      prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() })),
+      prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() }))
     );
     setUnreadCount(0);
   }, [userId]);

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  selectGradebook,
-  subscribeToGradebook,
   type Gradebook,
   type GradebookWithRelations,
+  selectGradebook,
+  subscribeToGradebook,
 } from '../services/supabase';
 
 interface GradebookDetailProps {
@@ -34,17 +34,13 @@ interface AssignmentGrades {
   lowScore: number | null;
 }
 
-export function GradebookDetail({
-  courseId,
-  courseTitle,
-  onBack,
-  tenantId,
-}: GradebookDetailProps) {
+export function GradebookDetail({ courseId, courseTitle, onBack, tenantId }: GradebookDetailProps) {
   const [grades, setGrades] = useState<GradebookWithRelations[]>([]);
-  const [assignments, setAssignments] = useState<Record<string, any>>({});
+  const [assignments, setAssignments] = useState<Record<string, { id: string; title: string; max_score: number; weight: number }>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: courseId/tenantId trigger grade load and subscription
   useEffect(() => {
     loadGrades();
 
@@ -71,15 +67,15 @@ export function GradebookDetail({
 
       setGrades(data || []);
 
-      const assignmentMap: Record<string, any> = {};
+      const assignmentMap: Record<string, { id: string; title: string; max_score: number; weight: number }> = {};
       for (const g of data || []) {
         if (g.assignments) {
           assignmentMap[g.assignment_id] = g.assignments;
         }
       }
       setAssignments(assignmentMap);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load grades');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load grades');
     } finally {
       setLoading(false);
     }
@@ -103,7 +99,7 @@ export function GradebookDetail({
 
       grouped[g.assignment_id].push({
         studentId: g.student_id,
-        studentName: (g.profiles as any)?.name || g.student_id,
+        studentName: ((g.profiles as { name?: string })?.name) || g.student_id,
         score: g.score,
         maxScore: assignment.max_score,
         feedback: g.feedback || '',
@@ -114,9 +110,7 @@ export function GradebookDetail({
 
     return Object.entries(grouped).map(([assignmentId, gradeRows]) => {
       const assignment = assignments[assignmentId];
-      const percentages = gradeRows
-        .map((r) => r.percentage)
-        .filter((p): p is number => p !== null);
+      const percentages = gradeRows.map((r) => r.percentage).filter((p): p is number => p !== null);
 
       return {
         assignmentId,
@@ -128,10 +122,8 @@ export function GradebookDetail({
           percentages.length > 0
             ? Math.round(percentages.reduce((a, b) => a + b, 0) / percentages.length)
             : null,
-        highScore:
-          percentages.length > 0 ? Math.round(Math.max(...percentages)) : null,
-        lowScore:
-          percentages.length > 0 ? Math.round(Math.min(...percentages)) : null,
+        highScore: percentages.length > 0 ? Math.round(Math.max(...percentages)) : null,
+        lowScore: percentages.length > 0 ? Math.round(Math.min(...percentages)) : null,
       };
     });
   }
@@ -164,15 +156,10 @@ export function GradebookDetail({
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4">
-          <button
-            onClick={onBack}
-            className="text-gray-500 hover:text-gray-700"
-          >
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
-          <h2 className="text-lg font-medium text-gray-900">
-            {courseTitle} — Gradebook
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900">{courseTitle} — Gradebook</h2>
         </div>
       </div>
 
@@ -183,18 +170,14 @@ export function GradebookDetail({
       )}
 
       {assignmentGrades.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No graded assignments yet.
-        </div>
+        <div className="text-center py-8 text-gray-500">No graded assignments yet.</div>
       ) : (
         <div className="space-y-8">
           {assignmentGrades.map((ag) => (
             <div key={ag.assignmentId} className="border rounded-lg p-4">
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="text-md font-semibold text-gray-900">
-                    {ag.assignmentTitle}
-                  </h3>
+                  <h3 className="text-md font-semibold text-gray-900">{ag.assignmentTitle}</h3>
                   <p className="text-sm text-gray-500">
                     Max: {ag.maxScore} | Weight: {ag.weight}x
                   </p>

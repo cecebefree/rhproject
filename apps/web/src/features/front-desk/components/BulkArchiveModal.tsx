@@ -1,11 +1,11 @@
 import { useState } from 'react';
+import { useResponsive } from '../../../components/MobileNav';
 import {
   ARCHIVE_REASONS,
   ARCHIVE_REASON_LABELS,
   type ArchiveReason,
   bulkArchiveLeads,
 } from '../services/supabase';
-import { useResponsive } from '../../../components/MobileNav';
 
 interface BulkArchiveModalProps {
   leadIds: string[];
@@ -61,8 +61,7 @@ export function BulkArchiveModal({ leadIds, onComplete, onCancel }: BulkArchiveM
             )}
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              type="button"
+            <button type="button"
               onClick={onCancel}
               style={{
                 padding: '8px 16px',
@@ -106,35 +105,36 @@ export function BulkArchiveModal({ leadIds, onComplete, onCancel }: BulkArchiveM
           </div>
         )}
 
-        <label style={{ display: 'block', marginBottom: '12px' }}>
+        <label htmlFor="bulk-archive-reason" style={{ display: 'block', marginBottom: '12px' }}>
           Reason
-          <select
-            value={reason}
-            onChange={(e) => setReason(e.target.value as ArchiveReason)}
-            style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-          >
-            {ARCHIVE_REASONS.map((r) => (
-              <option key={r} value={r}>
-                {ARCHIVE_REASON_LABELS[r]}
-              </option>
-            ))}
-          </select>
         </label>
+        <select
+          id="bulk-archive-reason"
+          value={reason}
+          onChange={(e) => setReason(e.target.value as ArchiveReason)}
+          style={{ width: '100%', padding: '8px', marginTop: '4px', display: 'block', marginBottom: '12px' }}
+        >
+          {ARCHIVE_REASONS.map((r) => (
+            <option key={r} value={r}>
+              {ARCHIVE_REASON_LABELS[r]}
+            </option>
+          ))}
+        </select>
 
-        <label style={{ display: 'block', marginBottom: '16px' }}>
+        <label htmlFor="bulk-archive-notes" style={{ display: 'block', marginBottom: '16px' }}>
           Notes (optional)
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder="Additional context for this archive..."
-            style={{ width: '100%', padding: '8px', marginTop: '4px', boxSizing: 'border-box' }}
-          />
         </label>
+        <textarea
+          id="bulk-archive-notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder="Additional context for this archive..."
+          style={{ width: '100%', padding: '8px', marginTop: '4px', boxSizing: 'border-box' }}
+        />
 
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-          <button
-            type="button"
+          <button type="button"
             onClick={onCancel}
             disabled={archiving}
             style={{
@@ -147,8 +147,7 @@ export function BulkArchiveModal({ leadIds, onComplete, onCancel }: BulkArchiveM
           >
             Cancel
           </button>
-          <button
-            type="button"
+          <button type="button"
             onClick={handleArchive}
             disabled={archiving}
             style={{

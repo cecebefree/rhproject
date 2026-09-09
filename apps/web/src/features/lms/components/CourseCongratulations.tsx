@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../services/supabase";
+import { useEffect, useState } from 'react';
+import { supabaseUntyped as supabase } from '../services/supabase';
 
 interface CompletionStats {
   courseTitle: string;
@@ -25,34 +25,32 @@ export function CourseCongratulations({ studentId, courseId }: CourseCongratulat
     const checkCompletion = async () => {
       // Get chapters
       const { data: chapters } = await supabase
-        .from("chapters" as any)
-        .select("id, title")
-        .eq("course_id", courseId);
+        .from('chapters' as never)
+        .select('id, title')
+        .eq('course_id', courseId);
 
       if (!chapters?.length) return;
 
       // Get progress (row presence = completed)
       const { data: progress } = await supabase
-        .from("chapter_progress" as any)
-        .select("chapter_id")
-        .eq("student_id", studentId);
+        .from('chapter_progress' as never)
+        .select('chapter_id')
+        .eq('student_id', studentId);
 
-      const completedCount = new Set(
-        (progress ?? []).map((p: any) => p.chapter_id)
-      ).size;
+      const completedCount = new Set((progress ?? []).map((p: { chapter_id: string }) => p.chapter_id)).size;
       const totalChapters = chapters.length;
       const pct = Math.round((completedCount / totalChapters) * 100);
 
       // Get program title
       const { data: course } = await supabase
-        .schema("school_desk")
-        .from("programs")
-        .select("title")
-        .eq("id", courseId)
+        .schema('school_desk')
+        .from('programs')
+        .select('title')
+        .eq('id', courseId)
         .single();
 
       const stats: CompletionStats = {
-        courseTitle: course?.title ?? "Subject",
+        courseTitle: course?.title ?? 'Subject',
         completedChapters: completedCount,
         totalChapters,
         completionPct: pct,
@@ -74,18 +72,14 @@ export function CourseCongratulations({ studentId, courseId }: CourseCongratulat
     <div className="rounded-xl border-2 border-green-200 bg-green-50 p-6 mb-6">
       <div className="flex items-center gap-3 mb-3">
         <span className="text-3xl">🎉</span>
-        <h3 className="text-lg font-bold text-green-800">
-          Congratulations!
-        </h3>
+        <h3 className="text-lg font-bold text-green-800">Congratulations!</h3>
       </div>
       <p className="text-green-700 mb-2">
-        You've completed <strong>{stats.courseTitle}</strong>! All{" "}
-        {stats.totalChapters} chapters finished.
+        You've completed <strong>{stats.courseTitle}</strong>! All {stats.totalChapters} chapters
+        finished.
       </p>
-      <p className="text-sm text-green-600">
-        Great work on your learning journey. Keep it up!
-      </p>
-      <button
+      <p className="text-sm text-green-600">Great work on your learning journey. Keep it up!</p>
+      <button type="button"
         onClick={() => setShowCongrats(false)}
         className="mt-3 text-sm text-green-600 hover:text-green-800 underline"
       >
@@ -106,7 +100,7 @@ export function useLastAccessed(studentId: string | null, courseId: string | nul
     if (!studentId || !courseId) return;
 
     const touch = async () => {
-      await supabase.rpc("touch_enrollment_access" as any, {
+      await supabase.rpc('touch_enrollment_access' as never, {
         p_student_id: studentId,
         p_course_id: courseId,
       });

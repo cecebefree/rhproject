@@ -62,12 +62,7 @@ export interface Enrollment {
 }
 
 // ── Contract ────────────────────────────────────────────
-export type ContractStatus =
-  | "draft"
-  | "pending_signature"
-  | "active"
-  | "expired"
-  | "terminated";
+export type ContractStatus = 'draft' | 'pending_signature' | 'active' | 'expired' | 'terminated';
 
 export interface ContractTerms {
   clauses?: string[];
@@ -92,14 +87,9 @@ export interface Contract {
 }
 
 // ── Debit Order ─────────────────────────────────────────
-export type DebitOrderStatus =
-  | "pending"
-  | "active"
-  | "completed"
-  | "failed"
-  | "cancelled";
+export type DebitOrderStatus = 'pending' | 'active' | 'completed' | 'failed' | 'cancelled';
 
-export type DebitFrequency = "monthly" | "quarterly" | "annually";
+export type DebitFrequency = 'monthly' | 'quarterly' | 'annually';
 
 export interface DebitOrder {
   id: UUID;
@@ -119,8 +109,8 @@ export interface DebitOrder {
 }
 
 // ── Payment (public.payments – ledger) ──────────────────
-export type PaymentType = "debit_order" | "manual" | "online" | "refund";
-export type PaymentStatus = "pending" | "completed" | "failed" | "refunded";
+export type PaymentType = 'debit_order' | 'manual' | 'online' | 'refund';
+export type PaymentStatus = 'pending' | 'completed' | 'failed' | 'refunded';
 
 export interface Payment {
   id: UUID;
@@ -135,11 +125,7 @@ export interface Payment {
 }
 
 // ── Conversation ────────────────────────────────────────
-export type ConversationCategory =
-  | "support"
-  | "billing"
-  | "academic"
-  | "general";
+export type ConversationCategory = 'support' | 'billing' | 'academic' | 'general';
 
 export interface Conversation {
   id: UUID;
@@ -151,7 +137,7 @@ export interface Conversation {
 }
 
 // ── Conversation Member ─────────────────────────────────
-export type ConversationRole = "admin" | "parent" | "teacher" | "student";
+export type ConversationRole = 'admin' | 'parent' | 'teacher' | 'student';
 
 export interface ConversationMember {
   conversation_id: UUID;
@@ -179,12 +165,7 @@ export interface Message {
 }
 
 // ── Profile ─────────────────────────────────────────────
-export type ProfileRole =
-  | "student"
-  | "parent"
-  | "teacher"
-  | "admin"
-  | "office";
+export type ProfileRole = 'student' | 'parent' | 'teacher' | 'admin' | 'office';
 
 export interface Profile {
   id: UUID;
@@ -200,11 +181,11 @@ export interface Profile {
 
 // ── Registration (office_desk schema) ───────────────────
 export type RegistrationStatus =
-  | "pending_init"
-  | "pending_review"
-  | "approved"
-  | "rejected"
-  | "enrolled";
+  | 'pending_init'
+  | 'pending_review'
+  | 'approved'
+  | 'rejected'
+  | 'enrolled';
 
 export interface Registration {
   id: UUID;
@@ -219,14 +200,7 @@ export interface Registration {
 }
 
 // ── Invoice (office_desk schema) ────────────────────────
-export type InvoiceStatus =
-  | "draft"
-  | "issued"
-  | "sent"
-  | "paid"
-  | "overdue"
-  | "cancelled"
-  | "void";
+export type InvoiceStatus = 'draft' | 'issued' | 'sent' | 'paid' | 'overdue' | 'cancelled' | 'void';
 
 export interface Invoice {
   id: UUID;
@@ -245,18 +219,18 @@ export interface Invoice {
 
 // ── Notification ────────────────────────────────────────
 export type NotificationType =
-  | "new_registration"
-  | "payment_received"
-  | "payment_reminder"
-  | "contract_created"
-  | "debit_order_failed";
+  | 'new_registration'
+  | 'payment_received'
+  | 'payment_reminder'
+  | 'contract_created'
+  | 'debit_order_failed';
 
 export interface Notification {
   id: UUID;
   tenant_id: UUID;
   registration_id: UUID | null;
   notification_type: NotificationType;
-  status: "pending" | "sent" | "failed";
+  status: 'pending' | 'sent' | 'failed';
   email_to: string;
   sent_at: Timestamp | null;
   created_at: Timestamp;

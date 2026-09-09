@@ -124,10 +124,7 @@ export const WEBHOOK_EVENT_STATUS_LABELS: Record<WebhookEventStatus, string> = {
 /**
  * Generate HMAC-SHA256 signature for webhook payload
  */
-export async function generateSignature(
-  secret: string,
-  payload: string
-): Promise<string> {
+export async function generateSignature(secret: string, payload: string): Promise<string> {
   const encoder = new TextEncoder();
   const keyData = encoder.encode(secret);
   const data = encoder.encode(payload);
@@ -186,7 +183,11 @@ export async function getWebhookById(webhookId: string) {
     .single();
 }
 
-export async function insertWebhook(webhook: WebhookCreateInput, tenantId: string, userId?: string) {
+export async function insertWebhook(
+  webhook: WebhookCreateInput,
+  tenantId: string,
+  userId?: string
+) {
   return supabase
     .from('office_desk.webhooks')
     .insert({
@@ -225,21 +226,14 @@ export async function deleteWebhook(webhookId: string) {
 }
 
 export async function hardDeleteWebhook(webhookId: string) {
-  return supabase
-    .from('office_desk.webhooks')
-    .delete()
-    .eq('id', webhookId);
+  return supabase.from('office_desk.webhooks').delete().eq('id', webhookId);
 }
 
 // ═══════════════════════════════════════════════════════════
 // WEBHOOK EVENT QUERIES
 // ═══════════════════════════════════════════════════════════
 
-export async function selectWebhookEvents(
-  webhookId: string,
-  limit = 50,
-  offset = 0
-) {
+export async function selectWebhookEvents(webhookId: string, limit = 50, offset = 0) {
   return supabase
     .from('office_desk.webhook_events')
     .select('*')
@@ -269,11 +263,7 @@ export async function selectAllWebhookEvents(
 }
 
 export async function getWebhookEventById(eventId: string) {
-  return supabase
-    .from('office_desk.webhook_events')
-    .select('*')
-    .eq('id', eventId)
-    .single();
+  return supabase.from('office_desk.webhook_events').select('*').eq('id', eventId).single();
 }
 
 export async function updateWebhookEventStatus(
@@ -526,7 +516,7 @@ export async function processPendingEvents(maxEvents = 10): Promise<{
       } else {
         // Calculate next retry time with exponential backoff
         const nextRetryAt = new Date(
-          Date.now() + Math.pow(2, event.attempts) * 60000 // Exponential backoff: 1min, 2min, 4min...
+          Date.now() + 2 ** event.attempts * 60000 // Exponential backoff: 1min, 2min, 4min...
         );
 
         await supabase
@@ -536,7 +526,8 @@ export async function processPendingEvents(maxEvents = 10): Promise<{
             attempts: event.attempts + 1,
             response_status: response.status,
             response_body: responseBody.substring(0, 1000),
-            next_retry_at: event.attempts + 1 >= event.max_attempts ? null : nextRetryAt.toISOString(),
+            next_retry_at:
+              event.attempts + 1 >= event.max_attempts ? null : nextRetryAt.toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq('id', event.id);
@@ -547,9 +538,7 @@ export async function processPendingEvents(maxEvents = 10): Promise<{
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const nextRetryAt = new Date(
-        Date.now() + Math.pow(2, event.attempts) * 60000
-      );
+      const nextRetryAt = new Date(Date.now() + 2 ** event.attempts * 60000);
 
       await supabase
         .from('office_desk.webhook_events')
@@ -557,7 +546,8 @@ export async function processPendingEvents(maxEvents = 10): Promise<{
           status: event.attempts + 1 >= event.max_attempts ? 'failed' : 'retrying',
           attempts: event.attempts + 1,
           error_message: errorMessage,
-          next_retry_at: event.attempts + 1 >= event.max_attempts ? null : nextRetryAt.toISOString(),
+          next_retry_at:
+            event.attempts + 1 >= event.max_attempts ? null : nextRetryAt.toISOString(),
           updated_at: new Date().toISOString(),
         })
         .eq('id', event.id);
@@ -637,13 +627,22 @@ export function subscribeToWebhooks(
 
 export function subscribeToWebhookEvents(
   tenantId: string,
-  callback: (payload: { eventType: string; new: WebhookEventLog; old: WebhookEventLog | null }) => void
+  callback: (payload: {
+    eventType: string;
+    new: WebhookEventLog;
+    old: WebhookEventLog | null;
+  }) => void
 ) {
   return supabase
     .channel(`webhook_events-${tenantId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'webhook_events', filter: `tenant_id=eq.${tenantId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'webhook_events',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();

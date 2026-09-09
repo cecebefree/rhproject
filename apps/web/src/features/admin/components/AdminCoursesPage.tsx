@@ -5,10 +5,10 @@
 import { useEffect, useState } from 'react';
 import { NotificationCenter } from '../../../components/NotificationCenter';
 import { supabase } from '../../lms/services/supabase';
-import { CourseList } from './CourseList';
+import { type Course, type CourseStatus, getCourse, updateCourse } from '../adminCoursesClient';
 import { CourseForm } from './CourseForm';
+import { CourseList } from './CourseList';
 import { CourseSchedule } from './CourseSchedule';
-import { getCourse, updateCourse, type Course, type CourseStatus } from '../adminCoursesClient';
 
 interface Profile {
   id: string;
@@ -28,9 +28,15 @@ export default function AdminCoursesPage() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userErr,
+      } = await supabase.auth.getUser();
       if (userErr || !user) {
-        if (!cancelled) { setError('Not authenticated'); setLoading(false); }
+        if (!cancelled) {
+          setError('Not authenticated');
+          setLoading(false);
+        }
         return;
       }
       const { data: p, error: pErr } = await supabase
@@ -46,7 +52,9 @@ export default function AdminCoursesPage() {
       }
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [detailTab, setDetailTab] = useState<'info' | 'schedule'>('info');
@@ -129,17 +137,15 @@ export default function AdminCoursesPage() {
       <main style={styles.main}>
         {/* List view */}
         {viewMode === 'list' && (
-          <CourseList
-            tenantId={tenantId}
-            onSelect={handleSelect}
-            onCreateNew={handleCreateNew}
-          />
+          <CourseList tenantId={tenantId} onSelect={handleSelect} onCreateNew={handleCreateNew} />
         )}
 
         {/* Create form */}
         {viewMode === 'create' && (
           <div>
-            <button onClick={handleBack} style={styles.backButton}>&larr; Back to curriculums</button>
+            <button type="button" onClick={handleBack} style={styles.backButton}>
+              &larr; Back to curriculums
+            </button>
             <CourseForm
               tenantId={tenantId}
               onSuccess={() => setViewMode('list')}
@@ -151,7 +157,9 @@ export default function AdminCoursesPage() {
         {/* Edit form */}
         {viewMode === 'edit' && selectedCourse && (
           <div>
-            <button onClick={() => setViewMode('detail')} style={styles.backButton}>&larr; Back to curriculum</button>
+            <button type="button" onClick={() => setViewMode('detail')} style={styles.backButton}>
+              &larr; Back to curriculum
+            </button>
             <CourseForm
               tenantId={tenantId}
               course={selectedCourse}
@@ -164,7 +172,9 @@ export default function AdminCoursesPage() {
         {/* Detail view */}
         {viewMode === 'detail' && selectedCourse && (
           <div>
-            <button onClick={handleBack} style={styles.backButton}>&larr; Back to curriculums</button>
+            <button type="button" onClick={handleBack} style={styles.backButton}>
+              &larr; Back to curriculums
+            </button>
 
             {/* Course header */}
             <div style={styles.detailHeader}>
@@ -176,7 +186,8 @@ export default function AdminCoursesPage() {
                   <span
                     style={{
                       ...styles.statusBadge,
-                      backgroundColor: selectedCourse.status === 'published' ? '#d1fae5' : '#e2e8f0',
+                      backgroundColor:
+                        selectedCourse.status === 'published' ? '#d1fae5' : '#e2e8f0',
                       color: selectedCourse.status === 'published' ? '#065f46' : '#4a5568',
                     }}
                   >
@@ -189,8 +200,10 @@ export default function AdminCoursesPage() {
                 </div>
               </div>
               <div style={styles.detailActions}>
-                <button onClick={handleEdit} style={styles.editButton}>Edit</button>
-                <button onClick={handleToggleStatus} style={styles.toggleButton}>
+                <button type="button" onClick={handleEdit} style={styles.editButton}>
+                  Edit
+                </button>
+                <button type="button" onClick={handleToggleStatus} style={styles.toggleButton}>
                   {selectedCourse.status === 'published' ? 'Unpublish' : 'Publish'}
                 </button>
               </div>
@@ -202,13 +215,13 @@ export default function AdminCoursesPage() {
 
             {/* Tabs */}
             <div style={styles.tabs}>
-              <button
+              <button type="button"
                 onClick={() => setDetailTab('info')}
                 style={detailTab === 'info' ? styles.tabActive : styles.tab}
               >
                 Info
               </button>
-              <button
+              <button type="button"
                 onClick={() => setDetailTab('schedule')}
                 style={detailTab === 'schedule' ? styles.tabActive : styles.tab}
               >
@@ -252,18 +265,13 @@ export default function AdminCoursesPage() {
               )}
 
               {detailTab === 'schedule' && (
-                <CourseSchedule
-                  courseId={selectedCourse.id}
-                  tenantId={tenantId}
-                />
+                <CourseSchedule courseId={selectedCourse.id} tenantId={tenantId} />
               )}
             </div>
           </div>
         )}
 
-        {loadingCourse && (
-          <div style={styles.loadingOverlay}>Loading curriculum details...</div>
-        )}
+        {loadingCourse && <div style={styles.loadingOverlay}>Loading curriculum details...</div>}
       </main>
     </div>
   );

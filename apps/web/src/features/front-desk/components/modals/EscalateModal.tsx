@@ -1,4 +1,4 @@
-import { Inquiry } from '../../index';
+import type { Inquiry } from '../../index';
 
 interface EscalateModalProps {
   inquiry: Inquiry | null;
@@ -8,5 +8,5 @@ interface EscalateModalProps {
 }
 
 export function EscalateModal({ inquiry, isOpen, onClose, onSuccess }: EscalateModalProps) {
-  return <div></div>;
+  return <div />;
 }

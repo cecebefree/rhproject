@@ -1,5 +1,5 @@
-import { supabase } from './supabase';
 import type { EntityType } from '../components/BulkSelectionContext';
+import { supabase } from './supabase';
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -91,7 +91,7 @@ export async function bulkEdit(
   for (const id of entityIds) {
     try {
       const updateData: Record<string, unknown> = {};
-      
+
       if (values.status !== undefined) updateData.status = values.status;
       if (values.assigned_to !== undefined) updateData.assigned_to = values.assigned_to;
       if (values.tags !== undefined) updateData.tags = values.tags;
@@ -120,10 +120,13 @@ export async function bulkEdit(
   if (oldRecords && oldRecords.length > 0) {
     const firstRecord = oldRecords[0];
     if (values.status !== undefined && firstRecord.status) oldValues.status = firstRecord.status;
-    if (values.assigned_to !== undefined && firstRecord.assigned_to) oldValues.assigned_to = firstRecord.assigned_to;
+    if (values.assigned_to !== undefined && firstRecord.assigned_to)
+      oldValues.assigned_to = firstRecord.assigned_to;
     if (values.tags !== undefined && firstRecord.tags) oldValues.tags = firstRecord.tags;
-    if (values.category !== undefined && firstRecord.category) oldValues.category = firstRecord.category;
-    if (values.priority !== undefined && firstRecord.priority) oldValues.priority = firstRecord.priority;
+    if (values.category !== undefined && firstRecord.category)
+      oldValues.category = firstRecord.category;
+    if (values.priority !== undefined && firstRecord.priority)
+      oldValues.priority = firstRecord.priority;
     if (values.notes !== undefined && firstRecord.notes) oldValues.notes = firstRecord.notes;
   }
 

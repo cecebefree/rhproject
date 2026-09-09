@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import {
+  type ReportCardWithRelations,
   selectReportCards,
   subscribeToReportCards,
-  type ReportCardWithRelations,
 } from '../services/supabase';
 import { StatusBadge } from './StatusBadge';
 
@@ -45,11 +45,7 @@ export function ReportCardList({ tenantId, userId, onSelect }: ReportCardListPro
         setCards((prev) => [payload.new as ReportCardWithRelations, ...prev]);
       } else if (payload.eventType === 'UPDATE') {
         setCards((prev) =>
-          prev.map((c) =>
-            c.id === payload.new.id
-              ? (payload.new as ReportCardWithRelations)
-              : c,
-          ),
+          prev.map((c) => (c.id === payload.new.id ? (payload.new as ReportCardWithRelations) : c))
         );
       } else if (payload.eventType === 'DELETE') {
         setCards((prev) => prev.filter((c) => c.id !== payload.old?.id));
@@ -66,7 +62,7 @@ export function ReportCardList({ tenantId, userId, onSelect }: ReportCardListPro
     (c) =>
       c.term?.toLowerCase().includes(search.toLowerCase()) ||
       c.subject?.toLowerCase().includes(search.toLowerCase()) ||
-      c.profiles?.name?.toLowerCase().includes(search.toLowerCase()),
+      c.profiles?.name?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) return <div style={styles.loading}>Loading report cards...</div>;
@@ -103,11 +99,7 @@ export function ReportCardList({ tenantId, userId, onSelect }: ReportCardListPro
             <div style={styles.colStatus}>Status</div>
           </div>
           {filtered.map((card) => (
-            <div
-              key={card.id}
-              style={styles.tableRow}
-              onClick={() => onSelect(card.id)}
-            >
+            <button type="button" key={card.id} style={styles.tableRow} onClick={() => onSelect(card.id)}>
               <div style={styles.colStudent}>{card.profiles?.name ?? 'Unknown'}</div>
               <div style={styles.colTerm}>{card.term}</div>
               <div style={styles.colSubject}>{card.subject}</div>
@@ -115,7 +107,7 @@ export function ReportCardList({ tenantId, userId, onSelect }: ReportCardListPro
               <div style={styles.colStatus}>
                 <StatusBadge status={card.status} />
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

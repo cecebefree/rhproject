@@ -91,6 +91,13 @@ export default function TabLayout() {
         }} />
         <Tabs.Screen name="class-detail" options={{ href: null }} />
         <Tabs.Screen name="hub-detail" options={{ href: null }} />
+        <Tabs.Screen
+          name="payments"
+          options={{
+            href: null,
+            title: 'Payments',
+          }}
+        />
         <Tabs.Screen name="invoice-detail" options={{ href: null }} />
       </Tabs>
     </Suspense>

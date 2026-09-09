@@ -3,9 +3,9 @@
 
 import { useState } from 'react';
 import {
-  updateRegistrationStatus,
   type Registration,
   type RegistrationStatus,
+  updateRegistrationStatus,
 } from '../services/supabase';
 
 interface RegistrationDetailProps {
@@ -39,12 +39,7 @@ const TIMELINE_STEPS: { key: string; label: string }[] = [
   { key: 'active', label: 'Active' },
 ];
 
-const STATUS_ORDER: RegistrationStatus[] = [
-  'pending_init',
-  'pending_review',
-  'approved',
-  'active',
-];
+const STATUS_ORDER: RegistrationStatus[] = ['pending_init', 'pending_review', 'approved', 'active'];
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
@@ -68,10 +63,7 @@ export function RegistrationDetail({
   const handleApprove = async () => {
     setUpdating(true);
     setError(null);
-    const { error: updateErr } = await updateRegistrationStatus(
-      registration.id,
-      'approved',
-    );
+    const { error: updateErr } = await updateRegistrationStatus(registration.id, 'approved');
     setUpdating(false);
     if (updateErr) {
       setError(updateErr.message);
@@ -83,10 +75,7 @@ export function RegistrationDetail({
   const handleReject = async () => {
     setUpdating(true);
     setError(null);
-    const { error: updateErr } = await updateRegistrationStatus(
-      registration.id,
-      'rejected',
-    );
+    const { error: updateErr } = await updateRegistrationStatus(registration.id, 'rejected');
     setUpdating(false);
     if (updateErr) {
       setError(updateErr.message);
@@ -99,7 +88,7 @@ export function RegistrationDetail({
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backButton}>
+        <button type="button" onClick={onBack} style={styles.backButton}>
           &larr; Back
         </button>
         <span
@@ -169,11 +158,7 @@ export function RegistrationDetail({
                 <div
                   style={{
                     ...styles.timelineDot,
-                    backgroundColor: isCompleted
-                      ? '#27ae60'
-                      : isActive
-                        ? '#C8281E'
-                        : '#e2e8f0',
+                    backgroundColor: isCompleted ? '#27ae60' : isActive ? '#C8281E' : '#e2e8f0',
                   }}
                 />
                 <div style={styles.timelineContent}>
@@ -217,7 +202,7 @@ export function RegistrationDetail({
         <h3 style={styles.sectionTitle}>Actions</h3>
         <div style={styles.actions}>
           {registration.status === 'pending_review' && (
-            <button
+            <button type="button"
               onClick={handleApprove}
               disabled={updating}
               style={{ ...styles.actionButton, backgroundColor: '#27ae60' }}
@@ -225,9 +210,8 @@ export function RegistrationDetail({
               {updating ? 'Approving...' : 'Approve Registration'}
             </button>
           )}
-          {(registration.status === 'pending_init' ||
-            registration.status === 'pending_review') && (
-            <button
+          {(registration.status === 'pending_init' || registration.status === 'pending_review') && (
+            <button type="button"
               onClick={handleReject}
               disabled={updating}
               style={{ ...styles.actionButton, backgroundColor: '#e53e3e' }}
@@ -235,13 +219,13 @@ export function RegistrationDetail({
               {updating ? 'Rejecting...' : 'Reject'}
             </button>
           )}
-          <button
+          <button type="button"
             disabled
             style={{ ...styles.actionButton, backgroundColor: '#718096', cursor: 'not-allowed' }}
           >
             Request Signature
           </button>
-          <button
+          <button type="button"
             disabled
             style={{ ...styles.actionButton, backgroundColor: '#718096', cursor: 'not-allowed' }}
           >

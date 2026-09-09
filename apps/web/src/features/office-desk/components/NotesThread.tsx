@@ -1,14 +1,14 @@
 // NotesThread — Display list of notes for a contact with real-time updates
 
-import { useState, useEffect, useCallback } from 'react';
-import { renderMarkdownSimple } from '../services/richTextEditor';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  selectNotesByContact,
-  subscribeToContactNotes,
-  deleteNote,
   type ContactNote,
   type ContactNoteAttachment,
+  deleteNote,
+  selectNotesByContact,
+  subscribeToContactNotes,
 } from '../services/contactNotes';
+import { renderMarkdownSimple } from '../services/richTextEditor';
 import { NoteAttachmentList } from './NoteAttachmentList';
 
 interface NotesThreadProps {
@@ -41,20 +41,23 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchNotes = useCallback(async (offset = 0) => {
-    const { data, error: fetchError } = await selectNotesByContact(contactId, 20, offset);
-    if (fetchError) {
-      setError(fetchError.message);
-      return;
-    }
-    if (offset === 0) {
-      setNotes(data || []);
-    } else {
-      setNotes((prev) => [...prev, ...(data || [])]);
-    }
-    setHasMore((data?.length || 0) === 20);
-    setIsLoading(false);
-  }, [contactId]);
+  const fetchNotes = useCallback(
+    async (offset = 0) => {
+      const { data, error: fetchError } = await selectNotesByContact(contactId, 20, offset);
+      if (fetchError) {
+        setError(fetchError.message);
+        return;
+      }
+      if (offset === 0) {
+        setNotes(data || []);
+      } else {
+        setNotes((prev) => [...prev, ...(data || [])]);
+      }
+      setHasMore((data?.length || 0) === 20);
+      setIsLoading(false);
+    },
+    [contactId]
+  );
 
   // Initial fetch
   useEffect(() => {
@@ -68,7 +71,9 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
         setNotes((prev) => [payload.new as ContactNote, ...prev]);
       } else if (payload.eventType === 'UPDATE') {
         setNotes((prev) =>
-          prev.map((n) => (n.id === (payload.new as ContactNote).id ? (payload.new as ContactNote) : n))
+          prev.map((n) =>
+            n.id === (payload.new as ContactNote).id ? (payload.new as ContactNote) : n
+          )
         );
       } else if (payload.eventType === 'DELETE') {
         setNotes((prev) => prev.filter((n) => n.id !== (payload.old as ContactNote)?.id));
@@ -93,18 +98,33 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
   };
 
   if (isLoading) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading notes...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading notes...</div>
+    );
   }
 
   if (error) {
-    return <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px' }}>{error}</div>;
+    return (
+      <div
+        style={{
+          padding: '12px',
+          backgroundColor: '#fee2e2',
+          color: '#991b1b',
+          borderRadius: '6px',
+        }}
+      >
+        {error}
+      </div>
+    );
   }
 
   if (notes.length === 0) {
     return (
       <div style={{ padding: '40px 20px', textAlign: 'center', color: '#718096' }}>
         <p style={{ fontSize: '14px', margin: 0 }}>No notes yet</p>
-        <p style={{ fontSize: '13px', margin: '4px 0 0', color: '#a0aec0' }}>Add a note to start tracking this contact</p>
+        <p style={{ fontSize: '13px', margin: '4px 0 0', color: '#a0aec0' }}>
+          Add a note to start tracking this contact
+        </p>
       </div>
     );
   }
@@ -122,27 +142,38 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
           }}
         >
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '8px',
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                backgroundColor: '#edf2f7',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: '600',
-                color: '#4a5568',
-              }}>
+              <div
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  backgroundColor: '#edf2f7',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: '#4a5568',
+                }}
+              >
                 {note.created_by.slice(0, 2).toUpperCase()}
               </div>
               <span style={{ fontSize: '13px', fontWeight: '500', color: '#2d3748' }}>
                 {note.created_by === userId ? 'You' : note.created_by.slice(0, 8)}
               </span>
               {note.is_edited && (
-                <span style={{ fontSize: '11px', color: '#a0aec0', fontStyle: 'italic' }}>(edited)</span>
+                <span style={{ fontSize: '11px', color: '#a0aec0', fontStyle: 'italic' }}>
+                  (edited)
+                </span>
               )}
             </div>
             <span style={{ fontSize: '12px', color: '#a0aec0' }}>
@@ -158,6 +189,7 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
               color: '#2d3748',
               marginBottom: note.attachments?.length ? '8px' : 0,
             }}
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional — renders user-authored note content via renderMarkdownSimple
             dangerouslySetInnerHTML={{ __html: renderMarkdownSimple(note.content) }}
           />
 
@@ -170,9 +202,16 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
           )}
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #edf2f7' }}>
-            <button
-              type="button"
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              marginTop: '8px',
+              paddingTop: '8px',
+              borderTop: '1px solid #edf2f7',
+            }}
+          >
+            <button type="button"
               onClick={() => onEditNote?.(note)}
               style={{
                 padding: '4px 8px',
@@ -185,8 +224,7 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
             >
               Edit
             </button>
-            <button
-              type="button"
+            <button type="button"
               onClick={() => handleDelete(note.id)}
               style={{
                 padding: '4px 8px',
@@ -205,8 +243,7 @@ export function NotesThread({ contactId, deskId, tenantId, userId, onEditNote }:
 
       {/* Load more */}
       {hasMore && (
-        <button
-          type="button"
+        <button type="button"
           onClick={loadMore}
           style={{
             padding: '8px',

@@ -41,7 +41,11 @@ const STATUS_COLORS: Record<string, string> = {
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 interface ContractListProps {
@@ -75,7 +79,7 @@ export function ContractList({ tenantId, onSelect }: ContractListProps) {
 
       const { data } = await query;
       if (!cancelled) {
-        setContracts((data as any) ?? []);
+        setContracts((data as Contract[]) ?? []);
         setLoading(false);
       }
     }
@@ -86,11 +90,13 @@ export function ContractList({ tenantId, onSelect }: ContractListProps) {
       .channel('contracts-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'contracts' }, (payload) => {
         if (payload.eventType === 'INSERT') {
-          setContracts((prev) => [payload.new as any, ...prev]);
+          setContracts((prev) => [payload.new as Contract, ...prev]);
         } else if (payload.eventType === 'UPDATE') {
-          setContracts((prev) => prev.map((c) => (c.id === (payload.new as any).id ? payload.new as any : c)));
+          setContracts((prev) =>
+            prev.map((c) => (c.id === (payload.new as Contract).id ? (payload.new as Contract) : c))
+          );
         } else if (payload.eventType === 'DELETE') {
-          setContracts((prev) => prev.filter((c) => c.id !== (payload.old as any).id));
+          setContracts((prev) => prev.filter((c) => c.id !== (payload.old as Contract).id));
         }
       })
       .subscribe();
@@ -121,7 +127,9 @@ export function ContractList({ tenantId, onSelect }: ContractListProps) {
         >
           <option value="">All Status</option>
           {Object.entries(STATUS_LABELS).map(([key, label]) => (
-            <option key={key} value={key}>{label}</option>
+            <option key={key} value={key}>
+              {label}
+            </option>
           ))}
         </select>
       </div>
@@ -150,9 +158,18 @@ export function ContractList({ tenantId, onSelect }: ContractListProps) {
                 setSelectedId(c.id);
                 onSelect?.(c);
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setSelectedId(c.id);
+                  onSelect?.(c);
+                }
+              }}
+              tabIndex={0}
             >
               <td style={styles.td}>
-                <span style={{ ...styles.badge, backgroundColor: STATUS_COLORS[c.status] ?? '#e2e8f0' }}>
+                <span
+                  style={{ ...styles.badge, backgroundColor: STATUS_COLORS[c.status] ?? '#e2e8f0' }}
+                >
                   {STATUS_LABELS[c.status] ?? c.status}
                 </span>
               </td>
@@ -173,13 +190,53 @@ export function ContractList({ tenantId, onSelect }: ContractListProps) {
 
 const styles: Record<string, React.CSSProperties> = {
   controls: { display: 'flex', gap: '12px', marginBottom: '16px' },
-  searchInput: { flex: 1, padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px' },
-  filterSelect: { padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '14px', minWidth: '150px' },
-  table: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' },
-  th: { textAlign: 'left', padding: '12px 16px', backgroundColor: '#f7fafc', borderBottom: '2px solid #e2e8f0', fontSize: '13px', fontWeight: '600', color: '#4a5568', textTransform: 'uppercase' as const, letterSpacing: '0.5px' },
-  td: { padding: '12px 16px', borderBottom: '1px solid #f7fafc', fontSize: '14px', color: '#2d3748' },
+  searchInput: {
+    flex: 1,
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '4px',
+    fontSize: '14px',
+  },
+  filterSelect: {
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '4px',
+    fontSize: '14px',
+    minWidth: '150px',
+  },
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    background: 'white',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    border: '1px solid #e2e8f0',
+  },
+  th: {
+    textAlign: 'left',
+    padding: '12px 16px',
+    backgroundColor: '#f7fafc',
+    borderBottom: '2px solid #e2e8f0',
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#4a5568',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  },
+  td: {
+    padding: '12px 16px',
+    borderBottom: '1px solid #f7fafc',
+    fontSize: '14px',
+    color: '#2d3748',
+  },
   row: { transition: 'background-color 0.15s' },
-  badge: { display: 'inline-block', padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: '500' },
+  badge: {
+    display: 'inline-block',
+    padding: '4px 10px',
+    borderRadius: '12px',
+    fontSize: '12px',
+    fontWeight: '500',
+  },
   loading: { padding: '48px', textAlign: 'center', color: '#718096' },
   empty: { padding: '48px', textAlign: 'center', color: '#a0aec0', fontStyle: 'italic' },
 };

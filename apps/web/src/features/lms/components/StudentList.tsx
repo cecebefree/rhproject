@@ -53,18 +53,21 @@ export function StudentList({ tenantId, onSelect }: StudentListProps) {
         if (studentsError) {
           setError(studentsError.message);
         } else {
-          // biome-ignore lint/suspicious/noExplicitAny: Supabase join query returns complex nested types
-          const mapped = (data ?? []).map((row: any) => ({
-            id: row.profiles.id,
-            name: row.profiles.name,
-            curriculum: row.profiles.curriculum,
-            grade: row.profiles.grade,
-            stage: row.profiles.stage,
-            intake: row.profiles.intake,
-            class_id: row.class_id,
-            class_title: row.courses?.title,
-            enrolled_at: row.enrolled_at,
-          }));
+          const mapped = (data ?? []).map((row: Record<string, unknown>) => {
+            const profiles = row.profiles as Record<string, unknown>;
+            const courses = row.courses as Record<string, unknown> | null;
+            return {
+              id: profiles.id as string,
+              name: profiles.name as string,
+              curriculum: profiles.curriculum as string | undefined,
+              grade: profiles.grade as string | undefined,
+              stage: profiles.stage as string | undefined,
+              intake: profiles.intake as string | undefined,
+              class_id: row.class_id as string,
+              class_title: courses?.title as string | undefined,
+              enrolled_at: row.enrolled_at as string,
+            };
+          });
           setStudents(mapped);
         }
         setLoading(false);
@@ -133,7 +136,9 @@ export function StudentList({ tenantId, onSelect }: StudentListProps) {
         >
           <option value="">All Classes</option>
           {classes.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c}>
+              {c}
+            </option>
           ))}
         </select>
       </div>
@@ -144,6 +149,9 @@ export function StudentList({ tenantId, onSelect }: StudentListProps) {
             key={student.id}
             style={onSelect ? { ...styles.card, ...styles.cardClickable } : styles.card}
             onClick={onSelect ? () => onSelect(student) : undefined}
+            onKeyDown={onSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(student); } } : undefined}
+            role={onSelect ? 'button' : undefined}
+            tabIndex={onSelect ? 0 : undefined}
           >
             <div style={styles.cardHeader}>
               <span style={styles.cardTitle}>{student.name}</span>

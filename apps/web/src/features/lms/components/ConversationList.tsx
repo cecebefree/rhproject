@@ -1,7 +1,7 @@
 // ConversationList — list of conversations with last message preview
 
-import { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase';
+import { useEffect, useState } from 'react';
+import { supabaseUntyped as supabase } from '../services/supabase';
 
 interface Conversation {
   id: string;
@@ -29,7 +29,7 @@ export function ConversationList({ onSelect, selectedId }: ConversationListProps
     setLoading(true);
 
     const { data: convs } = await supabase
-      .from('conversations' as any)
+      .from('conversations' as never)
       .select('id, category, created_at')
       .order('created_at', { ascending: false });
 
@@ -40,9 +40,9 @@ export function ConversationList({ onSelect, selectedId }: ConversationListProps
     }
 
     const enriched = await Promise.all(
-      (convs as any[]).map(async (c) => {
+      (convs as Array<Record<string, unknown>>).map(async (c) => {
         const { data: lastMsg } = await supabase
-          .from('messages' as any)
+          .from('messages' as never)
           .select('body, created_at')
           .eq('conversation_id', c.id)
           .is('deleted_at', null)
@@ -51,21 +51,23 @@ export function ConversationList({ onSelect, selectedId }: ConversationListProps
           .single();
 
         const { count } = await supabase
-          .from('conversation_members' as any)
+          .from('conversation_members' as never)
           .select('*', { count: 'exact', head: true })
           .eq('conversation_id', c.id);
 
         return {
           ...c,
-          last_message: (lastMsg as any)?.body ?? 'No messages yet',
-          last_message_at: (lastMsg as any)?.created_at ?? c.created_at,
+          last_message: (lastMsg as { body?: string })?.body ?? 'No messages yet',
+          last_message_at: (lastMsg as { created_at?: string })?.created_at ?? c.created_at,
           member_count: count ?? 0,
         };
       })
     );
 
-    enriched.sort((a, b) => new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime());
-    setConversations(enriched);
+    enriched.sort(
+      (a, b) => new Date(b.last_message_at as string).getTime() - new Date(a.last_message_at as string).getTime()
+    );
+    setConversations(enriched as Conversation[]);
     setLoading(false);
   }
 
@@ -75,9 +77,17 @@ export function ConversationList({ onSelect, selectedId }: ConversationListProps
 
   return (
     <div className="border-r" style={{ width: '320px', borderColor: 'rgba(195,199,204,0.3)' }}>
-      <div className="p-3 border-b flex justify-between items-center" style={{ borderColor: 'rgba(195,199,204,0.3)' }}>
-        <span className="text-sm font-semibold" style={{ color: '#273946' }}>Chats</span>
-        <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: '#f0f0f0', color: '#54626C' }}>
+      <div
+        className="p-3 border-b flex justify-between items-center"
+        style={{ borderColor: 'rgba(195,199,204,0.3)' }}
+      >
+        <span className="text-sm font-semibold" style={{ color: '#273946' }}>
+          Chats
+        </span>
+        <span
+          className="text-xs px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: '#f0f0f0', color: '#54626C' }}
+        >
           {conversations.length}
         </span>
       </div>
@@ -87,7 +97,7 @@ export function ConversationList({ onSelect, selectedId }: ConversationListProps
           <div className="p-4 text-sm text-gray-500 text-center">No conversations yet</div>
         ) : (
           conversations.map((c) => (
-            <button
+            <button type="button"
               key={c.id}
               onClick={() => onSelect(c.id)}
               className={`w-full text-left px-3 py-3 border-b transition-colors ${
@@ -96,8 +106,10 @@ export function ConversationList({ onSelect, selectedId }: ConversationListProps
               style={{ borderColor: 'rgba(195,199,204,0.2)' }}
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0"
-                  style={{ backgroundColor: '#273946' }}>
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-medium shrink-0"
+                  style={{ backgroundColor: '#273946' }}
+                >
                   {c.category?.charAt(0)?.toUpperCase() ?? 'C'}
                 </div>
                 <div className="flex-1 min-w-0">

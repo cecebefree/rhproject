@@ -1,7 +1,7 @@
 // MobileNav — Hamburger menu and bottom tab bar for mobile (Row 6)
 
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface NavItem {
   id: string;
@@ -22,7 +22,7 @@ export function MobileNav({ items, activeTab, onTabChange, showBottomBar = true 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close menu on route change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: location.pathname is the trigger for re-running this effect on navigation
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
@@ -50,7 +50,7 @@ export function MobileNav({ items, activeTab, onTabChange, showBottomBar = true 
   return (
     <>
       {/* Hamburger Button - Fixed top left on mobile */}
-      <button
+      <button type="button"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
         style={{
           position: 'fixed',
@@ -111,6 +111,7 @@ export function MobileNav({ items, activeTab, onTabChange, showBottomBar = true 
             zIndex: 999,
           }}
           onClick={() => setIsMenuOpen(false)}
+          onKeyPress={(e) => { if (e.key === 'Escape') setIsMenuOpen(false); }}
         />
       )}
 
@@ -139,9 +140,7 @@ export function MobileNav({ items, activeTab, onTabChange, showBottomBar = true 
             backgroundColor: '#f7fafc',
           }}
         >
-          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#2d3748' }}>
-            Menu
-          </h2>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#2d3748' }}>Menu</h2>
         </div>
 
         {/* Menu Items */}
@@ -149,7 +148,7 @@ export function MobileNav({ items, activeTab, onTabChange, showBottomBar = true 
           {items.map((item) => {
             const isActive = activeTab === item.id || location.pathname.includes(item.path);
             return (
-              <button
+              <button type="button"
                 key={item.id}
                 onClick={() => handleItemClick(item)}
                 style={{
@@ -210,7 +209,7 @@ export function MobileNav({ items, activeTab, onTabChange, showBottomBar = true 
           {items.slice(0, 5).map((item) => {
             const isActive = activeTab === item.id || location.pathname.includes(item.path);
             return (
-              <button
+              <button type="button"
                 key={item.id}
                 onClick={() => handleItemClick(item)}
                 style={{

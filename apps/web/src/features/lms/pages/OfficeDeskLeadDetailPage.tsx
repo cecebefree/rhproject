@@ -1,7 +1,7 @@
 // Office Desk — Lead Detail (child route of OfficeDeskPage)
 // Renders LeadDetail for a specific lead
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { DeskBreadcrumb } from '../../../components/DeskBreadcrumb';
 import { ShareButton } from '../../../components/ShareButton';
@@ -49,7 +49,13 @@ export default function OfficeDeskLeadDetailPage() {
         <DeskBreadcrumb deskName="Office Desk" tabLabel="Leads" />
         <ShareButton entityType="lead" entityName="Lead" />
       </div>
-      <LeadDetail leadId={leadId} deskId={deskId} userId={userId} onBack={handleBack} onArchived={handleArchived} />
+      <LeadDetail
+        leadId={leadId}
+        deskId={deskId}
+        userId={userId}
+        onBack={handleBack}
+        onArchived={handleArchived}
+      />
     </div>
   );
 }

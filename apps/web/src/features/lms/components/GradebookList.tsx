@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
+  type Assignment,
+  type Gradebook,
   selectAssignments,
   selectGradebook,
   subscribeToAssignments,
   subscribeToGradebook,
-  type Assignment,
-  type Gradebook,
 } from '../services/supabase';
 
 interface GradebookListProps {
@@ -43,10 +43,12 @@ export function GradebookList({
   const [search, setSearch] = useState('');
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId/userId trigger data load
   useEffect(() => {
     loadData();
   }, [tenantId, userId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId triggers subscription setup
   useEffect(() => {
     const assignmentsSub = subscribeToAssignments((payload) => {
       if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
@@ -87,7 +89,7 @@ export function GradebookList({
             .from('school_desk.programs')
             .select('id, title')
             .eq('teacher_id', userId)
-            .in('status', ['published', 'active']),
+            .in('status', ['published', 'active'])
         ),
         selectAssignments(tenantId),
         selectGradebook(tenantId),
@@ -96,8 +98,8 @@ export function GradebookList({
       setPrograms(programsResult.data || []);
       setAssignments(assignmentsResult.data || []);
       setGradebook(gradebookResult.data || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load data');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -110,9 +112,7 @@ export function GradebookList({
 
     return filteredCourses.map((course) => {
       const courseAssignments = assignments.filter((a) => a.course_id === course.id);
-      const courseGrades = gradebook.filter(
-        (g) => g.course_id === course.id && g.score !== null,
-      );
+      const courseGrades = gradebook.filter((g) => g.course_id === course.id && g.score !== null);
 
       const scores = courseGrades.map((g) => {
         const assignment = assignments.find((a) => a.id === g.assignment_id);
@@ -130,10 +130,8 @@ export function GradebookList({
           validScores.length > 0
             ? Math.round(validScores.reduce((a, b) => a + b, 0) / validScores.length)
             : null,
-        highScore:
-          validScores.length > 0 ? Math.round(Math.max(...validScores)) : null,
-        lowScore:
-          validScores.length > 0 ? Math.round(Math.min(...validScores)) : null,
+        highScore: validScores.length > 0 ? Math.round(Math.max(...validScores)) : null,
+        lowScore: validScores.length > 0 ? Math.round(Math.min(...validScores)) : null,
         gradedCount: courseGrades.length,
       };
     });
@@ -141,9 +139,7 @@ export function GradebookList({
 
   const courseSummaries = getCourseSummary();
   const filteredSummaries = search
-    ? courseSummaries.filter((c) =>
-        c.courseTitle.toLowerCase().includes(search.toLowerCase()),
-      )
+    ? courseSummaries.filter((c) => c.courseTitle.toLowerCase().includes(search.toLowerCase()))
     : courseSummaries;
 
   if (loading) {
@@ -159,13 +155,13 @@ export function GradebookList({
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-gray-900">Gradebook</h2>
         <div className="space-x-2">
-          <button
+          <button type="button"
             onClick={onCreateAssignment}
             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             + Create Assignment
           </button>
-          <button
+          <button type="button"
             onClick={onEnterGrades}
             className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
@@ -273,7 +269,7 @@ export function GradebookList({
                     {summary.gradedCount}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    <button
+                    <button type="button"
                       onClick={() => onSelectCourse(summary.courseId)}
                       className="text-indigo-600 hover:text-indigo-900"
                     >

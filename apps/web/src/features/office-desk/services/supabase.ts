@@ -70,7 +70,14 @@ export interface InvoiceWithItems extends Invoice {
   lead?: { id: string; name: string | null; email: string | null } | null;
 }
 
-export const INVOICE_STATUSES: InvoiceStatus[] = ['draft', 'sent', 'paid', 'overdue', 'cancelled', 'void'];
+export const INVOICE_STATUSES: InvoiceStatus[] = [
+  'draft',
+  'sent',
+  'paid',
+  'overdue',
+  'cancelled',
+  'void',
+];
 
 export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   draft: 'Draft',
@@ -85,7 +92,11 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
 // INVOICE QUERIES
 // ═══════════════════════════════════════════════════════════
 
-export async function selectInvoices(tenantId: string, search?: string, statusFilter?: InvoiceStatus) {
+export async function selectInvoices(
+  tenantId: string,
+  search?: string,
+  statusFilter?: InvoiceStatus
+) {
   let query = supabase
     .from('office_desk.invoices')
     .select('*, lead:front_desk.leads(id, name, email)')
@@ -147,7 +158,20 @@ export async function insertInvoice(invoice: {
 
 export async function updateInvoice(
   invoiceId: string,
-  updates: Partial<Pick<Invoice, 'lead_id' | 'invoice_number' | 'amount' | 'amount_paid' | 'currency' | 'description' | 'status' | 'due_date' | 'issued_at'>>
+  updates: Partial<
+    Pick<
+      Invoice,
+      | 'lead_id'
+      | 'invoice_number'
+      | 'amount'
+      | 'amount_paid'
+      | 'currency'
+      | 'description'
+      | 'status'
+      | 'due_date'
+      | 'issued_at'
+    >
+  >
 ) {
   return supabase
     .from('office_desk.invoices')
@@ -241,7 +265,12 @@ export function subscribeToInvoiceItems(
     .channel(`office_desk.invoice_items-${invoiceId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'invoice_items', filter: `invoice_id=eq.${invoiceId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'invoice_items',
+        filter: `invoice_id=eq.${invoiceId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
@@ -251,7 +280,12 @@ export function subscribeToInvoiceItems(
 // EDGE FUNCTION CALLS
 // ═══════════════════════════════════════════════════════════
 
-export async function sendInvoiceEmail(invoiceId: string, recipientEmail?: string, subject?: string, body?: string) {
+export async function sendInvoiceEmail(
+  invoiceId: string,
+  recipientEmail?: string,
+  subject?: string,
+  body?: string
+) {
   const { data, error } = await supabase.functions.invoke('send-invoice-email', {
     body: { invoice_id: invoiceId, recipient_email: recipientEmail, subject, body },
   });
@@ -327,7 +361,10 @@ export interface StripeCustomer {
   updated_at: string;
 }
 
-export const PLAN_LABELS: Record<PlanId, { name: string; priceMonthly: number; priceYearly: number }> = {
+export const PLAN_LABELS: Record<
+  PlanId,
+  { name: string; priceMonthly: number; priceYearly: number }
+> = {
   starter: { name: 'Starter', priceMonthly: 99, priceYearly: 990 },
   pro: { name: 'Pro', priceMonthly: 299, priceYearly: 2990 },
   enterprise: { name: 'Enterprise', priceMonthly: 999, priceYearly: 9990 },
@@ -362,11 +399,7 @@ export async function selectSubscriptions(tenantId: string) {
 }
 
 export async function getSubscriptionById(subscriptionId: string) {
-  return supabase
-    .from('office_desk.subscriptions')
-    .select('*')
-    .eq('id', subscriptionId)
-    .single();
+  return supabase.from('office_desk.subscriptions').select('*').eq('id', subscriptionId).single();
 }
 
 export async function updateSubscription(
@@ -585,7 +618,9 @@ export async function getPaymentById(paymentId: string) {
 }
 
 export async function confirmPaymentManual(paymentId: string, notes?: string) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const res = await fetch(`${SUPABASE_URL}/functions/v1/confirm-payment-manual`, {
     method: 'POST',
     headers: {
@@ -598,8 +633,14 @@ export async function confirmPaymentManual(paymentId: string, notes?: string) {
   return res.json();
 }
 
-export async function refundPayment(paymentId: string, refundReason: string, refundAmount?: number) {
-  const { data: { session } } = await supabase.auth.getSession();
+export async function refundPayment(
+  paymentId: string,
+  refundReason: string,
+  refundAmount?: number
+) {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const res = await fetch(`${SUPABASE_URL}/functions/v1/refund-payment`, {
     method: 'POST',
     headers: {
@@ -607,13 +648,19 @@ export async function refundPayment(paymentId: string, refundReason: string, ref
       Authorization: `Bearer ${session?.access_token || ''}`,
       apikey: SUPABASE_ANON_KEY,
     },
-    body: JSON.stringify({ payment_id: paymentId, refund_reason: refundReason, refund_amount: refundAmount }),
+    body: JSON.stringify({
+      payment_id: paymentId,
+      refund_reason: refundReason,
+      refund_amount: refundAmount,
+    }),
   });
   return res.json();
 }
 
 export async function retryPayment(paymentId: string, newToken?: string) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const res = await fetch(`${SUPABASE_URL}/functions/v1/retry-payment`, {
     method: 'POST',
     headers: {

@@ -2,11 +2,7 @@
 // Row 92 — Registration form with client-side validation + payment method selection
 
 import { useState } from 'react';
-import type {
-  RegistrationFormValues,
-  RegistrationFormErrors,
-  PaymentMethod,
-} from './types';
+import type { PaymentMethod, RegistrationFormErrors, RegistrationFormValues } from './types';
 import { INITIAL_FORM_VALUES } from './types';
 
 interface RegistrationFormProps {
@@ -36,7 +32,7 @@ function validate(values: RegistrationFormValues): RegistrationFormErrors {
     const dob = new Date(values.child_dob);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (isNaN(dob.getTime())) {
+    if (Number.isNaN(dob.getTime())) {
       errors.child_dob = 'Enter a valid date';
     } else if (dob >= today) {
       errors.child_dob = 'Date of birth must be in the past';
@@ -202,8 +198,8 @@ export default function RegistrationForm({ onSubmit, serverError }: Registration
             placeholder="50"
             value={values.amount_cents || ''}
             onChange={(e) => {
-              const dollars = parseFloat(e.target.value);
-              handleChange('amount_cents', isNaN(dollars) ? 0 : Math.round(dollars * 100));
+              const dollars = Number.parseFloat(e.target.value);
+              handleChange('amount_cents', Number.isNaN(dollars) ? 0 : Math.round(dollars * 100));
             }}
             onBlur={() => handleBlur('amount_cents')}
             style={
@@ -220,12 +216,10 @@ export default function RegistrationForm({ onSubmit, serverError }: Registration
 
       {/* Payment Method */}
       <div style={styles.field}>
-        <label style={styles.label}>Payment Method</label>
+        <span style={styles.label}>Payment Method</span>
         <div style={styles.radioGroup}>
           <label
-            style={
-              values.payment_method === 'stripe' ? styles.radioCardActive : styles.radioCard
-            }
+            style={values.payment_method === 'stripe' ? styles.radioCardActive : styles.radioCard}
           >
             <input
               type="radio"
@@ -242,9 +236,7 @@ export default function RegistrationForm({ onSubmit, serverError }: Registration
           </label>
 
           <label
-            style={
-              values.payment_method === 'paypal' ? styles.radioCardActive : styles.radioCard
-            }
+            style={values.payment_method === 'paypal' ? styles.radioCardActive : styles.radioCard}
           >
             <input
               type="radio"
@@ -266,8 +258,7 @@ export default function RegistrationForm({ onSubmit, serverError }: Registration
       </div>
 
       {/* Submit */}
-      <button
-        type="submit"
+      <button type="submit"
         disabled={submitting || formValid}
         style={submitting || formValid ? styles.submitDisabled : styles.submit}
       >

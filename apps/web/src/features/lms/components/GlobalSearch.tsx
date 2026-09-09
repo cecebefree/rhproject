@@ -1,8 +1,8 @@
 // GlobalSearch — search across students, leads, payments, registrations, contracts
 
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabase';
+import { supabaseUntyped as supabase } from '../services/supabase';
 
 interface SearchResult {
   id: string;
@@ -64,30 +64,30 @@ export function GlobalSearch() {
       .or(`first_name.ilike.%${q}%,last_name.ilike.%${q}%`)
       .limit(5);
 
-    return ((data ?? []) as any[]).map((s: any) => ({
-      id: s.id,
+    return ((data ?? []) as Record<string, unknown>[]).map((s) => ({
+      id: s.id as string,
       type: 'student' as const,
       title: `${s.first_name} ${s.last_name}`,
-      subtitle: s.enrollment_status || 'No status',
-      status: s.enrollment_status,
+      subtitle: (s.enrollment_status as string) || 'No status',
+      status: s.enrollment_status as string | undefined,
       route: `/service/school-desk/student/${s.id}`,
     }));
   }
 
   async function searchLeads(q: string): Promise<SearchResult[]> {
-    const { data } = await (supabase as any)
+    const { data } = await (supabase as unknown as { schema: (name: string) => typeof supabase })
       .schema('front_desk')
       .from('leads')
       .select('id, name, email, status')
       .or(`name.ilike.%${q}%,email.ilike.%${q}%`)
       .limit(5);
 
-    return ((data ?? []) as any[]).map((l: any) => ({
-      id: l.id,
+    return ((data ?? []) as Record<string, unknown>[]).map((l) => ({
+      id: l.id as string,
       type: 'lead' as const,
-      title: l.name || 'Unnamed Lead',
-      subtitle: l.email || 'No email',
-      status: l.status,
+      title: (l.name as string) || 'Unnamed Lead',
+      subtitle: (l.email as string) || 'No email',
+      status: l.status as string | undefined,
       route: `/service/front-desk/lead/${l.id}`,
     }));
   }
@@ -99,48 +99,48 @@ export function GlobalSearch() {
       .ilike('payment_type', `%${q}%`)
       .limit(5);
 
-    return ((data ?? []) as any[]).map((p: any) => ({
-      id: p.id,
+    return ((data ?? []) as Record<string, unknown>[]).map((p) => ({
+      id: p.id as string,
       type: 'payment' as const,
-      title: `R ${p.amount.toFixed(2)}`,
-      subtitle: `${p.payment_type} — ${new Date(p.created_at).toLocaleDateString()}`,
-      status: p.status,
+      title: `R ${(p.amount as number).toFixed(2)}`,
+      subtitle: `${p.payment_type} — ${new Date(p.created_at as string).toLocaleDateString()}`,
+      status: p.status as string | undefined,
       route: `/service/school-desk/student/${p.student_id}`,
     }));
   }
 
   async function searchRegistrations(q: string): Promise<SearchResult[]> {
-    const { data } = await (supabase as any)
+    const { data } = await (supabase as unknown as { schema: (name: string) => typeof supabase })
       .schema('office_desk')
       .from('registrations')
       .select('id, student_name, student_email, status')
       .or(`student_name.ilike.%${q}%,student_email.ilike.%${q}%`)
       .limit(5);
 
-    return ((data ?? []) as any[]).map((r: any) => ({
-      id: r.id,
+    return ((data ?? []) as Record<string, unknown>[]).map((r) => ({
+      id: r.id as string,
       type: 'registration' as const,
-      title: r.student_name || 'Unnamed',
-      subtitle: r.student_email || 'No email',
-      status: r.status,
-      route: `/service/office-desk/registrations`,
+      title: (r.student_name as string) || 'Unnamed',
+      subtitle: (r.student_email as string) || 'No email',
+      status: r.status as string | undefined,
+      route: '/service/office-desk/registrations',
     }));
   }
 
   async function searchContracts(q: string): Promise<SearchResult[]> {
     const { data } = await supabase
-      .from('contracts' as any)
+      .from('contracts' as unknown as never)
       .select('id, title, status')
       .ilike('title', `%${q}%`)
       .limit(5);
 
-    return ((data ?? []) as any[]).map((c: any) => ({
-      id: c.id,
+    return ((data ?? []) as Record<string, unknown>[]).map((c) => ({
+      id: c.id as string,
       type: 'contract' as const,
-      title: c.title,
+      title: c.title as string,
       subtitle: 'Contract',
-      status: c.status,
-      route: `/service/office-desk/contracts`,
+      status: c.status as string | undefined,
+      route: '/service/office-desk/contracts',
     }));
   }
 
@@ -166,16 +166,17 @@ export function GlobalSearch() {
         type="text"
         placeholder="Search students, leads, payments..."
         value={query}
-        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
         onFocus={() => setOpen(true)}
         className="w-80 px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
       {open && query.length >= 2 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-          {loading && (
-            <div className="p-4 text-center text-sm text-gray-500">Searching...</div>
-          )}
+          {loading && <div className="p-4 text-center text-sm text-gray-500">Searching...</div>}
 
           {!loading && results.length === 0 && (
             <div className="p-4 text-center text-sm text-gray-500">No results found</div>
@@ -184,7 +185,7 @@ export function GlobalSearch() {
           {!loading && results.length > 0 && (
             <div className="py-2">
               {results.map((r) => (
-                <button
+                <button type="button"
                   key={`${r.type}-${r.id}`}
                   onClick={() => handleSelect(r)}
                   className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3"

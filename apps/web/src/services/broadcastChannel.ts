@@ -7,9 +7,27 @@ export type BroadcastMessage =
   | { type: 'LEAD_UPDATED'; leadId: string; tenantId: string; updatedBy: string; timestamp: string }
   | { type: 'LEAD_CREATED'; leadId: string; tenantId: string; createdBy: string; timestamp: string }
   | { type: 'LEAD_DELETED'; leadId: string; tenantId: string; deletedBy: string; timestamp: string }
-  | { type: 'INVOICE_UPDATED'; invoiceId: string; tenantId: string; updatedBy: string; timestamp: string }
-  | { type: 'INVOICE_CREATED'; invoiceId: string; tenantId: string; createdBy: string; timestamp: string }
-  | { type: 'INVOICE_DELETED'; invoiceId: string; tenantId: string; deletedBy: string; timestamp: string }
+  | {
+      type: 'INVOICE_UPDATED';
+      invoiceId: string;
+      tenantId: string;
+      updatedBy: string;
+      timestamp: string;
+    }
+  | {
+      type: 'INVOICE_CREATED';
+      invoiceId: string;
+      tenantId: string;
+      createdBy: string;
+      timestamp: string;
+    }
+  | {
+      type: 'INVOICE_DELETED';
+      invoiceId: string;
+      tenantId: string;
+      deletedBy: string;
+      timestamp: string;
+    }
   | { type: 'SYNC_REQUEST'; table: string; tenantId: string; timestamp: string }
   | { type: 'SYNC_RESPONSE'; table: string; tenantId: string; timestamp: string }
   | { type: 'USER_STATUS'; userId: string; status: 'online' | 'offline'; timestamp: string };
@@ -34,10 +52,15 @@ export class BroadcastChannelManager {
       this.channel.onmessage = (event) => {
         const message = event.data as BroadcastMessage;
         // Ignore messages from self
-        if (message.type === 'USER_STATUS' && (message as { userId: string }).userId === this.userId) {
+        if (
+          message.type === 'USER_STATUS' &&
+          (message as { userId: string }).userId === this.userId
+        ) {
           return;
         }
-        this.callbacks.forEach(cb => cb(message));
+        for (const cb of this.callbacks) {
+          cb(message);
+        }
       };
 
       // Announce presence

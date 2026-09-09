@@ -1,9 +1,9 @@
 // TwoFactorSetupModal — 3-step wizard for 2FA setup
 
-import { useState, useCallback, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
-import { useTwoFactorSetup } from '../../../hooks/useTwoFactor';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useResponsive } from '../../../components/MobileNav';
+import { useTwoFactorSetup } from '../../../hooks/useTwoFactor';
 
 interface TwoFactorSetupModalProps {
   isOpen: boolean;
@@ -130,6 +130,7 @@ export function TwoFactorSetupModal({
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
+      onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}
     >
       <div
         className={`bg-white rounded-lg shadow-xl ${
@@ -143,7 +144,7 @@ export function TwoFactorSetupModal({
             {currentStep === 2 && 'Verify Code'}
             {currentStep === 3 && 'Save Backup Codes'}
           </h3>
-          <button
+          <button type="button"
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
           >
@@ -164,13 +165,14 @@ export function TwoFactorSetupModal({
             <div className="text-center">
               {loading ? (
                 <div className="py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
                   <p className="mt-4 text-sm text-gray-500">Generating QR code...</p>
                 </div>
               ) : (
                 <>
                   <p className="text-sm text-gray-600 mb-4">
-                    Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)
+                    Scan this QR code with your authenticator app (Google Authenticator, Authy,
+                    etc.)
                   </p>
 
                   {qrCodeDataUrl && (
@@ -192,7 +194,7 @@ export function TwoFactorSetupModal({
                     </div>
                   </div>
 
-                  <button
+                  <button type="button"
                     onClick={() => setCurrentStep(2)}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                   >
@@ -223,7 +225,7 @@ export function TwoFactorSetupModal({
                 />
               </div>
 
-              <button
+              <button type="button"
                 onClick={handleVerifyTotp}
                 disabled={totpCode.length !== 6 || loading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -247,9 +249,9 @@ export function TwoFactorSetupModal({
 
               <div className="bg-gray-50 p-4 rounded-md mb-4">
                 <div className="grid grid-cols-2 gap-2">
-                  {setupResult.backupCodes.map((code, index) => (
+                  {setupResult.backupCodes.map((code) => (
                     <div
-                      key={index}
+                      key={code}
                       className="font-mono text-sm bg-white p-2 rounded border border-gray-200"
                     >
                       {code}
@@ -259,7 +261,7 @@ export function TwoFactorSetupModal({
               </div>
 
               <div className="flex gap-2 mb-4">
-                <button
+                <button type="button"
                   onClick={handleCopyCodes}
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
                 >
@@ -277,7 +279,7 @@ export function TwoFactorSetupModal({
                 <span className="text-sm text-gray-700">I&apos;ve saved these backup codes</span>
               </label>
 
-              <button
+              <button type="button"
                 onClick={handleComplete}
                 disabled={!codesSaved}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -298,8 +300,8 @@ export function TwoFactorSetupModal({
                   step === currentStep
                     ? 'bg-blue-600'
                     : step < currentStep
-                    ? 'bg-green-500'
-                    : 'bg-gray-300'
+                      ? 'bg-green-500'
+                      : 'bg-gray-300'
                 }`}
               />
             ))}

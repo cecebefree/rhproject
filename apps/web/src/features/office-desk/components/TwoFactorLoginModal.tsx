@@ -1,8 +1,8 @@
 // TwoFactorLoginModal — TOTP/backup code entry during login
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useTwoFactorVerify } from '../../../hooks/useTwoFactor';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useResponsive } from '../../../components/MobileNav';
+import { useTwoFactorVerify } from '../../../hooks/useTwoFactor';
 
 interface TwoFactorLoginModalProps {
   isOpen: boolean;
@@ -27,6 +27,7 @@ export function TwoFactorLoginModal({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus input when modal opens or mode changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: isOpen/inputMode trigger focus
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus();
@@ -104,6 +105,7 @@ export function TwoFactorLoginModal({
       onClick={(e) => {
         if (e.target === e.currentTarget) handleClose();
       }}
+      onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}
     >
       <div
         className={`bg-white rounded-lg shadow-xl ${
@@ -113,7 +115,7 @@ export function TwoFactorLoginModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Two-Factor Authentication</h3>
-          <button
+          <button type="button"
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
           >
@@ -154,7 +156,7 @@ export function TwoFactorLoginModal({
                 />
               </div>
 
-              <button
+              <button type="button"
                 onClick={handleVerifyTotp}
                 disabled={totpCode.length !== 6 || loading}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -162,7 +164,7 @@ export function TwoFactorLoginModal({
                 {loading ? 'Verifying...' : 'Verify'}
               </button>
 
-              <button
+              <button type="button"
                 onClick={toggleMode}
                 className="mt-4 text-sm text-blue-600 hover:text-blue-800"
               >
@@ -178,9 +180,7 @@ export function TwoFactorLoginModal({
                 <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <span className="text-2xl">🔑</span>
                 </div>
-                <p className="text-sm text-gray-600">
-                  Enter one of your backup codes
-                </p>
+                <p className="text-sm text-gray-600">Enter one of your backup codes</p>
               </div>
 
               <div className="mb-4">
@@ -195,7 +195,7 @@ export function TwoFactorLoginModal({
                 />
               </div>
 
-              <button
+              <button type="button"
                 onClick={handleVerifyBackup}
                 disabled={!backupCode.trim() || loading}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
@@ -203,7 +203,7 @@ export function TwoFactorLoginModal({
                 {loading ? 'Verifying...' : 'Verify Backup Code'}
               </button>
 
-              <button
+              <button type="button"
                 onClick={toggleMode}
                 className="mt-4 text-sm text-blue-600 hover:text-blue-800"
               >

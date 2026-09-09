@@ -3,7 +3,11 @@
  * Handles subscription lifecycle, error recovery, and cleanup.
  */
 
-import type { SupabaseClient, RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+  SupabaseClient,
+} from '@supabase/supabase-js';
 
 export type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*';
 
@@ -60,17 +64,11 @@ export class RealtimeClient {
     const { event = '*', schema, table, filter } = options;
     const id = generateSubscriptionId(schema, table);
 
-    const channelName = filter
-      ? `${schema}.${table}-${filter}`
-      : `${schema}.${table}-${id}`;
+    const channelName = filter ? `${schema}.${table}-${filter}` : `${schema}.${table}-${id}`;
 
     const channel = this.supabase
       .channel(channelName)
-      .on(
-        'postgres_changes',
-        { event, schema, table, filter },
-        callback as PayloadCallback
-      )
+      .on('postgres_changes', { event, schema, table, filter }, callback as PayloadCallback)
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR') {
           console.error(`[RealtimeClient] Subscription ${id} error on ${schema}.${table}`);
@@ -94,10 +92,7 @@ export class RealtimeClient {
   /**
    * Subscribe to all changes on the leads table for a specific desk (tenant).
    */
-  subscribeToLeads(
-    tenantId: string,
-    callback: PayloadCallback
-  ): string {
+  subscribeToLeads(tenantId: string, callback: PayloadCallback): string {
     return this.subscribe(
       { schema: 'front_desk', table: 'leads', filter: `tenant_id=eq.${tenantId}` },
       callback
@@ -107,10 +102,7 @@ export class RealtimeClient {
   /**
    * Subscribe to all changes on the invoices table for a specific tenant.
    */
-  subscribeToInvoices(
-    tenantId: string,
-    callback: PayloadCallback
-  ): string {
+  subscribeToInvoices(tenantId: string, callback: PayloadCallback): string {
     return this.subscribe(
       { schema: 'office_desk', table: 'invoices', filter: `tenant_id=eq.${tenantId}` },
       callback
@@ -120,10 +112,7 @@ export class RealtimeClient {
   /**
    * Subscribe to changes on a single lead record.
    */
-  subscribeToLead(
-    leadId: string,
-    callback: PayloadCallback
-  ): string {
+  subscribeToLead(leadId: string, callback: PayloadCallback): string {
     return this.subscribe(
       { schema: 'front_desk', table: 'leads', filter: `id=eq.${leadId}` },
       callback
@@ -133,10 +122,7 @@ export class RealtimeClient {
   /**
    * Subscribe to changes on a single invoice record.
    */
-  subscribeToInvoice(
-    invoiceId: string,
-    callback: PayloadCallback
-  ): string {
+  subscribeToInvoice(invoiceId: string, callback: PayloadCallback): string {
     return this.subscribe(
       { schema: 'office_desk', table: 'invoices', filter: `id=eq.${invoiceId}` },
       callback
@@ -185,12 +171,14 @@ export class RealtimeClient {
     const baseDelay = 1000;
 
     if (attempt > maxAttempts) {
-      console.error(`[RealtimeClient] Subscription ${subscriptionId} failed after ${maxAttempts} attempts`);
+      console.error(
+        `[RealtimeClient] Subscription ${subscriptionId} failed after ${maxAttempts} attempts`
+      );
       this.subscriptions.delete(subscriptionId);
       return;
     }
 
-    const delay = baseDelay * Math.pow(2, attempt - 1);
+    const delay = baseDelay * 2 ** (attempt - 1);
 
     setTimeout(() => {
       const info = this.subscriptions.get(subscriptionId);

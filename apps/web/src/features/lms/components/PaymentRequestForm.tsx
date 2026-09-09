@@ -2,7 +2,7 @@
 // Row 72: Teacher workflow - select registration, enter amount, generate payment link
 
 import { useEffect, useState } from 'react';
-import { supabaseUntyped, createPaymentSession } from '../services/supabase';
+import { createPaymentSession, supabaseUntyped } from '../services/supabase';
 
 interface Registration {
   id: string;
@@ -67,7 +67,7 @@ export function PaymentRequestForm({
 
     const { data, error: createError } = await createPaymentSession({
       registration_id: registrationId,
-      amount: parseFloat(amount),
+      amount: Number.parseFloat(amount),
       currency,
       description: description || undefined,
     });
@@ -98,18 +98,15 @@ export function PaymentRequestForm({
             <code style={styles.url}>{paymentUrl}</code>
           </div>
           <div style={styles.buttonRow}>
-            <button onClick={handleCopyLink} style={styles.copyButton}>
+            <button type="button" onClick={handleCopyLink} style={styles.copyButton}>
               Copy Link
             </button>
-            <button
-              onClick={() => window.open(paymentUrl, '_blank')}
-              style={styles.openButton}
-            >
+            <button type="button" onClick={() => window.open(paymentUrl, '_blank')} style={styles.openButton}>
               Open in New Tab
             </button>
           </div>
         </div>
-        <button
+        <button type="button"
           onClick={() => {
             setPaymentUrl(null);
             setRegistrationId('');
@@ -127,19 +124,18 @@ export function PaymentRequestForm({
   return (
     <div style={styles.card}>
       <h2 style={styles.title}>Create Payment Request</h2>
-      <p style={styles.description}>
-        Generate a Stripe payment link for a student registration.
-      </p>
+      <p style={styles.description}>Generate a Stripe payment link for a student registration.</p>
 
       {error && <div style={styles.error}>{error}</div>}
 
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.field}>
-          <label style={styles.label}>Registration *</label>
+          <label htmlFor="payment-registration" style={styles.label}>Registration *</label>
           {loadingRegistrations ? (
             <div style={styles.loadingText}>Loading registrations...</div>
           ) : (
             <select
+              id="payment-registration"
               value={registrationId}
               onChange={(e) => setRegistrationId(e.target.value)}
               required
@@ -157,8 +153,9 @@ export function PaymentRequestForm({
 
         <div style={styles.row}>
           <div style={styles.field}>
-            <label style={styles.label}>Amount *</label>
+            <label htmlFor="payment-amount" style={styles.label}>Amount *</label>
             <input
+              id="payment-amount"
               type="number"
               step="0.01"
               min="0.01"
@@ -170,8 +167,9 @@ export function PaymentRequestForm({
             />
           </div>
           <div style={styles.field}>
-            <label style={styles.label}>Currency *</label>
+            <label htmlFor="payment-currency" style={styles.label}>Currency *</label>
             <select
+              id="payment-currency"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
               style={styles.select}
@@ -185,8 +183,9 @@ export function PaymentRequestForm({
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Description (optional)</label>
+          <label htmlFor="payment-description" style={styles.label}>Description (optional)</label>
           <input
+            id="payment-description"
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
@@ -201,8 +200,7 @@ export function PaymentRequestForm({
               Cancel
             </button>
           )}
-          <button
-            type="submit"
+          <button type="submit"
             disabled={loading || loadingRegistrations}
             style={styles.submitButton}
           >

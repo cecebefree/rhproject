@@ -1,4 +1,4 @@
-import { useState, useCallback, createContext, useContext, type ReactNode } from 'react';
+import { type ReactNode, createContext, useCallback, useContext, useState } from 'react';
 
 interface Toast {
   id: string;
@@ -39,7 +39,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={t.id}
             className="px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-slide-up"
             style={{
-              backgroundColor: t.type === 'error' ? '#C8281E' : t.type === 'success' ? '#16a34a' : '#273946',
+              backgroundColor:
+                t.type === 'error' ? '#C8281E' : t.type === 'success' ? '#16a34a' : '#273946',
               color: '#fff',
               maxWidth: '360px',
             }}

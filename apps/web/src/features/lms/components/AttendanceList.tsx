@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import {
+  type AttendanceWithRelations,
   selectAttendance,
   subscribeToAttendance,
-  type AttendanceWithRelations,
 } from '../services/supabase';
 
 interface AttendanceListProps {
@@ -53,9 +53,7 @@ export function AttendanceList({ tenantId, onSelect }: AttendanceListProps) {
         setRecords((prev) => [payload.new as AttendanceWithRelations, ...prev]);
       } else if (payload.eventType === 'UPDATE') {
         setRecords((prev) =>
-          prev.map((r) =>
-            r.id === payload.new.id ? (payload.new as AttendanceWithRelations) : r,
-          ),
+          prev.map((r) => (r.id === payload.new.id ? (payload.new as AttendanceWithRelations) : r))
         );
       } else if (payload.eventType === 'DELETE') {
         setRecords((prev) => prev.filter((r) => r.id !== payload.old?.id));
@@ -96,8 +94,7 @@ export function AttendanceList({ tenantId, onSelect }: AttendanceListProps) {
   if (search) {
     sessionList = sessionList.filter(
       (s) =>
-        s.courseName.toLowerCase().includes(search.toLowerCase()) ||
-        s.classDate.includes(search),
+        s.courseName.toLowerCase().includes(search.toLowerCase()) || s.classDate.includes(search)
     );
   }
 
@@ -163,9 +160,10 @@ export function AttendanceList({ tenantId, onSelect }: AttendanceListProps) {
             <div style={styles.colTotal}>Total</div>
           </div>
           {sessionList.map((s) => (
-            <div
+            <button
+              type="button"
               key={`${s.courseId}|${s.classDate}`}
-              style={styles.tableRow}
+              style={{ ...styles.tableRow, width: '100%', textAlign: 'left', border: 'none', cursor: 'pointer', background: 'transparent' }}
               onClick={() => onSelect(s.courseId, s.classDate)}
             >
               <div style={styles.colCourse}>{s.courseName}</div>
@@ -180,7 +178,7 @@ export function AttendanceList({ tenantId, onSelect }: AttendanceListProps) {
                 {s.excused}
               </div>
               <div style={styles.colTotal}>{s.total}</div>
-            </div>
+            </button>
           ))}
         </div>
       )}
@@ -204,10 +202,27 @@ const styles: Record<string, React.CSSProperties> = {
   title: { fontSize: '18px', fontWeight: '600', color: '#2d3748', margin: 0 },
   count: { fontSize: '14px', color: '#718096' },
   filters: { display: 'flex', gap: '12px', marginBottom: '16px' },
-  search: { flex: 2, padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' },
-  dateInput: { padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' },
+  search: {
+    flex: 2,
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '14px',
+  },
+  dateInput: {
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '14px',
+  },
   loading: { padding: '24px', textAlign: 'center', color: '#718096' },
-  error: { padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '14px' },
+  error: {
+    padding: '12px',
+    backgroundColor: '#fee2e2',
+    color: '#991b1b',
+    borderRadius: '6px',
+    fontSize: '14px',
+  },
   empty: { padding: '24px', textAlign: 'center', color: '#718096', fontSize: '14px' },
   table: { display: 'flex', flexDirection: 'column' },
   tableHeader: {

@@ -51,8 +51,7 @@ export function LeadFilterPanel({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       {/* Active / Archived toggle */}
       <div style={{ display: 'flex', gap: '0', borderBottom: '2px solid #e2e8f0' }}>
-        <button
-          type="button"
+        <button type="button"
           onClick={() => onTabChange('active')}
           style={{
             padding: '8px 16px',
@@ -67,8 +66,7 @@ export function LeadFilterPanel({
         >
           Active
         </button>
-        <button
-          type="button"
+        <button type="button"
           onClick={() => onTabChange('archived')}
           style={{
             padding: '8px 16px',
@@ -93,8 +91,7 @@ export function LeadFilterPanel({
           onChange={(e) => onSearchChange(e.target.value)}
           style={{ flex: 1, padding: '8px' }}
         />
-        <button
-          type="button"
+        <button type="button"
           onClick={() => setExpanded(!expanded)}
           style={{
             padding: '8px 12px',
@@ -120,56 +117,59 @@ export function LeadFilterPanel({
             borderRadius: '4px',
           }}
         >
-          <label>
+          <label htmlFor="filter-status">
             Status
-            <select
-              value={statusFilter}
-              onChange={(e) => onStatusChange(e.target.value as LeadStatus | '')}
-              style={{ display: 'block', padding: '6px', marginTop: '4px' }}
-            >
-              <option value="">All Statuses</option>
-              {LEAD_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
           </label>
+          <select
+            id="filter-status"
+            value={statusFilter}
+            onChange={(e) => onStatusChange(e.target.value as LeadStatus | '')}
+            style={{ display: 'block', padding: '6px', marginTop: '4px' }}
+          >
+            <option value="">All Statuses</option>
+            {LEAD_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
 
-          <label>
+          <label htmlFor="filter-source">
             Source
-            <input
-              type="text"
-              placeholder="e.g., website, referral"
-              value={sourceFilter}
-              onChange={(e) => onSourceChange(e.target.value)}
-              style={{ display: 'block', padding: '6px', marginTop: '4px', width: '150px' }}
-            />
           </label>
+          <input
+            id="filter-source"
+            type="text"
+            placeholder="e.g., website, referral"
+            value={sourceFilter}
+            onChange={(e) => onSourceChange(e.target.value)}
+            style={{ display: 'block', padding: '6px', marginTop: '4px', width: '150px' }}
+          />
 
-          <label>
+          <label htmlFor="filter-date-from">
             From
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => onDateFromChange(e.target.value)}
-              style={{ display: 'block', padding: '6px', marginTop: '4px' }}
-            />
           </label>
+          <input
+            id="filter-date-from"
+            type="date"
+            value={dateFrom}
+            onChange={(e) => onDateFromChange(e.target.value)}
+            style={{ display: 'block', padding: '6px', marginTop: '4px' }}
+          />
 
-          <label>
+          <label htmlFor="filter-date-to">
             To
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => onDateToChange(e.target.value)}
-              style={{ display: 'block', padding: '6px', marginTop: '4px' }}
-            />
           </label>
+          <input
+            id="filter-date-to"
+            type="date"
+            value={dateTo}
+            onChange={(e) => onDateToChange(e.target.value)}
+            style={{ display: 'block', padding: '6px', marginTop: '4px' }}
+          />
 
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-            <button
-              type="button"
+            <button type="button"
               onClick={onReset}
               style={{
                 padding: '6px 12px',

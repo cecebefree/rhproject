@@ -111,6 +111,10 @@ export function IndexScreen() {
         <FlatList
           data={classes}
           keyExtractor={(item) => item.id}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          initialNumToRender={5}
           renderItem={({ item }) => (
             <ClassCard
               classItem={item}

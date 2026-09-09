@@ -11,7 +11,13 @@ interface EmailComposerProps {
   onCancel: () => void;
 }
 
-export function EmailComposer({ leadId, recipientEmail, leadName, onSent, onCancel }: EmailComposerProps) {
+export function EmailComposer({
+  leadId,
+  recipientEmail,
+  leadName,
+  onSent,
+  onCancel,
+}: EmailComposerProps) {
   const [to] = useState(recipientEmail);
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
@@ -49,15 +55,18 @@ export function EmailComposer({ leadId, recipientEmail, leadName, onSent, onCanc
       <div style={styles.modal}>
         <div style={styles.header}>
           <h3 style={styles.title}>Email {leadName}</h3>
-          <button onClick={onCancel} style={styles.closeButton}>&times;</button>
+          <button type="button" onClick={onCancel} style={styles.closeButton}>
+            &times;
+          </button>
         </div>
 
         {error && <div style={styles.error}>{error}</div>}
         {success && <div style={styles.success}>Email sent successfully!</div>}
 
         <div style={styles.field}>
-          <label style={styles.label}>To</label>
+          <label htmlFor="email-to" style={styles.label}>To</label>
           <input
+            id="email-to"
             type="email"
             value={to}
             disabled
@@ -66,8 +75,9 @@ export function EmailComposer({ leadId, recipientEmail, leadName, onSent, onCanc
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Subject *</label>
+          <label htmlFor="email-subject" style={styles.label}>Subject *</label>
           <input
+            id="email-subject"
             type="text"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
@@ -77,8 +87,9 @@ export function EmailComposer({ leadId, recipientEmail, leadName, onSent, onCanc
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Body *</label>
+          <label htmlFor="email-body" style={styles.label}>Body *</label>
           <textarea
+            id="email-body"
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Write your message..."
@@ -88,10 +99,10 @@ export function EmailComposer({ leadId, recipientEmail, leadName, onSent, onCanc
         </div>
 
         <div style={styles.actions}>
-          <button onClick={onCancel} style={styles.cancelButton}>
+          <button type="button" onClick={onCancel} style={styles.cancelButton}>
             Cancel
           </button>
-          <button
+          <button type="button"
             onClick={handleSend}
             disabled={sending || success}
             style={{

@@ -3,7 +3,11 @@
 // Actions: update grade, log attendance, send message
 
 import { useEffect, useState } from 'react';
-import { supabaseUntyped, getChildAttendance, type AttendanceWithRelations } from '../services/supabase';
+import {
+  type AttendanceWithRelations,
+  getChildAttendance,
+  supabaseUntyped,
+} from '../services/supabase';
 import type { Student } from './StudentList';
 
 interface StudentDetailProps {
@@ -98,7 +102,7 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
         // 2. Load grades for each course
         const grades: CourseGrade[] = [];
         for (const enrollment of enrollments ?? []) {
-          const course = enrollment.courses as any;
+          const course = enrollment.courses as { id: string; title: string } | null;
           if (!course) continue;
 
           const { data: gradeData } = await supabaseUntyped
@@ -108,13 +112,12 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
             .eq('student_id', student.id)
             .is('deleted_at', null);
 
-          // biome-ignore lint/suspicious/noExplicitAny: Supabase join query returns complex nested types
-          const gradeRows = (gradeData ?? []).map((g: any) => ({
-            gradeId: g.id as string,
-            assignmentTitle: (g.assignments?.title ?? 'Unknown') as string,
+          const gradeRows = (gradeData ?? []).map((g: Record<string, unknown>) => ({
+            gradeId: (g.id as string) ?? '',
+            assignmentTitle: ((g.assignments as Record<string, unknown>)?.title ?? 'Unknown') as string,
             score: g.score as number | null,
-            maxScore: (g.assignments?.max_score ?? 100) as number,
-            weight: (g.assignments?.weight ?? 1.0) as number,
+            maxScore: ((g.assignments as Record<string, unknown>)?.max_score ?? 100) as number,
+            weight: ((g.assignments as Record<string, unknown>)?.weight ?? 1.0) as number,
           }));
 
           const graded = gradeRows.filter((g: { score: number | null }) => g.score !== null);
@@ -123,7 +126,7 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
               ? graded.reduce(
                   (sum: number, g: { score: number; maxScore: number }) =>
                     sum + (g.score / g.maxScore) * 100,
-                  0,
+                  0
                 ) / graded.length
               : null;
 
@@ -148,10 +151,18 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
           const percentage = total > 0 ? (present / total) * 100 : null;
 
           // Group by course
-          const courseMap = new Map<string, { title: string; total: number; present: number; absent: number }>();
+          const courseMap = new Map<
+            string,
+            { title: string; total: number; present: number; absent: number }
+          >();
           for (const r of records) {
             const courseId = r.course_id;
-            const existing = courseMap.get(courseId) ?? { title: (r.courses as any)?.title ?? 'Unknown', total: 0, present: 0, absent: 0 };
+            const existing = courseMap.get(courseId) ?? {
+              title: (r.courses as { title?: string })?.title ?? 'Unknown',
+              total: 0,
+              present: 0,
+              absent: 0,
+            };
             existing.total++;
             if (r.status === 'present') existing.present++;
             if (r.status === 'absent') existing.absent++;
@@ -174,20 +185,25 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
         // TODO: Implement when messaging table/EF is ready
         if (!cancelled) setMessages([]);
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load student data');
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : 'Failed to load student data');
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [student.id]);
 
   if (loading) {
     return (
       <div style={styles.container}>
-        <button onClick={onBack} style={styles.backButton}>&larr; Back</button>
+        <button type="button" onClick={onBack} style={styles.backButton}>
+          &larr; Back
+        </button>
         <div style={styles.loading}>Loading student data...</div>
       </div>
     );
@@ -196,7 +212,9 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
   if (error) {
     return (
       <div style={styles.container}>
-        <button onClick={onBack} style={styles.backButton}>&larr; Back</button>
+        <button type="button" onClick={onBack} style={styles.backButton}>
+          &larr; Back
+        </button>
         <div style={styles.error}>{error}</div>
       </div>
     );
@@ -205,9 +223,7 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
   const overallAverage =
     courseGrades.length > 0
       ? courseGrades.filter((c) => c.average !== null).length > 0
-        ? courseGrades
-            .filter((c) => c.average !== null)
-            .reduce((sum, c) => sum + c.average!, 0) /
+        ? courseGrades.filter((c) => c.average !== null).reduce((sum, c) => sum + c.average!, 0) /
           courseGrades.filter((c) => c.average !== null).length
         : null
       : null;
@@ -216,10 +232,12 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
     <div style={styles.container}>
       {/* Header */}
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backButton}>&larr; Back</button>
+        <button type="button" onClick={onBack} style={styles.backButton}>
+          &larr; Back
+        </button>
         <div style={styles.headerActions}>
           {onSendMessage && (
-            <button
+            <button type="button"
               onClick={() => onSendMessage(student.id, student.name)}
               style={styles.actionButton}
             >
@@ -232,7 +250,9 @@ export function StudentDetail({ student, onBack, onSendMessage }: StudentDetailP
       <h2 style={styles.title}>{student.name}</h2>
       <div style={styles.meta}>
         {student.grade && <span style={styles.metaItem}>Grade: {student.grade}</span>}
-        {student.curriculum && <span style={styles.metaItem}>Curriculum: {student.curriculum}</span>}
+        {student.curriculum && (
+          <span style={styles.metaItem}>Curriculum: {student.curriculum}</span>
+        )}
         {student.stage && <span style={styles.metaItem}>Stage: {student.stage}</span>}
         {student.class_title && <span style={styles.metaItem}>Class: {student.class_title}</span>}
       </div>

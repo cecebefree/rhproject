@@ -3,14 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useToast } from '../../../components/Toast';
 import {
-  listCourses,
-  listInstructors,
-  deleteCourse,
-  getCourseDeletionWarnings,
-  updateCourse,
   type Course,
   type CourseStatus,
   type Instructor,
+  deleteCourse,
+  getCourseDeletionWarnings,
+  listCourses,
+  listInstructors,
+  updateCourse,
 } from '../adminCoursesClient';
 
 interface CourseListProps {
@@ -29,6 +29,7 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
   const [instructorFilter, setInstructorFilter] = useState('');
   const [deleting, setDeleting] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: all listed values trigger data reload
   useEffect(() => {
     loadData();
   }, [tenantId, search, statusFilter, instructorFilter]);
@@ -52,7 +53,7 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
   const handleDelete = async (courseId: string) => {
     // Check for family/adult profile links before confirming
     const warnings = await getCourseDeletionWarnings(courseId);
-    const course = courses.find(c => c.id === courseId);
+    const course = courses.find((c) => c.id === courseId);
 
     if (warnings.blocking) {
       const parts: string[] = [];
@@ -66,11 +67,11 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
     }
 
     const confirmed = window.confirm(
-      `Delete "${course?.title ?? 'this curriculum'}"?\n\n` +
-      (warnings.studentCount > 0
-        ? `${warnings.studentCount} student(s) enrolled (no family links).\n\n`
-        : '') +
-      `This action cannot be undone.`
+      `Delete "${course?.title ?? 'this curriculum'}"?\n\n${
+        warnings.studentCount > 0
+          ? `${warnings.studentCount} student(s) enrolled (no family links).\n\n`
+          : ''
+      }This action cannot be undone.`
     );
     if (!confirmed) return;
 
@@ -88,9 +89,7 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
     const newStatus: CourseStatus = course.status === 'published' ? 'draft' : 'published';
     const { error } = await updateCourse(course.id, { status: newStatus });
     if (!error) {
-      setCourses((prev) =>
-        prev.map((c) => (c.id === course.id ? { ...c, status: newStatus } : c)),
-      );
+      setCourses((prev) => prev.map((c) => (c.id === course.id ? { ...c, status: newStatus } : c)));
     }
   };
 
@@ -121,10 +120,12 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
         >
           <option value="">All Instructors</option>
           {instructors.map((i) => (
-            <option key={i.id} value={i.id}>{i.name}</option>
+            <option key={i.id} value={i.id}>
+              {i.name}
+            </option>
           ))}
         </select>
-        <button onClick={onCreateNew} style={styles.createButton}>
+        <button type="button" onClick={onCreateNew} style={styles.createButton}>
           + New Curriculum
         </button>
       </div>
@@ -133,7 +134,9 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
       {loading ? (
         <div style={styles.loading}>Loading curriculums...</div>
       ) : courses.length === 0 ? (
-        <div style={styles.empty}>No curriculums found. Create your first curriculum to get started.</div>
+        <div style={styles.empty}>
+          No curriculums found. Create your first curriculum to get started.
+        </div>
       ) : (
         <table style={styles.table}>
           <thead>
@@ -148,11 +151,7 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
           </thead>
           <tbody>
             {courses.map((course) => (
-              <tr
-                key={course.id}
-                style={styles.row}
-                onClick={() => onSelect(course)}
-              >
+              <tr key={course.id} style={styles.row} onClick={() => onSelect(course)} onKeyDown={(e) => { if (e.key === 'Enter') onSelect(course); }} tabIndex={0}>
                 <td style={styles.td}>
                   <div style={styles.courseName}>{course.title}</div>
                   {course.description && (
@@ -176,15 +175,12 @@ export function CourseList({ tenantId, onSelect, onCreateNew }: CourseListProps)
                   {course.enrollment_count ?? 0}
                   {course.capacity ? ` / ${course.capacity}` : ''}
                 </td>
-                <td style={styles.td} onClick={(e) => e.stopPropagation()}>
+                <td style={styles.td} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                   <div style={styles.actions}>
-                    <button
-                      onClick={() => handleToggleStatus(course)}
-                      style={styles.actionBtn}
-                    >
+                    <button type="button" onClick={() => handleToggleStatus(course)} style={styles.actionBtn}>
                       {course.status === 'published' ? 'Unpublish' : 'Publish'}
                     </button>
-                    <button
+                    <button type="button"
                       onClick={() => handleDelete(course.id)}
                       disabled={deleting === course.id || (course.enrollment_count ?? 0) > 0}
                       style={{

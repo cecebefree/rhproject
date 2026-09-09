@@ -20,12 +20,7 @@ export type ActivityEventType =
   | 'logout'
   | 'api_call';
 
-export type ActivityEventCategory =
-  | 'navigation'
-  | 'interaction'
-  | 'data'
-  | 'auth'
-  | 'system';
+export type ActivityEventCategory = 'navigation' | 'interaction' | 'data' | 'auth' | 'system';
 
 export type ConversionType =
   | 'lead_to_contact'
@@ -36,11 +31,7 @@ export type ConversionType =
 
 export type MetricPeriod = 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly';
 
-export type LeadStage =
-  | 'enquiry'
-  | 'qualified'
-  | 'invoiced'
-  | 'handed_off';
+export type LeadStage = 'enquiry' | 'qualified' | 'invoiced' | 'handed_off';
 
 export interface UserActivityLog {
   id: string;
@@ -104,7 +95,13 @@ export interface DashboardMetrics {
   averageInvoiceValue: number;
   recentActivity: UserActivityLog[];
   revenueTrend: RevenueMetric[];
-  pipelineByStage: { stage: string; label: string; count: number; totalValue: number; paidValue: number }[];
+  pipelineByStage: {
+    stage: string;
+    label: string;
+    count: number;
+    totalValue: number;
+    paidValue: number;
+  }[];
   conversionFunnel: { stage: string; count: number; rate: number }[];
 }
 
@@ -170,9 +167,7 @@ export async function selectActivityLog(
     .range(offset, offset + limit - 1);
 
   if (dateRange) {
-    query = query
-      .gte('created_at', dateRange.start)
-      .lte('created_at', dateRange.end);
+    query = query.gte('created_at', dateRange.start).lte('created_at', dateRange.end);
   }
 
   return query;
@@ -193,9 +188,7 @@ export async function selectActivityByType(
     .limit(limit);
 
   if (dateRange) {
-    query = query
-      .gte('created_at', dateRange.start)
-      .lte('created_at', dateRange.end);
+    query = query.gte('created_at', dateRange.start).lte('created_at', dateRange.end);
   }
 
   return query;
@@ -216,9 +209,7 @@ export async function selectActivityByPage(
     .limit(limit);
 
   if (dateRange) {
-    query = query
-      .gte('created_at', dateRange.start)
-      .lte('created_at', dateRange.end);
+    query = query.gte('created_at', dateRange.start).lte('created_at', dateRange.end);
   }
 
   return query;
@@ -263,9 +254,7 @@ export async function selectConversionEvents(
     .range(offset, offset + limit - 1);
 
   if (dateRange) {
-    query = query
-      .gte('created_at', dateRange.start)
-      .lte('created_at', dateRange.end);
+    query = query.gte('created_at', dateRange.start).lte('created_at', dateRange.end);
   }
 
   if (conversionType) {
@@ -275,19 +264,14 @@ export async function selectConversionEvents(
   return query;
 }
 
-export async function selectConversionStats(
-  tenantId: string,
-  dateRange?: DateRange
-) {
+export async function selectConversionStats(tenantId: string, dateRange?: DateRange) {
   let query = supabase
     .from('office_desk.conversion_events')
     .select('conversion_type')
     .eq('tenant_id', tenantId);
 
   if (dateRange) {
-    query = query
-      .gte('created_at', dateRange.start)
-      .lte('created_at', dateRange.end);
+    query = query.gte('created_at', dateRange.start).lte('created_at', dateRange.end);
   }
 
   const { data, error } = await query;
@@ -324,9 +308,7 @@ export async function selectRevenueMetrics(
     .limit(limit);
 
   if (dateRange) {
-    query = query
-      .gte('metric_date', dateRange.start)
-      .lte('metric_date', dateRange.end);
+    query = query.gte('metric_date', dateRange.start).lte('metric_date', dateRange.end);
   }
 
   return query;
@@ -375,7 +357,7 @@ export async function selectPipelineValue(tenantId: string) {
 
   // Group by lead and sum amounts
   const leadTotals = new Map<string, { total: number; paid: number }>();
-  
+
   for (const invoice of invoices) {
     if (!invoice.lead_id) continue;
     const existing = leadTotals.get(invoice.lead_id) || { total: 0, paid: 0 };
@@ -431,9 +413,7 @@ export async function selectConversionFunnel(tenantId: string, dateRange?: DateR
     .is('archived_at', null);
 
   if (dateRange) {
-    leadsQuery = leadsQuery
-      .gte('created_at', dateRange.start)
-      .lte('created_at', dateRange.end);
+    leadsQuery = leadsQuery.gte('created_at', dateRange.start).lte('created_at', dateRange.end);
   }
 
   const { count: totalLeads } = await leadsQuery;
@@ -556,8 +536,12 @@ export async function selectDashboardMetrics(
     const { data: invoices } = await invoiceQuery;
 
     const totalRevenue = invoices?.reduce((sum, i) => sum + i.amount, 0) || 0;
-    const paidRevenue = invoices?.filter((i) => i.status === 'paid').reduce((sum, i) => sum + i.amount, 0) || 0;
-    const pendingRevenue = invoices?.filter((i) => ['sent', 'draft'].includes(i.status)).reduce((sum, i) => sum + i.amount, 0) || 0;
+    const paidRevenue =
+      invoices?.filter((i) => i.status === 'paid').reduce((sum, i) => sum + i.amount, 0) || 0;
+    const pendingRevenue =
+      invoices
+        ?.filter((i) => ['sent', 'draft'].includes(i.status))
+        .reduce((sum, i) => sum + i.amount, 0) || 0;
     const averageInvoiceValue = invoices?.length ? totalRevenue / invoices.length : 0;
 
     // Get recent activity
@@ -569,7 +553,9 @@ export async function selectDashboardMetrics(
       .limit(10);
 
     // Get revenue trend (last 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
     const { data: revenueTrend } = await supabase
       .from('office_desk.revenue_metrics')
       .select('*')
@@ -614,13 +600,22 @@ export async function selectDashboardMetrics(
 
 export function subscribeToActivityLog(
   tenantId: string,
-  callback: (payload: { eventType: string; new: UserActivityLog; old: UserActivityLog | null }) => void
+  callback: (payload: {
+    eventType: string;
+    new: UserActivityLog;
+    old: UserActivityLog | null;
+  }) => void
 ) {
   return supabase
     .channel(`activity_log-${tenantId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'user_activity_log', filter: `tenant_id=eq.${tenantId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'user_activity_log',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
@@ -628,13 +623,22 @@ export function subscribeToActivityLog(
 
 export function subscribeToConversionEvents(
   tenantId: string,
-  callback: (payload: { eventType: string; new: ConversionEvent; old: ConversionEvent | null }) => void
+  callback: (payload: {
+    eventType: string;
+    new: ConversionEvent;
+    old: ConversionEvent | null;
+  }) => void
 ) {
   return supabase
     .channel(`conversion_events-${tenantId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'conversion_events', filter: `tenant_id=eq.${tenantId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'conversion_events',
+        filter: `tenant_id=eq.${tenantId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();

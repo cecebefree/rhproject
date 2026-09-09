@@ -61,9 +61,7 @@ export function BroadcastDetail({ broadcastId, onBack }: BroadcastDetailProps) {
         <button type="button" onClick={onBack} style={styles.backButton}>
           ← Back to Broadcasts
         </button>
-        <span
-          style={broadcast.sent_at ? styles.statusSent : styles.statusDraft}
-        >
+        <span style={broadcast.sent_at ? styles.statusSent : styles.statusDraft}>
           {broadcast.sent_at ? 'Sent' : 'Draft'}
         </span>
       </div>

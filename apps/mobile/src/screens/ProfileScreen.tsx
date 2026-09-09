@@ -139,6 +139,10 @@ export function ProfileScreen() {
       <FlatList
         data={sections}
         keyExtractor={(item) => item.title}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        initialNumToRender={5}
         ListHeaderComponent={
           <View>
             {/* Profile Header */}

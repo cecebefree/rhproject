@@ -67,70 +67,75 @@ export function LeadIntakeForm({ tenantId, onSuccess }: LeadIntakeFormProps) {
         </div>
       )}
 
-      <label>
+      <label htmlFor="lead-name">
         Name
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-        />
       </label>
+      <input
+        id="lead-name"
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
 
-      <label>
+      <label htmlFor="lead-company">
         Company
-        <input
-          type="text"
-          value={company}
-          onChange={(e) => setCompany(e.target.value)}
-          placeholder="Organisation name"
-          style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-        />
       </label>
+      <input
+        id="lead-company"
+        type="text"
+        value={company}
+        onChange={(e) => setCompany(e.target.value)}
+        placeholder="Organisation name"
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
 
-      <label>
+      <label htmlFor="lead-email">
         Email
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-        />
       </label>
+      <input
+        id="lead-email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
 
-      <label>
+      <label htmlFor="lead-phone">
         Phone
-        <input
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-        />
       </label>
+      <input
+        id="lead-phone"
+        type="tel"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
 
-      <label>
+      <label htmlFor="lead-source">
         Source
-        <input
-          type="text"
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-          placeholder="e.g., website, referral, walk-in"
-          style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-        />
       </label>
+      <input
+        id="lead-source"
+        type="text"
+        value={source}
+        onChange={(e) => setSource(e.target.value)}
+        placeholder="e.g., website, referral, walk-in"
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
 
-      <label>
+      <label htmlFor="lead-notes">
         Notes
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-          style={{ width: '100%', padding: '8px', marginTop: '4px' }}
-        />
       </label>
+      <textarea
+        id="lead-notes"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={3}
+        style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+      />
 
-      <button
-        type="submit"
+      <button type="submit"
         disabled={loading}
         style={{
           padding: '10px 16px',

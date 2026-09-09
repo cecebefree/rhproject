@@ -1,7 +1,7 @@
 // Office Desk — Invoice Detail (child route of OfficeDeskPage)
 // Renders InvoiceDetail for a specific invoice
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
 import { DeskBreadcrumb } from '../../../components/DeskBreadcrumb';
 import { ShareButton } from '../../../components/ShareButton';
@@ -48,7 +48,13 @@ export default function OfficeDeskInvoiceDetailPage() {
         <DeskBreadcrumb deskName="Office Desk" tabLabel="Invoices" />
         <ShareButton entityType="invoice" entityName="Invoice" />
       </div>
-      <InvoiceDetailComponent invoiceId={invoiceId} deskId={deskId} userId={userId} onBack={handleBack} onDeleted={handleDeleted} />
+      <InvoiceDetailComponent
+        invoiceId={invoiceId}
+        deskId={deskId}
+        userId={userId}
+        onBack={handleBack}
+        onDeleted={handleDeleted}
+      />
     </div>
   );
 }

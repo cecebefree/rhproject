@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { useResponsive } from '../../../components/MobileNav';
+import { ResponsiveTable, type SwipeableCard } from '../../../components/ResponsiveTable';
+import { useBulkSelection } from '../../office-desk/components/BulkSelectionContext';
+import { exportToCSV } from '../../office-desk/services/exportService';
 import {
   LEAD_STATUSES,
   type Lead,
@@ -10,10 +14,6 @@ import {
 } from '../services/supabase';
 import { BulkArchiveModal } from './BulkArchiveModal';
 import { LeadFilterPanel, type LeadViewTab } from './LeadFilterPanel';
-import { exportToCSV } from '../../office-desk/services/exportService';
-import { ResponsiveTable, type SwipeableCard } from '../../../components/ResponsiveTable';
-import { useResponsive } from '../../../components/MobileNav';
-import { useBulkSelection } from '../../office-desk/components/BulkSelectionContext';
 
 interface LeadListProps {
   tenantId: string;
@@ -42,7 +42,16 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
   const [showBulkArchiveModal, setShowBulkArchiveModal] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const { isMobile } = useResponsive();
-  const { selectedIds, select, deselect, toggle, isSelected, selectAllOnPage, deselectAll, selectedCount } = useBulkSelection();
+  const {
+    selectedIds,
+    select,
+    deselect,
+    toggle,
+    isSelected,
+    selectAllOnPage,
+    deselectAll,
+    selectedCount,
+  } = useBulkSelection();
 
   const toggleSelectAll = () => {
     if (selectedCount === leads.length) {
@@ -86,10 +95,12 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
     setArchivedCount(count || 0);
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: all listed values trigger lead reload
   useEffect(() => {
     loadLeads();
   }, [tenantId, search, statusFilter, sourceFilter, dateFrom, dateTo, activeTab]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId/activeTab trigger archived count reload
   useEffect(() => {
     loadArchivedCount();
   }, [tenantId, activeTab]);
@@ -131,6 +142,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
   };
 
   // Expose focusSearch via window for keyboard shortcut
+  // biome-ignore lint/correctness/useExhaustiveDependencies: focusSearch is a stable ref callback
   useEffect(() => {
     const w = window as unknown as Record<string, unknown>;
     w.__leadListFocusSearch = focusSearch;
@@ -155,8 +167,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2>{activeTab === 'active' ? 'Leads' : 'Archived Leads'}</h2>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
+          <button type="button"
             onClick={async () => {
               await exportToCSV({
                 entity_type: 'leads',
@@ -181,8 +192,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
             Export CSV
           </button>
           {activeTab === 'active' && selectedCount > 0 && (
-            <button
-              type="button"
+            <button type="button"
               onClick={() => setShowBulkArchiveModal(true)}
               style={{
                 padding: '6px 12px',
@@ -277,6 +287,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                     <td
                       style={{ padding: '8px', cursor: 'pointer', color: '#3182ce' }}
                       onClick={() => onSelectLead(lead.id)}
+                      onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectLead(lead.id); } }}
                     >
                       {lead.name || '—'}
                     </td>
@@ -321,8 +332,7 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                     </td>
                     <td style={{ padding: '8px', textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-                        <button
-                          type="button"
+                        <button type="button"
                           onClick={() => onSelectLead(lead.id)}
                           style={{
                             padding: '4px 8px',
@@ -377,7 +387,10 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
           </div>
 
           {/* Mobile Card View */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} className="md:hidden">
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+            className="md:hidden"
+          >
             {leads.map((lead) => (
               <div
                 key={lead.id}
@@ -390,14 +403,31 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                 }}
               >
                 {/* Card Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '12px',
+                  }}
+                >
                   <div style={{ flex: 1 }}>
-                    <div
-                      style={{ fontSize: '16px', fontWeight: '600', color: '#3182ce', cursor: 'pointer' }}
+                    <button
+                      type="button"
+                      style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: '#3182ce',
+                        cursor: 'pointer',
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        textAlign: 'left',
+                      }}
                       onClick={() => onSelectLead(lead.id)}
                     >
                       {lead.name || '—'}
-                    </div>
+                    </button>
                     <div style={{ fontSize: '14px', color: '#718096', marginTop: '4px' }}>
                       {lead.company || '—'}
                     </div>
@@ -420,13 +450,14 @@ export function LeadList({ tenantId, onSelectLead, onEditLead }: LeadListProps) 
                 <div style={{ fontSize: '13px', color: '#4a5568', marginBottom: '12px' }}>
                   {lead.email && <div style={{ marginBottom: '4px' }}>{lead.email}</div>}
                   {lead.phone && <div>{lead.phone}</div>}
-                  {!lead.email && !lead.phone && <div style={{ color: '#a0aec0' }}>No contact info</div>}
+                  {!lead.email && !lead.phone && (
+                    <div style={{ color: '#a0aec0' }}>No contact info</div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    type="button"
+                  <button type="button"
                     onClick={() => onSelectLead(lead.id)}
                     style={{
                       flex: 1,

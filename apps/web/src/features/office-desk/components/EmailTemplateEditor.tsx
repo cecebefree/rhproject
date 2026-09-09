@@ -1,9 +1,9 @@
 // EmailTemplateEditor — Rich text editor with variable insertion UI
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { renderMarkdownSimple } from '../services/richTextEditor';
-import { extractVariables } from '../services/emailTemplateService';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useResponsive } from '../../../components/MobileNav';
+import { extractVariables } from '../services/emailTemplateService';
+import { renderMarkdownSimple } from '../services/richTextEditor';
 
 interface EmailTemplateEditorProps {
   name: string;
@@ -62,50 +62,57 @@ export function EmailTemplateEditor({
   const charCount = body.length;
 
   // Handle toolbar button clicks
-  const handleToolbarClick = useCallback((prefix: string, suffix: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  const handleToolbarClick = useCallback(
+    (prefix: string, suffix: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = body.substring(start, end);
-    const newText = body.substring(0, start) + prefix + selectedText + suffix + body.substring(end);
-    onBodyChange(newText);
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = body.substring(start, end);
+      const newText =
+        body.substring(0, start) + prefix + selectedText + suffix + body.substring(end);
+      onBodyChange(newText);
 
-    // Restore cursor position
-    setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = start + prefix.length;
-      textarea.selectionEnd = end + prefix.length;
-    }, 0);
-  }, [body, onBodyChange]);
+      // Restore cursor position
+      setTimeout(() => {
+        textarea.focus();
+        textarea.selectionStart = start + prefix.length;
+        textarea.selectionEnd = end + prefix.length;
+      }, 0);
+    },
+    [body, onBodyChange]
+  );
 
   // Insert variable at cursor
-  const insertVariable = useCallback((variable: string) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+  const insertVariable = useCallback(
+    (variable: string) => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
 
-    const cursorPos = textarea.selectionStart;
-    const textBeforeCursor = body.substring(0, cursorPos);
-    const textAfterCursor = body.substring(cursorPos);
-    const variableText = `{{${variable}}}`;
-    const newText = textBeforeCursor + variableText + textAfterCursor;
-    onBodyChange(newText);
+      const cursorPos = textarea.selectionStart;
+      const textBeforeCursor = body.substring(0, cursorPos);
+      const textAfterCursor = body.substring(cursorPos);
+      const variableText = `{{${variable}}}`;
+      const newText = textBeforeCursor + variableText + textAfterCursor;
+      onBodyChange(newText);
 
-    // Add to variables list if not already present
-    if (!variables.includes(variable)) {
-      onVariablesChange([...variables, variable]);
-    }
+      // Add to variables list if not already present
+      if (!variables.includes(variable)) {
+        onVariablesChange([...variables, variable]);
+      }
 
-    setShowVariableDropdown(false);
+      setShowVariableDropdown(false);
 
-    setTimeout(() => {
-      textarea.focus();
-      const newPos = cursorPos + variableText.length;
-      textarea.selectionStart = newPos;
-      textarea.selectionEnd = newPos;
-    }, 0);
-  }, [body, variables, onBodyChange, onVariablesChange]);
+      setTimeout(() => {
+        textarea.focus();
+        const newPos = cursorPos + variableText.length;
+        textarea.selectionStart = newPos;
+        textarea.selectionEnd = newPos;
+      }, 0);
+    },
+    [body, variables, onBodyChange, onVariablesChange]
+  );
 
   // Add new variable
   const handleAddVariable = useCallback(() => {
@@ -117,11 +124,15 @@ export function EmailTemplateEditor({
   }, [newVariable, variables, onVariablesChange]);
 
   // Remove variable
-  const handleRemoveVariable = useCallback((variable: string) => {
-    onVariablesChange(variables.filter((v) => v !== variable));
-  }, [variables, onVariablesChange]);
+  const handleRemoveVariable = useCallback(
+    (variable: string) => {
+      onVariablesChange(variables.filter((v) => v !== variable));
+    },
+    [variables, onVariablesChange]
+  );
 
   // Auto-detect variables from body content
+  // biome-ignore lint/correctness/useExhaustiveDependencies: body triggers variable detection
   useEffect(() => {
     const detected: string[] = extractVariables(body);
     const newVars = detected.filter((v: string) => !variables.includes(v));
@@ -131,23 +142,26 @@ export function EmailTemplateEditor({
   }, [body]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle keyboard shortcuts
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    // Cmd/Ctrl + B for bold
-    if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-      e.preventDefault();
-      handleToolbarClick('**', '**');
-    }
-    // Cmd/Ctrl + I for italic
-    if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
-      e.preventDefault();
-      handleToolbarClick('*', '*');
-    }
-    // Cmd/Ctrl + K for link
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      handleToolbarClick('[', '](url)');
-    }
-  }, [handleToolbarClick]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      // Cmd/Ctrl + B for bold
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        handleToolbarClick('**', '**');
+      }
+      // Cmd/Ctrl + I for italic
+      if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
+        e.preventDefault();
+        handleToolbarClick('*', '*');
+      }
+      // Cmd/Ctrl + K for link
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        handleToolbarClick('[', '](url)');
+      }
+    },
+    [handleToolbarClick]
+  );
 
   // Handle file drop
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -165,6 +179,7 @@ export function EmailTemplateEditor({
   }, []);
 
   // Auto-resize textarea
+  // biome-ignore lint/correctness/useExhaustiveDependencies: body triggers resize
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
@@ -177,10 +192,9 @@ export function EmailTemplateEditor({
     <div className="space-y-4">
       {/* Template Name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Template Name *
-        </label>
+        <label htmlFor="template-name" className="block text-sm font-medium text-gray-700 mb-1">Template Name *</label>
         <input
+          id="template-name"
           type="text"
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
@@ -192,10 +206,9 @@ export function EmailTemplateEditor({
 
       {/* Subject Line */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Subject *
-        </label>
+        <label htmlFor="template-subject" className="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
         <input
+          id="template-subject"
           type="text"
           value={subject}
           onChange={(e) => onSubjectChange(e.target.value)}
@@ -207,10 +220,8 @@ export function EmailTemplateEditor({
 
       {/* Variables Management */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Variables
-        </label>
-        
+        <span className="block text-sm font-medium text-gray-700 mb-2">Variables</span>
+
         {/* Current Variables */}
         <div className="flex flex-wrap gap-2 mb-2">
           {variables.map((variable) => (
@@ -219,8 +230,7 @@ export function EmailTemplateEditor({
               className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
             >
               {`{{${variable}}}`}
-              <button
-                type="button"
+              <button type="button"
                 onClick={() => handleRemoveVariable(variable)}
                 className="ml-2 text-blue-600 hover:text-blue-800"
                 disabled={disabled}
@@ -247,8 +257,7 @@ export function EmailTemplateEditor({
             placeholder="Add variable name..."
             disabled={disabled}
           />
-          <button
-            type="button"
+          <button type="button"
             onClick={handleAddVariable}
             disabled={disabled || !newVariable.trim()}
             className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 text-sm"
@@ -259,8 +268,7 @@ export function EmailTemplateEditor({
 
         {/* Common Variables */}
         <div className="mt-2">
-          <button
-            type="button"
+          <button type="button"
             onClick={() => setShowVariableDropdown(!showVariableDropdown)}
             className="text-sm text-blue-600 hover:text-blue-800"
             disabled={disabled}
@@ -270,9 +278,8 @@ export function EmailTemplateEditor({
           {showVariableDropdown && (
             <div className="mt-2 p-2 bg-gray-50 rounded-md flex flex-wrap gap-2">
               {COMMON_VARIABLES.filter((v) => !variables.includes(v)).map((variable) => (
-                <button
+                <button type="button"
                   key={variable}
-                  type="button"
                   onClick={() => insertVariable(variable)}
                   className="px-2 py-1 text-xs bg-white border border-gray-200 rounded hover:bg-gray-100"
                   disabled={disabled}
@@ -287,9 +294,7 @@ export function EmailTemplateEditor({
 
       {/* Body Editor */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Body *
-        </label>
+        <label htmlFor="template-body" className="block text-sm font-medium text-gray-700 mb-1">Body *</label>
         <div
           className="border border-gray-300 rounded-md overflow-hidden"
           onDragOver={handleDragOver}
@@ -297,13 +302,10 @@ export function EmailTemplateEditor({
           onDrop={handleDrop}
         >
           {/* Toolbar */}
-          <div
-            className="flex gap-1 p-2 border-b border-gray-200 bg-gray-50 flex-wrap"
-          >
+          <div className="flex gap-1 p-2 border-b border-gray-200 bg-gray-50 flex-wrap">
             {TOOLBAR_ITEMS.map((item) => (
-              <button
+              <button type="button"
                 key={item.title}
-                type="button"
                 title={item.title}
                 onClick={() => handleToolbarClick(item.prefix, item.suffix)}
                 disabled={disabled}
@@ -314,8 +316,7 @@ export function EmailTemplateEditor({
                 {item.label}
               </button>
             ))}
-            <button
-              type="button"
+            <button type="button"
               onClick={() => setShowPreview(!showPreview)}
               className={`px-2 py-1 text-sm border border-gray-200 rounded ${
                 showPreview ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100'
@@ -331,6 +332,7 @@ export function EmailTemplateEditor({
               <div
                 ref={previewRef}
                 className="p-3 min-h-[200px] max-h-[400px] overflow-auto text-sm"
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional — renders user-authored email template preview via renderMarkdownSimple
                 dangerouslySetInnerHTML={{ __html: renderMarkdownSimple(body) }}
               />
             ) : (

@@ -1,8 +1,8 @@
 // SettingsPage — Desk settings with team management, role management, and security
 
 import { useState } from 'react';
-import { TeamMembersList } from './TeamMembersList';
 import { RoleManagementPage } from './RoleManagementPage';
+import { TeamMembersList } from './TeamMembersList';
 import { TwoFactorManagementPage } from './TwoFactorManagementPage';
 
 interface SettingsPageProps {
@@ -31,9 +31,16 @@ export function SettingsPage({ deskId, tenantId, userId, email }: SettingsPagePr
       </h1>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid #e2e8f0', marginBottom: '24px' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '4px',
+          borderBottom: '1px solid #e2e8f0',
+          marginBottom: '24px',
+        }}
+      >
         {SETTINGS_TABS.map((tab) => (
-          <button
+          <button type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
@@ -54,13 +61,9 @@ export function SettingsPage({ deskId, tenantId, userId, email }: SettingsPagePr
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'team' && (
-        <TeamMembersList deskId={deskId} currentUserId={userId} />
-      )}
+      {activeTab === 'team' && <TeamMembersList deskId={deskId} currentUserId={userId} />}
 
-      {activeTab === 'roles' && (
-        <RoleManagementPage deskId={deskId} tenantId={tenantId} />
-      )}
+      {activeTab === 'roles' && <RoleManagementPage deskId={deskId} tenantId={tenantId} />}
 
       {activeTab === 'security' && (
         <TwoFactorManagementPage userId={userId} tenantId={tenantId} email={email} />

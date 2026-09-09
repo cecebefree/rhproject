@@ -3,16 +3,16 @@
 // Detail view: RegistrationDetail card with approve/reject
 
 import { useEffect, useState } from 'react';
+import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { RegistrationDetail } from '../components/RegistrationDetail';
 import {
-  selectRegistrations,
-  updateRegistrationStatus,
-  subscribeToRegistrations,
+  REGISTRATION_STATUSES,
   type Registration,
   type RegistrationStatus,
-  REGISTRATION_STATUSES,
+  selectRegistrations,
+  subscribeToRegistrations,
+  updateRegistrationStatus,
 } from '../services/supabase';
-import { RegistrationDetail } from '../components/RegistrationDetail';
-import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 
 interface DeskContext {
@@ -68,10 +68,10 @@ export default function OfficeDeskRegistrationsPage() {
       const { data, error } = await selectRegistrations(
         tenantId,
         search || undefined,
-        (statusFilter as RegistrationStatus) || undefined,
+        (statusFilter as RegistrationStatus) || undefined
       );
       if (!cancelled) {
-        setRegistrations((data as any) ?? []);
+        setRegistrations((data as Registration[]) ?? []);
         setLoading(false);
       }
     }
@@ -89,7 +89,7 @@ export default function OfficeDeskRegistrationsPage() {
 
     return () => {
       cancelled = true;
-      sub?.then?.((s: any) => s?.unsubscribe?.());
+      sub?.then?.((s: { unsubscribe?: () => void }) => s?.unsubscribe?.());
     };
   }, [tenantId, search, statusFilter]);
 
@@ -121,7 +121,7 @@ export default function OfficeDeskRegistrationsPage() {
           // Refresh data
           setLoading(true);
           selectRegistrations(tenantId).then(({ data }) => {
-            setRegistrations((data as any) ?? []);
+            setRegistrations((data as Registration[]) ?? []);
             setLoading(false);
           });
         }}
@@ -133,16 +133,18 @@ export default function OfficeDeskRegistrationsPage() {
     setReminderRunning(true);
     setReminderResult(null);
 
-    const { data, error } = await supabase.rpc('pending_payment_reminder' as any);
+    const { data, error } = await supabase.rpc('pending_payment_reminder' as never);
 
     if (error) {
       setReminderResult(`Error: ${error.message}`);
     } else {
-      const rows = (data as any[]) ?? [];
+      const rows = (data as Array<{ student_name: string }>) ?? [];
       if (rows.length === 0) {
         setReminderResult('No registrations pending payment for >24 hours.');
       } else {
-        setReminderResult(`Sent ${rows.length} reminder(s) for: ${rows.map((r: any) => r.student_name).join(', ')}`);
+        setReminderResult(
+          `Sent ${rows.length} reminder(s) for: ${rows.map((r: { student_name: string }) => r.student_name).join(', ')}`
+        );
       }
     }
 
@@ -172,7 +174,7 @@ export default function OfficeDeskRegistrationsPage() {
             </option>
           ))}
         </select>
-        <button
+        <button type="button"
           onClick={handleRunReminder}
           disabled={reminderRunning}
           className="px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50"
@@ -183,10 +185,13 @@ export default function OfficeDeskRegistrationsPage() {
       </div>
 
       {reminderResult && (
-        <div className="mt-2 px-3 py-2 text-sm rounded-lg" style={{
-          backgroundColor: reminderResult.startsWith('Error') ? '#fee2e2' : '#d1fae5',
-          color: reminderResult.startsWith('Error') ? '#991b1b' : '#065f46',
-        }}>
+        <div
+          className="mt-2 px-3 py-2 text-sm rounded-lg"
+          style={{
+            backgroundColor: reminderResult.startsWith('Error') ? '#fee2e2' : '#d1fae5',
+            color: reminderResult.startsWith('Error') ? '#991b1b' : '#065f46',
+          }}
+        >
           {reminderResult}
         </div>
       )}
@@ -214,6 +219,7 @@ export default function OfficeDeskRegistrationsPage() {
                 key={reg.id}
                 style={styles.row}
                 onClick={() => navigate(`/lms/office-desk/registrations/${reg.id}`)}
+                onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/lms/office-desk/registrations/${reg.id}`); } }}
               >
                 <td style={styles.td}>
                   <span
@@ -240,9 +246,9 @@ export default function OfficeDeskRegistrationsPage() {
                     <span style={{ color: '#a0aec0' }}>Pending</span>
                   )}
                 </td>
-                <td style={styles.td} onClick={(e) => e.stopPropagation()}>
+                <td style={styles.td} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                   {reg.status === 'pending_review' && (
-                    <button
+                    <button type="button"
                       onClick={() => handleBulkAction('approved')}
                       disabled={updating === reg.id}
                       style={styles.approveButton}

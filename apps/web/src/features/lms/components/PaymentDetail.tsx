@@ -2,10 +2,7 @@
 // Row 72: Full payment request view for teacher workflow
 
 import { useEffect, useState } from 'react';
-import {
-  getPaymentRequestById,
-  type PaymentRequestWithRelations,
-} from '../services/supabase';
+import { type PaymentRequestWithRelations, getPaymentRequestById } from '../services/supabase';
 import { StatusBadge } from './StatusBadge';
 
 interface PaymentDetailProps {
@@ -13,7 +10,7 @@ interface PaymentDetailProps {
   onBack: () => void;
 }
 
-function generateQrCodeSvg(url: string, size: number = 200): string {
+function generateQrCodeSvg(url: string, size = 200): string {
   // Simple QR code generation using API
   const encodedUrl = encodeURIComponent(url);
   return `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodedUrl}`;
@@ -64,7 +61,7 @@ export function PaymentDetail({ paymentId, onBack }: PaymentDetailProps) {
   return (
     <div style={styles.card}>
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backButton}>
+        <button type="button" onClick={onBack} style={styles.backButton}>
           Back to List
         </button>
       </div>
@@ -118,7 +115,7 @@ export function PaymentDetail({ paymentId, onBack }: PaymentDetailProps) {
               readOnly
               style={styles.linkInput}
             />
-            <button onClick={handleCopyLink} style={styles.copyButton}>
+            <button type="button" onClick={handleCopyLink} style={styles.copyButton}>
               {copied ? 'Copied!' : 'Copy'}
             </button>
           </div>
@@ -144,9 +141,7 @@ export function PaymentDetail({ paymentId, onBack }: PaymentDetailProps) {
             <div style={styles.timelineDot} />
             <div>
               <div style={styles.timelineLabel}>Created</div>
-              <div style={styles.timelineDate}>
-                {new Date(request.created_at).toLocaleString()}
-              </div>
+              <div style={styles.timelineDate}>{new Date(request.created_at).toLocaleString()}</div>
             </div>
           </div>
           {request.paid_at && (
@@ -154,9 +149,7 @@ export function PaymentDetail({ paymentId, onBack }: PaymentDetailProps) {
               <div style={{ ...styles.timelineDot, backgroundColor: '#38a169' }} />
               <div>
                 <div style={styles.timelineLabel}>Paid</div>
-                <div style={styles.timelineDate}>
-                  {new Date(request.paid_at).toLocaleString()}
-                </div>
+                <div style={styles.timelineDate}>{new Date(request.paid_at).toLocaleString()}</div>
               </div>
             </div>
           )}

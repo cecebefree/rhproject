@@ -1,4 +1,4 @@
-import { Inquiry } from '../../index';
+import type { Inquiry } from '../../index';
 
 interface ScheduleCallbackModalProps {
   inquiry: Inquiry | null;
@@ -7,6 +7,11 @@ interface ScheduleCallbackModalProps {
   onSuccess: () => void;
 }
 
-export function ScheduleCallbackModal({ inquiry, isOpen, onClose, onSuccess }: ScheduleCallbackModalProps) {
-  return <div></div>;
+export function ScheduleCallbackModal({
+  inquiry,
+  isOpen,
+  onClose,
+  onSuccess,
+}: ScheduleCallbackModalProps) {
+  return <div />;
 }

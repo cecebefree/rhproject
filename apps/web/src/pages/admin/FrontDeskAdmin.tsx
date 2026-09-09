@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
-  InquiryQueue,
   Dashboard,
-  Timeline,
-  TakeInquiryModal,
+  EscalateModal,
+  InquiryQueue,
   ScheduleCallbackModal,
   SendEmailModal,
-  EscalateModal,
+  TakeInquiryModal,
+  Timeline,
   ToastContainer,
   useKeyboardShortcuts,
 } from '../../features/front-desk';
@@ -59,24 +59,61 @@ export function FrontDeskAdmin() {
               <div className="bg-white rounded-lg shadow-sm p-4 overflow-auto">
                 <h3 className="font-bold text-lg mb-3">{selectedInquiry.contact_name}</h3>
                 <div className="space-y-2 text-sm">
-                  <div><span className="font-semibold text-gray-700">Email:</span><p className="text-gray-600">{selectedInquiry.contact_email}</p></div>
-                  <div><span className="font-semibold text-gray-700">Phone:</span><p className="text-gray-600">{selectedInquiry.contact_phone}</p></div>
-                  <div><span className="font-semibold text-gray-700">Program:</span><p className="text-gray-600">{selectedInquiry.program_interest}</p></div>
-                  <div><span className="font-semibold text-gray-700">Status:</span><p className="text-gray-600">{selectedInquiry.enrollment_status}</p></div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Email:</span>
+                    <p className="text-gray-600">{selectedInquiry.contact_email}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Phone:</span>
+                    <p className="text-gray-600">{selectedInquiry.contact_phone}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Program:</span>
+                    <p className="text-gray-600">{selectedInquiry.program_interest}</p>
+                  </div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Status:</span>
+                    <p className="text-gray-600">{selectedInquiry.enrollment_status}</p>
+                  </div>
                   <div>
                     <span className="font-semibold text-gray-700">AI Category:</span>
-                    <span className={`ml-2 px-2 py-1 rounded text-white text-xs font-bold ${selectedInquiry.ai_category === 'hot_lead' ? 'bg-red-500' : selectedInquiry.ai_category === 'warm' ? 'bg-orange-500' : selectedInquiry.ai_category === 'nurture' ? 'bg-yellow-500' : 'bg-gray-500'}`}>
+                    <span
+                      className={`ml-2 px-2 py-1 rounded text-white text-xs font-bold ${selectedInquiry.ai_category === 'hot_lead' ? 'bg-red-500' : selectedInquiry.ai_category === 'warm' ? 'bg-orange-500' : selectedInquiry.ai_category === 'nurture' ? 'bg-yellow-500' : 'bg-gray-500'}`}
+                    >
                       {selectedInquiry.ai_category?.toUpperCase()}
                     </span>
                   </div>
-                  <div><span className="font-semibold text-gray-700">Timezone:</span><p className="text-gray-600">{selectedInquiry.timezone}</p></div>
+                  <div>
+                    <span className="font-semibold text-gray-700">Timezone:</span>
+                    <p className="text-gray-600">{selectedInquiry.timezone}</p>
+                  </div>
                 </div>
 
                 <div className="mt-4 space-y-2 border-t pt-4">
-                  <button onClick={() => setTakeModalOpen(true)} className="w-full px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 font-medium">Take Inquiry</button>
-                  <button onClick={() => setCallbackModalOpen(true)} className="w-full px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 font-medium">Schedule Callback</button>
-                  <button onClick={() => setEmailModalOpen(true)} className="w-full px-3 py-2 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700 font-medium">Send Email</button>
-                  <button onClick={() => setEscalateModalOpen(true)} className="w-full px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 font-medium">Escalate</button>
+                  <button type="button"
+                    onClick={() => setTakeModalOpen(true)}
+                    className="w-full px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 font-medium"
+                  >
+                    Take Inquiry
+                  </button>
+                  <button type="button"
+                    onClick={() => setCallbackModalOpen(true)}
+                    className="w-full px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700 font-medium"
+                  >
+                    Schedule Callback
+                  </button>
+                  <button type="button"
+                    onClick={() => setEmailModalOpen(true)}
+                    className="w-full px-3 py-2 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700 font-medium"
+                  >
+                    Send Email
+                  </button>
+                  <button type="button"
+                    onClick={() => setEscalateModalOpen(true)}
+                    className="w-full px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700 font-medium"
+                  >
+                    Escalate
+                  </button>
                 </div>
               </div>
             )}
@@ -89,10 +126,31 @@ export function FrontDeskAdmin() {
       </div>
 
       {/* Modals */}
-      <TakeInquiryModal inquiry={selectedInquiry} isOpen={takeModalOpen} onClose={() => setTakeModalOpen(false)} onSuccess={handleActionSuccess} currentCounselorId="current-user-id" />
-      <ScheduleCallbackModal inquiry={selectedInquiry} isOpen={callbackModalOpen} onClose={() => setCallbackModalOpen(false)} onSuccess={handleActionSuccess} />
-      <SendEmailModal inquiry={selectedInquiry} isOpen={emailModalOpen} onClose={() => setEmailModalOpen(false)} onSuccess={handleActionSuccess} />
-      <EscalateModal inquiry={selectedInquiry} isOpen={escalateModalOpen} onClose={() => setEscalateModalOpen(false)} onSuccess={handleActionSuccess} />
+      <TakeInquiryModal
+        inquiry={selectedInquiry}
+        isOpen={takeModalOpen}
+        onClose={() => setTakeModalOpen(false)}
+        onSuccess={handleActionSuccess}
+        currentCounselorId="current-user-id"
+      />
+      <ScheduleCallbackModal
+        inquiry={selectedInquiry}
+        isOpen={callbackModalOpen}
+        onClose={() => setCallbackModalOpen(false)}
+        onSuccess={handleActionSuccess}
+      />
+      <SendEmailModal
+        inquiry={selectedInquiry}
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSuccess={handleActionSuccess}
+      />
+      <EscalateModal
+        inquiry={selectedInquiry}
+        isOpen={escalateModalOpen}
+        onClose={() => setEscalateModalOpen(false)}
+        onSuccess={handleActionSuccess}
+      />
 
       <ToastContainer />
     </div>

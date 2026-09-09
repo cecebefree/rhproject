@@ -244,9 +244,9 @@ export class OfflineQueueManager {
         const mutations = request.result as OfflineMutation[];
         resolve({
           total: mutations.length,
-          pending: mutations.filter(m => m.status === 'pending').length,
-          processing: mutations.filter(m => m.status === 'processing').length,
-          failed: mutations.filter(m => m.status === 'failed').length,
+          pending: mutations.filter((m) => m.status === 'pending').length,
+          processing: mutations.filter((m) => m.status === 'processing').length,
+          failed: mutations.filter((m) => m.status === 'failed').length,
         });
       };
 

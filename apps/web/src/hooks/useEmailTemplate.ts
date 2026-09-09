@@ -241,7 +241,7 @@ export function useTemplateUsage(
     setLoading(true);
     setError(null);
 
-    let result;
+    let result: Awaited<ReturnType<typeof selectTemplateUsage>> | Awaited<ReturnType<typeof selectAllTemplateUsage>>;
     if (templateId) {
       result = await selectTemplateUsage(templateId);
     } else {

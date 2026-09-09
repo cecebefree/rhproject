@@ -20,7 +20,7 @@ export function Dashboard({ showPeriodSelector = true }: DashboardProps) {
       {/* Period Selector */}
       {showPeriodSelector && (
         <div className="flex gap-2 mb-6 p-4 border rounded bg-gray-50">
-          <button
+          <button type="button"
             onClick={() => setPeriod('today')}
             className={`px-4 py-2 rounded text-sm font-medium ${
               period === 'today'
@@ -30,7 +30,7 @@ export function Dashboard({ showPeriodSelector = true }: DashboardProps) {
           >
             Today
           </button>
-          <button
+          <button type="button"
             onClick={() => setPeriod('week')}
             className={`px-4 py-2 rounded text-sm font-medium ${
               period === 'week'
@@ -40,7 +40,7 @@ export function Dashboard({ showPeriodSelector = true }: DashboardProps) {
           >
             This Week
           </button>
-          <button
+          <button type="button"
             onClick={() => setPeriod('month')}
             className={`px-4 py-2 rounded text-sm font-medium ${
               period === 'month'

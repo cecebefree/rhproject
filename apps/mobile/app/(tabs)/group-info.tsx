@@ -1,23 +1,59 @@
 // GroupInfoScreen — Chat adjustments
 // Group info view: member list, category badge, lead, count, media-dial
+// WIRED to real DB — group_conversations via groupChatClient
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { Badge } from '../../src/components/Badge';
-import { SEED_GROUPS } from '../../src/seed/groups';
+import { EmptyState } from '../../src/components/EmptyState';
+import { LoadingState } from '../../src/components/LoadingState';
+import { fetchGroupInfo, type GroupInfo } from '../../src/lib/groupChatClient';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 
 export default function GroupInfoScreen() {
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const [group, setGroup] = useState<GroupInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [mediaEnabled, setMediaEnabled] = useState(false);
-  const group = SEED_GROUPS[0]; // Default to first group
+
+  useEffect(() => {
+    if (!groupId) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchGroupInfo(groupId);
+        if (!cancelled) setGroup(data);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load group info');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [groupId]);
+
+  if (loading) return <LoadingState />;
+  if (error) return <EmptyState title="Error" message={error} />;
+  if (!group) return <EmptyState title="Group not found" message="This group may have been removed." />;
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.name}>{group.name}</Text>
-        <Badge category={group.category} />
+        <Badge category={group.category as any} />
       </View>
 
       <View style={styles.section}>
@@ -30,6 +66,13 @@ export default function GroupInfoScreen() {
           <Text style={styles.value}>{group.memberCount}</Text>
         </View>
       </View>
+
+      {group.description && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.description}>{group.description}</Text>
+        </View>
+      )}
 
       <View style={styles.section}>
         <View style={styles.row}>
@@ -50,12 +93,6 @@ export default function GroupInfoScreen() {
           <View style={styles.leadBadge}>
             <Text style={styles.leadText}>Lead</Text>
           </View>
-        </View>
-        <View style={styles.memberRow}>
-          <Text style={styles.memberName}>Zoe Mitchell</Text>
-        </View>
-        <View style={styles.memberRow}>
-          <Text style={styles.memberName}>Thomas Chen</Text>
         </View>
       </View>
     </ScrollView>
@@ -127,5 +164,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: typography.sizes.badge,
     fontWeight: typography.weights.medium,
+  },
+  description: {
+    fontSize: typography.sizes.body,
+    color: colors.charcoalLight,
+    lineHeight: 20,
   },
 });

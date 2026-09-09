@@ -2,7 +2,7 @@
 // Row 73: Course name, date, student list with status/marked_by/notes
 
 import { useEffect, useState } from 'react';
-import { getAttendanceByDate, type AttendanceWithRelations } from '../services/supabase';
+import { type AttendanceWithRelations, getAttendanceByDate } from '../services/supabase';
 import { StatusBadge } from './StatusBadge';
 
 interface AttendanceDetailProps {
@@ -11,11 +11,7 @@ interface AttendanceDetailProps {
   onBack: () => void;
 }
 
-export function AttendanceDetail({
-  courseId,
-  classDate,
-  onBack,
-}: AttendanceDetailProps) {
+export function AttendanceDetail({ courseId, classDate, onBack }: AttendanceDetailProps) {
   const [records, setRecords] = useState<AttendanceWithRelations[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +48,7 @@ export function AttendanceDetail({
   return (
     <div style={styles.card}>
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backButton}>
+        <button type="button" onClick={onBack} style={styles.backButton}>
           Back to List
         </button>
       </div>
@@ -63,18 +59,26 @@ export function AttendanceDetail({
       <div style={styles.summaryBar}>
         <div style={styles.summaryItem}>
           <span style={{ ...styles.dot, backgroundColor: '#38a169' }} />
-          <span>Present: <strong>{presentCount}</strong></span>
+          <span>
+            Present: <strong>{presentCount}</strong>
+          </span>
         </div>
         <div style={styles.summaryItem}>
           <span style={{ ...styles.dot, backgroundColor: '#e53e3e' }} />
-          <span>Absent: <strong>{absentCount}</strong></span>
+          <span>
+            Absent: <strong>{absentCount}</strong>
+          </span>
         </div>
         <div style={styles.summaryItem}>
           <span style={{ ...styles.dot, backgroundColor: '#d69e2e' }} />
-          <span>Excused: <strong>{excusedCount}</strong></span>
+          <span>
+            Excused: <strong>{excusedCount}</strong>
+          </span>
         </div>
         <div style={styles.summaryItem}>
-          <span>Total: <strong>{records.length}</strong></span>
+          <span>
+            Total: <strong>{records.length}</strong>
+          </span>
         </div>
       </div>
 
@@ -95,9 +99,7 @@ export function AttendanceDetail({
                 <StatusBadge status={r.status as 'present' | 'absent' | 'excused'} />
               </div>
               <div style={styles.colNotes}>{r.notes || '—'}</div>
-              <div style={styles.colMarked}>
-                {new Date(r.marked_at).toLocaleTimeString()}
-              </div>
+              <div style={styles.colMarked}>{new Date(r.marked_at).toLocaleTimeString()}</div>
             </div>
           ))}
         </div>
@@ -134,7 +136,13 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #e2e8f0',
     marginBottom: '24px',
   },
-  summaryItem: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#4a5568' },
+  summaryItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '14px',
+    color: '#4a5568',
+  },
   dot: { width: '8px', height: '8px', borderRadius: '50%' },
   empty: { padding: '24px', textAlign: 'center', color: '#718096', fontSize: '14px' },
   table: { display: 'flex', flexDirection: 'column' },
@@ -158,5 +166,11 @@ const styles: Record<string, React.CSSProperties> = {
   colNotes: { flex: 2, fontSize: '14px', color: '#718096' },
   colMarked: { flex: 1, fontSize: '12px', color: '#718096' },
   loading: { padding: '24px', textAlign: 'center', color: '#718096' },
-  error: { padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '14px' },
+  error: {
+    padding: '12px',
+    backgroundColor: '#fee2e2',
+    color: '#991b1b',
+    borderRadius: '6px',
+    fontSize: '14px',
+  },
 };

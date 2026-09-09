@@ -95,9 +95,7 @@ export async function uploadNoteAttachment(
   }
 
   // Get public URL
-  const { data: urlData } = supabase.storage
-    .from(BUCKET_NAME)
-    .getPublicUrl(uploadData.path);
+  const { data: urlData } = supabase.storage.from(BUCKET_NAME).getPublicUrl(uploadData.path);
 
   return {
     data: {
@@ -116,9 +114,7 @@ export async function uploadNoteAttachment(
 export async function deleteNoteAttachment(
   filePath: string
 ): Promise<{ error: UploadError | null }> {
-  const { error: deleteError } = await supabase.storage
-    .from(BUCKET_NAME)
-    .remove([filePath]);
+  const { error: deleteError } = await supabase.storage.from(BUCKET_NAME).remove([filePath]);
 
   if (deleteError) {
     return {

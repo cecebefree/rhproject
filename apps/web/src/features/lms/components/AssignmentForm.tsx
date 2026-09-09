@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import {
-  insertAssignment,
-  getTeacherCourses,
-  type Assignment,
-} from '../services/supabase';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { type Assignment, getTeacherCourses, insertAssignment } from '../services/supabase';
 
 interface AssignmentFormProps {
   tenantId: string;
@@ -17,12 +14,7 @@ interface CourseOption {
   title: string;
 }
 
-export function AssignmentForm({
-  tenantId,
-  userId,
-  onSuccess,
-  onCancel,
-}: AssignmentFormProps) {
+export function AssignmentForm({ tenantId, userId, onSuccess, onCancel }: AssignmentFormProps) {
   const [courses, setCourses] = useState<CourseOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +29,7 @@ export function AssignmentForm({
     dueDate: '',
   });
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: userId triggers course load
   useEffect(() => {
     loadCourses();
   }, [userId]);
@@ -46,13 +39,13 @@ export function AssignmentForm({
       const { data, error } = await getTeacherCourses(userId);
       if (error) throw error;
       setCourses(data || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load courses');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load courses');
     }
   }
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -73,8 +66,8 @@ export function AssignmentForm({
         throw new Error('Course and title are required');
       }
 
-      const maxScore = parseFloat(formData.maxScore) || 100;
-      const weight = parseFloat(formData.weight) || 1.0;
+      const maxScore = Number.parseFloat(formData.maxScore) || 100;
+      const weight = Number.parseFloat(formData.weight) || 1.0;
 
       if (maxScore <= 0) throw new Error('Max score must be greater than 0');
       if (weight <= 0) throw new Error('Weight must be greater than 0');
@@ -103,8 +96,8 @@ export function AssignmentForm({
       });
 
       if (onSuccess) onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'Failed to create assignment');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to create assignment');
     } finally {
       setLoading(false);
     }
@@ -136,8 +129,9 @@ export function AssignmentForm({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Course *</label>
+          <label htmlFor="assignment-course" className="block text-sm font-medium text-gray-700">Course *</label>
           <select
+            id="assignment-course"
             name="courseId"
             value={formData.courseId}
             onChange={handleChange}
@@ -154,8 +148,9 @@ export function AssignmentForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Title *</label>
+          <label htmlFor="assignment-title" className="block text-sm font-medium text-gray-700">Title *</label>
           <input
+            id="assignment-title"
             type="text"
             name="title"
             value={formData.title}
@@ -167,8 +162,9 @@ export function AssignmentForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <label htmlFor="assignment-desc" className="block text-sm font-medium text-gray-700">Description</label>
           <textarea
+            id="assignment-desc"
             name="description"
             value={formData.description}
             onChange={handleChange}
@@ -180,8 +176,9 @@ export function AssignmentForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Max Score</label>
+            <label htmlFor="assignment-max-score" className="block text-sm font-medium text-gray-700">Max Score</label>
             <input
+              id="assignment-max-score"
               type="number"
               name="maxScore"
               value={formData.maxScore}
@@ -193,14 +190,15 @@ export function AssignmentForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Weight: {weightLabels[parseFloat(formData.weight)] || `${formData.weight}x`}
+            <label htmlFor="assignment-weight" className="block text-sm font-medium text-gray-700">
+              Weight: {weightLabels[Number.parseFloat(formData.weight)] || `${formData.weight}x`}
             </label>
             <input
+              id="assignment-weight"
               type="range"
               name="weight"
               value={formData.weight}
-              onChange={(e) => handleWeightChange(parseFloat(e.target.value))}
+              onChange={(e) => handleWeightChange(Number.parseFloat(e.target.value))}
               min="0.25"
               max="3"
               step="0.25"
@@ -215,8 +213,9 @@ export function AssignmentForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Due Date</label>
+          <label htmlFor="assignment-due-date" className="block text-sm font-medium text-gray-700">Due Date</label>
           <input
+            id="assignment-due-date"
             type="datetime-local"
             name="dueDate"
             value={formData.dueDate}
@@ -227,16 +226,14 @@ export function AssignmentForm({
 
         <div className="flex justify-end space-x-3 pt-4">
           {onCancel && (
-            <button
-              type="button"
+            <button type="button"
               onClick={onCancel}
               className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Cancel
             </button>
           )}
-          <button
-            type="submit"
+          <button type="submit"
             disabled={loading}
             className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >

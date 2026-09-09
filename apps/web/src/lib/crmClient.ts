@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface FamilyProfile {
   id: string;
@@ -82,13 +82,14 @@ export async function fetchFamilyByCode(familyCode: string): Promise<FamilyData 
     .select('student_id')
     .is('deleted_at', null);
 
-  const studentIds = studentLinks?.map(l => l.student_id) || [];
-  const { data: students } = studentIds.length > 0
-    ? await supabase
-        .from('profiles')
-        .select('id, name, email, grade, curriculum, role')
-        .in('id', studentIds)
-    : { data: [] };
+  const studentIds = studentLinks?.map((l) => l.student_id) || [];
+  const { data: students } =
+    studentIds.length > 0
+      ? await supabase
+          .from('profiles')
+          .select('id, name, email, grade, curriculum, role')
+          .in('id', studentIds)
+      : { data: [] };
 
   // Get invoices
   const { data: invoices } = await supabase
@@ -108,8 +109,8 @@ export async function fetchFamilyByCode(familyCode: string): Promise<FamilyData 
 
   return {
     family: fa,
-    adults: adults?.map(a => ({ ...a, status: 'Active' })) || [],
-    students: students?.map(s => ({ ...s, status: 'Active' })) || [],
+    adults: adults?.map((a) => ({ ...a, status: 'Active' })) || [],
+    students: students?.map((s) => ({ ...s, status: 'Active' })) || [],
     invoices: invoices || [],
     payments: payments || [],
   };
@@ -138,13 +139,14 @@ export async function fetchFamilyById(familyId: string): Promise<FamilyData | nu
     .select('student_id')
     .is('deleted_at', null);
 
-  const studentIds = studentLinks?.map(l => l.student_id) || [];
-  const { data: students } = studentIds.length > 0
-    ? await supabase
-        .from('profiles')
-        .select('id, name, email, grade, curriculum, role')
-        .in('id', studentIds)
-    : { data: [] };
+  const studentIds = studentLinks?.map((l) => l.student_id) || [];
+  const { data: students } =
+    studentIds.length > 0
+      ? await supabase
+          .from('profiles')
+          .select('id, name, email, grade, curriculum, role')
+          .in('id', studentIds)
+      : { data: [] };
 
   // Get invoices
   const { data: invoices } = await supabase
@@ -164,8 +166,8 @@ export async function fetchFamilyById(familyId: string): Promise<FamilyData | nu
 
   return {
     family: fa,
-    adults: adults?.map(a => ({ ...a, status: 'Active' })) || [],
-    students: students?.map(s => ({ ...s, status: 'Active' })) || [],
+    adults: adults?.map((a) => ({ ...a, status: 'Active' })) || [],
+    students: students?.map((s) => ({ ...s, status: 'Active' })) || [],
     invoices: invoices || [],
     payments: payments || [],
   };

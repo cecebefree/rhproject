@@ -6,7 +6,8 @@ function parseSupabaseError(error: unknown): string {
   if (error instanceof Error) {
     if (error.message.includes('duplicate key')) return 'This record already exists';
     if (error.message.includes('foreign key')) return 'Referenced record not found';
-    if (error.message.includes('permission denied')) return 'You do not have permission to perform this action';
+    if (error.message.includes('permission denied'))
+      return 'You do not have permission to perform this action';
     if (error.message.includes('401')) return 'Authentication required. Please log in again.';
     return error.message;
   }
@@ -51,13 +52,16 @@ export function useInquiryActions() {
       });
       if (err) throw err;
 
-      await supabase.schema('front_desk').from('activity_log').insert({
-        inquiry_id: payload.inquiry_id,
-        desk: 'front',
-        action: 'Inquiry Assigned',
-        performed_by: payload.counselor_id,
-        notes: `Assigned to counselor ${payload.counselor_id}`,
-      });
+      await supabase
+        .schema('front_desk')
+        .from('activity_log')
+        .insert({
+          inquiry_id: payload.inquiry_id,
+          desk: 'front',
+          action: 'Inquiry Assigned',
+          performed_by: payload.counselor_id,
+          notes: `Assigned to counselor ${payload.counselor_id}`,
+        });
 
       showToast('Inquiry assigned successfully', 'success');
       return data;
@@ -82,13 +86,16 @@ export function useInquiryActions() {
       });
       if (err) throw err;
 
-      await supabase.schema('front_desk').from('activity_log').insert({
-        inquiry_id: payload.inquiry_id,
-        desk: 'front',
-        action: 'Callback Scheduled',
-        performed_by: 'system',
-        notes: `Callback scheduled for ${new Date(payload.scheduled_at).toLocaleString()}. ${payload.notes || ''}`,
-      });
+      await supabase
+        .schema('front_desk')
+        .from('activity_log')
+        .insert({
+          inquiry_id: payload.inquiry_id,
+          desk: 'front',
+          action: 'Callback Scheduled',
+          performed_by: 'system',
+          notes: `Callback scheduled for ${new Date(payload.scheduled_at).toLocaleString()}. ${payload.notes || ''}`,
+        });
 
       showToast('Callback scheduled successfully', 'success');
       return data;
@@ -114,13 +121,16 @@ export function useInquiryActions() {
       });
       if (err) throw err;
 
-      await supabase.schema('front_desk').from('activity_log').insert({
-        inquiry_id: payload.inquiry_id,
-        desk: 'comms',
-        action: 'Email Sent',
-        performed_by: 'system',
-        notes: `Email sent to ${payload.recipient_email}. Subject: ${payload.subject}`,
-      });
+      await supabase
+        .schema('front_desk')
+        .from('activity_log')
+        .insert({
+          inquiry_id: payload.inquiry_id,
+          desk: 'comms',
+          action: 'Email Sent',
+          performed_by: 'system',
+          notes: `Email sent to ${payload.recipient_email}. Subject: ${payload.subject}`,
+        });
 
       showToast('Email sent successfully', 'success');
       return data;
@@ -145,13 +155,16 @@ export function useInquiryActions() {
       });
       if (err) throw err;
 
-      await supabase.schema('front_desk').from('activity_log').insert({
-        inquiry_id: payload.inquiry_id,
-        desk: 'front',
-        action: 'Escalated',
-        performed_by: 'system',
-        notes: `Escalated to ${payload.escalation_target || 'manager'}. Reason: ${payload.escalation_reason}`,
-      });
+      await supabase
+        .schema('front_desk')
+        .from('activity_log')
+        .insert({
+          inquiry_id: payload.inquiry_id,
+          desk: 'front',
+          action: 'Escalated',
+          performed_by: 'system',
+          notes: `Escalated to ${payload.escalation_target || 'manager'}. Reason: ${payload.escalation_reason}`,
+        });
 
       showToast('Inquiry escalated successfully', 'success');
       return data;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../lms/services/supabase';
 
 interface Notification {
@@ -29,51 +29,70 @@ export function NotificationCenter({ onClose }: NotificationCenterProps) {
         loadNotifications();
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function loadNotifications() {
     setLoading(true);
     const { data } = await supabase
-      .from('office_desk.notifications' as any)
+      .from('office_desk.notifications' as never)
       .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
-    setNotifications((data as any) ?? []);
+    setNotifications((data as Notification[]) ?? []);
     setLoading(false);
   }
 
-  const filtered = filter === 'all' ? notifications : notifications.filter(n => n.status === filter);
-  const failedCount = notifications.filter(n => n.status === 'failed').length;
+  const filtered =
+    filter === 'all' ? notifications : notifications.filter((n) => n.status === filter);
+  const failedCount = notifications.filter((n) => n.status === 'failed').length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-end" onClick={onClose} onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}>
       <div className="absolute inset-0 bg-black/20" />
       <div
         className="relative mt-16 mr-4 w-96 max-h-[70vh] bg-white rounded-xl shadow-2xl border flex flex-col overflow-hidden"
         style={{ borderColor: 'rgba(195,199,204,0.3)' }}
         onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-4 py-3 border-b flex justify-between items-center" style={{ borderColor: 'rgba(195,199,204,0.3)' }}>
+        <div
+          className="px-4 py-3 border-b flex justify-between items-center"
+          style={{ borderColor: 'rgba(195,199,204,0.3)' }}
+        >
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm" style={{ color: '#273946' }}>notifications</span>
-            <h3 className="text-sm font-semibold" style={{ color: '#1A242B' }}>Notifications</h3>
+            <span className="material-symbols-outlined text-sm" style={{ color: '#273946' }}>
+              notifications
+            </span>
+            <h3 className="text-sm font-semibold" style={{ color: '#1A242B' }}>
+              Notifications
+            </h3>
             {failedCount > 0 && (
-              <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: '#FEE2E2', color: '#C8281E' }}>
+              <span
+                className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                style={{ backgroundColor: '#FEE2E2', color: '#C8281E' }}
+              >
                 {failedCount} failed
               </span>
             )}
           </div>
-          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 cursor-pointer">
-            <span className="material-symbols-outlined text-sm" style={{ color: '#54626C' }}>close</span>
+          <button type="button" onClick={onClose} className="p-1 rounded hover:bg-gray-100 cursor-pointer">
+            <span className="material-symbols-outlined text-sm" style={{ color: '#54626C' }}>
+              close
+            </span>
           </button>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-1 px-4 py-2 border-b" style={{ borderColor: 'rgba(195,199,204,0.3)' }}>
-          {(['all', 'sent', 'failed'] as const).map(f => (
-            <button
+        <div
+          className="flex gap-1 px-4 py-2 border-b"
+          style={{ borderColor: 'rgba(195,199,204,0.3)' }}
+        >
+          {(['all', 'sent', 'failed'] as const).map((f) => (
+            <button type="button"
               key={f}
               onClick={() => setFilter(f)}
               className="px-3 py-1 text-xs font-medium rounded-full transition-colors cursor-pointer"
@@ -90,12 +109,20 @@ export function NotificationCenter({ onClose }: NotificationCenterProps) {
         {/* List */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
-            <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>Loading...</div>
+            <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>
+              Loading...
+            </div>
           ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>No notifications</div>
+            <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>
+              No notifications
+            </div>
           ) : (
-            filtered.map(n => (
-              <div key={n.id} className="px-4 py-3 border-b hover:bg-gray-50 transition-colors" style={{ borderColor: 'rgba(195,199,204,0.15)' }}>
+            filtered.map((n) => (
+              <div
+                key={n.id}
+                className="px-4 py-3 border-b hover:bg-gray-50 transition-colors"
+                style={{ borderColor: 'rgba(195,199,204,0.15)' }}
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -109,9 +136,13 @@ export function NotificationCenter({ onClose }: NotificationCenterProps) {
                         {n.notification_type.replace(/_/g, ' ')}
                       </span>
                     </div>
-                    <p className="text-xs mt-1 truncate" style={{ color: '#54626C' }}>{n.email_to}</p>
+                    <p className="text-xs mt-1 truncate" style={{ color: '#54626C' }}>
+                      {n.email_to}
+                    </p>
                     {n.error_message && (
-                      <p className="text-xs mt-1 truncate" style={{ color: '#C8281E' }}>{n.error_message}</p>
+                      <p className="text-xs mt-1 truncate" style={{ color: '#C8281E' }}>
+                        {n.error_message}
+                      </p>
                     )}
                   </div>
                   <span className="text-xs whitespace-nowrap ml-2" style={{ color: '#9CA3AF' }}>

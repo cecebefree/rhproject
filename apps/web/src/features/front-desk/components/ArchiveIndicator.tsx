@@ -17,7 +17,14 @@ export function ArchiveIndicator({ archivedAt, archiveReason }: ArchiveIndicator
   }
 
   return (
-    <div style={{ padding: '8px', background: '#f5f5f5', borderRadius: '4px', borderLeft: '3px solid #ff9800' }}>
+    <div
+      style={{
+        padding: '8px',
+        background: '#f5f5f5',
+        borderRadius: '4px',
+        borderLeft: '3px solid #ff9800',
+      }}
+    >
       <strong>Archived</strong>
       <div style={{ fontSize: '0.9em', color: '#666' }}>
         {new Date(archivedAt).toLocaleDateString()}

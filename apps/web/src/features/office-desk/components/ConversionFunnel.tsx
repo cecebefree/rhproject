@@ -32,10 +32,10 @@ interface FunnelStageProps {
 
 function FunnelStage({ stage, count, rate, index, total, isLast }: FunnelStageProps) {
   const colors = FUNNEL_COLORS[index % FUNNEL_COLORS.length];
-  
+
   // Calculate width based on rate (100% at top, decreasing)
   const width = Math.max(20, rate);
-  
+
   // Calculate drop-off from previous stage
   const dropOff = index > 0 ? 100 - rate : 0;
 
@@ -57,9 +57,7 @@ function FunnelStage({ stage, count, rate, index, total, isLast }: FunnelStagePr
             {formatPercentage(rate)} conversion
           </div>
           {dropOff > 0 && (
-            <div className="text-xs text-red-500">
-              -{formatPercentage(dropOff)} drop-off
-            </div>
+            <div className="text-xs text-red-500">-{formatPercentage(dropOff)} drop-off</div>
           )}
           <div className="w-0.5 h-4 bg-gray-300 my-1" />
           <div className="text-gray-400">↓</div>
@@ -79,7 +77,7 @@ interface FunnelChartProps {
 
 function FunnelChart({ data }: FunnelChartProps) {
   const maxValue = data[0]?.count || 1;
-  
+
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h3 className="text-lg font-semibold mb-4">Conversion Funnel</h3>
@@ -87,7 +85,7 @@ function FunnelChart({ data }: FunnelChartProps) {
         {data.map((stage: { stage: string; count: number; rate: number }, index: number) => {
           const widthPercent = (stage.count / maxValue) * 100;
           const colors = FUNNEL_COLORS[index % FUNNEL_COLORS.length];
-          
+
           return (
             <div key={stage.stage} className="w-full flex flex-col items-center">
               <div
@@ -98,9 +96,7 @@ function FunnelChart({ data }: FunnelChartProps) {
                 <div className="text-sm">{formatNumber(stage.count)}</div>
                 <div className="text-xs opacity-75">{formatPercentage(stage.rate)}</div>
               </div>
-              {index < data.length - 1 && (
-                <div className="text-gray-400 my-1">↓</div>
-              )}
+              {index < data.length - 1 && <div className="text-gray-400 my-1">↓</div>}
             </div>
           );
         })}
@@ -120,14 +116,14 @@ interface ConversionStatsProps {
 function ConversionStats({ data }: ConversionStatsProps) {
   const stats = useMemo(() => {
     if (data.length < 2) return null;
-    
+
     const first = data[0];
     const last = data[data.length - 1];
     const overallConversion = first.count > 0 ? (last.count / first.count) * 100 : 0;
-    
+
     // Calculate average time between stages (placeholder - would need timestamp data)
     const avgConversionTime = '2.5 days'; // Placeholder
-    
+
     return {
       overallConversion,
       totalLeads: first.count,
@@ -155,15 +151,11 @@ function ConversionStats({ data }: ConversionStatsProps) {
           <div className="text-sm text-gray-500">Total Converted</div>
         </div>
         <div className="text-center p-4 bg-gray-50 rounded">
-          <div className="text-3xl font-bold text-purple-600">
-            {formatNumber(stats.totalLeads)}
-          </div>
+          <div className="text-3xl font-bold text-purple-600">{formatNumber(stats.totalLeads)}</div>
           <div className="text-sm text-gray-500">Total Leads</div>
         </div>
         <div className="text-center p-4 bg-gray-50 rounded">
-          <div className="text-3xl font-bold text-orange-600">
-            {stats.avgConversionTime}
-          </div>
+          <div className="text-3xl font-bold text-orange-600">{stats.avgConversionTime}</div>
           <div className="text-sm text-gray-500">Avg Conversion Time</div>
         </div>
       </div>
@@ -192,18 +184,12 @@ export default function ConversionFunnel({ tenantId }: ConversionFunnelProps) {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        {error}
-      </div>
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
     );
   }
 
   if (funnel.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        No funnel data available
-      </div>
-    );
+    return <div className="text-center py-8 text-gray-500">No funnel data available</div>;
   }
 
   return (
@@ -216,10 +202,7 @@ export default function ConversionFunnel({ tenantId }: ConversionFunnelProps) {
             Track how leads progress through your sales pipeline
           </p>
         </div>
-        <button
-          onClick={refresh}
-          className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-        >
+        <button type="button" onClick={refresh} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
           Refresh
         </button>
       </div>
@@ -227,17 +210,17 @@ export default function ConversionFunnel({ tenantId }: ConversionFunnelProps) {
       {/* Funnel Visualization */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex flex-col items-center space-y-2">
-              {funnel.map((stage: { stage: string; count: number; rate: number }, index: number) => (
-                <FunnelStage
-                  key={stage.stage}
-                  stage={stage.stage}
-                  count={stage.count}
-                  rate={stage.rate}
-                  index={index}
-                  total={funnel[0].count}
-                  isLast={index === funnel.length - 1}
-                />
-              ))}
+          {funnel.map((stage: { stage: string; count: number; rate: number }, index: number) => (
+            <FunnelStage
+              key={stage.stage}
+              stage={stage.stage}
+              count={stage.count}
+              rate={stage.rate}
+              index={index}
+              total={funnel[0].count}
+              isLast={index === funnel.length - 1}
+            />
+          ))}
         </div>
       </div>
 

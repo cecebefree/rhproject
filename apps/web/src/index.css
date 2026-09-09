@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-text-main: #1A242B;
+  --color-brand-navy: #273946;
+  --color-brand-red: #C8281E;
+  --color-brand-gold: #E8A020;
+  --color-surface-cream: #F8F7F4;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f4f3f0;
+  --color-surface-container: #efeeeb;
+  --color-surface-container-high: #e9e8e5;
+  --color-surface-container-highest: #e3e2df;
+  --color-surface-dim: #dbdad7;
+  --color-surface-bright: #faf9f6;
+  --color-on-surface: #1a1c1a;
+  --color-on-surface-variant: #43474b;
+  --color-on-primary: #ffffff;
+  --color-primary: #112430;
+  --color-primary-container: #273946;
+  --color-outline: #73777c;
+  --color-outline-variant: #c3c7cc;
+  --color-text-muted: #54626C;
+
+  --font-display-lg: "EB Garamond", serif;
+  --font-headline-lg: "EB Garamond", serif;
+  --font-headline-md: "EB Garamond", serif;
+  --font-body-lg: "Source Sans 3", sans-serif;
+  --font-body-md: "Source Sans 3", sans-serif;
+  --font-body-sm: "Source Sans 3", sans-serif;
+  --font-label-caps: "Source Sans 3", sans-serif;
+  --font-total-numeric: "EB Garamond", serif;
+
+  --text-display-lg: 36px;
+  --text-headline-lg: 24px;
+  --text-headline-md: 20px;
+  --text-body-lg: 16px;
+  --text-body-md: 14px;
+  --text-body-sm: 12px;
+  --text-label-caps: 11px;
+  --text-total-numeric: 22px;
+}
+
+body {
+  background-color: #F8F7F4;
+  color: #1A242B;
+  font-family: "Source Sans 3", sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import type React from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 export type EntityType = 'lead' | 'contact' | 'invoice';
 
@@ -79,11 +80,9 @@ export function BulkSelectionProvider({
     setSelectAll(false);
   }, []);
 
-  const isSelected = useCallback(
-    (id: string) => selectedIds.has(id),
-    [selectedIds]
-  );
+  const isSelected = useCallback((id: string) => selectedIds.has(id), [selectedIds]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: setEntityType/setTenantId/setTotalCount are stable state setters
   const value = useMemo(
     () => ({
       selectedIds,
@@ -120,11 +119,7 @@ export function BulkSelectionProvider({
     ]
   );
 
-  return (
-    <BulkSelectionContext.Provider value={value}>
-      {children}
-    </BulkSelectionContext.Provider>
-  );
+  return <BulkSelectionContext.Provider value={value}>{children}</BulkSelectionContext.Provider>;
 }
 
 export function useBulkSelection() {

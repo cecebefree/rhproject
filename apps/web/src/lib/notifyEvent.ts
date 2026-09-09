@@ -1,8 +1,8 @@
 // notifyEvent — create in-app notifications + trigger email for key events (Row 74)
 // Called from components when: registration approved, grade posted, attendance logged, message sent
 
-import { supabaseUntyped } from '../features/lms/services/supabase';
 import { createClient } from '@supabase/supabase-js';
+import { supabaseUntyped } from '../features/lms/services/supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -71,7 +71,9 @@ export async function notifyRegistrationApproved(params: {
 
   // Best-effort email via EF
   try {
-    const { data: { session } } = await supabaseUntyped.auth.getSession();
+    const {
+      data: { session },
+    } = await supabaseUntyped.auth.getSession();
     if (session?.access_token) {
       await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-template-email`, {
         method: 'POST',
@@ -107,7 +109,16 @@ export async function notifyGradePosted(params: {
   maxScore: number;
   courseId: string;
 }): Promise<NotifyResult> {
-  const { tenantId, studentName, parentUserId, courseName, assignmentName, score, maxScore, courseId } = params;
+  const {
+    tenantId,
+    studentName,
+    parentUserId,
+    courseName,
+    assignmentName,
+    score,
+    maxScore,
+    courseId,
+  } = params;
   const pct = Math.round((score / maxScore) * 100);
 
   return createNotification({

@@ -13,7 +13,12 @@ interface OfflineIndicatorProps {
 
 export function OfflineIndicator({ className = '' }: OfflineIndicatorProps) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [queueStatus, setQueueStatus] = useState({ total: 0, pending: 0, processing: 0, failed: 0 });
+  const [queueStatus, setQueueStatus] = useState({
+    total: 0,
+    pending: 0,
+    processing: 0,
+    failed: 0,
+  });
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -48,14 +53,8 @@ export function OfflineIndicator({ className = '' }: OfflineIndicatorProps) {
         isOnline ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
       } ${className}`}
     >
-      <div
-        className={`w-2 h-2 rounded-full ${
-          isOnline ? 'bg-green-500' : 'bg-amber-500'
-        }`}
-      />
-      <span className="text-sm font-medium">
-        {isOnline ? 'Online' : 'Offline'}
-      </span>
+      <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-amber-500'}`} />
+      <span className="text-sm font-medium">{isOnline ? 'Online' : 'Offline'}</span>
       {queueStatus.pending > 0 && (
         <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
           {queueStatus.pending} pending

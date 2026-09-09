@@ -1,7 +1,7 @@
 // AdvancedFilterPanel — Filter builder with date picker, status, tags (Row 2)
 
 import { useState } from 'react';
-import type { SearchEntityType, SearchFilters, SearchFilter } from '../services/searchService';
+import type { SearchEntityType, SearchFilter, SearchFilters } from '../services/searchService';
 
 interface AdvancedFilterPanelProps {
   entityType: SearchEntityType;
@@ -99,9 +99,7 @@ export function AdvancedFilterPanel({
   };
 
   const handleUpdateCondition = (index: number, updates: Partial<SearchFilter>) => {
-    setConditions((prev) =>
-      prev.map((cond, i) => (i === index ? { ...cond, ...updates } : cond))
-    );
+    setConditions((prev) => prev.map((cond, i) => (i === index ? { ...cond, ...updates } : cond)));
   };
 
   const handleRemoveCondition = (index: number) => {
@@ -140,31 +138,42 @@ export function AdvancedFilterPanel({
   ].reduce((a, b) => a + b, 0);
 
   return (
-    <div style={{
-      padding: '16px',
-      backgroundColor: '#f7fafc',
-      borderRadius: '8px',
-      border: '1px solid #e2e8f0',
-      marginBottom: '16px',
-    }}>
+    <div
+      style={{
+        padding: '16px',
+        backgroundColor: '#f7fafc',
+        borderRadius: '8px',
+        border: '1px solid #e2e8f0',
+        marginBottom: '16px',
+      }}
+    >
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '16px',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Advanced Filters</h3>
           {activeFilterCount > 0 && (
-            <span style={{
-              padding: '2px 8px',
-              borderRadius: '12px',
-              fontSize: '12px',
-              fontWeight: '500',
-              backgroundColor: '#3182ce',
-              color: 'white',
-            }}>
+            <span
+              style={{
+                padding: '2px 8px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: '500',
+                backgroundColor: '#3182ce',
+                color: 'white',
+              }}
+            >
               {activeFilterCount} active
             </span>
           )}
         </div>
-        <button
+        <button type="button"
           onClick={onClose}
           style={{
             background: 'none',
@@ -180,13 +189,21 @@ export function AdvancedFilterPanel({
 
       {/* Date Range */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+        <span
+          style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}
+        >
           Date Range
-        </label>
+        </span>
         <div style={{ display: 'flex', gap: '12px' }}>
           <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#718096' }}>From</label>
+            <label
+              htmlFor="filter-date-from"
+              style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#718096' }}
+            >
+              From
+            </label>
             <input
+              id="filter-date-from"
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
@@ -200,8 +217,14 @@ export function AdvancedFilterPanel({
             />
           </div>
           <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#718096' }}>To</label>
+            <label
+              htmlFor="filter-date-to"
+              style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: '#718096' }}
+            >
+              To
+            </label>
             <input
+              id="filter-date-to"
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
@@ -220,12 +243,14 @@ export function AdvancedFilterPanel({
       {/* Status Filter */}
       {statusOptions.length > 0 && (
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+          <span
+            style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}
+          >
             Status
-          </label>
+          </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {statusOptions.map((status) => (
-              <button
+              <button type="button"
                 key={status.value}
                 onClick={() => handleToggleStatus(status.value)}
                 style={{
@@ -247,9 +272,16 @@ export function AdvancedFilterPanel({
 
       {/* Custom Conditions */}
       <div style={{ marginBottom: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-          <label style={{ fontSize: '14px', fontWeight: '500' }}>Custom Conditions</label>
-          <button
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '8px',
+          }}
+        >
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>Custom Conditions</span>
+          <button type="button"
             onClick={handleAddCondition}
             style={{
               padding: '4px 8px',
@@ -266,13 +298,23 @@ export function AdvancedFilterPanel({
         </div>
 
         {conditions.length === 0 ? (
-          <div style={{ padding: '12px', textAlign: 'center', color: '#718096', fontSize: '13px', backgroundColor: 'white', borderRadius: '6px', border: '1px dashed #e2e8f0' }}>
+          <div
+            style={{
+              padding: '12px',
+              textAlign: 'center',
+              color: '#718096',
+              fontSize: '13px',
+              backgroundColor: 'white',
+              borderRadius: '6px',
+              border: '1px dashed #e2e8f0',
+            }}
+          >
             No custom conditions. Click "Add" to create one.
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {conditions.map((condition, index) => (
-              <div key={index} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div key={`${condition.field}-${index}`} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <select
                   value={condition.field}
                   onChange={(e) => handleUpdateCondition(index, { field: e.target.value })}
@@ -286,13 +328,19 @@ export function AdvancedFilterPanel({
                 >
                   <option value="">Select field</option>
                   {fieldOptions.map((field) => (
-                    <option key={field.value} value={field.value}>{field.label}</option>
+                    <option key={field.value} value={field.value}>
+                      {field.label}
+                    </option>
                   ))}
                 </select>
 
                 <select
                   value={condition.operator}
-                  onChange={(e) => handleUpdateCondition(index, { operator: e.target.value as SearchFilter['operator'] })}
+                  onChange={(e) =>
+                    handleUpdateCondition(index, {
+                      operator: e.target.value as SearchFilter['operator'],
+                    })
+                  }
                   style={{
                     flex: 2,
                     padding: '8px',
@@ -302,7 +350,9 @@ export function AdvancedFilterPanel({
                   }}
                 >
                   {OPERATOR_OPTIONS.map((op) => (
-                    <option key={op.value} value={op.value}>{op.label}</option>
+                    <option key={op.value} value={op.value}>
+                      {op.label}
+                    </option>
                   ))}
                 </select>
 
@@ -320,7 +370,7 @@ export function AdvancedFilterPanel({
                   }}
                 />
 
-                <button
+                <button type="button"
                   onClick={() => handleRemoveCondition(index)}
                   style={{
                     padding: '8px',
@@ -341,7 +391,7 @@ export function AdvancedFilterPanel({
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-        <button
+        <button type="button"
           onClick={handleClear}
           style={{
             padding: '8px 16px',
@@ -355,7 +405,7 @@ export function AdvancedFilterPanel({
         >
           Clear All
         </button>
-        <button
+        <button type="button"
           onClick={handleApply}
           style={{
             padding: '8px 16px',

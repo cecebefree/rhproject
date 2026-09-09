@@ -1,6 +1,6 @@
 // SchoolDeskAttendancePage — attendance tracking using existing AttendanceForm
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { AttendanceForm } from '../components/AttendanceForm';
 import { AttendanceList } from '../components/AttendanceList';
@@ -19,10 +19,8 @@ export default function SchoolDeskAttendancePage() {
   return (
     <div style={{ padding: '24px' }}>
       <div className="flex justify-between items-center mb-4">
-        <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#273946' }}>
-          Attendance
-        </h3>
-        <button
+        <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#273946' }}>Attendance</h3>
+        <button type="button"
           onClick={() => setView(view === 'list' ? 'mark' : 'list')}
           className="px-4 py-2 text-sm font-medium text-white rounded-lg"
           style={{ backgroundColor: '#2563EB' }}

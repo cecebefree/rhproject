@@ -94,8 +94,7 @@ export function DeskBreadcrumb({
       </ol>
 
       {entityName && entityType && (
-        <button
-          type="button"
+        <button type="button"
           onClick={handleCopyLink}
           style={styles.shareButton}
           title="Copy link to clipboard"

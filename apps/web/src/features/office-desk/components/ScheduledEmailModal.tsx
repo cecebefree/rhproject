@@ -1,9 +1,9 @@
 // ScheduledEmailModal — Schedule template sends modal
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useResponsive } from '../../../components/MobileNav';
 import type { EmailTemplate } from '../services/emailTemplateService';
 import { substituteVariables } from '../services/emailTemplateService';
-import { useResponsive } from '../../../components/MobileNav';
 
 interface ScheduledEmailModalProps {
   templates: EmailTemplate[];
@@ -45,9 +45,9 @@ export function ScheduledEmailModal({
   useEffect(() => {
     if (selectedTemplate?.variables) {
       const initialValues: Record<string, string> = {};
-      selectedTemplate.variables.forEach((v) => {
+      for (const v of selectedTemplate.variables) {
         initialValues[v] = '';
-      });
+      }
       setVariableValues(initialValues);
     } else {
       setVariableValues({});
@@ -132,6 +132,7 @@ export function ScheduledEmailModal({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
       <div
         className={`bg-white rounded-lg shadow-xl ${
@@ -141,7 +142,7 @@ export function ScheduledEmailModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Schedule Email</h3>
-          <button
+          <button type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
           >
@@ -164,10 +165,9 @@ export function ScheduledEmailModal({
 
           {/* Template Selector */}
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Template *
-            </label>
+            <label htmlFor="sched-template" className="block text-sm font-medium text-gray-700 mb-1">Template *</label>
             <select
+              id="sched-template"
               value={selectedTemplateId}
               onChange={(e) => setSelectedTemplateId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -185,10 +185,11 @@ export function ScheduledEmailModal({
           {/* Recipient */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="sched-recipient-email" className="block text-sm font-medium text-gray-700 mb-1">
                 Recipient Email *
               </label>
               <input
+                id="sched-recipient-email"
                 type="email"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
@@ -198,10 +199,9 @@ export function ScheduledEmailModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Recipient Name
-              </label>
+              <label htmlFor="sched-recipient-name" className="block text-sm font-medium text-gray-700 mb-1">Recipient Name</label>
               <input
+                id="sched-recipient-name"
                 type="text"
                 value={recipientName}
                 onChange={(e) => setRecipientName(e.target.value)}
@@ -215,10 +215,9 @@ export function ScheduledEmailModal({
           {/* Schedule */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Date *
-              </label>
+              <label htmlFor="sched-date" className="block text-sm font-medium text-gray-700 mb-1">Date *</label>
               <input
+                id="sched-date"
                 type="date"
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
@@ -228,10 +227,9 @@ export function ScheduledEmailModal({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Time
-              </label>
+              <label htmlFor="sched-time" className="block text-sm font-medium text-gray-700 mb-1">Time</label>
               <input
+                id="sched-time"
                 type="time"
                 value={scheduledTime}
                 onChange={(e) => setScheduledTime(e.target.value)}
@@ -244,16 +242,17 @@ export function ScheduledEmailModal({
           {/* Variables */}
           {selectedTemplate && selectedTemplate.variables.length > 0 && (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="block text-sm font-medium text-gray-700 mb-2">
                 Template Variables
-              </label>
+              </span>
               <div className="space-y-3 p-3 bg-gray-50 rounded-md">
                 {selectedTemplate.variables.map((variable) => (
                   <div key={variable}>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                    <label htmlFor={`sched-var-${variable}`} className="block text-xs font-medium text-gray-500 mb-1">
                       {`{{${variable}}}`}
                     </label>
                     <input
+                      id={`sched-var-${variable}`}
                       type="text"
                       value={variableValues[variable] || ''}
                       onChange={(e) => handleVariableChange(variable, e.target.value)}
@@ -270,9 +269,7 @@ export function ScheduledEmailModal({
           {/* Preview */}
           {preview && (
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preview
-              </label>
+              <span className="block text-sm font-medium text-gray-700 mb-2">Preview</span>
               <div className="p-3 bg-gray-50 rounded-md">
                 <p className="text-sm font-medium text-gray-900 mb-2">
                   <span className="text-gray-500">Subject:</span> {preview.subject}
@@ -284,16 +281,14 @@ export function ScheduledEmailModal({
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <button
-              type="button"
+            <button type="button"
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               disabled={submitting}
             >
               Cancel
             </button>
-            <button
-              type="submit"
+            <button type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={submitting || success}
             >

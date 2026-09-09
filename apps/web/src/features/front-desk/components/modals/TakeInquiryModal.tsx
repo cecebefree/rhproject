@@ -1,4 +1,4 @@
-import { Inquiry } from '../../index';
+import type { Inquiry } from '../../index';
 
 interface TakeInquiryModalProps {
   inquiry: Inquiry | null;
@@ -8,6 +8,12 @@ interface TakeInquiryModalProps {
   currentCounselorId: string;
 }
 
-export function TakeInquiryModal({ inquiry, isOpen, onClose, onSuccess, currentCounselorId }: TakeInquiryModalProps) {
-  return <div></div>;
+export function TakeInquiryModal({
+  inquiry,
+  isOpen,
+  onClose,
+  onSuccess,
+  currentCounselorId,
+}: TakeInquiryModalProps) {
+  return <div />;
 }

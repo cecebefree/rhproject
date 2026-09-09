@@ -3,13 +3,14 @@
  * Wraps the app with realtime client, conflict resolver, and offline queue.
  */
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { RealtimeClient } from '../services/realtime';
-import { OptimisticUpdateManager } from '../services/optimisticUpdate';
-import { OfflineQueueManager } from '../services/offlineQueue';
-import { BroadcastChannelManager } from '../services/broadcastChannel';
-import { supabase } from '../lib/supabase';
+import type React from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { getTwoFactorStatus } from '../features/office-desk/services/twoFactorService';
+import { supabase } from '../lib/supabase';
+import { BroadcastChannelManager } from '../services/broadcastChannel';
+import { OfflineQueueManager } from '../services/offlineQueue';
+import { OptimisticUpdateManager } from '../services/optimisticUpdate';
+import { RealtimeClient } from '../services/realtime';
 
 interface RealtimeContextValue {
   realtimeClient: RealtimeClient | null;
@@ -55,7 +56,9 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
   // Get user ID from Supabase session
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
         // Check 2FA status
@@ -68,7 +71,9 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
 
     getUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
       async (_event: string, session: { user?: { id: string } } | null) => {
         if (session?.user) {
           setUserId(session.user.id);
@@ -130,19 +135,26 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     };
   }, [optimisticManager, offlineQueue]);
 
-  const value = useMemo<RealtimeContextValue>(() => ({
-    realtimeClient,
-    optimisticManager,
-    offlineQueue,
-    broadcastChannel,
-    isOnline,
-    userId,
-    twoFactorEnabled,
-  }), [realtimeClient, optimisticManager, offlineQueue, broadcastChannel, isOnline, userId, twoFactorEnabled]);
-
-  return (
-    <RealtimeContext.Provider value={value}>
-      {children}
-    </RealtimeContext.Provider>
+  const value = useMemo<RealtimeContextValue>(
+    () => ({
+      realtimeClient,
+      optimisticManager,
+      offlineQueue,
+      broadcastChannel,
+      isOnline,
+      userId,
+      twoFactorEnabled,
+    }),
+    [
+      realtimeClient,
+      optimisticManager,
+      offlineQueue,
+      broadcastChannel,
+      isOnline,
+      userId,
+      twoFactorEnabled,
+    ]
   );
+
+  return <RealtimeContext.Provider value={value}>{children}</RealtimeContext.Provider>;
 }

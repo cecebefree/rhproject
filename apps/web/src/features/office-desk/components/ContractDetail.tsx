@@ -1,8 +1,8 @@
 // ContractDetail — shows full contract details with signing + date editing
 
-import { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase';
+import { useEffect, useState } from 'react';
 import { generateContractHTML, printPDF } from '../../lms/utils/pdfGenerator';
+import { supabase } from '../services/supabase';
 
 interface Contract {
   id: string;
@@ -45,7 +45,11 @@ const STATUS_COLORS: Record<string, string> = {
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function formatDateInput(iso: string | null): string {
@@ -106,7 +110,7 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
 
   return (
     <div>
-      <button onClick={onBack} className="text-sm mb-4" style={{ color: '#2563EB' }}>
+      <button type="button" onClick={onBack} className="text-sm mb-4" style={{ color: '#2563EB' }}>
         ← Back to Contracts
       </button>
 
@@ -121,8 +125,10 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
               : 'Unknown Student'}
           </p>
         </div>
-        <span className="text-sm px-3 py-1 rounded-full font-medium"
-          style={{ backgroundColor: STATUS_COLORS[contract.status], color: '#1A242B' }}>
+        <span
+          className="text-sm px-3 py-1 rounded-full font-medium"
+          style={{ backgroundColor: STATUS_COLORS[contract.status], color: '#1A242B' }}
+        >
           {STATUS_LABELS[contract.status]}
         </span>
       </div>
@@ -141,11 +147,16 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
       <div className="mt-6 grid grid-cols-2 gap-6">
         {/* Dates */}
         <div className="p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1A242B' }}>Contract Dates</h3>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1A242B' }}>
+            Contract Dates
+          </h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs mb-1" style={{ color: '#54626C' }}>Start Date</label>
+              <label htmlFor="contract-start-date" className="block text-xs mb-1" style={{ color: '#54626C' }}>
+                Start Date
+              </label>
               <input
+                id="contract-start-date"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -153,15 +164,18 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
               />
             </div>
             <div>
-              <label className="block text-xs mb-1" style={{ color: '#54626C' }}>End Date</label>
+              <label htmlFor="contract-end-date" className="block text-xs mb-1" style={{ color: '#54626C' }}>
+                End Date
+              </label>
               <input
+                id="contract-end-date"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded"
               />
             </div>
-            <button
+            <button type="button"
               onClick={handleSaveDates}
               disabled={saving}
               className="w-full px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-100"
@@ -173,7 +187,9 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
 
         {/* Details */}
         <div className="p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1A242B' }}>Details</h3>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1A242B' }}>
+            Details
+          </h3>
           <div className="space-y-2 text-sm" style={{ color: '#54626C' }}>
             <p>Created: {formatDate(contract.created_at)}</p>
             <p>Signed: {contract.signed_at ? formatDate(contract.signed_at) : 'Not yet signed'}</p>
@@ -185,11 +201,11 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
       {/* Terms */}
       {Object.keys(termsObj).length > 0 && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1A242B' }}>Contract Terms</h3>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: '#1A242B' }}>
+            Contract Terms
+          </h3>
           <div className="text-sm" style={{ color: '#54626C' }}>
-            <pre className="whitespace-pre-wrap font-sans">
-              {JSON.stringify(termsObj, null, 2)}
-            </pre>
+            <pre className="whitespace-pre-wrap font-sans">{JSON.stringify(termsObj, null, 2)}</pre>
           </div>
         </div>
       )}
@@ -198,7 +214,7 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
       <div className="mt-6 flex gap-3">
         {canSign && (
           <>
-            <button
+            <button type="button"
               onClick={handleSign}
               disabled={signing}
               className="px-6 py-3 text-sm font-medium text-white rounded-lg disabled:opacity-50"
@@ -211,7 +227,7 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
             </p>
           </>
         )}
-        <button
+        <button type="button"
           onClick={() => {
             const html = generateContractHTML({
               contractId: contract.id,
@@ -219,9 +235,11 @@ export function ContractDetail({ contract, onBack, onUpdated }: ContractDetailPr
               terms: contract.terms,
               startDate: contract.start_date,
               endDate: contract.end_date,
-              studentName: contract.students ? `${contract.students.first_name} ${contract.students.last_name}` : 'Unknown',
+              studentName: contract.students
+                ? `${contract.students.first_name} ${contract.students.last_name}`
+                : 'Unknown',
               studentEmail: contract.students?.email ?? '',
-              courseName: (contract.terms as any)?.course_name ?? 'N/A',
+              courseName: (contract.terms as { course_name?: string })?.course_name ?? 'N/A',
               signedAt: contract.signed_at,
               signedBy: contract.signed_by,
             });

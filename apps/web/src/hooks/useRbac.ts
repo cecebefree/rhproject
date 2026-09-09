@@ -3,18 +3,18 @@
  * Provides current user's role, permissions, and helper functions.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  getUserPermissions,
-  getUserDeskRole,
-  hasPermission,
-  selectTeamMembers,
-  selectDeskRoles,
-  assignUserRole,
-  removeUserRole,
-  type PermissionCode,
   type DeskRole,
+  type PermissionCode,
   type UserDeskRole,
+  assignUserRole,
+  getUserDeskRole,
+  getUserPermissions,
+  hasPermission,
+  removeUserRole,
+  selectDeskRoles,
+  selectTeamMembers,
 } from '../features/office-desk/services/rbac';
 
 interface UseRbacOptions {
@@ -70,17 +70,26 @@ export function useRbac({ userId, deskId, enabled = true }: UseRbacOptions): Use
     fetchPermissions();
   }, [enabled, fetchPermissions]);
 
-  const checkPermission = useCallback((permission: PermissionCode): boolean => {
-    return permissions.includes(permission);
-  }, [permissions]);
+  const checkPermission = useCallback(
+    (permission: PermissionCode): boolean => {
+      return permissions.includes(permission);
+    },
+    [permissions]
+  );
 
-  const checkAnyPermission = useCallback((perms: PermissionCode[]): boolean => {
-    return perms.some((p) => permissions.includes(p));
-  }, [permissions]);
+  const checkAnyPermission = useCallback(
+    (perms: PermissionCode[]): boolean => {
+      return perms.some((p) => permissions.includes(p));
+    },
+    [permissions]
+  );
 
-  const checkAllPermissions = useCallback((perms: PermissionCode[]): boolean => {
-    return perms.every((p) => permissions.includes(p));
-  }, [permissions]);
+  const checkAllPermissions = useCallback(
+    (perms: PermissionCode[]): boolean => {
+      return perms.every((p) => permissions.includes(p));
+    },
+    [permissions]
+  );
 
   return {
     role,
@@ -114,7 +123,10 @@ interface UseTeamMembersResult {
   refresh: () => Promise<void>;
 }
 
-export function useTeamMembers({ deskId, enabled = true }: UseTeamMembersOptions): UseTeamMembersResult {
+export function useTeamMembers({
+  deskId,
+  enabled = true,
+}: UseTeamMembersOptions): UseTeamMembersResult {
   const [members, setMembers] = useState<UserDeskRole[]>([]);
   const [roles, setRoles] = useState<DeskRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -147,32 +159,41 @@ export function useTeamMembers({ deskId, enabled = true }: UseTeamMembersOptions
     fetchMembers();
   }, [enabled, fetchMembers]);
 
-  const addMember = useCallback(async (userId: string, roleId: string) => {
-    const { error: assignError } = await assignUserRole(userId, deskId, roleId);
-    if (assignError) {
-      return { error: new Error(assignError.message) };
-    }
-    await fetchMembers();
-    return { error: null };
-  }, [deskId, fetchMembers]);
+  const addMember = useCallback(
+    async (userId: string, roleId: string) => {
+      const { error: assignError } = await assignUserRole(userId, deskId, roleId);
+      if (assignError) {
+        return { error: new Error(assignError.message) };
+      }
+      await fetchMembers();
+      return { error: null };
+    },
+    [deskId, fetchMembers]
+  );
 
-  const removeMember = useCallback(async (userId: string) => {
-    const { error: removeError } = await removeUserRole(userId, deskId);
-    if (removeError) {
-      return { error: new Error(removeError.message) };
-    }
-    await fetchMembers();
-    return { error: null };
-  }, [deskId, fetchMembers]);
+  const removeMember = useCallback(
+    async (userId: string) => {
+      const { error: removeError } = await removeUserRole(userId, deskId);
+      if (removeError) {
+        return { error: new Error(removeError.message) };
+      }
+      await fetchMembers();
+      return { error: null };
+    },
+    [deskId, fetchMembers]
+  );
 
-  const changeRole = useCallback(async (userId: string, roleId: string) => {
-    const { error: updateError } = await assignUserRole(userId, deskId, roleId);
-    if (updateError) {
-      return { error: new Error(updateError.message) };
-    }
-    await fetchMembers();
-    return { error: null };
-  }, [deskId, fetchMembers]);
+  const changeRole = useCallback(
+    async (userId: string, roleId: string) => {
+      const { error: updateError } = await assignUserRole(userId, deskId, roleId);
+      if (updateError) {
+        return { error: new Error(updateError.message) };
+      }
+      await fetchMembers();
+      return { error: null };
+    },
+    [deskId, fetchMembers]
+  );
 
   return {
     members,

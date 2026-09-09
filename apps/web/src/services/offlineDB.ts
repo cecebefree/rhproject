@@ -47,171 +47,169 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-export class OfflineDB {
-  /**
-   * Store a record for offline access.
-   */
-  static async putRecord(record: OfflineRecord): Promise<void> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readwrite');
-      const store = transaction.objectStore('records');
-      const request = store.put(record);
+/**
+ * Store a record for offline access.
+ */
+export async function putRecord(record: OfflineRecord): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readwrite');
+    const store = transaction.objectStore('records');
+    const request = store.put(record);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
 
-      transaction.oncomplete = () => db.close();
-    });
-  }
+    transaction.oncomplete = () => db.close();
+  });
+}
 
-  /**
-   * Get a record by ID.
-   */
-  static async getRecord(id: string): Promise<OfflineRecord | null> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readonly');
-      const store = transaction.objectStore('records');
-      const request = store.get(id);
+/**
+ * Get a record by ID.
+ */
+export async function getRecord(id: string): Promise<OfflineRecord | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readonly');
+    const store = transaction.objectStore('records');
+    const request = store.get(id);
 
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(request.error);
 
-      transaction.oncomplete = () => db.close();
-    });
-  }
+    transaction.oncomplete = () => db.close();
+  });
+}
 
-  /**
-   * Get all records for a table and tenant.
-   */
-  static async getRecordsByTable(table: string, tenantId: string): Promise<OfflineRecord[]> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readonly');
-      const store = transaction.objectStore('records');
-      const index = store.index('table_tenant');
-      const request = index.getAll([table, tenantId]);
+/**
+ * Get all records for a table and tenant.
+ */
+export async function getRecordsByTable(table: string, tenantId: string): Promise<OfflineRecord[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readonly');
+    const store = transaction.objectStore('records');
+    const index = store.index('table_tenant');
+    const request = index.getAll([table, tenantId]);
 
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
 
-      transaction.oncomplete = () => db.close();
-    });
-  }
+    transaction.oncomplete = () => db.close();
+  });
+}
 
-  /**
-   * Get all dirty (unsynced) records.
-   */
-  static async getDirtyRecords(): Promise<OfflineRecord[]> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readonly');
-      const store = transaction.objectStore('records');
-      const index = store.index('isDirty');
-      const request = index.getAll(1); // IDB treats boolean true as 1
+/**
+ * Get all dirty (unsynced) records.
+ */
+export async function getDirtyRecords(): Promise<OfflineRecord[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readonly');
+    const store = transaction.objectStore('records');
+    const index = store.index('isDirty');
+    const request = index.getAll(1); // IDB treats boolean true as 1
 
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
 
-      transaction.oncomplete = () => db.close();
-    });
-  }
+    transaction.oncomplete = () => db.close();
+  });
+}
 
-  /**
-   * Mark a record as synced.
-   */
-  static async markSynced(id: string): Promise<void> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readwrite');
-      const store = transaction.objectStore('records');
-      const getRequest = store.get(id);
+/**
+ * Mark a record as synced.
+ */
+export async function markSynced(id: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readwrite');
+    const store = transaction.objectStore('records');
+    const getRequest = store.get(id);
 
-      getRequest.onsuccess = () => {
-        const record = getRequest.result as OfflineRecord;
-        if (record) {
-          record.isDirty = false;
-          record.lastSynced = new Date().toISOString();
-          store.put(record);
-        }
-      };
-
-      getRequest.onerror = () => reject(getRequest.error);
-      transaction.oncomplete = () => {
-        db.close();
-        resolve();
-      };
-    });
-  }
-
-  /**
-   * Delete a record.
-   */
-  static async deleteRecord(id: string): Promise<void> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readwrite');
-      const store = transaction.objectStore('records');
-      const request = store.delete(id);
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-
-      transaction.oncomplete = () => db.close();
-    });
-  }
-
-  /**
-   * Clear all records for a table and tenant.
-   */
-  static async clearTable(table: string, tenantId: string): Promise<void> {
-    const records = await this.getRecordsByTable(table, tenantId);
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readwrite');
-      const store = transaction.objectStore('records');
-
-      for (const record of records) {
-        store.delete(record.id);
-      }
-
-      transaction.oncomplete = () => {
-        db.close();
-        resolve();
-      };
-
-      transaction.onerror = () => reject(transaction.error);
-    });
-  }
-
-  /**
-   * Get record count for a table and tenant.
-   */
-  static async getRecordCount(table: string, tenantId: string): Promise<number> {
-    const records = await this.getRecordsByTable(table, tenantId);
-    return records.length;
-  }
-
-  /**
-   * Bulk put records.
-   */
-  static async putRecords(records: OfflineRecord[]): Promise<void> {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction('records', 'readwrite');
-      const store = transaction.objectStore('records');
-
-      for (const record of records) {
+    getRequest.onsuccess = () => {
+      const record = getRequest.result as OfflineRecord;
+      if (record) {
+        record.isDirty = false;
+        record.lastSynced = new Date().toISOString();
         store.put(record);
       }
+    };
 
-      transaction.oncomplete = () => {
-        db.close();
-        resolve();
-      };
+    getRequest.onerror = () => reject(getRequest.error);
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+  });
+}
 
-      transaction.onerror = () => reject(transaction.error);
-    });
-  }
+/**
+ * Delete a record.
+ */
+export async function deleteRecord(id: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readwrite');
+    const store = transaction.objectStore('records');
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+
+    transaction.oncomplete = () => db.close();
+  });
+}
+
+/**
+ * Clear all records for a table and tenant.
+ */
+export async function clearTable(table: string, tenantId: string): Promise<void> {
+  const records = await getRecordsByTable(table, tenantId);
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readwrite');
+    const store = transaction.objectStore('records');
+
+    for (const record of records) {
+      store.delete(record.id);
+    }
+
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+
+    transaction.onerror = () => reject(transaction.error);
+  });
+}
+
+/**
+ * Get record count for a table and tenant.
+ */
+export async function getRecordCount(table: string, tenantId: string): Promise<number> {
+  const records = await getRecordsByTable(table, tenantId);
+  return records.length;
+}
+
+/**
+ * Bulk put records.
+ */
+export async function putRecords(records: OfflineRecord[]): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('records', 'readwrite');
+    const store = transaction.objectStore('records');
+
+    for (const record of records) {
+      store.put(record);
+    }
+
+    transaction.oncomplete = () => {
+      db.close();
+      resolve();
+    };
+
+    transaction.onerror = () => reject(transaction.error);
+  });
 }

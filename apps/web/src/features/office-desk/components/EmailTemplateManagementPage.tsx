@@ -5,28 +5,27 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  type EmailTemplate,
-  type EmailTemplateCreateInput,
-  type EmailTemplateUpdateInput,
-  type EmailTemplateUsage,
-} from '../services/emailTemplateService';
-import {
   useEmailTemplates,
   useTemplateStats,
   useTemplateUsage,
 } from '../../../hooks/useEmailTemplate';
-import { EmailTemplateEditor } from './EmailTemplateEditor';
-import { EmailPreviewModal } from './EmailPreviewModal';
-import { ScheduledEmailModal } from './ScheduledEmailModal';
+import type {
+  EmailTemplate,
+  EmailTemplateCreateInput,
+  EmailTemplateUpdateInput,
+  EmailTemplateUsage,
+} from '../services/emailTemplateService';
 import { TEMPLATE_USAGE_STATUS_LABELS } from '../services/emailTemplateService';
+import { EmailPreviewModal } from './EmailPreviewModal';
+import { EmailTemplateEditor } from './EmailTemplateEditor';
+import { ScheduledEmailModal } from './ScheduledEmailModal';
 
 // ═══════════════════════════════════════════════════════════
 // MAIN EMAIL TEMPLATE MANAGEMENT PAGE
 // ═══════════════════════════════════════════════════════════
 
 export default function EmailTemplateManagementPage() {
-  // TODO: Get tenant_id from auth context
-  const tenantId = '00000000-0000-0000-0000-000000000001';
+  const tenantId = import.meta.env.VITE_DEFAULT_TENANT_ID;
 
   const {
     templates,
@@ -40,11 +39,7 @@ export default function EmailTemplateManagementPage() {
 
   const { stats, refresh: refreshStats } = useTemplateStats(tenantId);
 
-  const {
-    usages,
-    loading: usagesLoading,
-    refresh: refreshUsages,
-  } = useTemplateUsage(tenantId);
+  const { usages, loading: usagesLoading, refresh: refreshUsages } = useTemplateUsage(tenantId);
 
   const [showEditor, setShowEditor] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
@@ -118,7 +113,7 @@ export default function EmailTemplateManagementPage() {
       active: formActive,
     };
 
-    let result;
+    let result: { data: EmailTemplate | null; error: string | null };
     if (editingTemplate) {
       result = await update(editingTemplate.id, input);
     } else {
@@ -203,13 +198,13 @@ export default function EmailTemplateManagementPage() {
               </p>
             </div>
             <div className="flex gap-3">
-              <button
+              <button type="button"
                 onClick={handleSchedule}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >
                 Schedule Email
               </button>
-              <button
+              <button type="button"
                 onClick={handleCreate}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
@@ -281,7 +276,7 @@ export default function EmailTemplateManagementPage() {
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 mt-6">
-                  <button
+                  <button type="button"
                     onClick={() => {
                       setShowEditor(false);
                       resetForm();
@@ -291,16 +286,12 @@ export default function EmailTemplateManagementPage() {
                   >
                     Cancel
                   </button>
-                  <button
+                  <button type="button"
                     onClick={handleFormSubmit}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                     disabled={formSubmitting}
                   >
-                    {formSubmitting
-                      ? 'Saving...'
-                      : editingTemplate
-                      ? 'Update'
-                      : 'Create'}
+                    {formSubmitting ? 'Saving...' : editingTemplate ? 'Update' : 'Create'}
                   </button>
                 </div>
               </div>
@@ -393,19 +384,19 @@ export default function EmailTemplateManagementPage() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex justify-end gap-2">
-                          <button
+                          <button type="button"
                             onClick={() => handlePreview(template)}
                             className="px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
                           >
                             Preview
                           </button>
-                          <button
+                          <button type="button"
                             onClick={() => handleEdit(template)}
                             className="px-2 py-1 text-sm text-gray-600 hover:text-gray-800"
                           >
                             Edit
                           </button>
-                          <button
+                          <button type="button"
                             onClick={() => handleDelete(template.id)}
                             disabled={deletingId === template.id}
                             className="px-2 py-1 text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
@@ -426,7 +417,7 @@ export default function EmailTemplateManagementPage() {
         <div className="bg-white rounded-lg shadow">
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Usage History</h2>
-            <button
+            <button type="button"
               onClick={refreshUsages}
               className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
             >
@@ -474,8 +465,8 @@ export default function EmailTemplateManagementPage() {
                               usage.status === 'sent'
                                 ? 'bg-green-100 text-green-800'
                                 : usage.status === 'failed'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-gray-100 text-gray-800'
+                                  ? 'bg-red-100 text-red-800'
+                                  : 'bg-gray-100 text-gray-800'
                             }`}
                           >
                             {TEMPLATE_USAGE_STATUS_LABELS[usage.status]}

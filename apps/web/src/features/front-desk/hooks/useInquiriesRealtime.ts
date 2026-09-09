@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../services/supabase';
 import type { Inquiry } from '../../../types/front-desk';
+import { supabase } from '../services/supabase';
 
 interface UseInquiriesRealtimeOptions {
   enabled?: boolean;
@@ -50,7 +50,9 @@ export function useInquiriesRealtime(options: UseInquiriesRealtimeOptions = {}) 
             setInquiries((prev) => [payload.new as Inquiry, ...prev]);
           } else if (payload.eventType === 'UPDATE') {
             setInquiries((prev) =>
-              prev.map((inq) => (inq.id === (payload.new as Inquiry).id ? (payload.new as Inquiry) : inq))
+              prev.map((inq) =>
+                inq.id === (payload.new as Inquiry).id ? (payload.new as Inquiry) : inq
+              )
             );
           } else if (payload.eventType === 'DELETE') {
             setInquiries((prev) => prev.filter((inq) => inq.id !== (payload.old as Inquiry).id));

@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import type { Inquiry } from '../../../types/front-desk';
 import { useInquiriesRealtime } from '../hooks/useInquiriesRealtime';
 import { InquiryQueueSkeleton } from './InquiryQueueSkeleton';
-import type { Inquiry } from '../../../types/front-desk';
 
 interface InquiryQueueProps {
   onSelectInquiry?: (inquiry: Inquiry) => void;
@@ -13,9 +13,10 @@ export function InquiryQueue({ onSelectInquiry, showDetailPanel = true }: Inquir
   const [statusFilter, setStatusFilter] = useState('all');
   const { inquiries, loading, error } = useInquiriesRealtime({ enabled: true });
 
-  const filteredInquiries = statusFilter === 'all'
-    ? inquiries
-    : inquiries.filter((inq) => inq.enrollment_status === statusFilter);
+  const filteredInquiries =
+    statusFilter === 'all'
+      ? inquiries
+      : inquiries.filter((inq) => inq.enrollment_status === statusFilter);
 
   const selectedInquiry = inquiries.find((inq) => inq.id === selectedInquiryId);
 
@@ -37,7 +38,10 @@ export function InquiryQueue({ onSelectInquiry, showDetailPanel = true }: Inquir
           <h2 className="font-bold text-lg mb-3">Inquiry Queue</h2>
           <select
             value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setSelectedInquiryId(null); }}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setSelectedInquiryId(null);
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
           >
             <option value="all">All Inquiries</option>
@@ -69,6 +73,7 @@ export function InquiryQueue({ onSelectInquiry, showDetailPanel = true }: Inquir
                   <tr
                     key={inq.id}
                     onClick={() => handleSelectInquiry(inq)}
+                    onKeyPress={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelectInquiry(inq); } }}
                     className={`cursor-pointer hover:bg-blue-50 ${
                       selectedInquiryId === inq.id ? 'bg-blue-100' : ''
                     }`}
@@ -142,25 +147,28 @@ export function InquiryQueue({ onSelectInquiry, showDetailPanel = true }: Inquir
             </div>
             <div>
               <span className="font-semibold">Call Scheduled:</span>{' '}
-              {selectedInquiry.call_scheduled_at ? new Date(selectedInquiry.call_scheduled_at).toLocaleString() : 'No'}
+              {selectedInquiry.call_scheduled_at
+                ? new Date(selectedInquiry.call_scheduled_at).toLocaleString()
+                : 'No'}
             </div>
             <div>
-              <span className="font-semibold">Call Outcome:</span> {selectedInquiry.call_outcome || 'Pending'}
+              <span className="font-semibold">Call Outcome:</span>{' '}
+              {selectedInquiry.call_outcome || 'Pending'}
             </div>
           </div>
 
           {/* Actions */}
           <div className="mt-6 space-y-2 border-t pt-4">
-            <button className="w-full px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
+            <button type="button" className="w-full px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700">
               Take Inquiry
             </button>
-            <button className="w-full px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">
+            <button type="button" className="w-full px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700">
               Schedule Callback
             </button>
-            <button className="w-full px-3 py-2 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700">
+            <button type="button" className="w-full px-3 py-2 bg-yellow-600 text-white rounded text-sm hover:bg-yellow-700">
               Send Email
             </button>
-            <button className="w-full px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700">
+            <button type="button" className="w-full px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700">
               Escalate
             </button>
           </div>

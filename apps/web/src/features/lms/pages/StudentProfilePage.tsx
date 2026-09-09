@@ -1,7 +1,7 @@
 // StudentProfilePage — consolidated view: enrollments, contracts, payments, debit orders
 
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 
 interface Student {
@@ -19,7 +19,7 @@ interface Enrollment {
   id: string;
   course_id: string;
   purchased_at: string;
-  courses: { title: string } | null;
+  programs?: { title: string } | null;
 }
 
 interface Contract {
@@ -49,7 +49,11 @@ interface DebitOrder {
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function formatCurrency(amount: number): string {
@@ -79,7 +83,9 @@ export default function StudentProfilePage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [debitOrders, setDebitOrders] = useState<DebitOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'enrollments' | 'contracts' | 'payments' | 'debit-orders'>('enrollments');
+  const [activeTab, setActiveTab] = useState<
+    'enrollments' | 'contracts' | 'payments' | 'debit-orders'
+  >('enrollments');
 
   useEffect(() => {
     if (!studentId) return;
@@ -91,33 +97,64 @@ export default function StudentProfilePage() {
 
     const [studentRes, enrollRes, contractRes, paymentRes, debitRes] = await Promise.all([
       supabase.from('students').select('*').eq('id', id).single(),
-      supabase.from('enrollments' as any).select('id, course_id, purchased_at, programs!inner(title)').eq('student_id', id),
-      supabase.from('contracts' as any).select('id, status, title, start_date, end_date, signed_at').eq('student_id', id),
-      supabase.from('payments').select('id, amount, status, payment_type, created_at').eq('student_id', id).order('created_at', { ascending: false }),
-      supabase.from('debit_orders').select('id, amount, frequency, status, next_debit_date').eq('student_id', id),
+      supabase
+        .from('enrollments' as never)
+        .select('id, course_id, purchased_at, programs!inner(title)')
+        .eq('student_id', id),
+      supabase
+        .from('contracts' as never)
+        .select('id, status, title, start_date, end_date, signed_at')
+        .eq('student_id', id),
+      supabase
+        .from('payments')
+        .select('id, amount, status, payment_type, created_at')
+        .eq('student_id', id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('debit_orders')
+        .select('id, amount, frequency, status, next_debit_date')
+        .eq('student_id', id),
     ]);
 
     if (studentRes.data) setStudent(studentRes.data as Student);
-    setEnrollments((enrollRes.data as any) ?? []);
-    setContracts((contractRes.data as any) ?? []);
-    setPayments((paymentRes.data as any) ?? []);
-    setDebitOrders((debitRes.data as any) ?? []);
+    setEnrollments((enrollRes.data as Enrollment[]) ?? []);
+    setContracts((contractRes.data as Contract[]) ?? []);
+    setPayments((paymentRes.data as Payment[]) ?? []);
+    setDebitOrders((debitRes.data as DebitOrder[]) ?? []);
 
     setLoading(false);
   }
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff', minHeight: '500px' }}>
-        <p className="text-sm" style={{ color: '#54626C' }}>Loading student profile...</p>
+      <div
+        className="flex-1 flex items-center justify-center rounded-xl"
+        style={{
+          border: '1px solid rgba(195,199,204,0.3)',
+          backgroundColor: '#ffffff',
+          minHeight: '500px',
+        }}
+      >
+        <p className="text-sm" style={{ color: '#54626C' }}>
+          Loading student profile...
+        </p>
       </div>
     );
   }
 
   if (!student) {
     return (
-      <div className="flex-1 flex items-center justify-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff', minHeight: '500px' }}>
-        <p className="text-sm" style={{ color: '#54626C' }}>Student not found</p>
+      <div
+        className="flex-1 flex items-center justify-center rounded-xl"
+        style={{
+          border: '1px solid rgba(195,199,204,0.3)',
+          backgroundColor: '#ffffff',
+          minHeight: '500px',
+        }}
+      >
+        <p className="text-sm" style={{ color: '#54626C' }}>
+          Student not found
+        </p>
       </div>
     );
   }
@@ -131,15 +168,25 @@ export default function StudentProfilePage() {
 
   return (
     <div>
-      <button onClick={() => navigate('/service/school-desk')} className="text-sm mb-4" style={{ color: '#2563EB' }}>
+      <button type="button"
+        onClick={() => navigate('/service/school-desk')}
+        className="text-sm mb-4"
+        style={{ color: '#2563EB' }}
+      >
         ← Back to School Desk
       </button>
 
       {/* Student Header */}
-      <div className="p-6 rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
+      <div
+        className="p-6 rounded-xl"
+        style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}
+      >
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-semibold" style={{ fontFamily: '"EB Garamond", serif', color: '#1A242B' }}>
+            <h1
+              className="text-2xl font-semibold"
+              style={{ fontFamily: '"EB Garamond", serif', color: '#1A242B' }}
+            >
               {student.first_name} {student.last_name}
             </h1>
             <div className="flex gap-4 mt-2 text-sm" style={{ color: '#54626C' }}>
@@ -149,8 +196,13 @@ export default function StudentProfilePage() {
               <span>Joined: {formatDate(student.enrollment_date)}</span>
             </div>
           </div>
-          <span className="text-sm px-3 py-1 rounded-full font-medium"
-            style={{ backgroundColor: student.enrollment_status === 'active' ? '#D1FAE5' : '#FEF3C7', color: '#1A242B' }}>
+          <span
+            className="text-sm px-3 py-1 rounded-full font-medium"
+            style={{
+              backgroundColor: student.enrollment_status === 'active' ? '#D1FAE5' : '#FEF3C7',
+              color: '#1A242B',
+            }}
+          >
             {student.enrollment_status}
           </span>
         </div>
@@ -159,7 +211,7 @@ export default function StudentProfilePage() {
       {/* Tabs */}
       <div className="flex gap-1 mt-4 border-b" style={{ borderColor: 'rgba(195,199,204,0.3)' }}>
         {tabs.map((tab) => (
-          <button
+          <button type="button"
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className="px-4 py-2 text-sm font-medium"
@@ -174,20 +226,41 @@ export default function StudentProfilePage() {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-4 rounded-xl p-4" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff', minHeight: '300px' }}>
+      <div
+        className="mt-4 rounded-xl p-4"
+        style={{
+          border: '1px solid rgba(195,199,204,0.3)',
+          backgroundColor: '#ffffff',
+          minHeight: '300px',
+        }}
+      >
         {activeTab === 'enrollments' && (
           <div>
             {enrollments.length === 0 ? (
-              <p className="text-sm" style={{ color: '#54626C' }}>No enrollments</p>
+              <p className="text-sm" style={{ color: '#54626C' }}>
+                No enrollments
+              </p>
             ) : (
               <div className="space-y-2">
                 {enrollments.map((e) => (
-                  <div key={e.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={e.id}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
-                      <p className="text-sm font-medium">{(e as any).programs?.title ?? 'Unknown Program'}</p>
-                      <p className="text-xs" style={{ color: '#54626C' }}>Enrolled: {formatDate(e.purchased_at)}</p>
+                      <p className="text-sm font-medium">
+                        {e.programs?.title ?? 'Unknown Program'}
+                      </p>
+                      <p className="text-xs" style={{ color: '#54626C' }}>
+                        Enrolled: {formatDate(e.purchased_at)}
+                      </p>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded" style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}>Active</span>
+                    <span
+                      className="text-xs px-2 py-1 rounded"
+                      style={{ backgroundColor: '#D1FAE5', color: '#065F46' }}
+                    >
+                      Active
+                    </span>
                   </div>
                 ))}
               </div>
@@ -198,19 +271,29 @@ export default function StudentProfilePage() {
         {activeTab === 'contracts' && (
           <div>
             {contracts.length === 0 ? (
-              <p className="text-sm" style={{ color: '#54626C' }}>No contracts</p>
+              <p className="text-sm" style={{ color: '#54626C' }}>
+                No contracts
+              </p>
             ) : (
               <div className="space-y-2">
                 {contracts.map((c) => (
-                  <div key={c.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={c.id}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
                       <p className="text-sm font-medium">{c.title}</p>
                       <p className="text-xs" style={{ color: '#54626C' }}>
                         {formatDate(c.start_date)} — {formatDate(c.end_date)}
                       </p>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded"
-                      style={{ backgroundColor: STATUS_COLORS[c.status] ?? '#e2e8f0', color: '#1A242B' }}>
+                    <span
+                      className="text-xs px-2 py-1 rounded"
+                      style={{
+                        backgroundColor: STATUS_COLORS[c.status] ?? '#e2e8f0',
+                        color: '#1A242B',
+                      }}
+                    >
                       {c.status}
                     </span>
                   </div>
@@ -223,19 +306,29 @@ export default function StudentProfilePage() {
         {activeTab === 'payments' && (
           <div>
             {payments.length === 0 ? (
-              <p className="text-sm" style={{ color: '#54626C' }}>No payments</p>
+              <p className="text-sm" style={{ color: '#54626C' }}>
+                No payments
+              </p>
             ) : (
               <div className="space-y-2">
                 {payments.map((p) => (
-                  <div key={p.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={p.id}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
                       <p className="text-sm font-medium">{formatCurrency(p.amount)}</p>
                       <p className="text-xs" style={{ color: '#54626C' }}>
                         {p.payment_type} — {formatDate(p.created_at)}
                       </p>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded"
-                      style={{ backgroundColor: STATUS_COLORS[p.status] ?? '#e2e8f0', color: '#1A242B' }}>
+                    <span
+                      className="text-xs px-2 py-1 rounded"
+                      style={{
+                        backgroundColor: STATUS_COLORS[p.status] ?? '#e2e8f0',
+                        color: '#1A242B',
+                      }}
+                    >
                       {p.status}
                     </span>
                   </div>
@@ -248,19 +341,31 @@ export default function StudentProfilePage() {
         {activeTab === 'debit-orders' && (
           <div>
             {debitOrders.length === 0 ? (
-              <p className="text-sm" style={{ color: '#54626C' }}>No debit orders</p>
+              <p className="text-sm" style={{ color: '#54626C' }}>
+                No debit orders
+              </p>
             ) : (
               <div className="space-y-2">
                 {debitOrders.map((d) => (
-                  <div key={d.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <div
+                    key={d.id}
+                    className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                  >
                     <div>
-                      <p className="text-sm font-medium">{formatCurrency(d.amount)} / {d.frequency}</p>
+                      <p className="text-sm font-medium">
+                        {formatCurrency(d.amount)} / {d.frequency}
+                      </p>
                       <p className="text-xs" style={{ color: '#54626C' }}>
                         Next debit: {formatDate(d.next_debit_date)}
                       </p>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded"
-                      style={{ backgroundColor: STATUS_COLORS[d.status] ?? '#e2e8f0', color: '#1A242B' }}>
+                    <span
+                      className="text-xs px-2 py-1 rounded"
+                      style={{
+                        backgroundColor: STATUS_COLORS[d.status] ?? '#e2e8f0',
+                        color: '#1A242B',
+                      }}
+                    >
                       {d.status}
                     </span>
                   </div>

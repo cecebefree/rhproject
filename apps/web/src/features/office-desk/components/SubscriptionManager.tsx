@@ -3,14 +3,14 @@
 
 import { useEffect, useState } from 'react';
 import {
-  selectSubscriptions,
-  getStripeCustomer,
-  createSubscription,
-  cancelSubscription,
-  type Subscription,
-  type PlanId,
-  type PaymentProcessor,
   PLAN_LABELS,
+  type PaymentProcessor,
+  type PlanId,
+  type Subscription,
+  cancelSubscription,
+  createSubscription,
+  getStripeCustomer,
+  selectSubscriptions,
 } from '../services/supabase';
 
 interface SubscriptionManagerProps {
@@ -26,7 +26,9 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
   // Plan selector
   const [selectedPlan, setSelectedPlan] = useState<PlanId>('pro');
   const [selectedInterval, setSelectedInterval] = useState<'month' | 'year'>('month');
-  const [selectedProcessor, setSelectedProcessor] = useState<'stripe' | 'paypal' | 'both'>('stripe');
+  const [selectedProcessor, setSelectedProcessor] = useState<'stripe' | 'paypal' | 'both'>(
+    'stripe'
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +44,9 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [tenantId]);
 
   const activeSubscriptions = subscriptions.filter((s) => s.status === 'active');
@@ -85,7 +89,8 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
     }
   };
 
-  if (loading) return <div style={{ padding: '16px', color: '#718096' }}>Loading subscriptions...</div>;
+  if (loading)
+    return <div style={{ padding: '16px', color: '#718096' }}>Loading subscriptions...</div>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -94,7 +99,15 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
       </h3>
 
       {error && (
-        <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '13px' }}>
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
+            borderRadius: '6px',
+            fontSize: '13px',
+          }}
+        >
           {error}
         </div>
       )}
@@ -106,9 +119,16 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
             Active Subscriptions
           </h4>
           {activeSubscriptions.map((sub) => {
-            const plan = PLAN_LABELS[sub.plan_id] || { name: sub.plan_id, priceMonthly: 0, priceYearly: 0 };
+            const plan = PLAN_LABELS[sub.plan_id] || {
+              name: sub.plan_id,
+              priceMonthly: 0,
+              priceYearly: 0,
+            };
             const daysUntilRenewal = sub.current_period_end
-              ? Math.max(0, Math.ceil((new Date(sub.current_period_end).getTime() - Date.now()) / 86400000))
+              ? Math.max(
+                  0,
+                  Math.ceil((new Date(sub.current_period_end).getTime() - Date.now()) / 86400000)
+                )
               : null;
 
             return (
@@ -129,14 +149,16 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
                     <span style={{ fontWeight: '600', fontSize: '15px', color: '#2d3748' }}>
                       {plan.name}
                     </span>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: '12px',
-                      fontSize: '11px',
-                      fontWeight: '600',
-                      backgroundColor: sub.processor === 'stripe' ? '#ebf8ff' : '#fffbeb',
-                      color: sub.processor === 'stripe' ? '#2b6cb0' : '#92400e',
-                    }}>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        backgroundColor: sub.processor === 'stripe' ? '#ebf8ff' : '#fffbeb',
+                        color: sub.processor === 'stripe' ? '#2b6cb0' : '#92400e',
+                      }}
+                    >
                       {sub.processor === 'stripe' ? 'Stripe' : 'PayPal'}
                     </span>
                   </div>
@@ -150,8 +172,7 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
                     </div>
                   )}
                 </div>
-                <button
-                  type="button"
+                <button type="button"
                   onClick={() => handleCancel(sub.id)}
                   style={{
                     padding: '6px 12px',
@@ -185,9 +206,8 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
             const isActive = activeSubscriptions.some((s) => s.plan_id === planId);
 
             return (
-              <button
+              <button type="button"
                 key={planId}
-                type="button"
                 onClick={() => setSelectedPlan(planId)}
                 style={{
                   padding: '16px',
@@ -201,14 +221,23 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
                 <div style={{ fontWeight: '600', fontSize: '14px', color: '#2d3748' }}>
                   {plan.name}
                 </div>
-                <div style={{ fontSize: '20px', fontWeight: '700', color: '#2d3748', margin: '8px 0' }}>
+                <div
+                  style={{ fontSize: '20px', fontWeight: '700', color: '#2d3748', margin: '8px 0' }}
+                >
                   ${price}
                 </div>
                 <div style={{ fontSize: '12px', color: '#718096' }}>
                   /{selectedInterval === 'month' ? 'mo' : 'yr'}
                 </div>
                 {isActive && (
-                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#38a169', fontWeight: '500' }}>
+                  <div
+                    style={{
+                      marginTop: '8px',
+                      fontSize: '11px',
+                      color: '#38a169',
+                      fontWeight: '500',
+                    }}
+                  >
                     Current
                   </div>
                 )}
@@ -219,8 +248,7 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
 
         {/* Interval selector */}
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button
-            type="button"
+          <button type="button"
             onClick={() => setSelectedInterval('month')}
             style={{
               flex: 1,
@@ -235,8 +263,7 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
           >
             Monthly
           </button>
-          <button
-            type="button"
+          <button type="button"
             onClick={() => setSelectedInterval('year')}
             style={{
               flex: 1,
@@ -256,9 +283,8 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
         {/* Processor selector */}
         <div style={{ display: 'flex', gap: '8px' }}>
           {(['stripe', 'paypal', 'both'] as const).map((proc) => (
-            <button
+            <button type="button"
               key={proc}
-              type="button"
               onClick={() => setSelectedProcessor(proc)}
               style={{
                 flex: 1,
@@ -278,8 +304,7 @@ export function SubscriptionManager({ tenantId }: SubscriptionManagerProps) {
         </div>
 
         {/* Create button */}
-        <button
-          type="button"
+        <button type="button"
           onClick={handleCreate}
           disabled={creating}
           style={{

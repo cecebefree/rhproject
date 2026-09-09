@@ -1,6 +1,6 @@
 // ResponsiveTable — Table that converts to card layout on mobile (Row 6)
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface Column<T> {
   key: string;
@@ -32,18 +32,12 @@ export function ResponsiveTable<T extends Record<string, unknown>>({
   const visibleColumns = columns.filter((col) => !col.mobileHidden);
 
   if (loading) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>
-        Loading...
-      </div>
-    );
+    return <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>Loading...</div>;
   }
 
   if (data.length === 0) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>
-        {emptyMessage}
-      </div>
+      <div style={{ padding: '40px', textAlign: 'center', color: '#718096' }}>{emptyMessage}</div>
     );
   }
 
@@ -74,6 +68,12 @@ export function ResponsiveTable<T extends Record<string, unknown>>({
             <tr
               key={keyExtractor(item)}
               onClick={() => onRowClick?.(item)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onRowClick?.(item);
+                }
+              }}
               style={{
                 borderBottom: '1px solid #e2e8f0',
                 cursor: onRowClick ? 'pointer' : 'default',
@@ -117,6 +117,12 @@ export function ResponsiveTable<T extends Record<string, unknown>>({
             <div
               key={keyExtractor(item)}
               onClick={() => onRowClick?.(item)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onRowClick?.(item);
+                }
+              }}
               style={{ cursor: onRowClick ? 'pointer' : 'default' }}
             >
               {cardRender(item)}
@@ -128,6 +134,12 @@ export function ResponsiveTable<T extends Record<string, unknown>>({
           <div
             key={keyExtractor(item)}
             onClick={() => onRowClick?.(item)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onRowClick?.(item);
+              }
+            }}
             style={{
               padding: '16px',
               backgroundColor: 'white',

@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  getStudentGrades,
-  selectGradebook,
-} from '../../lms/services/supabase';
+import { type GradebookWithRelations, getStudentGrades, selectGradebook } from '../../lms/services/supabase';
 
 interface CourseDetailViewProps {
   courseId: string;
@@ -40,6 +37,7 @@ export function CourseDetailView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: courseId/studentId trigger grade load
   useEffect(() => {
     loadGrades();
   }, [courseId, studentId]);
@@ -50,51 +48,51 @@ export function CourseDetailView({
       // Get student's grades
       const { data: studentGrades, error: gradesError } = await getStudentGrades(
         courseId,
-        studentId,
+        studentId
       );
       if (gradesError) throw gradesError;
 
-      const processedGrades: AssignmentGrade[] = (studentGrades || []).map((g: any) => {
-        const assignment = g.assignments;
+      const processedGrades: AssignmentGrade[] = (studentGrades || []).map((g: Record<string, unknown>) => {
+        const assignment = g.assignments as { max_score?: number; title?: string; weight?: number } | undefined;
+        const maxScore = assignment?.max_score ?? 0;
         const percentage =
-          g.score !== null && assignment?.max_score > 0
-            ? Math.round((g.score / assignment.max_score) * 100)
+          g.score !== null && maxScore > 0
+            ? Math.round(((g.score as number) / maxScore) * 100)
             : null;
 
         return {
-          assignmentId: g.assignment_id,
-          assignmentTitle: assignment?.title || 'Unknown',
-          score: g.score,
-          maxScore: assignment?.max_score || 100,
-          weight: assignment?.weight || 1.0,
+          assignmentId: g.assignment_id as string,
+          assignmentTitle: (assignment?.title as string) || 'Unknown',
+          score: g.score as number | null,
+          maxScore: (assignment?.max_score) || 100,
+          weight: (assignment?.weight as number) || 1.0,
           percentage,
-          feedback: g.feedback,
-          gradedAt: g.graded_at,
+          feedback: g.feedback as string | null,
+          gradedAt: g.graded_at as string | null,
         };
       });
 
       setGrades(processedGrades);
 
       // Get class statistics
-      const { data: allGrades } = await selectGradebook(
-        studentGrades?.[0]?.tenant_id || '',
-        { courseId },
-      );
+      const { data: allGrades } = await selectGradebook(studentGrades?.[0]?.tenant_id || '', {
+        courseId,
+      });
 
       if (allGrades && allGrades.length > 0) {
         // Calculate class average
         const classPercentages = allGrades
-          .filter((g: any) => g.score !== null && g.assignments)
-          .map((g: any) => {
-            const assignment = g.assignments as any;
-            return (g.score / assignment.max_score) * 100;
+          .filter((g: GradebookWithRelations) => g.score !== null && g.assignments != null)
+          .map((g: GradebookWithRelations) => {
+            const assignment = g.assignments as { max_score: number };
+            return (g.score! / assignment.max_score) * 100;
           });
 
         const classAverage =
           classPercentages.length > 0
             ? Math.round(
                 classPercentages.reduce((a: number, b: number) => a + b, 0) /
-                  classPercentages.length,
+                  classPercentages.length
               )
             : null;
 
@@ -106,9 +104,7 @@ export function CourseDetailView({
           .filter((g) => g.percentage !== null)
           .reduce((sum, g) => sum + g.weight, 0);
         const studentAverage =
-          studentTotalWeight > 0
-            ? Math.round(studentWeighted / studentTotalWeight)
-            : null;
+          studentTotalWeight > 0 ? Math.round(studentWeighted / studentTotalWeight) : null;
 
         // Calculate percentile
         let percentile = null;
@@ -131,8 +127,8 @@ export function CourseDetailView({
           gradedCount: processedGrades.filter((g) => g.score !== null).length,
         });
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load grades');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load grades');
     } finally {
       setLoading(false);
     }
@@ -181,7 +177,7 @@ export function CourseDetailView({
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
           <h2 className="text-lg font-medium text-gray-900">{courseTitle}</h2>
@@ -205,9 +201,7 @@ export function CourseDetailView({
             {studentAverage !== null ? `${studentAverage}%` : '--'}
           </div>
           {studentAverage !== null && (
-            <div className="text-sm text-blue-600">
-              {getLetterGrade(studentAverage)}
-            </div>
+            <div className="text-sm text-blue-600">{getLetterGrade(studentAverage)}</div>
           )}
         </div>
 
@@ -217,16 +211,16 @@ export function CourseDetailView({
             className="text-2xl font-bold"
             style={{ color: getColorForPercentage(stats?.classAverage || null) }}
           >
-            {stats?.classAverage !== null && stats?.classAverage !== undefined ? `${stats.classAverage}%` : '--'}
+            {stats?.classAverage !== null && stats?.classAverage !== undefined
+              ? `${stats.classAverage}%`
+              : '--'}
           </div>
         </div>
 
         <div className="bg-green-50 rounded-lg p-4">
           <div className="text-sm text-green-700">Percentile</div>
           <div className="text-2xl font-bold text-green-900">
-            {stats?.studentPercentile !== null
-              ? `${stats?.studentPercentile}th`
-              : '--'}
+            {stats?.studentPercentile !== null ? `${stats?.studentPercentile}th` : '--'}
           </div>
         </div>
 
@@ -242,9 +236,7 @@ export function CourseDetailView({
       <h3 className="text-md font-semibold text-gray-900 mb-3">Assignments</h3>
 
       {grades.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No graded assignments yet.
-        </div>
+        <div className="text-center py-8 text-gray-500">No graded assignments yet.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -277,9 +269,7 @@ export function CourseDetailView({
                     {grade.assignmentTitle}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {grade.score !== null
-                      ? `${grade.score}/${grade.maxScore}`
-                      : '--'}
+                    {grade.score !== null ? `${grade.score}/${grade.maxScore}` : '--'}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
                     {grade.percentage !== null ? (

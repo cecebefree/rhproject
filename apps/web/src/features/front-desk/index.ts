@@ -1,4 +1,12 @@
-export type { Inquiry, DashboardMetrics, TimelineEvent, TimelineEntry, ActivityLogEntry, CommunicationLogEntry, StaffProfile } from '../../types/front-desk';
+export type {
+  Inquiry,
+  DashboardMetrics,
+  TimelineEvent,
+  TimelineEntry,
+  ActivityLogEntry,
+  CommunicationLogEntry,
+  StaffProfile,
+} from '../../types/front-desk';
 export { FrontDeskPage } from './pages/FrontDeskPage';
 export { InquiryQueue } from './components/InquiryQueue';
 export { Dashboard } from './components/Dashboard';

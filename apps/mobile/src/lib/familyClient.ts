@@ -77,7 +77,7 @@ export async function fetchFamilyInvoices(): Promise<InvoiceRecord[]> {
   const { data: fa, error: faErr } = await supabase
     .from('office_desk.family_accounts')
     .select('id')
-    .eq('tenant_id', (await supabase.auth.getUser()).data.user?.app_metadata?.tenant_id || '')
+    .eq('tenant_id', user.app_metadata?.tenant_id ?? '')
     .limit(1)
     .single();
 
@@ -103,7 +103,7 @@ export async function fetchFamilyPayments(): Promise<PaymentRecord[]> {
   const { data: fa, error: faErr } = await supabase
     .from('office_desk.family_accounts')
     .select('id')
-    .eq('tenant_id', (await supabase.auth.getUser()).data.user?.app_metadata?.tenant_id || '')
+    .eq('tenant_id', user.app_metadata?.tenant_id ?? '')
     .limit(1)
     .single();
 

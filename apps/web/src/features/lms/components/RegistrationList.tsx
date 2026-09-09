@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import {
+  REGISTRATION_STATUSES,
   selectRegistrations,
   subscribeToRegistrations,
-  REGISTRATION_STATUSES,
 } from '../services/supabase';
 import type { Registration, RegistrationStatus } from '../services/supabase';
 import { StatusBadge } from './StatusBadge';
@@ -32,7 +32,7 @@ export function RegistrationList({ tenantId, onSelect }: RegistrationListProps) 
       const { data, error: fetchError } = await selectRegistrations(
         tenantId,
         search || undefined,
-        (statusFilter as RegistrationStatus) || undefined,
+        (statusFilter as RegistrationStatus) || undefined
       );
 
       if (!cancelled) {
@@ -51,14 +51,13 @@ export function RegistrationList({ tenantId, onSelect }: RegistrationListProps) 
     };
   }, [tenantId, search, statusFilter]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId triggers subscription setup
   useEffect(() => {
     const channel = subscribeToRegistrations((payload) => {
       if (payload.eventType === 'INSERT') {
         setRegistrations((prev) => [payload.new, ...prev]);
       } else if (payload.eventType === 'UPDATE') {
-        setRegistrations((prev) =>
-          prev.map((r) => (r.id === payload.new.id ? payload.new : r)),
-        );
+        setRegistrations((prev) => prev.map((r) => (r.id === payload.new.id ? payload.new : r)));
       } else if (payload.eventType === 'DELETE') {
         setRegistrations((prev) => prev.filter((r) => r.id !== payload.old?.id));
       }
@@ -115,20 +114,14 @@ export function RegistrationList({ tenantId, onSelect }: RegistrationListProps) 
           </thead>
           <tbody>
             {registrations.map((reg) => (
-              <tr
-                key={reg.id}
-                style={styles.tr}
-                onClick={() => onSelect?.(reg)}
-              >
+              <tr key={reg.id} style={styles.tr} onClick={() => onSelect?.(reg)} onKeyDown={(e) => { if (e.key === 'Enter') onSelect?.(reg); }} tabIndex={0}>
                 <td style={styles.td}>{reg.student_name}</td>
                 <td style={styles.td}>{reg.student_email}</td>
                 <td style={styles.td}>{reg.course_name ?? '—'}</td>
                 <td style={styles.td}>
                   <StatusBadge status={reg.status} />
                 </td>
-                <td style={styles.td}>
-                  {new Date(reg.created_at).toLocaleDateString()}
-                </td>
+                <td style={styles.td}>{new Date(reg.created_at).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

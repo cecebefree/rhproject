@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import RegistrationForm from './RegistrationForm';
-import type { RegistrationFormValues, PaymentSessionResponse } from './types';
+import type { PaymentSessionResponse, RegistrationFormValues } from './types';
 
 const EF_BASE = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
 
@@ -53,9 +53,7 @@ export default function RegistrationPage() {
       <div style={styles.card}>
         <header style={styles.header}>
           <h1 style={styles.title}>Register Your Child</h1>
-          <p style={styles.subtitle}>
-            Complete the form below to begin the registration process.
-          </p>
+          <p style={styles.subtitle}>Complete the form below to begin the registration process.</p>
         </header>
 
         <RegistrationForm onSubmit={handleSubmit} serverError={serverError} />

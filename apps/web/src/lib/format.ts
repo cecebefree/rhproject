@@ -5,11 +5,7 @@
 /**
  * Format currency value
  */
-export function formatCurrency(
-  value: number,
-  currency = 'ZAR',
-  locale = 'en-ZA'
-): string {
+export function formatCurrency(value: number, currency = 'ZAR', locale = 'en-ZA'): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,

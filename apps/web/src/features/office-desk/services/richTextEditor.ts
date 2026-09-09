@@ -104,9 +104,13 @@ export function parseMarkdown(markdown: string): RichTextDocument {
   }
 
   // Extract mentions and links from all content
-  const allContent = blocks.map((b) => b.content + ' ' + (b.items || []).join(' ')).join(' ');
-  extractMentions(allContent).forEach((m) => mentions.push(m));
-  extractLinks(allContent).forEach((l) => links.push(l));
+  const allContent = blocks.map((b) => `${b.content} ${(b.items || []).join(' ')}`).join(' ');
+  for (const m of extractMentions(allContent)) {
+    mentions.push(m);
+  }
+  for (const l of extractLinks(allContent)) {
+    links.push(l);
+  }
 
   return { blocks, mentions: [...new Set(mentions)], links: [...new Set(links)] };
 }
@@ -135,7 +139,6 @@ function renderBlock(block: RichTextBlock): string {
       return `<pre><code>${escapeHtml(block.content)}</code></pre>`;
     case 'blockquote':
       return `<blockquote>${content}</blockquote>`;
-    case 'paragraph':
     default:
       return `<p>${content}</p>`;
   }

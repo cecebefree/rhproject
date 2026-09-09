@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { supabase } from '../services/supabase';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Inquiry } from '../../../types/front-desk';
+import { supabase } from '../services/supabase';
 
 export interface InquiriesFilters {
   status?: string;
@@ -75,9 +75,18 @@ export function useInquiries(filters?: InquiriesFilters): UseInquiriesResult {
     setLoading(false);
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: filter values trigger inquiry reload
   useEffect(() => {
     fetchInquiries();
-  }, [fetchInquiries, filters?.status, filters?.ai_category, filters?.assigned_counselor_id, filters?.timezone, filters?.language, filters?.sort_by]);
+  }, [
+    fetchInquiries,
+    filters?.status,
+    filters?.ai_category,
+    filters?.assigned_counselor_id,
+    filters?.timezone,
+    filters?.language,
+    filters?.sort_by,
+  ]);
 
   useEffect(() => {
     const channel = supabase
@@ -95,15 +104,11 @@ export function useInquiries(filters?: InquiriesFilters): UseInquiriesResult {
           } else if (payload.eventType === 'UPDATE') {
             setInquiries((prev) =>
               prev.map((inq) =>
-                inq.id === (payload.new as Inquiry).id
-                  ? (payload.new as Inquiry)
-                  : inq
+                inq.id === (payload.new as Inquiry).id ? (payload.new as Inquiry) : inq
               )
             );
           } else if (payload.eventType === 'DELETE') {
-            setInquiries((prev) =>
-              prev.filter((inq) => inq.id !== (payload.old as Inquiry).id)
-            );
+            setInquiries((prev) => prev.filter((inq) => inq.id !== (payload.old as Inquiry).id));
           }
         }
       )

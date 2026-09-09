@@ -8,6 +8,19 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+export interface NewsArticle {
+  id: string;
+  tenant_id: string;
+  title: string;
+  content: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  published_at: string | null;
+  content_group: string;
+  category: string;
+}
+
 export interface DeskStats {
   frontDesk: {
     openInquiries: number;
@@ -29,56 +42,79 @@ export interface DeskStats {
     activeEnrollments: number;
     pendingFollowups: number;
   };
+  news: {
+    articles: NewsArticle[];
+    loading: boolean;
+  };
 }
 
-export async function fetchServiceDeskStats(): Promise<DeskStats> {
+export async function fetchServiceDeskStats(tenantId: string): Promise<DeskStats> {
   const today = new Date().toISOString().split('T')[0];
 
   // Front Desk: registrations (leads)
   const { count: totalRegistrations } = await supabase
     .from('office_desk.registrations')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId);
 
   const { count: newToday } = await supabase
     .from('office_desk.registrations')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
     .gte('created_at', today);
 
   const { count: pendingReview } = await supabase
     .from('office_desk.registrations')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
     .eq('status', 'pending_review');
 
   // Office Desk: families, invoices, registrations
   const { count: activeFamilies } = await supabase
     .from('office_desk.family_accounts')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId);
 
   const { count: pendingInvoices } = await supabase
     .from('office_desk.invoices')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
     .eq('status', 'pending');
 
   const { count: newRegistrations } = await supabase
     .from('office_desk.registrations')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
     .eq('status', 'pending_review');
 
   // School Desk: students (profiles with role=student)
   const { count: totalStudents } = await supabase
     .from('profiles')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
     .eq('role', 'student');
 
   // CRM: total families, enrollments
   const { count: crmFamilies } = await supabase
     .from('office_desk.family_accounts')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId);
 
   const { count: activeEnrollments } = await supabase
     .from('office_desk.registrations')
     .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
     .eq('status', 'approved');
+
+  // News: published school newsletters (tenant-scoped, all stages for admin view)
+  const { data: newsArticles } = await supabase
+    .from('school_desk.news')
+    .select('id, tenant_id, title, content, created_by, created_at, updated_at, published_at, content_group, category')
+    .eq('tenant_id', tenantId)
+    .not('published_at', 'is', null)
+    .is('deleted_at', null)
+    .order('published_at', { ascending: false })
+    .limit(5);
 
   return {
     frontDesk: {
@@ -101,5 +137,91 @@ export async function fetchServiceDeskStats(): Promise<DeskStats> {
       activeEnrollments: activeEnrollments || 0,
       pendingFollowups: pendingReview || 0,
     },
+    news: {
+      articles: (newsArticles ?? []) as NewsArticle[],
+      loading: false,
+    },
   };
+}
+
+// ─── NEWS CRUD ────────────────────────────────────────────────
+
+export interface NewsCreateInput {
+  title: string;
+  content: string;
+  content_group: string;
+  category: string;
+  published_at?: string | null;
+}
+
+export interface NewsUpdateInput extends NewsCreateInput {
+  id: string;
+}
+
+/**
+ * Create a new news article.
+ */
+export async function createNewsArticle(
+  tenantId: string,
+  input: NewsCreateInput,
+): Promise<{ data: NewsArticle | null; error: string | null }> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { data: null, error: 'Not authenticated' };
+
+  const { data, error } = await supabase
+    .from('school_desk.news')
+    .insert({
+      tenant_id: tenantId,
+      title: input.title,
+      content: input.content,
+      content_group: input.content_group,
+      category: input.category,
+      created_by: user.id,
+      published_at: input.published_at ?? new Date().toISOString(),
+    })
+    .select('id, tenant_id, title, content, created_by, created_at, updated_at, published_at, content_group, category')
+    .single();
+
+  if (error) return { data: null, error: error.message };
+  return { data: data as NewsArticle, error: null };
+}
+
+/**
+ * Update an existing news article.
+ */
+export async function updateNewsArticle(
+  input: NewsUpdateInput,
+): Promise<{ data: NewsArticle | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from('school_desk.news')
+    .update({
+      title: input.title,
+      content: input.content,
+      content_group: input.content_group,
+      category: input.category,
+      published_at: input.published_at,
+    })
+    .eq('id', input.id)
+    .select('id, tenant_id, title, content, created_by, created_at, updated_at, published_at, content_group, category')
+    .single();
+
+  if (error) return { data: null, error: error.message };
+  return { data: data as NewsArticle, error: null };
+}
+
+/**
+ * Soft-delete a news article (sets deleted_at).
+ */
+export async function deleteNewsArticle(
+  id: string,
+): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from('school_desk.news')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id);
+
+  return { error: error?.message ?? null };
 }

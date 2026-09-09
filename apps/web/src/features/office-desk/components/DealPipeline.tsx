@@ -4,9 +4,9 @@
 
 import { useCallback, useState } from 'react';
 import { usePipeline } from '../../../hooks/useAnalytics';
+import { formatCurrency } from '../../../lib/format';
 import { LEAD_STAGE_LABELS, type LeadStage } from '../services/analyticsService';
 import { supabase } from '../services/supabase';
-import { formatCurrency } from '../../../lib/format';
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -127,18 +127,14 @@ function PipelineStageColumn({ stage, onDrop, onDragStart }: PipelineStageColumn
             {stage.count}
           </span>
         </div>
-        <div className="text-xs text-gray-600 mt-1">
-          {formatCurrency(stage.totalValue)}
-        </div>
+        <div className="text-xs text-gray-600 mt-1">{formatCurrency(stage.totalValue)}</div>
       </div>
 
       {/* Leads List */}
       <div className="p-2 flex-1 min-h-[100px]">
         {/* Placeholder for empty state */}
         {stage.count === 0 && (
-          <div className="text-center text-gray-400 text-sm py-4">
-            Drop leads here
-          </div>
+          <div className="text-center text-gray-400 text-sm py-4">Drop leads here</div>
         )}
       </div>
     </div>
@@ -201,14 +197,12 @@ export default function DealPipeline({ tenantId }: DealPipelineProps) {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        {error}
-      </div>
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
     );
   }
 
-      const totalValue = pipeline.reduce((sum: number, s: PipelineStage) => sum + s.totalValue, 0);
-      const totalLeads = pipeline.reduce((sum: number, s: PipelineStage) => sum + s.count, 0);
+  const totalValue = pipeline.reduce((sum: number, s: PipelineStage) => sum + s.totalValue, 0);
+  const totalLeads = pipeline.reduce((sum: number, s: PipelineStage) => sum + s.count, 0);
 
   return (
     <div className="space-y-6">
@@ -220,10 +214,7 @@ export default function DealPipeline({ tenantId }: DealPipelineProps) {
             {totalLeads} leads • {formatCurrency(totalValue)} total value
           </p>
         </div>
-        <button
-          onClick={refresh}
-          className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
-        >
+        <button type="button" onClick={refresh} className="px-3 py-1 text-sm border rounded hover:bg-gray-50">
           Refresh
         </button>
       </div>
@@ -248,9 +239,7 @@ export default function DealPipeline({ tenantId }: DealPipelineProps) {
             <div key={stage.stage} className="text-center">
               <div className="text-2xl font-bold">{stage.count}</div>
               <div className="text-sm text-gray-500">{stage.label}</div>
-              <div className="text-xs text-green-600">
-                {formatCurrency(stage.totalValue)}
-              </div>
+              <div className="text-xs text-green-600">{formatCurrency(stage.totalValue)}</div>
             </div>
           ))}
         </div>

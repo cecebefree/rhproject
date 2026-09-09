@@ -2,11 +2,7 @@
 // Row 69: List sorted by sent_at desc, filter by group
 
 import { useEffect, useState } from 'react';
-import {
-  selectBroadcasts,
-  subscribeToBroadcasts,
-  supabaseUntyped,
-} from '../services/supabase';
+import { selectBroadcasts, subscribeToBroadcasts, supabaseUntyped } from '../services/supabase';
 import type { BroadcastWithGroup } from '../services/supabase';
 
 interface BroadcastListProps {
@@ -35,10 +31,7 @@ export function BroadcastList({ tenantId, onSelect }: BroadcastListProps) {
 
       const [broadcastsResult, groupsResult] = await Promise.all([
         selectBroadcasts(tenantId, { groupId: groupFilter || undefined }),
-        supabaseUntyped
-          .from('school_desk.conversations')
-          .select('id, category')
-          .order('category'),
+        supabaseUntyped.from('school_desk.conversations').select('id, category').order('category'),
       ]);
 
       if (!cancelled) {
@@ -60,15 +53,14 @@ export function BroadcastList({ tenantId, onSelect }: BroadcastListProps) {
     };
   }, [tenantId, groupFilter]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId triggers subscription setup
   useEffect(() => {
     const channel = subscribeToBroadcasts((payload) => {
       if (payload.eventType === 'INSERT') {
         setBroadcasts((prev) => [payload.new as BroadcastWithGroup, ...prev]);
       } else if (payload.eventType === 'UPDATE') {
         setBroadcasts((prev) =>
-          prev.map((b) =>
-            b.id === payload.new.id ? (payload.new as BroadcastWithGroup) : b,
-          ),
+          prev.map((b) => (b.id === payload.new.id ? (payload.new as BroadcastWithGroup) : b))
         );
       } else if (payload.eventType === 'DELETE') {
         setBroadcasts((prev) => prev.filter((b) => b.id !== payload.old?.id));
@@ -115,9 +107,7 @@ export function BroadcastList({ tenantId, onSelect }: BroadcastListProps) {
       {loading && <div style={styles.loading}>Loading...</div>}
       {error && <div style={styles.error}>{error}</div>}
 
-      {!loading && broadcasts.length === 0 && (
-        <div style={styles.empty}>No broadcasts found</div>
-      )}
+      {!loading && broadcasts.length === 0 && <div style={styles.empty}>No broadcasts found</div>}
 
       {!loading && broadcasts.length > 0 && (
         <table style={styles.table}>
@@ -132,25 +122,15 @@ export function BroadcastList({ tenantId, onSelect }: BroadcastListProps) {
           </thead>
           <tbody>
             {broadcasts.map((broadcast) => (
-              <tr
-                key={broadcast.id}
-                style={styles.tr}
-                onClick={() => onSelect?.(broadcast)}
-              >
+              <tr key={broadcast.id} style={styles.tr} onClick={() => onSelect?.(broadcast)} onKeyDown={(e) => { if (e.key === 'Enter') onSelect?.(broadcast); }} tabIndex={0}>
                 <td style={styles.td}>{broadcast.title}</td>
                 <td style={styles.td}>{getGroupName(broadcast)}</td>
                 <td style={styles.td}>{getSenderName(broadcast)}</td>
                 <td style={styles.td}>
-                  {broadcast.sent_at
-                    ? new Date(broadcast.sent_at).toLocaleDateString()
-                    : '—'}
+                  {broadcast.sent_at ? new Date(broadcast.sent_at).toLocaleDateString() : '—'}
                 </td>
                 <td style={styles.td}>
-                  <span
-                    style={
-                      broadcast.sent_at ? styles.statusSent : styles.statusDraft
-                    }
-                  >
+                  <span style={broadcast.sent_at ? styles.statusSent : styles.statusDraft}>
                     {broadcast.sent_at ? 'Sent' : 'Draft'}
                   </span>
                 </td>

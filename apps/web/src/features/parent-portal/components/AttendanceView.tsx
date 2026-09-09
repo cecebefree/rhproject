@@ -26,6 +26,7 @@ export function AttendanceView({ studentId, onBack }: AttendanceViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [courseFilter, setCourseFilter] = useState<string>('all');
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: studentId triggers attendance load
   useEffect(() => {
     loadAttendance();
   }, [studentId]);
@@ -40,9 +41,9 @@ export function AttendanceView({ studentId, onBack }: AttendanceViewProps) {
 
       // Calculate summary
       if (data && data.length > 0) {
-        const present = data.filter((r: any) => r.status === 'present').length;
-        const absent = data.filter((r: any) => r.status === 'absent').length;
-        const excused = data.filter((r: any) => r.status === 'excused').length;
+        const present = data.filter((r: AttendanceRecord) => r.status === 'present').length;
+        const absent = data.filter((r: AttendanceRecord) => r.status === 'absent').length;
+        const excused = data.filter((r: AttendanceRecord) => r.status === 'excused').length;
         const total = data.length;
 
         setSummary({
@@ -53,8 +54,8 @@ export function AttendanceView({ studentId, onBack }: AttendanceViewProps) {
           percentage: total > 0 ? Math.round((present / total) * 100) : null,
         });
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load attendance');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load attendance');
     } finally {
       setLoading(false);
     }
@@ -88,18 +89,12 @@ export function AttendanceView({ studentId, onBack }: AttendanceViewProps) {
 
   // Get unique courses for filter
   const uniqueCourses = Array.from(
-    new Set(
-      records
-        .filter((r) => r.courses)
-        .map((r) => JSON.stringify(r.courses)),
-    ),
+    new Set(records.filter((r) => r.courses).map((r) => JSON.stringify(r.courses)))
   ).map((c) => JSON.parse(c) as { id: string; title: string });
 
   // Filter records
   const filteredRecords =
-    courseFilter === 'all'
-      ? records
-      : records.filter((r) => r.course_id === courseFilter);
+    courseFilter === 'all' ? records : records.filter((r) => r.course_id === courseFilter);
 
   if (loading) {
     return (
@@ -113,7 +108,7 @@ export function AttendanceView({ studentId, onBack }: AttendanceViewProps) {
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
           <h2 className="text-lg font-medium text-gray-900">Attendance Record</h2>
@@ -178,9 +173,7 @@ export function AttendanceView({ studentId, onBack }: AttendanceViewProps) {
 
       {/* Attendance Records */}
       {filteredRecords.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No attendance records found.
-        </div>
+        <div className="text-center py-8 text-gray-500">No attendance records found.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -202,7 +195,7 @@ export function AttendanceView({ studentId, onBack }: AttendanceViewProps) {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredRecords.map((record) => {
-                const course = record.courses as any;
+                const course = record.courses as { id: string; title: string } | null;
                 return (
                   <tr key={record.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">

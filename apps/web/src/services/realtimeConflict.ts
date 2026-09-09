@@ -59,7 +59,10 @@ export function detectConflict<T extends Record<string, unknown>>(
     if (JSON.stringify(localVal) === JSON.stringify(serverVal)) continue;
 
     // Skip if only one side has a value and it's undefined/null on the other
-    if ((localVal === undefined || localVal === null) && (serverVal === undefined || serverVal === null)) {
+    if (
+      (localVal === undefined || localVal === null) &&
+      (serverVal === undefined || serverVal === null)
+    ) {
       continue;
     }
 
@@ -97,7 +100,11 @@ export function resolveConflict<T extends Record<string, unknown>>(
 
   switch (strategy) {
     case 'client-wins':
-      resolved = { ...conflict.serverData, ...conflict.localData, updated_at: new Date().toISOString() };
+      resolved = {
+        ...conflict.serverData,
+        ...conflict.localData,
+        updated_at: new Date().toISOString(),
+      };
       break;
 
     case 'server-wins':
@@ -145,8 +152,16 @@ export function mergeLeadData(
   } else {
     // Default: prefer local values for user-editable fields
     const userEditableFields = [
-      'full_name', 'email', 'phone', 'status', 'source', 'notes',
-      'assigned_to', 'priority', 'tags', 'custom_fields'
+      'full_name',
+      'email',
+      'phone',
+      'status',
+      'source',
+      'notes',
+      'assigned_to',
+      'priority',
+      'tags',
+      'custom_fields',
     ];
 
     for (const field of userEditableFields) {
@@ -178,8 +193,13 @@ export function mergeInvoiceData(
     }
   } else {
     const userEditableFields = [
-      'status', 'notes', 'due_date', 'tax_rate', 'discount',
-      'shipping_address', 'billing_address'
+      'status',
+      'notes',
+      'due_date',
+      'tax_rate',
+      'discount',
+      'shipping_address',
+      'billing_address',
     ];
 
     for (const field of userEditableFields) {
@@ -211,8 +231,14 @@ export function mergeContactData(
     }
   } else {
     const userEditableFields = [
-      'full_name', 'email', 'phone', 'company', 'role',
-      'notes', 'tags', 'custom_fields'
+      'full_name',
+      'email',
+      'phone',
+      'company',
+      'role',
+      'notes',
+      'tags',
+      'custom_fields',
     ];
 
     for (const field of userEditableFields) {

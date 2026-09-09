@@ -1,10 +1,10 @@
 // EmailPreviewModal — Variable substitution preview modal
 
-import { useState, useMemo, useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useResponsive } from '../../../components/MobileNav';
 import type { EmailTemplate } from '../services/emailTemplateService';
 import { substituteVariables } from '../services/emailTemplateService';
 import { renderMarkdownSimple } from '../services/richTextEditor';
-import { useResponsive } from '../../../components/MobileNav';
 
 interface EmailPreviewModalProps {
   template: EmailTemplate | null;
@@ -20,9 +20,9 @@ export function EmailPreviewModal({ template, isOpen, onClose }: EmailPreviewMod
   useMemo(() => {
     if (template?.variables) {
       const initialValues: Record<string, string> = {};
-      template.variables.forEach((v) => {
+      for (const v of template.variables) {
         initialValues[v] = `[${v}]`;
-      });
+      }
       setVariableValues(initialValues);
     }
   }, [template?.variables]);
@@ -48,6 +48,7 @@ export function EmailPreviewModal({ template, isOpen, onClose }: EmailPreviewMod
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
     >
       <div
         className={`bg-white rounded-lg shadow-xl ${
@@ -57,7 +58,7 @@ export function EmailPreviewModal({ template, isOpen, onClose }: EmailPreviewMod
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Preview Template</h3>
-          <button
+          <button type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
           >
@@ -74,10 +75,11 @@ export function EmailPreviewModal({ template, isOpen, onClose }: EmailPreviewMod
               <div className="space-y-3">
                 {template.variables.map((variable) => (
                   <div key={variable}>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">
+                    <label htmlFor={`email-preview-${variable}`} className="block text-xs font-medium text-gray-500 mb-1">
                       {`{{${variable}}}`}
                     </label>
                     <input
+                      id={`email-preview-${variable}`}
                       type="text"
                       value={variableValues[variable] || ''}
                       onChange={(e) => handleVariableChange(variable, e.target.value)}
@@ -95,10 +97,10 @@ export function EmailPreviewModal({ template, isOpen, onClose }: EmailPreviewMod
             {/* Preview */}
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-3">Email Preview</h4>
-              
+
               {/* Subject Preview */}
               <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                <label className="block text-xs font-medium text-gray-500 mb-1">Subject</label>
+                <span className="block text-xs font-medium text-gray-500 mb-1">Subject</span>
                 <p className="text-sm font-medium text-gray-900">{preview.subject}</p>
               </div>
 
@@ -107,6 +109,7 @@ export function EmailPreviewModal({ template, isOpen, onClose }: EmailPreviewMod
                 <div className="p-4 bg-white">
                   <div
                     className="prose prose-sm max-w-none"
+                    // biome-ignore lint/security/noDangerouslySetInnerHtml: intentional — renders sanitized email template HTML preview
                     dangerouslySetInnerHTML={{ __html: preview.html }}
                   />
                 </div>
@@ -117,7 +120,7 @@ export function EmailPreviewModal({ template, isOpen, onClose }: EmailPreviewMod
 
         {/* Footer */}
         <div className="flex justify-end p-4 border-t border-gray-200">
-          <button
+          <button type="button"
             onClick={onClose}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
           >

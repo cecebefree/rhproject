@@ -1,7 +1,7 @@
 // features/registration/RegistrationCancel.tsx
 // Row 94 — /register/cancel page: payment cancelled or failed
 
-import { useSearchParams, Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export default function RegistrationCancel() {
   const [searchParams] = useSearchParams();
@@ -10,9 +10,10 @@ export default function RegistrationCancel() {
 
   const isPayPal = provider === 'paypal';
 
-  const reasonMessage = reason === 'cancelled'
-    ? 'You cancelled the payment process. No charges were made.'
-    : 'The payment could not be completed. Please try again.';
+  const reasonMessage =
+    reason === 'cancelled'
+      ? 'You cancelled the payment process. No charges were made.'
+      : 'The payment could not be completed. Please try again.';
 
   return (
     <div style={styles.container}>

@@ -1,4 +1,4 @@
-import { Inquiry } from '../../index';
+import type { Inquiry } from '../../index';
 
 interface SendEmailModalProps {
   inquiry: Inquiry | null;
@@ -8,5 +8,5 @@ interface SendEmailModalProps {
 }
 
 export function SendEmailModal({ inquiry, isOpen, onClose, onSuccess }: SendEmailModalProps) {
-  return <div></div>;
+  return <div />;
 }

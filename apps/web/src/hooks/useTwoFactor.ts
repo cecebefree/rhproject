@@ -85,12 +85,7 @@ export function useTwoFactorSetup() {
   }, []);
 
   const confirm = useCallback(
-    async (
-      userId: string,
-      tenantId: string,
-      totpCode: string,
-      backupCodes: string[]
-    ) => {
+    async (userId: string, tenantId: string, totpCode: string, backupCodes: string[]) => {
       if (!setupResult) {
         setError('No setup in progress');
         return false;

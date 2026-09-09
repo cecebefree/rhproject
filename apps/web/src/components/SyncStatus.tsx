@@ -11,12 +11,7 @@ interface SyncStatusProps {
   className?: string;
 }
 
-export function SyncStatus({
-  lastUpdated,
-  updatedBy,
-  isSyncing,
-  className = '',
-}: SyncStatusProps) {
+export function SyncStatus({ lastUpdated, updatedBy, isSyncing, className = '' }: SyncStatusProps) {
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
     const now = new Date();

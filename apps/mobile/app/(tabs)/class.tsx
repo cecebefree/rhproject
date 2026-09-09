@@ -1,5 +1,6 @@
 // ClassScreen — Row 35 wiring
 // Live data: enrolled/teaching classes from Supabase
+// + schedule events via scheduleClient section filtering
 
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
+import { fetchScheduleBySection, type ScheduleEvent } from '../../src/lib/scheduleClient';
 
 interface CourseRow {
   id: string;
@@ -73,6 +75,24 @@ export default function ClassScreen() {
   const [slots, setSlots] = useState<ScheduleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadClassSchedule() {
+      const { events, error } = await fetchScheduleBySection('class', '');
+      if (!cancelled) {
+        setScheduleEvents(events);
+        if (error) {
+          setErrors((prev) => ({ ...prev, schedule_client: error }));
+        }
+      }
+    }
+
+    loadClassSchedule();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -233,6 +253,32 @@ export default function ClassScreen() {
           <View style={styles.sectionEmpty}>
             <Text style={styles.sectionEmptyText}>Loading...</Text>
           </View>
+        ) : scheduleEvents.length > 0 ? (
+          scheduleEvents.slice(0, 6).map((event, idx) => (
+            <TouchableOpacity
+              key={event.id}
+              style={styles.scheduleItem}
+              onPress={() => navigateToDetail(event.source_id)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.scheduleBar, { backgroundColor: event.color ?? getBarColor(idx) }]} />
+              <View style={styles.scheduleInfo}>
+                <Text style={styles.scheduleTitle}>{event.title}</Text>
+                <Text style={styles.scheduleTeacher}>
+                  {event.day_of_week != null ? DAY_NAMES[event.day_of_week] : ''}
+                  {event.start_time ? ` · ${formatTime(event.start_time)}` : ''}
+                  {event.end_time ? `–${formatTime(event.end_time)}` : ''}
+                </Text>
+              </View>
+              {idx === 0 ? (
+                <View style={styles.liveBadge}>
+                  <Text style={styles.liveBadgeText}>LIVE</Text>
+                </View>
+              ) : event.start_time ? (
+                <Text style={styles.scheduleTime}>{formatTime(event.start_time)}</Text>
+              ) : null}
+            </TouchableOpacity>
+          ))
         ) : courses.length > 0 ? (
           courses.slice(0, 5).map((cls, idx) => {
             const courseSlots = slotsByCourse.get(cls.id) ?? [];

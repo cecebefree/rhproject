@@ -1,7 +1,7 @@
-import { AdminLayout } from '../../../components/AdminLayout';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../services/supabase';
+import { AdminLayout } from '../../../components/AdminLayout';
+import { supabaseUntyped as supabase } from '../services/supabase';
 
 interface Student {
   id: string;
@@ -47,7 +47,11 @@ export default function SchoolDeskPage() {
 
     const [studentsRes, programsRes] = await Promise.all([
       supabase.from('students').select('*').order('created_at', { ascending: false }),
-      supabase.schema('school_desk').from('programs').select('id, title, status, type').eq('status', 'published'),
+      supabase
+        .schema('school_desk')
+        .from('programs')
+        .select('id, title, status, type')
+        .eq('status', 'published'),
     ]);
 
     if (studentsRes.error) {
@@ -70,10 +74,10 @@ export default function SchoolDeskPage() {
     setEnrollError(null);
     setEnrollSuccess(false);
 
-    const { data, error } = await supabase.rpc('enroll_student_manual' as any, {
+    const { data, error } = await supabase.rpc('enroll_student_manual' as never, {
       p_student_id: enrollStudentId,
       p_course_id: enrollCourseId,
-      p_tenant_id: '00000000-0000-0000-0000-000000000001',
+      p_tenant_id: import.meta.env.VITE_DEFAULT_TENANT_ID,
       p_notes: enrollNotes || null,
     });
 
@@ -97,7 +101,10 @@ export default function SchoolDeskPage() {
 
   const filtered = students.filter((s) => {
     const fullName = `${s.first_name} ${s.last_name}`.toLowerCase();
-    const matchesSearch = !search || fullName.includes(search.toLowerCase()) || s.email?.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch =
+      !search ||
+      fullName.includes(search.toLowerCase()) ||
+      s.email?.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = !statusFilter || s.enrollment_status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -107,7 +114,10 @@ export default function SchoolDeskPage() {
   return (
     <AdminLayout activeDesk="school-desk">
       <div>
-        <h1 className="text-2xl font-semibold" style={{ fontFamily: '"EB Garamond", serif', color: '#1A242B' }}>
+        <h1
+          className="text-2xl font-semibold"
+          style={{ fontFamily: '"EB Garamond", serif', color: '#1A242B' }}
+        >
           School Desk
         </h1>
         <p className="text-sm mt-1" style={{ color: '#54626C' }}>
@@ -116,20 +126,20 @@ export default function SchoolDeskPage() {
       </div>
 
       <div className="flex flex-wrap gap-3 mt-4">
-        <button
+        <button type="button"
           onClick={() => setShowEnrollModal(true)}
           className="px-4 py-2 text-sm font-medium text-white rounded-lg"
           style={{ backgroundColor: '#2563EB' }}
         >
           + Enroll Student
         </button>
-        <button
+        <button type="button"
           onClick={() => navigate('/service/school-desk/attendance')}
           className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300"
         >
           Attendance
         </button>
-        <button
+        <button type="button"
           onClick={() => navigate('/service/school-desk/chat')}
           className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300"
         >
@@ -152,15 +162,25 @@ export default function SchoolDeskPage() {
         >
           <option value="">All Statuses</option>
           {statuses.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
       </div>
 
       {loading && (
-        <div className="flex-1 flex items-center justify-center rounded-xl mt-4"
-          style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff', minHeight: '400px' }}>
-          <p className="text-sm" style={{ color: '#54626C' }}>Loading students...</p>
+        <div
+          className="flex-1 flex items-center justify-center rounded-xl mt-4"
+          style={{
+            border: '1px solid rgba(195,199,204,0.3)',
+            backgroundColor: '#ffffff',
+            minHeight: '400px',
+          }}
+        >
+          <p className="text-sm" style={{ color: '#54626C' }}>
+            Loading students...
+          </p>
         </div>
       )}
 
@@ -171,20 +191,25 @@ export default function SchoolDeskPage() {
       )}
 
       {!loading && !error && (
-        <div className="mt-4 rounded-xl overflow-hidden"
-          style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
+        <div
+          className="mt-4 rounded-xl overflow-hidden"
+          style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}
+        >
           <div className="overflow-y-auto" style={{ maxHeight: '600px' }}>
             {filtered.length === 0 ? (
               <div className="p-8 text-center">
-                <p className="text-sm" style={{ color: '#54626C' }}>No students found</p>
+                <p className="text-sm" style={{ color: '#54626C' }}>
+                  No students found
+                </p>
               </div>
             ) : (
               filtered.map((student) => (
-                <div
+                <button
+                  type="button"
                   key={student.id}
                   onClick={() => navigate(`/service/school-desk/student/${student.id}`)}
-                  className="p-4 border-b cursor-pointer hover:bg-gray-50"
-                  style={{ borderColor: 'rgba(195,199,204,0.3)' }}
+                  className="p-4 border-b cursor-pointer hover:bg-gray-50 text-left w-full"
+                  style={{ borderColor: 'rgba(195,199,204,0.3)', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(195,199,204,0.3)' }}
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -195,11 +220,14 @@ export default function SchoolDeskPage() {
                         {student.email || 'No email'}
                       </p>
                     </div>
-                    <span className="text-xs px-2 py-1 rounded"
+                    <span
+                      className="text-xs px-2 py-1 rounded"
                       style={{
-                        backgroundColor: student.enrollment_status === 'active' ? '#D1FAE5' : '#FEF3C7',
+                        backgroundColor:
+                          student.enrollment_status === 'active' ? '#D1FAE5' : '#FEF3C7',
                         color: student.enrollment_status === 'active' ? '#065F46' : '#92400E',
-                      }}>
+                      }}
+                    >
                       {student.enrollment_status}
                     </span>
                   </div>
@@ -209,7 +237,7 @@ export default function SchoolDeskPage() {
                       <span>Joined: {new Date(student.enrollment_date).toLocaleDateString()}</span>
                     )}
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
@@ -237,8 +265,9 @@ export default function SchoolDeskPage() {
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Student</label>
+                <label htmlFor="enroll-student" className="block text-sm font-medium mb-1">Student</label>
                 <select
+                  id="enroll-student"
                   value={enrollStudentId}
                   onChange={(e) => setEnrollStudentId(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
@@ -253,22 +282,26 @@ export default function SchoolDeskPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Program / Subject</label>
+                <label htmlFor="enroll-course" className="block text-sm font-medium mb-1">Program / Subject</label>
                 <select
+                  id="enroll-course"
                   value={enrollCourseId}
                   onChange={(e) => setEnrollCourseId(e.target.value)}
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
                 >
                   <option value="">Select program...</option>
                   {programs.map((c) => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
+                    <option key={c.id} value={c.id}>
+                      {c.title}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Notes (optional)</label>
+                <label htmlFor="enroll-notes" className="block text-sm font-medium mb-1">Notes (optional)</label>
                 <input
+                  id="enroll-notes"
                   type="text"
                   value={enrollNotes}
                   onChange={(e) => setEnrollNotes(e.target.value)}
@@ -279,7 +312,7 @@ export default function SchoolDeskPage() {
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
+              <button type="button"
                 onClick={() => {
                   setShowEnrollModal(false);
                   setEnrollStudentId('');
@@ -292,7 +325,7 @@ export default function SchoolDeskPage() {
               >
                 Cancel
               </button>
-              <button
+              <button type="button"
                 onClick={handleEnroll}
                 disabled={!enrollStudentId || !enrollCourseId || enrolling}
                 className="flex-1 px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-50"

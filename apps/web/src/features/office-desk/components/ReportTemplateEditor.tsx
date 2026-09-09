@@ -1,20 +1,53 @@
 // ReportTemplateEditor — Create and edit report templates (Row 12)
 
-import { useState, useEffect } from 'react';
-import type { ReportTemplate, ExportEntityType } from '../services/exportService';
+import { useEffect, useState } from 'react';
+import type { ExportEntityType, ReportTemplate } from '../services/exportService';
 
 interface ReportTemplateEditorProps {
   template?: ReportTemplate | null;
-  onSave: (template: Omit<ReportTemplate, 'id' | 'created_at' | 'updated_at' | 'tenant_id' | 'created_by'>) => Promise<ReportTemplate | null>;
+  onSave: (
+    template: Omit<ReportTemplate, 'id' | 'created_at' | 'updated_at' | 'tenant_id' | 'created_by'>
+  ) => Promise<ReportTemplate | null>;
   onCancel: () => void;
 }
 
 const ENTITY_TYPES: ExportEntityType[] = ['contacts', 'leads', 'invoices'];
 
 const AVAILABLE_COLUMNS: Record<ExportEntityType, string[]> = {
-  contacts: ['name', 'email', 'phone', 'company', 'position', 'status', 'tags', 'notes', 'created_at', 'updated_at'],
-  leads: ['name', 'email', 'phone', 'company', 'status', 'source', 'assigned_to', 'call_count', 'email_count', 'created_at'],
-  invoices: ['invoice_number', 'contact_name', 'amount', 'amount_paid', 'status', 'due_date', 'paid_at', 'created_at'],
+  contacts: [
+    'name',
+    'email',
+    'phone',
+    'company',
+    'position',
+    'status',
+    'tags',
+    'notes',
+    'created_at',
+    'updated_at',
+  ],
+  leads: [
+    'name',
+    'email',
+    'phone',
+    'company',
+    'status',
+    'source',
+    'assigned_to',
+    'call_count',
+    'email_count',
+    'created_at',
+  ],
+  invoices: [
+    'invoice_number',
+    'contact_name',
+    'amount',
+    'amount_paid',
+    'status',
+    'due_date',
+    'paid_at',
+    'created_at',
+  ],
 };
 
 const COLUMN_LABELS: Record<string, string> = {
@@ -43,8 +76,12 @@ const COLUMN_LABELS: Record<string, string> = {
 export function ReportTemplateEditor({ template, onSave, onCancel }: ReportTemplateEditorProps) {
   const [name, setName] = useState(template?.name || '');
   const [description, setDescription] = useState(template?.description || '');
-  const [reportType, setReportType] = useState<'summary' | 'detailed' | 'custom'>(template?.report_type || 'summary');
-  const [entityType, setEntityType] = useState<ExportEntityType>(template?.entity_type || 'contacts');
+  const [reportType, setReportType] = useState<'summary' | 'detailed' | 'custom'>(
+    template?.report_type || 'summary'
+  );
+  const [entityType, setEntityType] = useState<ExportEntityType>(
+    template?.entity_type || 'contacts'
+  );
   const [selectedColumns, setSelectedColumns] = useState<string[]>(template?.columns || []);
   const [sortBy, setSortBy] = useState(template?.sort_by || 'created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(template?.sort_order || 'desc');
@@ -90,41 +127,77 @@ export function ReportTemplateEditor({ template, onSave, onCancel }: ReportTempl
   const availableCols = AVAILABLE_COLUMNS[entityType] || [];
 
   return (
-    <div style={{ padding: '20px', border: '1px solid #e2e8f0', borderRadius: '8px', backgroundColor: 'white' }}>
+    <div
+      style={{
+        padding: '20px',
+        border: '1px solid #e2e8f0',
+        borderRadius: '8px',
+        backgroundColor: 'white',
+      }}
+    >
       <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>
         {template ? 'Edit Template' : 'Create Template'}
       </h3>
 
       {/* Name */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>Template Name</label>
+        <label
+          htmlFor="tpl-name"
+          style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}
+        >
+          Template Name
+        </label>
         <input
+          id="tpl-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g., Weekly Contact Summary"
-          style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+          style={{
+            width: '100%',
+            padding: '8px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+            fontSize: '14px',
+          }}
         />
       </div>
 
       {/* Description */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>Description (Optional)</label>
+        <label
+          htmlFor="tpl-description"
+          style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}
+        >
+          Description (Optional)
+        </label>
         <textarea
+          id="tpl-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Brief description of this report template"
           rows={2}
-          style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px', resize: 'vertical' }}
+          style={{
+            width: '100%',
+            padding: '8px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
+            fontSize: '14px',
+            resize: 'vertical',
+          }}
         />
       </div>
 
       {/* Entity Type */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>Data Source</label>
+        <span
+          style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}
+        >
+          Data Source
+        </span>
         <div style={{ display: 'flex', gap: '8px' }}>
           {ENTITY_TYPES.map((type) => (
-            <button
+            <button type="button"
               key={type}
               onClick={() => {
                 setEntityType(type);
@@ -148,10 +221,14 @@ export function ReportTemplateEditor({ template, onSave, onCancel }: ReportTempl
 
       {/* Report Type */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>Report Type</label>
+        <span
+          style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}
+        >
+          Report Type
+        </span>
         <div style={{ display: 'flex', gap: '8px' }}>
           {(['summary', 'detailed', 'custom'] as const).map((type) => (
-            <button
+            <button type="button"
               key={type}
               onClick={() => setReportType(type)}
               style={{
@@ -172,12 +249,14 @@ export function ReportTemplateEditor({ template, onSave, onCancel }: ReportTempl
 
       {/* Columns */}
       <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+        <span
+          style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}
+        >
           Columns ({selectedColumns.length} selected)
-        </label>
+        </span>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {availableCols.map((col) => (
-            <button
+            <button type="button"
               key={col}
               onClick={() => handleToggleColumn(col)}
               style={{
@@ -199,23 +278,49 @@ export function ReportTemplateEditor({ template, onSave, onCancel }: ReportTempl
       {/* Sort */}
       <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
         <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>Sort By</label>
+          <label
+            htmlFor="tpl-sort-by"
+            style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}
+          >
+            Sort By
+          </label>
           <select
+            id="tpl-sort-by"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #e2e8f0',
+              borderRadius: '6px',
+              fontSize: '14px',
+            }}
           >
             {availableCols.map((col) => (
-              <option key={col} value={col}>{COLUMN_LABELS[col] || col}</option>
+              <option key={col} value={col}>
+                {COLUMN_LABELS[col] || col}
+              </option>
             ))}
           </select>
         </div>
         <div style={{ width: '120px' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}>Order</label>
+          <label
+            htmlFor="tpl-sort-order"
+            style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' }}
+          >
+            Order
+          </label>
           <select
+            id="tpl-sort-order"
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-            style={{ width: '100%', padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #e2e8f0',
+              borderRadius: '6px',
+              fontSize: '14px',
+            }}
           >
             <option value="desc">Newest First</option>
             <option value="asc">Oldest First</option>
@@ -225,7 +330,7 @@ export function ReportTemplateEditor({ template, onSave, onCancel }: ReportTempl
 
       {/* Actions */}
       <div style={{ display: 'flex', gap: '8px' }}>
-        <button
+        <button type="button"
           onClick={handleSave}
           disabled={saving || !name || selectedColumns.length === 0}
           style={{
@@ -241,7 +346,7 @@ export function ReportTemplateEditor({ template, onSave, onCancel }: ReportTempl
         >
           {saving ? 'Saving...' : 'Save Template'}
         </button>
-        <button
+        <button type="button"
           onClick={onCancel}
           style={{
             padding: '10px 20px',

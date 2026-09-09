@@ -58,6 +58,7 @@ export function ArchiveReport({ tenantId }: ArchiveReportProps) {
     setLoading(false);
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tenantId/dateFrom/dateTo trigger data reload
   useEffect(() => {
     loadData();
   }, [tenantId, dateFrom, dateTo]);
@@ -79,26 +80,27 @@ export function ArchiveReport({ tenantId }: ArchiveReportProps) {
 
       {/* Date range filter */}
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-        <label>
+        <label htmlFor="archive-date-from">
           From
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            style={{ display: 'block', padding: '6px', marginTop: '4px' }}
-          />
         </label>
-        <label>
+        <input
+          id="archive-date-from"
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          style={{ display: 'block', padding: '6px', marginTop: '4px' }}
+        />
+        <label htmlFor="archive-date-to">
           To
-          <input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            style={{ display: 'block', padding: '6px', marginTop: '4px' }}
-          />
         </label>
-        <button
-          type="button"
+        <input
+          id="archive-date-to"
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          style={{ display: 'block', padding: '6px', marginTop: '4px' }}
+        />
+        <button type="button"
           onClick={() => {
             setDateFrom('');
             setDateTo('');

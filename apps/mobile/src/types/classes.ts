@@ -21,4 +21,5 @@ export interface ScheduleSlot {
   start_time: string;
   end_time: string;
   days_of_week: number[];
+  course_id: string;
 }

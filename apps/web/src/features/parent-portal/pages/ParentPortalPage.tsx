@@ -3,12 +3,12 @@
 // Auth gate: role='family' or role='parent' (supports both)
 
 import { useEffect, useState } from 'react';
-import { ParentDashboard } from '../components/ParentDashboard';
+import { supabase } from '../../lms/services/supabase';
+import { AttendanceView } from '../components/AttendanceView';
 import { ChildProgressView } from '../components/ChildProgressView';
 import { CourseDetailView } from '../components/CourseDetailView';
-import { AttendanceView } from '../components/AttendanceView';
+import { ParentDashboard } from '../components/ParentDashboard';
 import { TranscriptView } from '../components/TranscriptView';
-import { supabase } from '../../lms/services/supabase';
 
 interface Profile {
   id: string;
@@ -152,8 +152,7 @@ export default function ParentPortalPage() {
       </header>
 
       <nav style={styles.nav}>
-        <button
-          type="button"
+        <button type="button"
           style={viewMode === 'dashboard' ? styles.navButtonActive : styles.navButton}
           onClick={handleBackToDashboard}
         >
@@ -161,22 +160,19 @@ export default function ParentPortalPage() {
         </button>
         {selectedChildId && (
           <>
-            <button
-              type="button"
+            <button type="button"
               style={viewMode === 'progress' ? styles.navButtonActive : styles.navButton}
               onClick={() => setViewMode('progress')}
             >
               {selectedChildName}'s Progress
             </button>
-            <button
-              type="button"
+            <button type="button"
               style={viewMode === 'attendance' ? styles.navButtonActive : styles.navButton}
               onClick={handleViewAttendance}
             >
               Attendance
             </button>
-            <button
-              type="button"
+            <button type="button"
               style={viewMode === 'transcript' ? styles.navButtonActive : styles.navButton}
               onClick={handleViewTranscript}
             >
@@ -188,10 +184,7 @@ export default function ParentPortalPage() {
 
       <main style={styles.main}>
         {viewMode === 'dashboard' && (
-          <ParentDashboard
-            parentId={profile.id}
-            onSelectChild={handleSelectChild}
-          />
+          <ParentDashboard parentId={profile.id} onSelectChild={handleSelectChild} />
         )}
 
         {viewMode === 'progress' && selectedChildId && (
@@ -213,10 +206,7 @@ export default function ParentPortalPage() {
         )}
 
         {viewMode === 'attendance' && selectedChildId && (
-          <AttendanceView
-            studentId={selectedChildId}
-            onBack={handleBackFromAttendance}
-          />
+          <AttendanceView studentId={selectedChildId} onBack={handleBackFromAttendance} />
         )}
 
         {viewMode === 'transcript' && selectedChildId && (

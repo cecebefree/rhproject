@@ -16,12 +16,7 @@ interface ReportCardFormProps {
   onCancel?: () => void;
 }
 
-export function ReportCardForm({
-  tenantId,
-  userId,
-  onSuccess,
-  onCancel,
-}: ReportCardFormProps) {
+export function ReportCardForm({ tenantId, userId, onSuccess, onCancel }: ReportCardFormProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [studentId, setStudentId] = useState('');
   const [term, setTerm] = useState('');
@@ -108,11 +103,12 @@ export function ReportCardForm({
 
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.field}>
-          <label style={styles.label}>Student *</label>
+          <label htmlFor="reportcard-student" style={styles.label}>Student *</label>
           {loadingStudents ? (
             <div style={styles.loadingText}>Loading students...</div>
           ) : (
             <select
+              id="reportcard-student"
               value={studentId}
               onChange={(e) => setStudentId(e.target.value)}
               required
@@ -130,8 +126,9 @@ export function ReportCardForm({
 
         <div style={styles.row}>
           <div style={styles.field}>
-            <label style={styles.label}>Term *</label>
+            <label htmlFor="reportcard-term" style={styles.label}>Term *</label>
             <input
+              id="reportcard-term"
               type="text"
               value={term}
               onChange={(e) => setTerm(e.target.value)}
@@ -141,8 +138,9 @@ export function ReportCardForm({
             />
           </div>
           <div style={styles.field}>
-            <label style={styles.label}>Subject *</label>
+            <label htmlFor="reportcard-subject" style={styles.label}>Subject *</label>
             <input
+              id="reportcard-subject"
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
@@ -154,8 +152,9 @@ export function ReportCardForm({
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Grade (optional)</label>
+          <label htmlFor="reportcard-grade" style={styles.label}>Grade (optional)</label>
           <input
+            id="reportcard-grade"
             type="text"
             value={grade}
             onChange={(e) => setGrade(e.target.value)}
@@ -170,11 +169,7 @@ export function ReportCardForm({
               Cancel
             </button>
           )}
-          <button
-            type="submit"
-            disabled={loading || loadingStudents}
-            style={styles.submitButton}
-          >
+          <button type="submit" disabled={loading || loadingStudents} style={styles.submitButton}>
             {loading ? 'Creating...' : 'Create Report Card'}
           </button>
         </div>

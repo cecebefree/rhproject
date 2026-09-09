@@ -60,7 +60,10 @@ export async function selectDeskInvites(deskId: string) {
   let inviters: { id: string; email: string }[] = [];
   if (inviterIds.length > 0) {
     const { data } = await supabase.auth.admin.listUsers();
-    inviters = data?.users?.filter((u) => inviterIds.includes(u.id)).map((u) => ({ id: u.id, email: u.email || '' })) || [];
+    inviters =
+      data?.users
+        ?.filter((u) => inviterIds.includes(u.id))
+        .map((u) => ({ id: u.id, email: u.email || '' })) || [];
   }
 
   // Merge
@@ -204,12 +207,15 @@ export async function acceptInvite(token: string, userId: string) {
   // Assign role
   const { data: member, error: assignError } = await supabase
     .from('office_desk.user_desk_roles')
-    .upsert({
-      user_id: userId,
-      desk_id: invite.desk_id,
-      role_id: invite.role_id,
-      assigned_by: invite.invited_by,
-    }, { onConflict: 'user_id,desk_id' })
+    .upsert(
+      {
+        user_id: userId,
+        desk_id: invite.desk_id,
+        role_id: invite.role_id,
+        assigned_by: invite.invited_by,
+      },
+      { onConflict: 'user_id,desk_id' }
+    )
     .select()
     .single();
 
@@ -224,12 +230,13 @@ export async function acceptInvite(token: string, userId: string) {
     .eq('id', invite.id);
 
   // Add to user_desks if not already there
-  await supabase
-    .from('office_desk.user_desks')
-    .upsert({
+  await supabase.from('office_desk.user_desks').upsert(
+    {
       user_id: userId,
       desk_id: invite.desk_id,
-    }, { onConflict: 'user_id,desk_id' });
+    },
+    { onConflict: 'user_id,desk_id' }
+  );
 
   return { data: member, error: null };
 }
@@ -279,7 +286,10 @@ function generateInviteToken(): string {
 // INVITE EMAIL (placeholder — integrate with email service)
 // ═══════════════════════════════════════════════════════════
 
-export async function sendInviteEmail(invite: DeskInvite, deskName: string): Promise<{ error: Error | null }> {
+export async function sendInviteEmail(
+  invite: DeskInvite,
+  deskName: string
+): Promise<{ error: Error | null }> {
   // Placeholder: In production, call an Edge Function or email service
   return { error: null };
 }

@@ -3,7 +3,7 @@
 // RLS: course ownership (c.teacher_id = auth.uid()) enforced by Supabase
 
 import { useEffect, useState } from 'react';
-import { supabase } from '../services/supabase';
+import { supabaseUntyped as supabase } from '../services/supabase';
 
 interface ScheduleSlot {
   id: string;
@@ -52,8 +52,7 @@ export function ScheduleSlotList({ tenantId }: ScheduleSlotListProps) {
         if (slotsError) {
           setError(slotsError.message);
         } else {
-          // biome-ignore lint/suspicious/noExplicitAny: Supabase join query returns complex nested types
-          const mapped = (data ?? []).map((slot: any) => ({
+          const mapped = (data ?? []).map((slot: Record<string, unknown> & { courses?: { title?: string } | null }) => ({
             ...slot,
             course_title: slot.courses?.title,
           }));

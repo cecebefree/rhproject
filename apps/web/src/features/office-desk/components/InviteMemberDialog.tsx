@@ -1,10 +1,10 @@
 // InviteMemberDialog — Dialog to invite a new team member
 
 import { useState } from 'react';
-import { createInvite, sendInviteEmail } from '../services/inviteService';
-import { supabase } from '../services/supabase';
-import type { DeskRole } from '../services/rbac';
 import { useResponsive } from '../../../components/MobileNav';
+import { createInvite, sendInviteEmail } from '../services/inviteService';
+import type { DeskRole } from '../services/rbac';
+import { supabase } from '../services/supabase';
 
 interface InviteMemberDialogProps {
   deskId: string;
@@ -29,7 +29,9 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
     setError(null);
 
     // Get current user and tenant
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       setError('Not authenticated');
       setLoading(false);
@@ -70,45 +72,53 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
   };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-      padding: isMobile ? '16px' : '0',
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: isMobile ? '8px' : '12px',
-        padding: isMobile ? '20px' : '24px',
-        width: '100%',
-        maxWidth: '440px',
-        boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-        maxHeight: isMobile ? '90vh' : 'auto',
-        overflow: isMobile ? 'auto' : 'visible',
-      }}>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: isMobile ? '16px' : '0',
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'white',
+          borderRadius: isMobile ? '8px' : '12px',
+          padding: isMobile ? '20px' : '24px',
+          width: '100%',
+          maxWidth: '440px',
+          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
+          maxHeight: isMobile ? '90vh' : 'auto',
+          overflow: isMobile ? 'auto' : 'visible',
+        }}
+      >
         {success ? (
           <div style={{ textAlign: 'center', padding: '20px 0' }}>
-            <div style={{
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              backgroundColor: '#d1fae5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px',
-              margin: '0 auto 16px',
-            }}>
+            <div
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                backgroundColor: '#d1fae5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '24px',
+                margin: '0 auto 16px',
+              }}
+            >
               ✓
             </div>
-            <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '600', color: '#2d3748' }}>
+            <h3
+              style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: '600', color: '#2d3748' }}
+            >
               Invitation Sent!
             </h3>
             <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>
@@ -117,11 +127,18 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
           </div>
         ) : (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
+              }}
+            >
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#2d3748' }}>
                 Invite Team Member
               </h3>
-              <button
+              <button type="button"
                 onClick={onClose}
                 style={{
                   padding: '4px 8px',
@@ -137,17 +154,36 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
             </div>
 
             {error && (
-              <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '14px', marginBottom: '16px' }}>
+              <div
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#fee2e2',
+                  color: '#991b1b',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  marginBottom: '16px',
+                }}
+              >
                 {error}
               </div>
             )}
 
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#2d3748' }}>
+                <label
+                  htmlFor="invite-email"
+                  style={{
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#2d3748',
+                  }}
+                >
                   Email Address
                 </label>
                 <input
+                  id="invite-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -165,10 +201,20 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
               </div>
 
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: '#2d3748' }}>
+                <label
+                  htmlFor="invite-role"
+                  style={{
+                    display: 'block',
+                    marginBottom: '6px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#2d3748',
+                  }}
+                >
                   Role
                 </label>
                 <select
+                  id="invite-role"
                   value={roleId}
                   onChange={(e) => setRoleId(e.target.value)}
                   style={{
@@ -180,14 +226,15 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
                   }}
                 >
                   {roles.map((role) => (
-                    <option key={role.id} value={role.id}>{role.name}</option>
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
+                <button type="button"
                   onClick={onClose}
                   style={{
                     padding: '10px 16px',
@@ -201,8 +248,7 @@ export function InviteMemberDialog({ deskId, roles, onClose, onInvited }: Invite
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
+                <button type="submit"
                   disabled={loading || !email.trim() || !roleId}
                   style={{
                     padding: '10px 16px',

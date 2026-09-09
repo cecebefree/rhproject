@@ -60,13 +60,35 @@ export interface PermissionAuditLogEntry {
 }
 
 export type PermissionCode =
-  | 'contacts.view' | 'contacts.create' | 'contacts.edit' | 'contacts.delete'
-  | 'contacts.view_notes' | 'contacts.create_notes' | 'contacts.edit_notes' | 'contacts.delete_notes'
-  | 'leads.view' | 'leads.create' | 'leads.edit' | 'leads.delete' | 'leads.archive' | 'leads.unarchive'
-  | 'invoices.view' | 'invoices.create' | 'invoices.edit' | 'invoices.delete' | 'invoices.send' | 'invoices.view_payments'
-  | 'team.view' | 'team.invite' | 'team.remove' | 'team.edit_roles'
-  | 'settings.view' | 'settings.edit' | 'settings.billing'
-  | 'reports.view' | 'reports.export';
+  | 'contacts.view'
+  | 'contacts.create'
+  | 'contacts.edit'
+  | 'contacts.delete'
+  | 'contacts.view_notes'
+  | 'contacts.create_notes'
+  | 'contacts.edit_notes'
+  | 'contacts.delete_notes'
+  | 'leads.view'
+  | 'leads.create'
+  | 'leads.edit'
+  | 'leads.delete'
+  | 'leads.archive'
+  | 'leads.unarchive'
+  | 'invoices.view'
+  | 'invoices.create'
+  | 'invoices.edit'
+  | 'invoices.delete'
+  | 'invoices.send'
+  | 'invoices.view_payments'
+  | 'team.view'
+  | 'team.invite'
+  | 'team.remove'
+  | 'team.edit_roles'
+  | 'settings.view'
+  | 'settings.edit'
+  | 'settings.billing'
+  | 'reports.view'
+  | 'reports.export';
 
 export const DEFAULT_ROLES = ['admin', 'manager', 'agent', 'viewer'] as const;
 
@@ -89,22 +111,19 @@ export const ROLE_DESCRIPTIONS: Record<string, string> = {
 // ═══════════════════════════════════════════════════════════
 
 export async function selectDeskRoles(deskId: string) {
-  return supabase
-    .from('office_desk.desk_roles')
-    .select('*')
-    .eq('desk_id', deskId)
-    .order('name');
+  return supabase.from('office_desk.desk_roles').select('*').eq('desk_id', deskId).order('name');
 }
 
 export async function getRoleById(roleId: string) {
-  return supabase
-    .from('office_desk.desk_roles')
-    .select('*')
-    .eq('id', roleId)
-    .single();
+  return supabase.from('office_desk.desk_roles').select('*').eq('id', roleId).single();
 }
 
-export async function createDeskRole(deskId: string, tenantId: string, name: string, description?: string) {
+export async function createDeskRole(
+  deskId: string,
+  tenantId: string,
+  name: string,
+  description?: string
+) {
   return supabase
     .from('office_desk.desk_roles')
     .insert({
@@ -118,7 +137,10 @@ export async function createDeskRole(deskId: string, tenantId: string, name: str
     .single();
 }
 
-export async function updateDeskRole(roleId: string, updates: { name?: string; description?: string }) {
+export async function updateDeskRole(
+  roleId: string,
+  updates: { name?: string; description?: string }
+) {
   return supabase
     .from('office_desk.desk_roles')
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -128,11 +150,7 @@ export async function updateDeskRole(roleId: string, updates: { name?: string; d
 }
 
 export async function deleteDeskRole(roleId: string) {
-  return supabase
-    .from('office_desk.desk_roles')
-    .delete()
-    .eq('id', roleId)
-    .eq('is_system', false);
+  return supabase.from('office_desk.desk_roles').delete().eq('id', roleId).eq('is_system', false);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -140,10 +158,7 @@ export async function deleteDeskRole(roleId: string) {
 // ═══════════════════════════════════════════════════════════
 
 export async function selectAllPermissions() {
-  return supabase
-    .from('office_desk.permissions')
-    .select('*')
-    .order('category, code');
+  return supabase.from('office_desk.permissions').select('*').order('category, code');
 }
 
 export async function selectRolePermissions(roleId: string) {
@@ -173,10 +188,7 @@ export async function selectRolePermissions(roleId: string) {
 
 export async function setRolePermissions(roleId: string, permissionIds: string[]) {
   // Delete existing permissions
-  await supabase
-    .from('office_desk.role_permissions')
-    .delete()
-    .eq('role_id', roleId);
+  await supabase.from('office_desk.role_permissions').delete().eq('role_id', roleId);
 
   // Insert new permissions
   if (permissionIds.length === 0) return { data: null, error: null };
@@ -186,10 +198,7 @@ export async function setRolePermissions(roleId: string, permissionIds: string[]
     permission_id: permissionId,
   }));
 
-  return supabase
-    .from('office_desk.role_permissions')
-    .insert(rolePermissions)
-    .select();
+  return supabase.from('office_desk.role_permissions').insert(rolePermissions).select();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -216,11 +225,14 @@ export async function selectTeamMembers(deskId: string) {
   // Fetch user details from auth.users
   const userIds = userRoles.map((ur) => ur.user_id);
   const { data: authUsers } = await supabase.auth.admin.listUsers();
-  const users = authUsers?.users?.filter((u) => userIds.includes(u.id)).map((u) => ({
-    id: u.id,
-    email: u.email || '',
-    full_name: u.user_metadata?.full_name || null,
-  })) || [];
+  const users =
+    authUsers?.users
+      ?.filter((u) => userIds.includes(u.id))
+      .map((u) => ({
+        id: u.id,
+        email: u.email || '',
+        full_name: u.user_metadata?.full_name || null,
+      })) || [];
 
   // Merge
   const result = userRoles.map((ur) => ({
@@ -253,15 +265,23 @@ export async function getUserDeskRole(userId: string, deskId: string) {
   return { data: { ...userRole, role }, error: null };
 }
 
-export async function assignUserRole(userId: string, deskId: string, roleId: string, assignedBy?: string) {
+export async function assignUserRole(
+  userId: string,
+  deskId: string,
+  roleId: string,
+  assignedBy?: string
+) {
   return supabase
     .from('office_desk.user_desk_roles')
-    .upsert({
-      user_id: userId,
-      desk_id: deskId,
-      role_id: roleId,
-      assigned_by: assignedBy || null,
-    }, { onConflict: 'user_id,desk_id' })
+    .upsert(
+      {
+        user_id: userId,
+        desk_id: deskId,
+        role_id: roleId,
+        assigned_by: assignedBy || null,
+      },
+      { onConflict: 'user_id,desk_id' }
+    )
     .select()
     .single();
 }
@@ -278,24 +298,29 @@ export async function removeUserRole(userId: string, deskId: string) {
 // PERMISSION CHECKING
 // ═══════════════════════════════════════════════════════════
 
-export async function getUserPermissions(userId: string, deskId: string): Promise<PermissionCode[]> {
-  const { data, error } = await supabase
-    .rpc('get_user_desk_permissions', {
-      p_user_id: userId,
-      p_desk_id: deskId,
-    });
+export async function getUserPermissions(
+  userId: string,
+  deskId: string
+): Promise<PermissionCode[]> {
+  const { data, error } = await supabase.rpc('get_user_desk_permissions', {
+    p_user_id: userId,
+    p_desk_id: deskId,
+  });
 
   if (error || !data) return [];
   return data.map((row: { permission_code: string }) => row.permission_code as PermissionCode);
 }
 
-export async function hasPermission(userId: string, deskId: string, permission: PermissionCode): Promise<boolean> {
-  const { data, error } = await supabase
-    .rpc('user_has_permission', {
-      p_user_id: userId,
-      p_desk_id: deskId,
-      p_permission_code: permission,
-    });
+export async function hasPermission(
+  userId: string,
+  deskId: string,
+  permission: PermissionCode
+): Promise<boolean> {
+  const { data, error } = await supabase.rpc('user_has_permission', {
+    p_user_id: userId,
+    p_desk_id: deskId,
+    p_permission_code: permission,
+  });
 
   if (error || data === null) return false;
   return data as boolean;
@@ -326,7 +351,12 @@ export function subscribeToTeamMembers(
     .channel(`user_desk_roles-${deskId}`)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'office_desk', table: 'user_desk_roles', filter: `desk_id=eq.${deskId}` },
+      {
+        event: '*',
+        schema: 'office_desk',
+        table: 'user_desk_roles',
+        filter: `desk_id=eq.${deskId}`,
+      },
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();

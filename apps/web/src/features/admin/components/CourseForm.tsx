@@ -3,12 +3,12 @@
 
 import { useEffect, useState } from 'react';
 import {
-  createCourse,
-  updateCourse,
-  listInstructors,
   type Course,
   type CourseStatus,
   type Instructor,
+  createCourse,
+  listInstructors,
+  updateCourse,
 } from '../adminCoursesClient';
 
 interface CourseFormProps {
@@ -51,8 +51,8 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
       return;
     }
 
-    const priceNum = parseFloat(price);
-    if (isNaN(priceNum) || priceNum < 0) {
+    const priceNum = Number.parseFloat(price);
+    if (Number.isNaN(priceNum) || priceNum < 0) {
       setError('Price must be a valid number (0 or greater).');
       return;
     }
@@ -66,11 +66,11 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
       description: description.trim() || undefined,
       teacher_id: teacherId,
       price: priceNum,
-      capacity: capacity ? parseInt(capacity, 10) : undefined,
+      capacity: capacity ? Number.parseInt(capacity, 10) : undefined,
       status,
     };
 
-    let result;
+    let result: Awaited<ReturnType<typeof updateCourse>> | Awaited<ReturnType<typeof createCourse>>;
     if (course) {
       result = await updateCourse(course.id, payload);
     } else {
@@ -94,8 +94,9 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
       <form onSubmit={handleSubmit} style={styles.form}>
         {/* Course Name */}
         <div style={styles.field}>
-          <label style={styles.label}>Curriculum Name *</label>
+          <label htmlFor="course-title" style={styles.label}>Curriculum Name *</label>
           <input
+            id="course-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -107,8 +108,9 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
 
         {/* Description */}
         <div style={styles.field}>
-          <label style={styles.label}>Description</label>
+          <label htmlFor="course-description" style={styles.label}>Description</label>
           <textarea
+            id="course-description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Curriculum description..."
@@ -119,8 +121,9 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
 
         {/* Instructor */}
         <div style={styles.field}>
-          <label style={styles.label}>Instructor *</label>
+          <label htmlFor="course-teacher" style={styles.label}>Instructor *</label>
           <select
+            id="course-teacher"
             value={teacherId}
             onChange={(e) => setTeacherId(e.target.value)}
             style={styles.select}
@@ -140,8 +143,9 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
         {/* Price + Capacity row */}
         <div style={styles.row}>
           <div style={{ ...styles.field, flex: 1 }}>
-            <label style={styles.label}>Price (USD) *</label>
+            <label htmlFor="course-price" style={styles.label}>Price (USD) *</label>
             <input
+              id="course-price"
               type="number"
               step="0.01"
               min="0"
@@ -152,8 +156,9 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
             />
           </div>
           <div style={{ ...styles.field, flex: 1 }}>
-            <label style={styles.label}>Capacity (optional)</label>
+            <label htmlFor="course-capacity" style={styles.label}>Capacity (optional)</label>
             <input
+              id="course-capacity"
               type="number"
               min="1"
               value={capacity}
@@ -166,17 +171,15 @@ export function CourseForm({ tenantId, course, onSuccess, onCancel }: CourseForm
 
         {/* Status */}
         <div style={styles.field}>
-          <label style={styles.label}>Status</label>
+          <span style={styles.label}>Status</span>
           <div style={styles.statusRow}>
-            <button
-              type="button"
+            <button type="button"
               onClick={() => setStatus('draft')}
               style={status === 'draft' ? styles.statusActive : styles.statusButton}
             >
               Draft
             </button>
-            <button
-              type="button"
+            <button type="button"
               onClick={() => setStatus('published')}
               style={status === 'published' ? styles.statusActivePublished : styles.statusButton}
             >

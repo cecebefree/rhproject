@@ -5,20 +5,16 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useWebhookEvents, useWebhookStats, useWebhooks } from '../../../hooks/useWebhook';
 import {
+  WEBHOOK_EVENT_LABELS,
+  WEBHOOK_EVENT_STATUS_LABELS,
   type Webhook,
   type WebhookCreateInput,
   type WebhookEvent,
   type WebhookEventLog,
   type WebhookUpdateInput,
-  WEBHOOK_EVENT_LABELS,
-  WEBHOOK_EVENT_STATUS_LABELS,
 } from '../services/webhookService';
-import {
-  useWebhookEvents,
-  useWebhooks,
-  useWebhookStats,
-} from '../../../hooks/useWebhook';
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -113,10 +109,9 @@ function WebhookForm({ webhook, onSubmit, onCancel, loading }: WebhookFormProps)
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Name *
-        </label>
+        <label htmlFor="webhook-name" className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
         <input
+          id="webhook-name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -127,10 +122,9 @@ function WebhookForm({ webhook, onSubmit, onCancel, loading }: WebhookFormProps)
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          URL *
-        </label>
+        <label htmlFor="webhook-url" className="block text-sm font-medium text-gray-700 mb-1">URL *</label>
         <input
+          id="webhook-url"
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -141,10 +135,9 @@ function WebhookForm({ webhook, onSubmit, onCancel, loading }: WebhookFormProps)
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Description
-        </label>
+        <label htmlFor="webhook-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
         <textarea
+          id="webhook-description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -154,9 +147,7 @@ function WebhookForm({ webhook, onSubmit, onCancel, loading }: WebhookFormProps)
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Events *
-        </label>
+        <span className="block text-sm font-medium text-gray-700 mb-2">Events *</span>
         <div className="grid grid-cols-2 gap-2">
           {(Object.keys(WEBHOOK_EVENT_LABELS) as WebhookEvent[]).map((event) => (
             <label
@@ -190,10 +181,9 @@ function WebhookForm({ webhook, onSubmit, onCancel, loading }: WebhookFormProps)
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Retry Count
-          </label>
+          <label htmlFor="webhook-retry" className="block text-sm font-medium text-gray-700 mb-1">Retry Count</label>
           <input
+            id="webhook-retry"
             type="number"
             value={retryCount}
             onChange={(e) => setRetryCount(Number(e.target.value))}
@@ -203,10 +193,9 @@ function WebhookForm({ webhook, onSubmit, onCancel, loading }: WebhookFormProps)
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Timeout (ms)
-          </label>
+          <label htmlFor="webhook-timeout" className="block text-sm font-medium text-gray-700 mb-1">Timeout (ms)</label>
           <input
+            id="webhook-timeout"
             type="number"
             value={timeoutMs}
             onChange={(e) => setTimeoutMs(Number(e.target.value))}
@@ -220,24 +209,20 @@ function WebhookForm({ webhook, onSubmit, onCancel, loading }: WebhookFormProps)
 
       {webhook && (
         <div className="bg-gray-50 p-4 rounded">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Secret Key
-          </label>
+          <span className="block text-sm font-medium text-gray-700 mb-1">Secret Key</span>
           <code className="text-xs break-all">{webhook.secret_key}</code>
         </div>
       )}
 
       <div className="flex justify-end space-x-3">
-        <button
-          type="button"
+        <button type="button"
           onClick={onCancel}
           className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           disabled={submitting || loading}
         >
           Cancel
         </button>
-        <button
-          type="submit"
+        <button type="submit"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
           disabled={submitting || loading}
         >
@@ -295,18 +280,16 @@ function WebhookEventLogList({ events, loading }: WebhookEventLogProps) {
                     event.status === 'success'
                       ? 'bg-green-100 text-green-800'
                       : event.status === 'failed'
-                      ? 'bg-red-100 text-red-800'
-                      : event.status === 'retrying'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
+                        ? 'bg-red-100 text-red-800'
+                        : event.status === 'retrying'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-gray-100 text-gray-800'
                   }`}
                 >
                   {WEBHOOK_EVENT_STATUS_LABELS[event.status]}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm text-gray-500">
-                {event.response_status || '-'}
-              </td>
+              <td className="px-4 py-3 text-sm text-gray-500">{event.response_status || '-'}</td>
               <td className="px-4 py-3 text-sm">
                 {event.attempts}/{event.max_attempts}
               </td>
@@ -327,9 +310,8 @@ function WebhookEventLogList({ events, loading }: WebhookEventLogProps) {
 
 export default function WebhookManagementPage() {
   const navigate = useNavigate();
-  
-  // TODO: Get tenant_id from auth context
-  const tenantId = '00000000-0000-0000-0000-000000000001';
+
+  const tenantId = import.meta.env.VITE_DEFAULT_TENANT_ID;
 
   const {
     webhooks,
@@ -344,11 +326,7 @@ export default function WebhookManagementPage() {
 
   const { stats, refresh: refreshStats } = useWebhookStats(tenantId);
 
-  const {
-    events,
-    loading: eventsLoading,
-    refresh: refreshEvents,
-  } = useWebhookEvents(tenantId);
+  const { events, loading: eventsLoading, refresh: refreshEvents } = useWebhookEvents(tenantId);
 
   const [showForm, setShowForm] = useState(false);
   const [editingWebhook, setEditingWebhook] = useState<Webhook | null>(null);
@@ -381,11 +359,11 @@ export default function WebhookManagementPage() {
 
   const handleDelete = async (webhookId: string) => {
     if (!confirm('Are you sure you want to delete this webhook?')) return;
-    
+
     setDeletingId(webhookId);
     const result = await remove(webhookId);
     setDeletingId(null);
-    
+
     if (!result.error) {
       refreshStats();
     }
@@ -394,14 +372,14 @@ export default function WebhookManagementPage() {
   const handleTest = async (webhookId: string) => {
     setTestingId(webhookId);
     setTestResult(null);
-    
+
     const result = await test(webhookId);
     setTestResult({
       webhookId,
       success: result.success,
       error: result.error,
     });
-    
+
     setTestingId(null);
     refreshEvents();
   };
@@ -428,7 +406,7 @@ export default function WebhookManagementPage() {
                 Manage webhook endpoints and event delivery
               </p>
             </div>
-            <button
+            <button type="button"
               onClick={() => {
                 setEditingWebhook(null);
                 setShowForm(true);
@@ -490,7 +468,7 @@ export default function WebhookManagementPage() {
           <div className="px-4 py-3 border-b border-gray-200">
             <h2 className="text-lg font-semibold">Webhooks</h2>
           </div>
-          
+
           {webhooksLoading ? (
             <div className="p-4 text-center text-gray-500">Loading webhooks...</div>
           ) : webhooksError ? (
@@ -528,28 +506,29 @@ export default function WebhookManagementPage() {
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm text-gray-500">
-                        {webhook.url}
-                      </div>
+                      <div className="mt-1 text-sm text-gray-500">{webhook.url}</div>
                       <div className="mt-1 text-xs text-gray-400">
-                        Events: {webhook.events.map((e: WebhookEvent) => WEBHOOK_EVENT_LABELS[e]).join(', ')}
+                        Events:{' '}
+                        {webhook.events
+                          .map((e: WebhookEvent) => WEBHOOK_EVENT_LABELS[e])
+                          .join(', ')}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <button
+                      <button type="button"
                         onClick={() => handleTest(webhook.id)}
                         disabled={testingId === webhook.id}
                         className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
                       >
                         {testingId === webhook.id ? 'Testing...' : 'Test'}
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => handleEdit(webhook)}
                         className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                       >
                         Edit
                       </button>
-                      <button
+                      <button type="button"
                         onClick={() => handleDelete(webhook.id)}
                         disabled={deletingId === webhook.id}
                         className="px-3 py-1 text-sm border border-red-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
@@ -568,7 +547,7 @@ export default function WebhookManagementPage() {
         <div className="bg-white rounded-lg shadow">
           <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Event Log</h2>
-            <button
+            <button type="button"
               onClick={refreshEvents}
               className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
             >

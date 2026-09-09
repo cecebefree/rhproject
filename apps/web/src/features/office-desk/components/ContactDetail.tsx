@@ -1,12 +1,12 @@
 // ContactDetail — Contact detail page with Info, Notes, and Activity tabs
 
-import { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase';
-import { NoteEditor } from './NoteEditor';
-import { NotesThread } from './NotesThread';
-import { ActivityTimeline } from './ActivityTimeline';
+import { useEffect, useState } from 'react';
 import { useRbac } from '../../../hooks/useRbac';
 import type { ContactNote } from '../services/contactNotes';
+import { supabase } from '../services/supabase';
+import { ActivityTimeline } from './ActivityTimeline';
+import { NoteEditor } from './NoteEditor';
+import { NotesThread } from './NotesThread';
 
 interface Contact {
   id: string;
@@ -112,7 +112,11 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
   };
 
   if (isLoading) {
-    return <div style={{ padding: '24px', textAlign: 'center', color: '#718096' }}>Loading contact...</div>;
+    return (
+      <div style={{ padding: '24px', textAlign: 'center', color: '#718096' }}>
+        Loading contact...
+      </div>
+    );
   }
 
   if (error && !contact) {
@@ -129,7 +133,17 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {onBack && (
-            <button onClick={onBack} style={{ padding: '4px 8px', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px', color: '#3182ce' }}>
+            <button type="button"
+              onClick={onBack}
+              style={{
+                padding: '4px 8px',
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                fontSize: '14px',
+                color: '#3182ce',
+              }}
+            >
               &larr; Back
             </button>
           )}
@@ -142,7 +156,7 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
       {/* Tabs */}
       <div style={{ display: 'flex', gap: '4px', borderBottom: '1px solid #e2e8f0' }}>
         {TABS.map((tab) => (
-          <button
+          <button type="button"
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
@@ -164,9 +178,28 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
 
       {/* Error */}
       {error && (
-        <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '14px' }}>
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
+            borderRadius: '6px',
+            fontSize: '14px',
+          }}
+        >
           {error}
-          <button onClick={() => setError(null)} style={{ marginLeft: '8px', border: 'none', background: 'none', color: '#991b1b', cursor: 'pointer' }}>×</button>
+          <button type="button"
+            onClick={() => setError(null)}
+            style={{
+              marginLeft: '8px',
+              border: 'none',
+              background: 'none',
+              color: '#991b1b',
+              cursor: 'pointer',
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -179,7 +212,12 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
               type="text"
               value={contact.name || ''}
               onChange={(e) => handleChange('name', e.target.value)}
-              style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                fontSize: '14px',
+              }}
             />
           </label>
 
@@ -190,7 +228,12 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
                 type="email"
                 value={contact.email || ''}
                 onChange={(e) => handleChange('email', e.target.value)}
-                style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                }}
               />
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -199,7 +242,12 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
                 type="tel"
                 value={contact.phone || ''}
                 onChange={(e) => handleChange('phone', e.target.value)}
-                style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                }}
               />
             </label>
           </div>
@@ -211,7 +259,12 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
                 type="text"
                 value={contact.company || ''}
                 onChange={(e) => handleChange('company', e.target.value)}
-                style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                }}
               />
             </label>
             <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -220,14 +273,27 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
                 type="text"
                 value={contact.title || ''}
                 onChange={(e) => handleChange('title', e.target.value)}
-                style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' }}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                }}
               />
             </label>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              justifyContent: 'flex-end',
+              borderTop: '1px solid #e2e8f0',
+              paddingTop: '16px',
+            }}
+          >
             {hasPermission('contacts.edit') && (
-              <button
+              <button type="button"
                 onClick={handleSave}
                 disabled={saving}
                 style={{
@@ -252,7 +318,7 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {/* Add Note Button / Editor */}
           {!showNoteEditor && !editingNote && hasPermission('contacts.create_notes') && (
-            <button
+            <button type="button"
               onClick={() => setShowNoteEditor(true)}
               style={{
                 padding: '12px',
@@ -295,9 +361,7 @@ export function ContactDetail({ contactId, deskId, tenantId, userId, onBack }: C
         </div>
       )}
 
-      {activeTab === 'activity' && (
-        <ActivityTimeline contactId={contactId} deskId={deskId} />
-      )}
+      {activeTab === 'activity' && <ActivityTimeline contactId={contactId} deskId={deskId} />}
     </div>
   );
 }

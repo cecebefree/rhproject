@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '../../../components/Toast';
+import { type BulkEditValues, bulkEdit, getTeamMembers } from '../services/bulkOperationsService';
 import { useBulkSelection } from './BulkSelectionContext';
-import { bulkEdit, type BulkEditValues, getTeamMembers } from '../services/bulkOperationsService';
 
 interface BulkEditModalProps {
   isOpen: boolean;
@@ -21,8 +22,10 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
   const { toast } = useToast();
   const { selectedIds, entityType, tenantId } = useBulkSelection();
   const [loading, setLoading] = useState(false);
-  const [teamMembers, setTeamMembers] = useState<Array<{ id: string; full_name: string; email: string }>>([]);
-  
+  const [teamMembers, setTeamMembers] = useState<
+    Array<{ id: string; full_name: string; email: string }>
+  >([]);
+
   const [values, setValues] = useState<BulkEditValues>({
     status: undefined,
     assigned_to: undefined,
@@ -52,13 +55,22 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
       if (values.priority !== undefined) updateValues.priority = values.priority;
       if (values.notes !== undefined) updateValues.notes = values.notes;
 
-      const result = await bulkEdit(entityType, Array.from(selectedIds), updateValues, tenantId, 'current-user-id');
-      
+      const result = await bulkEdit(
+        entityType,
+        Array.from(selectedIds),
+        updateValues,
+        tenantId,
+        'current-user-id'
+      );
+
       if (result.success) {
         onSuccess();
         onClose();
       } else {
-        toast(`Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`, 'info');
+        toast(
+          `Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`,
+          'info'
+        );
       }
     } catch (err) {
       toast('Failed to update records', 'error');
@@ -75,14 +87,18 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
-              Bulk Edit {selectedIds.size} {entityType === 'lead' ? 'Leads' : entityType === 'contact' ? 'Contacts' : 'Invoices'}
+              Bulk Edit {selectedIds.size}{' '}
+              {entityType === 'lead' ? 'Leads' : entityType === 'contact' ? 'Contacts' : 'Invoices'}
             </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Close">
+                <title>Close</title>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -90,8 +106,9 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <label htmlFor="bulk-edit-status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
             <select
+              id="bulk-edit-status"
               value={values.status || ''}
               onChange={(e) => setValues({ ...values, status: e.target.value || undefined })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -107,8 +124,9 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
 
           {entityType !== 'invoice' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
+              <label htmlFor="bulk-edit-assign" className="block text-sm font-medium text-gray-700 mb-1">Assign To</label>
               <select
+                id="bulk-edit-assign"
                 value={values.assigned_to || ''}
                 onChange={(e) => setValues({ ...values, assigned_to: e.target.value || undefined })}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -124,8 +142,9 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label htmlFor="bulk-edit-category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
             <select
+              id="bulk-edit-category"
               value={values.category || ''}
               onChange={(e) => setValues({ ...values, category: e.target.value || undefined })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -140,8 +159,9 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+            <label htmlFor="bulk-edit-priority" className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
             <select
+              id="bulk-edit-priority"
               value={values.priority || ''}
               onChange={(e) => setValues({ ...values, priority: e.target.value || undefined })}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -155,8 +175,9 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+            <label htmlFor="bulk-edit-notes" className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
             <textarea
+              id="bulk-edit-notes"
               value={values.notes || ''}
               onChange={(e) => setValues({ ...values, notes: e.target.value || undefined })}
               rows={3}
@@ -166,15 +187,13 @@ export default function BulkEditModal({ isOpen, onClose, onSuccess }: BulkEditMo
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button
-              type="button"
+            <button type="button"
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
-            <button
-              type="submit"
+            <button type="submit"
               disabled={loading}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >

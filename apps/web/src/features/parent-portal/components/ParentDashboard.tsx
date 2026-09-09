@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  selectLinkedChildren,
-  getChildProgress,
   type ParentStudentLinkWithStudent,
+  getChildProgress,
+  selectLinkedChildren,
 } from '../../lms/services/supabase';
 
 interface ParentDashboardProps {
@@ -25,6 +25,7 @@ export function ParentDashboard({ parentId, onSelectChild }: ParentDashboardProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: parentId triggers children load
   useEffect(() => {
     loadChildren();
   }, [parentId]);
@@ -44,7 +45,7 @@ export function ParentDashboard({ parentId, onSelectChild }: ParentDashboardProp
 
       for (const link of links) {
         const typedLink = link as ParentStudentLinkWithStudent;
-        const profile = typedLink.profiles as any;
+        const profile = typedLink.profiles as { name?: string; email?: string } | null;
 
         // Get progress data for quick stats
         const { data: progress } = await getChildProgress(typedLink.student_id);
@@ -62,19 +63,19 @@ export function ParentDashboard({ parentId, onSelectChild }: ParentDashboardProp
         // Calculate average attendance across courses
         if (progress?.courses && progress.courses.length > 0) {
           const validAttendance = progress.courses
-            .filter((c: any) => c.attendance_pct !== null)
-            .map((c: any) => c.attendance_pct);
+            .filter((c: { attendance_pct: number | null }) => c.attendance_pct !== null)
+            .map((c: { attendance_pct: number | null }) => c.attendance_pct as number);
           if (validAttendance.length > 0) {
             summaries[summaries.length - 1].attendancePct = Math.round(
-              validAttendance.reduce((a: number, b: number) => a + b, 0) / validAttendance.length,
+              validAttendance.reduce((a: number, b: number) => a + b, 0) / validAttendance.length
             );
           }
         }
       }
 
       setChildren(summaries);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load children');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load children');
     } finally {
       setLoading(false);
     }
@@ -126,16 +127,16 @@ export function ParentDashboard({ parentId, onSelectChild }: ParentDashboardProp
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {children.map((child) => (
-            <div
+            <button
+              type="button"
               key={child.studentId}
-              className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+              className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer text-left w-full"
+              style={{ background: 'transparent' }}
               onClick={() => onSelectChild(child.studentId, child.studentName)}
             >
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="text-md font-semibold text-gray-900">
-                    {child.studentName}
-                  </h3>
+                  <h3 className="text-md font-semibold text-gray-900">{child.studentName}</h3>
                   <p className="text-sm text-gray-500">
                     {getRelationshipLabel(child.relationship)}
                   </p>
@@ -162,10 +163,7 @@ export function ParentDashboard({ parentId, onSelectChild }: ParentDashboardProp
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">GPA</span>
-                  <span
-                    className="font-medium"
-                    style={{ color: getGpaColor(child.overallGpa) }}
-                  >
+                  <span className="font-medium" style={{ color: getGpaColor(child.overallGpa) }}>
                     {child.overallGpa !== null ? `${child.overallGpa}%` : '--'}
                   </span>
                 </div>
@@ -176,7 +174,7 @@ export function ParentDashboard({ parentId, onSelectChild }: ParentDashboardProp
                   View Progress →
                 </span>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

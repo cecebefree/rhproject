@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useToast } from '../../../components/Toast';
-import { useBulkSelection } from './BulkSelectionContext';
 import { bulkStatusChange } from '../services/bulkOperationsService';
+import { useBulkSelection } from './BulkSelectionContext';
 
 interface BulkStatusChangeModalProps {
   isOpen: boolean;
@@ -30,7 +31,11 @@ const STATUS_OPTIONS = {
   ],
 };
 
-export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: BulkStatusChangeModalProps) {
+export default function BulkStatusChangeModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: BulkStatusChangeModalProps) {
   const { toast } = useToast();
   const { selectedIds, entityType, tenantId } = useBulkSelection();
   const [loading, setLoading] = useState(false);
@@ -46,13 +51,22 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
     setLoading(true);
 
     try {
-      const result = await bulkStatusChange(entityType, Array.from(selectedIds), selectedStatus, tenantId, 'current-user-id');
-      
+      const result = await bulkStatusChange(
+        entityType,
+        Array.from(selectedIds),
+        selectedStatus,
+        tenantId,
+        'current-user-id'
+      );
+
       if (result.success) {
         onSuccess();
         onClose();
       } else {
-        toast(`Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`, 'info');
+        toast(
+          `Updated ${result.successCount} of ${result.totalAffected} records. ${result.errorCount} errors.`,
+          'info'
+        );
       }
     } catch (err) {
       toast('Failed to update status', 'error');
@@ -63,7 +77,8 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
 
   if (!isOpen) return null;
 
-  const entityTypeLabel = entityType === 'lead' ? 'Leads' : entityType === 'contact' ? 'Contacts' : 'Invoices';
+  const entityTypeLabel =
+    entityType === 'lead' ? 'Leads' : entityType === 'contact' ? 'Contacts' : 'Invoices';
   const statuses = STATUS_OPTIONS[entityType];
 
   return (
@@ -74,12 +89,15 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
             <h2 className="text-lg font-semibold text-gray-900">
               Change Status for {selectedIds.size} {entityTypeLabel}
             </h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Close">
+                <title>Close</title>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -87,9 +105,9 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <span className="block text-sm font-medium text-gray-700 mb-3">
               Select New Status
-            </label>
+            </span>
             <div className="grid grid-cols-2 gap-3">
               {statuses.map((status) => (
                 <label
@@ -120,10 +138,12 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
             <p className="text-sm text-gray-600">
               <strong>Preview:</strong> {selectedIds.size} {entityTypeLabel} will be moved to{' '}
               {selectedStatus ? (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  statuses.find(s => s.value === selectedStatus)?.color || 'bg-gray-100'
-                }`}>
-                  {statuses.find(s => s.value === selectedStatus)?.label}
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    statuses.find((s) => s.value === selectedStatus)?.color || 'bg-gray-100'
+                  }`}
+                >
+                  {statuses.find((s) => s.value === selectedStatus)?.label}
                 </span>
               ) : (
                 <span className="text-gray-400">[Select a status]</span>
@@ -132,15 +152,13 @@ export default function BulkStatusChangeModal({ isOpen, onClose, onSuccess }: Bu
           </div>
 
           <div className="flex gap-3 pt-4">
-            <button
-              type="button"
+            <button type="button"
               onClick={onClose}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
-            <button
-              type="submit"
+            <button type="submit"
               disabled={loading || !selectedStatus}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >

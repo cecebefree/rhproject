@@ -1,23 +1,23 @@
 // useSearch — Hook for search state, filters, pagination (Row 2)
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  search,
-  autocomplete,
-  selectSavedSearches,
-  createSavedSearch,
-  updateSavedSearch,
-  deleteSavedSearch,
-  selectSearchHistory,
-  addSearchHistory,
-  clearSearchHistory,
-  type SearchEntityType,
-  type SearchFilters,
-  type SearchOptions,
-  type SearchResult,
   type AutocompleteResult,
   type SavedSearch,
+  type SearchEntityType,
+  type SearchFilters,
   type SearchHistoryEntry,
+  type SearchOptions,
+  type SearchResult,
+  addSearchHistory,
+  autocomplete,
+  clearSearchHistory,
+  createSavedSearch,
+  deleteSavedSearch,
+  search,
+  selectSavedSearches,
+  selectSearchHistory,
+  updateSavedSearch,
 } from '../features/office-desk/services/searchService';
 
 interface UseSearchOptions {
@@ -66,65 +66,71 @@ export function useSearch({
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   // Execute search
-  const executeSearch = useCallback(async (overrides?: Partial<SearchOptions>) => {
-    setLoading(true);
-    setError(null);
+  const executeSearch = useCallback(
+    async (overrides?: Partial<SearchOptions>) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const options: SearchOptions = {
-        entity_type: entityType,
-        query,
-        filters,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        page,
-        page_size: pageSize,
-        tenant_id: tenantId,
-        ...overrides,
-      };
-
-      const result = await search(options);
-      setResults(result);
-
-      // Add to search history if there's a query or filters
-      if (query || Object.keys(filters).length > 0) {
-        await addSearchHistory({
-          tenant_id: tenantId,
-          user_id: userId,
+      try {
+        const options: SearchOptions = {
           entity_type: entityType,
-          search_query: query,
+          query,
           filters,
-          result_count: result.total,
-        });
-      }
+          sort_by: sortBy,
+          sort_order: sortOrder,
+          page,
+          page_size: pageSize,
+          tenant_id: tenantId,
+          ...overrides,
+        };
 
-      return result;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Search failed';
-      setError(message);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, [query, entityType, filters, sortBy, sortOrder, page, pageSize, tenantId, userId]);
+        const result = await search(options);
+        setResults(result);
+
+        // Add to search history if there's a query or filters
+        if (query || Object.keys(filters).length > 0) {
+          await addSearchHistory({
+            tenant_id: tenantId,
+            user_id: userId,
+            entity_type: entityType,
+            search_query: query,
+            filters,
+            result_count: result.total,
+          });
+        }
+
+        return result;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Search failed';
+        setError(message);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [query, entityType, filters, sortBy, sortOrder, page, pageSize, tenantId, userId]
+  );
 
   // Fetch autocomplete suggestions
-  const fetchSuggestions = useCallback(async (searchQuery: string) => {
-    if (!searchQuery || searchQuery.length < 2) {
-      setSuggestions([]);
-      return;
-    }
+  const fetchSuggestions = useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery || searchQuery.length < 2) {
+        setSuggestions([]);
+        return;
+      }
 
-    setLoadingSuggestions(true);
-    try {
-      const results = await autocomplete(searchQuery, tenantId, 5);
-      setSuggestions(results);
-    } catch {
-      setSuggestions([]);
-    } finally {
-      setLoadingSuggestions(false);
-    }
-  }, [tenantId]);
+      setLoadingSuggestions(true);
+      try {
+        const results = await autocomplete(searchQuery, tenantId, 5);
+        setSuggestions(results);
+      } catch {
+        setSuggestions([]);
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    },
+    [tenantId]
+  );
 
   // Load saved searches
   const loadSavedSearches = useCallback(async () => {
@@ -140,52 +146,67 @@ export function useSearch({
   }, [userId, tenantId]);
 
   // Save current search
-  const saveSearch = useCallback(async (name: string, description?: string) => {
-    try {
-      const { data, error: createError } = await createSavedSearch({
-        tenant_id: tenantId,
-        user_id: userId,
-        name,
-        description: description || null,
-        entity_type: entityType,
-        search_query: query || null,
-        filters,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        is_default: false,
-      });
+  const saveSearch = useCallback(
+    async (name: string, description?: string) => {
+      try {
+        const { data, error: createError } = await createSavedSearch({
+          tenant_id: tenantId,
+          user_id: userId,
+          name,
+          description: description || null,
+          entity_type: entityType,
+          search_query: query || null,
+          filters,
+          sort_by: sortBy,
+          sort_order: sortOrder,
+          is_default: false,
+        });
 
-      if (!createError && data) {
-        setSavedSearches((prev) => [data, ...prev]);
-        return data;
+        if (!createError && data) {
+          setSavedSearches((prev) => [data, ...prev]);
+          return data;
+        }
+        return null;
+      } catch {
+        return null;
       }
-      return null;
-    } catch {
-      return null;
-    }
-  }, [tenantId, userId, entityType, query, filters, sortBy, sortOrder]);
+    },
+    [tenantId, userId, entityType, query, filters, sortBy, sortOrder]
+  );
 
   // Apply saved search
-  const applySavedSearch = useCallback(async (savedSearch: { search_query?: string | null; filters?: Record<string, unknown>; entity_type?: string; sort_by?: string; sort_order?: string; id?: string; use_count?: number; [key: string]: unknown }) => {
-    setQuery(savedSearch.search_query || '');
-    if (savedSearch.entity_type) {
-      setEntityType(savedSearch.entity_type as SearchEntityType);
-    }
-    if (savedSearch.filters) {
-      setFilters(savedSearch.filters as SearchFilters);
-    }
-    if (savedSearch.sort_by) setSortBy(savedSearch.sort_by);
-    if (savedSearch.sort_order) setSortOrder(savedSearch.sort_order as 'asc' | 'desc');
-    setPage(1);
+  const applySavedSearch = useCallback(
+    async (savedSearch: {
+      search_query?: string | null;
+      filters?: Record<string, unknown>;
+      entity_type?: string;
+      sort_by?: string;
+      sort_order?: string;
+      id?: string;
+      use_count?: number;
+      [key: string]: unknown;
+    }) => {
+      setQuery(savedSearch.search_query || '');
+      if (savedSearch.entity_type) {
+        setEntityType(savedSearch.entity_type as SearchEntityType);
+      }
+      if (savedSearch.filters) {
+        setFilters(savedSearch.filters as SearchFilters);
+      }
+      if (savedSearch.sort_by) setSortBy(savedSearch.sort_by);
+      if (savedSearch.sort_order) setSortOrder(savedSearch.sort_order as 'asc' | 'desc');
+      setPage(1);
 
-    // Increment usage count if it's a full SavedSearch
-    if (savedSearch.id && savedSearch.use_count !== undefined) {
-      await updateSavedSearch(savedSearch.id, {
-        use_count: savedSearch.use_count + 1,
-        last_used_at: new Date().toISOString(),
-      });
-    }
-  }, []);
+      // Increment usage count if it's a full SavedSearch
+      if (savedSearch.id && savedSearch.use_count !== undefined) {
+        await updateSavedSearch(savedSearch.id, {
+          use_count: savedSearch.use_count + 1,
+          last_used_at: new Date().toISOString(),
+        });
+      }
+    },
+    []
+  );
 
   // Delete saved search
   const deleteSaved = useCallback(async (searchId: string) => {

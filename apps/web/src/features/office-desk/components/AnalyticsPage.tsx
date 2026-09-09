@@ -3,10 +3,10 @@
  */
 
 import { useState } from 'react';
-import AnalyticsDashboard from './AnalyticsDashboard';
-import DealPipeline from './DealPipeline';
-import ConversionFunnel from './ConversionFunnel';
 import ActivityLog from './ActivityLog';
+import AnalyticsDashboard from './AnalyticsDashboard';
+import ConversionFunnel from './ConversionFunnel';
+import DealPipeline from './DealPipeline';
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -36,8 +36,7 @@ interface AnalyticsPageProps {
 }
 
 export default function AnalyticsPage({ tenantId }: AnalyticsPageProps) {
-  // Default tenant ID - in production, this would come from auth context
-  const effectiveTenantId = tenantId || '00000000-0000-0000-0000-000000000001';
+  const effectiveTenantId = tenantId || import.meta.env.VITE_DEFAULT_TENANT_ID;
   const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   const renderContent = () => {
@@ -63,9 +62,7 @@ export default function AnalyticsPage({ tenantId }: AnalyticsPageProps) {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Insights and metrics for your business
-              </p>
+              <p className="mt-1 text-sm text-gray-500">Insights and metrics for your business</p>
             </div>
           </div>
         </div>
@@ -76,7 +73,7 @@ export default function AnalyticsPage({ tenantId }: AnalyticsPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8" aria-label="Tabs">
             {TABS.map((tab) => (
-              <button
+              <button type="button"
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -94,9 +91,7 @@ export default function AnalyticsPage({ tenantId }: AnalyticsPageProps) {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderContent()}
-      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{renderContent()}</div>
     </div>
   );
 }

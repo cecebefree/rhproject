@@ -1,9 +1,9 @@
 // NotificationCenter — bell icon + dropdown panel for notifications (Row 74)
 // Shows unread count badge, 10 most recent notifications, mark as read
 
-import { useState, useRef, useEffect } from 'react';
-import { useNotifications } from '../hooks/useNotifications';
+import { useEffect, useRef, useState } from 'react';
 import type { Notification } from '../features/office-desk/services/notifications';
+import { useNotifications } from '../hooks/useNotifications';
 
 interface NotificationCenterProps {
   userId: string;
@@ -63,15 +63,22 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
   return (
     <div ref={panelRef} style={styles.container}>
       {/* Bell button */}
-      <button onClick={handleToggle} style={styles.bellButton} aria-label="Notifications">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <button type="button" onClick={handleToggle} style={styles.bellButton} aria-label="Notifications">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-label="Notifications bell"
+        >
+          <title>Notifications bell</title>
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         {unreadCount > 0 && (
-          <span style={styles.badge}>
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
+          <span style={styles.badge}>{unreadCount > 99 ? '99+' : unreadCount}</span>
         )}
       </button>
 
@@ -81,7 +88,7 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
           <div style={styles.panelHeader}>
             <span style={styles.panelTitle}>Notifications</span>
             {unreadCount > 0 && (
-              <button onClick={handleMarkAllRead} style={styles.markAllButton}>
+              <button type="button" onClick={handleMarkAllRead} style={styles.markAllButton}>
                 Mark all read
               </button>
             )}
@@ -92,24 +99,27 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
               <div style={styles.empty}>No notifications yet.</div>
             ) : (
               notifications.slice(0, 10).map((n: Notification) => (
-                <div
+                <button
+                  type="button"
                   key={n.id}
                   onClick={() => handleClickNotification(n.id)}
                   style={{
                     ...styles.notifItem,
                     backgroundColor: n.read_at ? 'white' : '#f0f5ff',
+                    width: '100%',
+                    textAlign: 'left',
+                    border: 'none',
+                    cursor: 'pointer',
                   }}
                 >
-                  <span style={styles.notifIcon}>
-                    {TYPE_ICONS[n.type] ?? '🔔'}
-                  </span>
+                  <span style={styles.notifIcon}>{TYPE_ICONS[n.type] ?? '🔔'}</span>
                   <div style={styles.notifContent}>
                     <div style={styles.notifTitle}>{n.title}</div>
                     <div style={styles.notifBody}>{n.message}</div>
                     <div style={styles.notifTime}>{timeAgo(n.created_at)}</div>
                   </div>
                   {!n.read_at && <span style={styles.unreadDot} />}
-                </div>
+                </button>
               ))
             )}
           </div>

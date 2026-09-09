@@ -3,10 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import {
-  getTeacherCourses,
-  getStudentRoster,
-  markAttendanceBulk,
   type AttendanceStatus,
+  getStudentRoster,
+  getTeacherCourses,
+  markAttendanceBulk,
 } from '../services/supabase';
 
 interface Student {
@@ -27,18 +27,13 @@ interface AttendanceFormProps {
   onCancel?: () => void;
 }
 
-export function AttendanceForm({
-  tenantId,
-  userId,
-  onSuccess,
-  onCancel,
-}: AttendanceFormProps) {
+export function AttendanceForm({ tenantId, userId, onSuccess, onCancel }: AttendanceFormProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState('');
   const [classDate, setClassDate] = useState(new Date().toISOString().split('T')[0]);
   const [students, setStudents] = useState<Student[]>([]);
   const [marks, setMarks] = useState<Map<string, { status: AttendanceStatus; notes: string }>>(
-    new Map(),
+    new Map()
   );
   const [loading, setLoading] = useState(false);
   const [loadingCourses, setLoadingCourses] = useState(true);
@@ -174,11 +169,12 @@ export function AttendanceForm({
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.row}>
           <div style={styles.field}>
-            <label style={styles.label}>Course *</label>
+            <label htmlFor="attendance-course" style={styles.label}>Course *</label>
             {loadingCourses ? (
               <div style={styles.loadingText}>Loading courses...</div>
             ) : (
               <select
+                id="attendance-course"
                 value={selectedCourseId}
                 onChange={(e) => setSelectedCourseId(e.target.value)}
                 required
@@ -194,8 +190,9 @@ export function AttendanceForm({
             )}
           </div>
           <div style={styles.field}>
-            <label style={styles.label}>Date *</label>
+            <label htmlFor="attendance-date" style={styles.label}>Date *</label>
             <input
+              id="attendance-date"
               type="date"
               value={classDate}
               onChange={(e) => setClassDate(e.target.value)}
@@ -243,8 +240,7 @@ export function AttendanceForm({
                     <div style={styles.studentEmail}>{s.profiles?.email ?? ''}</div>
                   </div>
                   <div style={styles.statusButtons}>
-                    <button
-                      type="button"
+                    <button type="button"
                       onClick={() => updateMark(s.student_id, 'present')}
                       style={
                         status === 'present'
@@ -254,8 +250,7 @@ export function AttendanceForm({
                     >
                       Present
                     </button>
-                    <button
-                      type="button"
+                    <button type="button"
                       onClick={() => updateMark(s.student_id, 'absent')}
                       style={
                         status === 'absent'
@@ -265,8 +260,7 @@ export function AttendanceForm({
                     >
                       Absent
                     </button>
-                    <button
-                      type="button"
+                    <button type="button"
                       onClick={() => updateMark(s.student_id, 'excused')}
                       style={
                         status === 'excused'
@@ -289,8 +283,7 @@ export function AttendanceForm({
               Cancel
             </button>
           )}
-          <button
-            type="submit"
+          <button type="submit"
             disabled={loading || loadingStudents || !selectedCourseId}
             style={styles.submitButton}
           >
@@ -315,8 +308,19 @@ const styles: Record<string, React.CSSProperties> = {
   row: { display: 'flex', gap: '16px' },
   field: { flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' },
   label: { fontSize: '14px', fontWeight: '500', color: '#4a5568' },
-  input: { padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px' },
-  select: { padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '14px', backgroundColor: 'white' },
+  input: {
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '14px',
+  },
+  select: {
+    padding: '8px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '14px',
+    backgroundColor: 'white',
+  },
   loadingText: { padding: '8px 12px', color: '#718096', fontSize: '14px' },
   summaryBar: {
     display: 'flex',
@@ -327,7 +331,13 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '6px',
     border: '1px solid #e2e8f0',
   },
-  summaryItem: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', color: '#4a5568' },
+  summaryItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '14px',
+    color: '#4a5568',
+  },
   dot: { width: '8px', height: '8px', borderRadius: '50%' },
   summaryTotal: { fontSize: '14px', fontWeight: '600', color: '#2d3748' },
   quickButton: {

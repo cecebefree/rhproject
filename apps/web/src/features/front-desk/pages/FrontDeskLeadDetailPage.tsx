@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useRealtimeContext } from '../../../contexts/RealtimeProvider';
 import { LeadDetail } from '../components/LeadDetail';
 

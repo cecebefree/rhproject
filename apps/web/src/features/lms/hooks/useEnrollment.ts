@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../services/supabase";
+import { useEffect, useState } from 'react';
+import { supabase } from '../services/supabase';
 
 /**
  * T018 — useEnrollment hook
@@ -18,14 +18,14 @@ export function useEnrollment(studentId: string | null, courseId: string | null)
 
     const checkEnrollment = async () => {
       const { data, error } = await supabase
-        .from("student_class" as any)
-        .select("student_id")
-        .eq("student_id", studentId)
-        .eq("class_id", courseId)
+        .from('student_class' as never)
+        .select('student_id')
+        .eq('student_id', studentId)
+        .eq('class_id', courseId)
         .limit(1);
 
       if (error) {
-        console.error("Enrollment check failed:", error);
+        console.error('Enrollment check failed:', error);
         setEnrolled(false);
       } else {
         setEnrolled((data ?? []).length > 0);
@@ -44,7 +44,7 @@ export function useEnrollment(studentId: string | null, courseId: string | null)
  * Returns all courses a student is enrolled in.
  */
 export function useStudentCourses(studentId: string | null) {
-  const [courses, setCourses] = useState<any[]>([]);
+  const [courses, setCourses] = useState<Array<Record<string, unknown>>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -55,9 +55,9 @@ export function useStudentCourses(studentId: string | null) {
 
     const fetchCourses = async () => {
       const { data: enrollments, error } = await supabase
-        .from("student_class" as any)
-        .select("class_id")
-        .eq("student_id", studentId);
+        .from('student_class' as never)
+        .select('class_id')
+        .eq('student_id', studentId);
 
       if (error || !enrollments?.length) {
         setCourses([]);
@@ -65,12 +65,12 @@ export function useStudentCourses(studentId: string | null) {
         return;
       }
 
-      const classIds = enrollments.map((e: any) => e.class_id);
+      const classIds = enrollments.map((e: { class_id: string }) => e.class_id);
 
       const { data: courseData } = await supabase
-        .from("school_desk.programs" as any)
-        .select("*")
-        .in("id", classIds);
+        .from('school_desk.programs' as never)
+        .select('*')
+        .in('id', classIds);
 
       setCourses(courseData ?? []);
       setLoading(false);

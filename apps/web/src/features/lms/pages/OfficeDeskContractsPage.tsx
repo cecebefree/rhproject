@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { ContractList } from '../../office-desk/components/ContractList';
 import { ContractDetail } from '../../office-desk/components/ContractDetail';
+import { ContractList } from '../../office-desk/components/ContractList';
 
 interface DeskContext {
   tenantId: string;
@@ -48,11 +48,7 @@ export default function OfficeDeskContractsPage() {
       <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#273946', marginBottom: '16px' }}>
         Contracts
       </h3>
-      <ContractList
-        key={refreshKey}
-        tenantId={tenantId}
-        onSelect={(c) => setSelectedContract(c)}
-      />
+      <ContractList key={refreshKey} tenantId={tenantId} onSelect={(c) => setSelectedContract(c)} />
     </div>
   );
 }

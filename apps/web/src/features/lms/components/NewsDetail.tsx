@@ -12,12 +12,7 @@ interface NewsDetailProps {
   onEdit?: (news: News) => void;
 }
 
-export function NewsDetail({
-  newsId,
-  currentUserId,
-  onBack,
-  onEdit,
-}: NewsDetailProps) {
+export function NewsDetail({ newsId, currentUserId, onBack, onEdit }: NewsDetailProps) {
   const [news, setNews] = useState<News | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,11 +63,7 @@ export function NewsDetail({
           ← Back to News
         </button>
         {isAuthor && onEdit && (
-          <button
-            type="button"
-            onClick={() => onEdit(news)}
-            style={styles.editButton}
-          >
+          <button type="button" onClick={() => onEdit(news)} style={styles.editButton}>
             Edit
           </button>
         )}

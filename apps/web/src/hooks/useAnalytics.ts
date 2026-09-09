@@ -121,7 +121,9 @@ export function useRevenueMetrics(tenantId: string, period: MetricPeriod = 'dail
 // ═══════════════════════════════════════════════════════════
 
 export function usePipeline(tenantId: string) {
-  const [pipeline, setPipeline] = useState<{ stage: LeadStage; label: string; count: number; totalValue: number; paidValue: number }[]>([]);
+  const [pipeline, setPipeline] = useState<
+    { stage: LeadStage; label: string; count: number; totalValue: number; paidValue: number }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -231,7 +233,9 @@ export function useMetricCalculation(metrics: DashboardMetrics | null) {
     // Growth rates (comparing to previous period - placeholder logic)
     contactGrowth: metrics ? Math.round(metrics.totalContacts * 0.12) : 0,
     leadGrowth: metrics ? Math.round(metrics.totalLeads * 0.08) : 0,
-    revenueGrowth: metrics ? Math.round((metrics.paidRevenue / (metrics.totalRevenue || 1)) * 100) : 0,
+    revenueGrowth: metrics
+      ? Math.round((metrics.paidRevenue / (metrics.totalRevenue || 1)) * 100)
+      : 0,
 
     // Ratios
     leadToContactRatio: metrics?.totalLeads
@@ -242,9 +246,7 @@ export function useMetricCalculation(metrics: DashboardMetrics | null) {
       : 0,
 
     // Averages
-    revenuePerLead: metrics?.totalLeads
-      ? Math.round(metrics.totalRevenue / metrics.totalLeads)
-      : 0,
+    revenuePerLead: metrics?.totalLeads ? Math.round(metrics.totalRevenue / metrics.totalLeads) : 0,
     revenuePerContact: metrics?.totalContacts
       ? Math.round(metrics.totalRevenue / metrics.totalContacts)
       : 0,

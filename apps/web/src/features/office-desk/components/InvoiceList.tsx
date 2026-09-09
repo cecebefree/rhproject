@@ -1,17 +1,17 @@
 // InvoiceList — Table view of invoices with search, filter, actions (Row 78)
 
 import { useEffect, useState } from 'react';
+import { useResponsive } from '../../../components/MobileNav';
+import { exportToCSV } from '../services/exportService';
 import {
-  selectInvoices,
-  subscribeToInvoices,
-  deleteInvoice,
-  type Invoice,
-  type InvoiceStatus,
   INVOICE_STATUSES,
   INVOICE_STATUS_LABELS,
+  type Invoice,
+  type InvoiceStatus,
+  deleteInvoice,
+  selectInvoices,
+  subscribeToInvoices,
 } from '../services/supabase';
-import { exportToCSV } from '../services/exportService';
-import { useResponsive } from '../../../components/MobileNav';
 import { useBulkSelection } from './BulkSelectionContext';
 
 interface InvoiceListProps {
@@ -27,7 +27,8 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const { isMobile } = useResponsive();
-  const { select, deselect, toggle, isSelected, selectAllOnPage, deselectAll, selectedCount } = useBulkSelection();
+  const { select, deselect, toggle, isSelected, selectAllOnPage, deselectAll, selectedCount } =
+    useBulkSelection();
 
   const toggleSelectAll = () => {
     if (selectedCount === invoices.length) {
@@ -41,9 +42,13 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
     let cancelled = false;
 
     async function load() {
-      const { data, error } = await selectInvoices(tenantId, search || undefined, statusFilter || undefined);
+      const { data, error } = await selectInvoices(
+        tenantId,
+        search || undefined,
+        statusFilter || undefined
+      );
       if (!cancelled) {
-        if (data) setInvoices(data as any);
+        if (data) setInvoices(data as unknown as Invoice[]);
         setLoading(false);
       }
     }
@@ -82,20 +87,36 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
     void: '#fef3c7',
   };
 
-  if (loading) return <div style={{ padding: '24px', textAlign: 'center', color: '#718096' }}>Loading invoices...</div>;
+  if (loading)
+    return (
+      <div style={{ padding: '24px', textAlign: 'center', color: '#718096' }}>
+        Loading invoices...
+      </div>
+    );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        flexWrap: isMobile ? 'wrap' : 'nowrap',
-        gap: isMobile ? '12px' : '0',
-      }}>
-        <h2 style={{ margin: 0, fontSize: isMobile ? '18px' : '20px', fontWeight: '600', color: '#2d3748' }}>Invoices</h2>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: isMobile ? 'wrap' : 'nowrap',
+          gap: isMobile ? '12px' : '0',
+        }}
+      >
+        <h2
+          style={{
+            margin: 0,
+            fontSize: isMobile ? '18px' : '20px',
+            fontWeight: '600',
+            color: '#2d3748',
+          }}
+        >
+          Invoices
+        </h2>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <button
+          <button type="button"
             onClick={async () => {
               await exportToCSV({
                 entity_type: 'invoices',
@@ -104,30 +125,30 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
                 filters: statusFilter ? { status: statusFilter } : undefined,
               });
             }}
-            style={{ 
-              padding: isMobile ? '10px 12px' : '8px 16px', 
-              backgroundColor: '#38a169', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '6px', 
-              fontSize: isMobile ? '13px' : '14px', 
-              fontWeight: '500', 
+            style={{
+              padding: isMobile ? '10px 12px' : '8px 16px',
+              backgroundColor: '#38a169',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: isMobile ? '13px' : '14px',
+              fontWeight: '500',
               cursor: 'pointer',
               flex: isMobile ? 1 : 'none',
             }}
           >
             Export CSV
           </button>
-          <button 
-            onClick={onCreateNew} 
-            style={{ 
-              padding: isMobile ? '10px 12px' : '8px 16px', 
-              backgroundColor: '#3182ce', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '6px', 
-              fontSize: isMobile ? '13px' : '14px', 
-              fontWeight: '500', 
+          <button type="button"
+            onClick={onCreateNew}
+            style={{
+              padding: isMobile ? '10px 12px' : '8px 16px',
+              backgroundColor: '#3182ce',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: isMobile ? '13px' : '14px',
+              fontWeight: '500',
               cursor: 'pointer',
               flex: isMobile ? 1 : 'none',
             }}
@@ -137,47 +158,61 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
         </div>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        gap: '12px',
-        flexDirection: isMobile ? 'column' : 'row',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: '12px',
+          flexDirection: isMobile ? 'column' : 'row',
+        }}
+      >
         <input
           type="text"
           placeholder="Search invoices..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={{ 
-            flex: 1, 
-            padding: isMobile ? '12px' : '8px 12px', 
-            border: '1px solid #e2e8f0', 
-            borderRadius: '6px', 
+          style={{
+            flex: 1,
+            padding: isMobile ? '12px' : '8px 12px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
             fontSize: isMobile ? '16px' : '14px',
           }}
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as InvoiceStatus | '')}
-          style={{ 
-            padding: isMobile ? '12px' : '8px 12px', 
-            border: '1px solid #e2e8f0', 
-            borderRadius: '6px', 
+          style={{
+            padding: isMobile ? '12px' : '8px 12px',
+            border: '1px solid #e2e8f0',
+            borderRadius: '6px',
             fontSize: isMobile ? '16px' : '14px',
           }}
         >
           <option value="">All Statuses</option>
           {INVOICE_STATUSES.map((s) => (
-            <option key={s} value={s}>{INVOICE_STATUS_LABELS[s]}</option>
+            <option key={s} value={s}>
+              {INVOICE_STATUS_LABELS[s]}
+            </option>
           ))}
         </select>
       </div>
 
       {invoices.length === 0 ? (
-        <div style={{ padding: '48px', textAlign: 'center', color: '#718096' }}>No invoices found</div>
+        <div style={{ padding: '48px', textAlign: 'center', color: '#718096' }}>
+          No invoices found
+        </div>
       ) : (
         <>
           {/* Desktop Table View */}
-          <div style={{ backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} className="hidden md:block">
+          <div
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            }}
+            className="hidden md:block"
+          >
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f7fafc' }}>
@@ -188,17 +223,89 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
                       onChange={toggleSelectAll}
                     />
                   </th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Invoice #</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Client</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Amount</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Status</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Due Date</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '12px', fontWeight: '600', color: '#718096', textTransform: 'uppercase' }}>Actions</th>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#718096',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Invoice #
+                  </th>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#718096',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Client
+                  </th>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#718096',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Amount
+                  </th>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#718096',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Status
+                  </th>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'left',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#718096',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Due Date
+                  </th>
+                  <th
+                    style={{
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      color: '#718096',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {invoices.map((inv) => (
-                  <tr key={inv.id} style={{ borderTop: '1px solid #f0f0f0', backgroundColor: isSelected(inv.id) ? '#ebf8ff' : undefined }}>
+                  <tr
+                    key={inv.id}
+                    style={{
+                      borderTop: '1px solid #f0f0f0',
+                      backgroundColor: isSelected(inv.id) ? '#ebf8ff' : undefined,
+                    }}
+                  >
                     <td style={{ padding: '12px 16px' }}>
                       <input
                         type="checkbox"
@@ -206,18 +313,73 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
                         onChange={() => toggle(inv.id)}
                       />
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: '500', color: '#2d3748' }}>{inv.invoice_number || '—'}</td>
-                    <td style={{ padding: '12px 16px', fontSize: '14px', color: '#4a5568' }}>{(inv as any).lead?.name || '—'}</td>
-                    <td style={{ padding: '12px 16px', fontSize: '14px', color: '#2d3748', textAlign: 'right' }}>{inv.currency} {inv.amount.toFixed(2)}</td>
+                    <td
+                      style={{
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: '#2d3748',
+                      }}
+                    >
+                      {inv.invoice_number || '—'}
+                    </td>
+                    <td style={{ padding: '12px 16px', fontSize: '14px', color: '#4a5568' }}>
+                      {(inv as Invoice & { lead?: { name?: string } }).lead?.name || '—'}
+                    </td>
+                    <td
+                      style={{
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        color: '#2d3748',
+                        textAlign: 'right',
+                      }}
+                    >
+                      {inv.currency} {inv.amount.toFixed(2)}
+                    </td>
                     <td style={{ padding: '12px 16px' }}>
-                      <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: '500', backgroundColor: statusColors[inv.status] || '#e2e8f0' }}>
+                      <span
+                        style={{
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          backgroundColor: statusColors[inv.status] || '#e2e8f0',
+                        }}
+                      >
                         {INVOICE_STATUS_LABELS[inv.status]}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 16px', fontSize: '14px', color: '#4a5568' }}>{inv.due_date ? new Date(inv.due_date).toLocaleDateString() : '—'}</td>
+                    <td style={{ padding: '12px 16px', fontSize: '14px', color: '#4a5568' }}>
+                      {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : '—'}
+                    </td>
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                      <button onClick={() => onSelect(inv.id)} style={{ padding: '4px 8px', border: '1px solid #e2e8f0', borderRadius: '4px', backgroundColor: 'white', fontSize: '12px', cursor: 'pointer', marginRight: '4px' }}>View</button>
-                      <button onClick={() => handleDelete(inv.id)} disabled={deleting === inv.id} style={{ padding: '4px 8px', border: '1px solid #fed7d7', borderRadius: '4px', backgroundColor: '#fff5f5', fontSize: '12px', color: '#e53e3e', cursor: deleting === inv.id ? 'not-allowed' : 'pointer' }}>
+                      <button type="button"
+                        onClick={() => onSelect(inv.id)}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '4px',
+                          backgroundColor: 'white',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          marginRight: '4px',
+                        }}
+                      >
+                        View
+                      </button>
+                      <button type="button"
+                        onClick={() => handleDelete(inv.id)}
+                        disabled={deleting === inv.id}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid #fed7d7',
+                          borderRadius: '4px',
+                          backgroundColor: '#fff5f5',
+                          fontSize: '12px',
+                          color: '#e53e3e',
+                          cursor: deleting === inv.id ? 'not-allowed' : 'pointer',
+                        }}
+                      >
                         {deleting === inv.id ? '...' : 'Delete'}
                       </button>
                     </td>
@@ -228,7 +390,10 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
           </div>
 
           {/* Mobile Card View */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} className="md:hidden">
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+            className="md:hidden"
+          >
             {invoices.map((inv) => (
               <div
                 key={inv.id}
@@ -241,36 +406,51 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
                 }}
               >
                 {/* Card Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '12px',
+                  }}
+                >
                   <div>
                     <div style={{ fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>
                       {inv.invoice_number || '—'}
                     </div>
                     <div style={{ fontSize: '14px', color: '#718096', marginTop: '4px' }}>
-                      {(inv as any).lead?.name || '—'}
+                      {(inv as Invoice & { lead?: { name?: string } }).lead?.name || '—'}
                     </div>
                   </div>
-                  <span style={{ 
-                    padding: '4px 8px', 
-                    borderRadius: '12px', 
-                    fontSize: '12px', 
-                    fontWeight: '500', 
-                    backgroundColor: statusColors[inv.status] || '#e2e8f0' 
-                  }}>
+                  <span
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '500',
+                      backgroundColor: statusColors[inv.status] || '#e2e8f0',
+                    }}
+                  >
                     {INVOICE_STATUS_LABELS[inv.status]}
                   </span>
                 </div>
 
                 {/* Amount & Due Date */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <div
+                  style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}
+                >
                   <div>
-                    <div style={{ fontSize: '12px', color: '#718096', marginBottom: '2px' }}>Amount</div>
+                    <div style={{ fontSize: '12px', color: '#718096', marginBottom: '2px' }}>
+                      Amount
+                    </div>
                     <div style={{ fontSize: '18px', fontWeight: '600', color: '#2d3748' }}>
                       {inv.currency} {inv.amount.toFixed(2)}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '12px', color: '#718096', marginBottom: '2px' }}>Due Date</div>
+                    <div style={{ fontSize: '12px', color: '#718096', marginBottom: '2px' }}>
+                      Due Date
+                    </div>
                     <div style={{ fontSize: '14px', color: '#4a5568' }}>
                       {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : '—'}
                     </div>
@@ -279,33 +459,33 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
 
                 {/* Action Buttons */}
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <button 
-                    onClick={() => onSelect(inv.id)} 
-                    style={{ 
+                  <button type="button"
+                    onClick={() => onSelect(inv.id)}
+                    style={{
                       flex: 1,
-                      padding: '10px 12px', 
-                      border: '1px solid #e2e8f0', 
-                      borderRadius: '6px', 
-                      backgroundColor: '#3182ce', 
+                      padding: '10px 12px',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      backgroundColor: '#3182ce',
                       color: 'white',
-                      fontSize: '14px', 
+                      fontSize: '14px',
                       fontWeight: '500',
                       cursor: 'pointer',
                     }}
                   >
                     View
                   </button>
-                  <button 
-                    onClick={() => handleDelete(inv.id)} 
-                    disabled={deleting === inv.id} 
-                    style={{ 
-                      padding: '10px 12px', 
-                      border: '1px solid #fed7d7', 
-                      borderRadius: '6px', 
-                      backgroundColor: '#fff5f5', 
-                      fontSize: '14px', 
-                      color: '#e53e3e', 
-                      cursor: deleting === inv.id ? 'not-allowed' : 'pointer' 
+                  <button type="button"
+                    onClick={() => handleDelete(inv.id)}
+                    disabled={deleting === inv.id}
+                    style={{
+                      padding: '10px 12px',
+                      border: '1px solid #fed7d7',
+                      borderRadius: '6px',
+                      backgroundColor: '#fff5f5',
+                      fontSize: '14px',
+                      color: '#e53e3e',
+                      cursor: deleting === inv.id ? 'not-allowed' : 'pointer',
                     }}
                   >
                     {deleting === inv.id ? '...' : 'Delete'}

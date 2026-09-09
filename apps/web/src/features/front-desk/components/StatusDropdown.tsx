@@ -1,4 +1,4 @@
-import { updateLeadStatus, type LeadStatus, LEAD_STATUSES } from '../services/supabase';
+import { LEAD_STATUSES, type LeadStatus, updateLeadStatus } from '../services/supabase';
 
 interface StatusDropdownProps {
   leadId: string;
@@ -23,9 +23,12 @@ export function StatusDropdown({ leadId, currentStatus, onStatusChange }: Status
   };
 
   return (
-    <label>
-      Status
+    <div>
+      <label htmlFor={`status-dropdown-${leadId}`}>
+        Status
+      </label>
       <select
+        id={`status-dropdown-${leadId}`}
         value={currentStatus}
         onChange={handleChange}
         style={{ width: '100%', padding: '8px', marginTop: '4px' }}
@@ -36,6 +39,6 @@ export function StatusDropdown({ leadId, currentStatus, onStatusChange }: Status
           </option>
         ))}
       </select>
-    </label>
+    </div>
   );
 }

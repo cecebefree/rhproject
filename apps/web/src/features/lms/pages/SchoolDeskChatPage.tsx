@@ -1,9 +1,9 @@
 // SchoolDeskChatPage — Direct chat section for School Front Desk
 
-import { useState, useEffect } from 'react';
-import { supabase } from '../services/supabase';
-import { ConversationList } from '../components/ConversationList';
+import { useEffect, useState } from 'react';
 import { ChatView } from '../components/ChatView';
+import { ConversationList } from '../components/ConversationList';
+import { supabaseUntyped as supabase } from '../services/supabase';
 
 export default function SchoolDeskChatPage() {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export default function SchoolDeskChatPage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
       if (data.user) setUserId(data.user.id);
     });
   }, []);
@@ -25,7 +25,7 @@ export default function SchoolDeskChatPage() {
       .select('id, name')
       .not('name', 'is', null)
       .limit(50);
-    setProfiles((data ?? []) as any[]);
+    setProfiles((data ?? []) as Array<{ id: string; name: string }>);
   }
 
   async function handleCreateConversation() {
@@ -35,21 +35,21 @@ export default function SchoolDeskChatPage() {
 
     // Check if conversation already exists between these two users
     const { data: existingMembers } = await supabase
-      .from('conversation_members' as any)
+      .from('conversation_members' as never)
       .select('conversation_id')
       .eq('profile_id', userId);
 
     if (existingMembers) {
-      for (const m of existingMembers as any[]) {
+      for (const m of existingMembers as Array<Record<string, unknown>>) {
         const { data: otherMember } = await supabase
-          .from('conversation_members' as any)
+          .from('conversation_members' as never)
           .select('profile_id')
-          .eq('conversation_id', (m as any).conversation_id)
+          .eq('conversation_id', m.conversation_id)
           .eq('profile_id', selectedMember)
           .single();
 
         if (otherMember) {
-          setSelectedConversation((m as any).conversation_id);
+          setSelectedConversation(m.conversation_id as string);
           setCreating(false);
           setShowNewChat(false);
           return;
@@ -59,18 +59,18 @@ export default function SchoolDeskChatPage() {
 
     // Create new conversation
     const { data: conv } = await supabase
-      .from('conversations' as any)
+      .from('conversations' as never)
       .insert({
         category: 'direct',
         created_by: userId,
-        tenant_id: '00000000-0000-0000-0000-000000000001',
+        tenant_id: import.meta.env.VITE_DEFAULT_TENANT_ID,
       })
       .select('id')
       .single();
 
     if (conv) {
-      const convId = (conv as any).id;
-      await supabase.from('conversation_members' as any).insert([
+      const convId = conv.id as string;
+      await supabase.from('conversation_members' as never).insert([
         { conversation_id: convId, profile_id: userId, role: 'member' },
         { conversation_id: convId, profile_id: selectedMember, role: 'member' },
       ]);
@@ -85,11 +85,12 @@ export default function SchoolDeskChatPage() {
   return (
     <div style={{ padding: '24px' }}>
       <div className="flex justify-between items-center mb-4">
-        <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#273946' }}>
-          Messages
-        </h3>
-        <button
-          onClick={() => { setShowNewChat(!showNewChat); if (!showNewChat) loadProfiles(); }}
+        <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#273946' }}>Messages</h3>
+        <button type="button"
+          onClick={() => {
+            setShowNewChat(!showNewChat);
+            if (!showNewChat) loadProfiles();
+          }}
           className="px-4 py-2 text-sm font-medium text-white rounded-lg"
           style={{ backgroundColor: '#2563EB' }}
         >
@@ -98,8 +99,13 @@ export default function SchoolDeskChatPage() {
       </div>
 
       {showNewChat && (
-        <div className="mb-4 p-4 bg-white rounded-lg border" style={{ borderColor: 'rgba(195,199,204,0.3)' }}>
-          <p className="text-sm font-medium mb-2" style={{ color: '#1A242B' }}>Start a conversation with:</p>
+        <div
+          className="mb-4 p-4 bg-white rounded-lg border"
+          style={{ borderColor: 'rgba(195,199,204,0.3)' }}
+        >
+          <p className="text-sm font-medium mb-2" style={{ color: '#1A242B' }}>
+            Start a conversation with:
+          </p>
           <div className="flex gap-2">
             <select
               value={selectedMember}
@@ -111,10 +117,12 @@ export default function SchoolDeskChatPage() {
               {profiles
                 .filter((p) => p.id !== userId)
                 .map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
                 ))}
             </select>
-            <button
+            <button type="button"
               onClick={handleCreateConversation}
               disabled={!selectedMember || creating}
               className="px-4 py-2 text-sm font-medium text-white rounded disabled:opacity-50"
@@ -126,7 +134,10 @@ export default function SchoolDeskChatPage() {
         </div>
       )}
 
-      <div className="flex bg-white rounded-lg border overflow-hidden" style={{ borderColor: 'rgba(195,199,204,0.3)', height: 'calc(100vh - 250px)' }}>
+      <div
+        className="flex bg-white rounded-lg border overflow-hidden"
+        style={{ borderColor: 'rgba(195,199,204,0.3)', height: 'calc(100vh - 250px)' }}
+      >
         <ConversationList
           onSelect={setSelectedConversation}
           selectedId={selectedConversation ?? undefined}

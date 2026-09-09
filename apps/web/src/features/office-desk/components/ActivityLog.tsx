@@ -4,13 +4,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useAnalytics } from '../../../hooks/useAnalytics';
+import { formatDate, formatTime } from '../../../lib/format';
 import {
   type ActivityEventCategory,
   type ActivityEventType,
   type UserActivityLog,
   selectActivityLog,
 } from '../services/analyticsService';
-import { formatDate, formatTime } from '../../../lib/format';
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -69,9 +69,7 @@ function ActivityRow({ activity }: ActivityRowProps) {
       <td className="px-4 py-3">
         <div className="flex items-center space-x-2">
           <span>{EVENT_TYPE_ICONS[activity.event_type]}</span>
-          <span className="text-sm font-medium">
-            {EVENT_TYPE_LABELS[activity.event_type]}
-          </span>
+          <span className="text-sm font-medium">{EVENT_TYPE_LABELS[activity.event_type]}</span>
         </div>
       </td>
       <td className="px-4 py-3">
@@ -80,23 +78,19 @@ function ActivityRow({ activity }: ActivityRowProps) {
             activity.event_category === 'navigation'
               ? 'bg-blue-100 text-blue-800'
               : activity.event_category === 'interaction'
-              ? 'bg-green-100 text-green-800'
-              : activity.event_category === 'data'
-              ? 'bg-purple-100 text-purple-800'
-              : activity.event_category === 'auth'
-              ? 'bg-yellow-100 text-yellow-800'
-              : 'bg-gray-100 text-gray-800'
+                ? 'bg-green-100 text-green-800'
+                : activity.event_category === 'data'
+                  ? 'bg-purple-100 text-purple-800'
+                  : activity.event_category === 'auth'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : 'bg-gray-100 text-gray-800'
           }`}
         >
           {EVENT_CATEGORY_LABELS[activity.event_category]}
         </span>
       </td>
-      <td className="px-4 py-3 text-sm text-gray-500">
-        {activity.page_path || '-'}
-      </td>
-      <td className="px-4 py-3 text-sm text-gray-500">
-        {activity.element_text || '-'}
-      </td>
+      <td className="px-4 py-3 text-sm text-gray-500">{activity.page_path || '-'}</td>
+      <td className="px-4 py-3 text-sm text-gray-500">{activity.element_text || '-'}</td>
       <td className="px-4 py-3 text-sm text-gray-500">
         {formatDate(activity.created_at)} {formatTime(activity.created_at)}
       </td>
@@ -165,9 +159,7 @@ export default function ActivityLog({ tenantId }: ActivityLogProps) {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        {error}
-      </div>
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
     );
   }
 
@@ -178,24 +170,24 @@ export default function ActivityLog({ tenantId }: ActivityLogProps) {
         <div>
           <h2 className="text-xl font-semibold">Activity Log</h2>
           <p className="text-sm text-gray-500">
-            {stats.total} total activities • {stats.pageViews} page views •{' '}
-            {stats.interactions} interactions
+            {stats.total} total activities • {stats.pageViews} page views • {stats.interactions}{' '}
+            interactions
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <button
+          <button type="button"
             onClick={() => setDateRangePreset('week')}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
           >
             7 Days
           </button>
-          <button
+          <button type="button"
             onClick={() => setDateRangePreset('month')}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
           >
             30 Days
           </button>
-          <button
+          <button type="button"
             onClick={fetchActivities}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50"
           >
@@ -208,10 +200,9 @@ export default function ActivityLog({ tenantId }: ActivityLogProps) {
       <div className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center space-x-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Event Type
-            </label>
+            <label htmlFor="activity-event-type" className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
             <select
+              id="activity-event-type"
               value={eventTypeFilter}
               onChange={(e) => setEventTypeFilter(e.target.value as EventTypeFilter)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -225,22 +216,19 @@ export default function ActivityLog({ tenantId }: ActivityLogProps) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
+            <label htmlFor="activity-category" className="block text-sm font-medium text-gray-700 mb-1">Category</label>
             <select
+              id="activity-category"
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value as EventCategoryFilter)}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm"
             >
               <option value="all">All Categories</option>
-              {(Object.keys(EVENT_CATEGORY_LABELS) as ActivityEventCategory[]).map(
-                (category) => (
-                  <option key={category} value={category}>
-                    {EVENT_CATEGORY_LABELS[category]}
-                  </option>
-                )
-              )}
+              {(Object.keys(EVENT_CATEGORY_LABELS) as ActivityEventCategory[]).map((category) => (
+                <option key={category} value={category}>
+                  {EVENT_CATEGORY_LABELS[category]}
+                </option>
+              ))}
             </select>
           </div>
         </div>

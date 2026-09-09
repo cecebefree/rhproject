@@ -75,6 +75,12 @@ Dear {{recipient_name}},</p>
 We have received your enquiry and a member of our admissions team will personally review your message and respond within <strong>one working day</strong>.</p>
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
 <tr><td style="padding:20px;">
+<p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12px;font-family:'Source Sans 3',sans-serif;font-weight:600;">Your ticket number</p>
+<p style="color:#273946;margin:0;font-size:20px;font-weight:700;font-family:'Source Sans 3',sans-serif;">{{ticket}}</p>
+<p style="color:#54626c;margin:8px 0 0;font-size:13px;font-family:'Source Sans 3',sans-serif;">Please quote this ticket in any follow-up correspondence.</p>
+</td></tr></table>
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
+<tr><td style="padding:20px;">
 <p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12px;font-family:'Source Sans 3',sans-serif;font-weight:600;">What happens next</p>
 <p style="color:#273946;margin:0;font-size:15px;line-height:1.8;font-family:'Source Sans 3',sans-serif;">
 A personal response from our admissions office — never a template.<br>
@@ -109,6 +115,12 @@ Dear {{recipient_name}},</p>
 Thank you for requesting a brief introductory call with our admissions office. We will confirm your <strong>15-minute slot within one working day</strong>.</p>
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
 <tr><td style="padding:20px;">
+<p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;font-family:'Source Sans 3',sans-serif;font-weight:600;">Your ticket number</p>
+<p style="color:#273946;margin:0;font-size:20px;font-weight:700;font-family:'Source Sans 3',sans-serif;">{{ticket}}</p>
+<p style="color:#54626c;margin:8px 0 0;font-size:13px;font-family:'Source Sans 3',sans-serif;">Please quote this ticket in any follow-up correspondence.</p>
+</td></tr></table>
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
+<tr><td style="padding:20px;">
 <p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;font-family:'Source Sans 3',sans-serif;font-weight:600;">Call details</p>
 <p style="color:#273946;margin:0;font-size:15px;line-height:1.8;font-family:'Source Sans 3',sans-serif;">
 <strong>Format:</strong> {{call_format}}<br>
@@ -132,6 +144,12 @@ Dear {{recipient_name}},</p>
 Thank you for requesting a private enrolment meeting with our head of admissions. We will confirm your <strong>one-hour slot within one working day</strong>.</p>
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
 <tr><td style="padding:20px;">
+<p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;font-family:'Source Sans 3',sans-serif;font-weight:600;">Your ticket number</p>
+<p style="color:#273946;margin:0;font-size:20px;font-weight:700;font-family:'Source Sans 3',sans-serif;">{{ticket}}</p>
+<p style="color:#54626c;margin:8px 0 0;font-size:13px;font-family:'Source Sans 3',sans-serif;">Please quote this ticket in any follow-up correspondence.</p>
+</td></tr></table>
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
+<tr><td style="padding:20px;">
 <p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;font-family:'Source Sans 3',sans-serif;font-weight:600;">Meeting details</p>
 <p style="color:#273946;margin:0;font-size:15px;line-height:1.8;font-family:'Source Sans 3',sans-serif;">
 <strong>Format:</strong> {{meeting_format}}<br>
@@ -153,6 +171,12 @@ Warm regards,<br><strong>The Redhouse Admissions Team</strong></p>`,
 Dear {{recipient_name}},</p>
 <p style="color:#54626c;margin:0 0 24px;font-size:16px;line-height:1.6;font-family:'Source Sans 3',sans-serif;">
 We have received your application for <strong>{{role_title}}</strong> at Redhouse. Every application is read personally by the head of faculty.</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
+<tr><td style="padding:20px;">
+<p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;font-family:'Source Sans 3',sans-serif;font-weight:600;">Your reference number</p>
+<p style="color:#273946;margin:0;font-size:20px;font-weight:700;font-family:'Source Sans 3',sans-serif;">{{ticket}}</p>
+<p style="color:#54626c;margin:8px 0 0;font-size:13px;font-family:'Source Sans 3',sans-serif;">Please quote this reference in any follow-up correspondence.</p>
+</td></tr></table>
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#faf9f6;border-radius:6px;margin:0 0 24px;border:1px solid rgba(195,199,204,0.3);">
 <tr><td style="padding:20px;">
 <p style="color:#54626c;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;font-family:'Source Sans 3',sans-serif;font-weight:600;">What to expect</p>

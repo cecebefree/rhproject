@@ -47,7 +47,7 @@ export async function getWebhookFailureNotifications(tenantId: string) {
 
   // Then get webhook details for each event
   const notifications: WebhookFailureNotification[] = [];
-  
+
   for (const event of events) {
     const { data: webhook } = await supabase
       .from('office_desk.webhooks')
@@ -90,7 +90,10 @@ export async function sendWebhookFailureEmail(
       acc[key].failures.push(notification);
       return acc;
     },
-    {} as Record<string, { webhookName: string; webhookUrl: string; failures: WebhookFailureNotification[] }>
+    {} as Record<
+      string,
+      { webhookName: string; webhookUrl: string; failures: WebhookFailureNotification[] }
+    >
   );
 
   // Build email content
@@ -130,7 +133,10 @@ export async function sendWebhookFailureEmail(
 }
 
 function buildFailureEmailBody(
-  grouped: Record<string, { webhookName: string; webhookUrl: string; failures: WebhookFailureNotification[] }>
+  grouped: Record<
+    string,
+    { webhookName: string; webhookUrl: string; failures: WebhookFailureNotification[] }
+  >
 ): string {
   let html = `
     <h2>Webhook Failure Alert</h2>
@@ -242,14 +248,14 @@ export async function updateNotificationPreferences(
 export async function checkAndSendFailureNotifications(tenantId: string) {
   // Check notification preferences
   const { data: preferences } = await getNotificationPreferences(tenantId);
-  
+
   if (!preferences?.enabled || !preferences?.notifyOnFailure) {
     return { success: true, skipped: true };
   }
 
   // Get recent failures (last hour)
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  
+
   const { data: failures, error } = await supabase
     .from('office_desk.webhook_events')
     .select('*')
@@ -264,7 +270,7 @@ export async function checkAndSendFailureNotifications(tenantId: string) {
 
   // Get webhook details for each failure
   const notifications: WebhookFailureNotification[] = [];
-  
+
   for (const event of failures) {
     const { data: webhook } = await supabase
       .from('office_desk.webhooks')
@@ -285,7 +291,7 @@ export async function checkAndSendFailureNotifications(tenantId: string) {
   }
 
   const result = await sendWebhookFailureEmail(tenantId, notifications);
-  
+
   return {
     success: result.success,
     failures: notifications.length,

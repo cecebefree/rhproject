@@ -1,7 +1,7 @@
 // NewsForm — create/edit news in school_desk.news
 // Row 68: Form with title, content, publish toggle
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { insertNews, updateNews } from '../services/supabase';
 import type { News } from '../services/supabase';
 
@@ -13,13 +13,7 @@ interface NewsFormProps {
   onCancel?: () => void;
 }
 
-export function NewsForm({
-  tenantId,
-  userId,
-  news,
-  onSuccess,
-  onCancel,
-}: NewsFormProps) {
+export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [publish, setPublish] = useState(false);
@@ -83,8 +77,9 @@ export function NewsForm({
 
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.field}>
-          <label style={styles.label}>Title *</label>
+          <label htmlFor="news-title" style={styles.label}>Title *</label>
           <input
+            id="news-title"
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -94,8 +89,9 @@ export function NewsForm({
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>Content *</label>
+          <label htmlFor="news-content" style={styles.label}>Content *</label>
           <textarea
+            id="news-content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
@@ -121,22 +117,12 @@ export function NewsForm({
 
         <div style={styles.buttonRow}>
           {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              style={styles.cancelButton}
-            >
+            <button type="button" onClick={onCancel} style={styles.cancelButton}>
               Cancel
             </button>
           )}
           <button type="submit" disabled={loading} style={styles.submitButton}>
-            {loading
-              ? 'Saving...'
-              : news
-                ? 'Update News'
-                : publish
-                  ? 'Publish News'
-                  : 'Save Draft'}
+            {loading ? 'Saving...' : news ? 'Update News' : publish ? 'Publish News' : 'Save Draft'}
           </button>
         </div>
       </form>

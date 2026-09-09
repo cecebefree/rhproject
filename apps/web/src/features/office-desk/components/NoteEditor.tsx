@@ -1,16 +1,16 @@
 // NoteEditor — Create or edit a note with rich text, mentions, and attachments
 
-import { useState, useEffect, useCallback } from 'react';
-import { RichTextEditor } from './RichTextEditor';
-import { NoteAttachmentList } from './NoteAttachmentList';
+import { useCallback, useEffect, useState } from 'react';
 import {
-  createNoteWithMentions,
-  updateNoteWithMentions,
-  getNoteById,
   type ContactNote,
   type ContactNoteAttachment,
+  createNoteWithMentions,
+  getNoteById,
+  updateNoteWithMentions,
 } from '../services/contactNotes';
 import { extractMentions } from '../services/richTextEditor';
+import { NoteAttachmentList } from './NoteAttachmentList';
+import { RichTextEditor } from './RichTextEditor';
 
 interface NoteEditorProps {
   contactId: string;
@@ -31,7 +31,15 @@ interface PendingFile {
   preview?: string;
 }
 
-export function NoteEditor({ contactId, deskId, tenantId, userId, noteId, onSave, onCancel }: NoteEditorProps) {
+export function NoteEditor({
+  contactId,
+  deskId,
+  tenantId,
+  userId,
+  noteId,
+  onSave,
+  onCancel,
+}: NoteEditorProps) {
   const [content, setContent] = useState('');
   const [existingNote, setExistingNote] = useState<ContactNote | null>(null);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
@@ -68,33 +76,38 @@ export function NoteEditor({ contactId, deskId, tenantId, userId, noteId, onSave
   }, []);
 
   // Handle file upload
-  const handleFileUpload = useCallback(async (file: File): Promise<{ file_url: string; file_name: string } | null> => {
-    // Create a pending file entry
-    const pendingId = crypto.randomUUID();
-    const pendingFile: PendingFile = {
-      id: pendingId,
-      file,
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    };
-
-    // Generate preview for images
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPendingFiles((prev) =>
-          prev.map((f) => (f.id === pendingId ? { ...f, preview: e.target?.result as string } : f))
-        );
+  const handleFileUpload = useCallback(
+    async (file: File): Promise<{ file_url: string; file_name: string } | null> => {
+      // Create a pending file entry
+      const pendingId = crypto.randomUUID();
+      const pendingFile: PendingFile = {
+        id: pendingId,
+        file,
+        name: file.name,
+        size: file.size,
+        type: file.type,
       };
-      reader.readAsDataURL(file);
-    }
 
-    setPendingFiles((prev) => [...prev, pendingFile]);
+      // Generate preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setPendingFiles((prev) =>
+            prev.map((f) =>
+              f.id === pendingId ? { ...f, preview: e.target?.result as string } : f
+            )
+          );
+        };
+        reader.readAsDataURL(file);
+      }
 
-    // Return a placeholder URL (actual upload happens on save)
-    return { file_url: `pending:${pendingId}`, file_name: file.name };
-  }, []);
+      setPendingFiles((prev) => [...prev, pendingFile]);
+
+      // Return a placeholder URL (actual upload happens on save)
+      return { file_url: `pending:${pendingId}`, file_name: file.name };
+    },
+    []
+  );
 
   // Remove pending file
   const removePendingFile = (fileId: string) => {
@@ -160,21 +173,40 @@ export function NoteEditor({ contactId, deskId, tenantId, userId, noteId, onSave
   };
 
   if (isLoading) {
-    return <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading note...</div>;
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: '#718096' }}>Loading note...</div>
+    );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }} onKeyDown={handleKeyDown}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+      onKeyDown={handleKeyDown}
+    >
       <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600', color: '#2d3748' }}>
         {isEditMode ? 'Edit Note' : 'New Note'}
       </h3>
 
       {error && (
-        <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: '6px', fontSize: '14px' }}>
+        <div
+          style={{
+            padding: '12px',
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
+            borderRadius: '6px',
+            fontSize: '14px',
+          }}
+        >
           {error}
-          <button
+          <button type="button"
             onClick={() => setError(null)}
-            style={{ marginLeft: '8px', border: 'none', background: 'none', color: '#991b1b', cursor: 'pointer' }}
+            style={{
+              marginLeft: '8px',
+              border: 'none',
+              background: 'none',
+              color: '#991b1b',
+              cursor: 'pointer',
+            }}
           >
             ×
           </button>
@@ -194,7 +226,9 @@ export function NoteEditor({ contactId, deskId, tenantId, userId, noteId, onSave
       {/* Pending files */}
       {pendingFiles.length > 0 && (
         <div>
-          <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#718096', fontWeight: '500' }}>Attachments</p>
+          <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#718096', fontWeight: '500' }}>
+            Attachments
+          </p>
           <NoteAttachmentList
             attachments={pendingFiles.map((f) => ({
               id: f.id,
@@ -214,8 +248,7 @@ export function NoteEditor({ contactId, deskId, tenantId, userId, noteId, onSave
       {/* Actions */}
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
         {onCancel && (
-          <button
-            type="button"
+          <button type="button"
             onClick={onCancel}
             disabled={isSaving}
             style={{
@@ -231,8 +264,7 @@ export function NoteEditor({ contactId, deskId, tenantId, userId, noteId, onSave
             Cancel
           </button>
         )}
-        <button
-          type="button"
+        <button type="button"
           onClick={handleSave}
           disabled={isSaving || !content.trim()}
           style={{

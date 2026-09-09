@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import {
+  type PaymentRequestWithRelations,
   selectPaymentRequests,
   subscribeToPaymentRequests,
-  type PaymentRequestWithRelations,
 } from '../services/supabase';
 import { StatusBadge } from './StatusBadge';
 
@@ -44,10 +44,8 @@ export function PaymentList({ tenantId, onSelect }: PaymentListProps) {
       } else if (payload.eventType === 'UPDATE') {
         setRequests((prev) =>
           prev.map((r) =>
-            r.id === payload.new.id
-              ? (payload.new as PaymentRequestWithRelations)
-              : r,
-          ),
+            r.id === payload.new.id ? (payload.new as PaymentRequestWithRelations) : r
+          )
         );
       } else if (payload.eventType === 'DELETE') {
         setRequests((prev) => prev.filter((r) => r.id !== payload.old?.id));
@@ -116,29 +114,19 @@ export function PaymentList({ tenantId, onSelect }: PaymentListProps) {
             <div style={styles.colPaid}>Paid</div>
           </div>
           {filtered.map((req) => (
-            <div
-              key={req.id}
-              style={styles.tableRow}
-              onClick={() => onSelect(req.id)}
-            >
-              <div style={styles.colStudent}>
-                {req.registrations?.student_name ?? 'Unknown'}
-              </div>
+            <button type="button" key={req.id} style={styles.tableRow} onClick={() => onSelect(req.id)}>
+              <div style={styles.colStudent}>{req.registrations?.student_name ?? 'Unknown'}</div>
               <div style={styles.colAmount}>
                 {req.currency} {req.amount.toFixed(2)}
               </div>
               <div style={styles.colStatus}>
                 <StatusBadge status={req.status as 'pending' | 'paid' | 'expired' | 'cancelled'} />
               </div>
-              <div style={styles.colCreated}>
-                {new Date(req.created_at).toLocaleDateString()}
-              </div>
+              <div style={styles.colCreated}>{new Date(req.created_at).toLocaleDateString()}</div>
               <div style={styles.colPaid}>
-                {req.paid_at
-                  ? new Date(req.paid_at).toLocaleDateString()
-                  : '—'}
+                {req.paid_at ? new Date(req.paid_at).toLocaleDateString() : '—'}
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

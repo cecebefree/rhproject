@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '../features/lms/services/supabase';
 
 interface ActivityEntry {
@@ -8,7 +8,7 @@ interface ActivityEntry {
   action: string;
   timestamp: string;
   performed_by: string | null;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 interface ActivityLogViewerProps {
@@ -45,6 +45,7 @@ export function ActivityLogViewer({ desk, limit = 50 }: ActivityLogViewerProps) 
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: desk triggers reload; loadActivity is stable within this scope
   useEffect(() => {
     loadActivity();
   }, [desk]);
@@ -52,7 +53,7 @@ export function ActivityLogViewer({ desk, limit = 50 }: ActivityLogViewerProps) 
   async function loadActivity() {
     setLoading(true);
     let query = supabase
-      .from('front_desk.activity_log' as any)
+      .from('front_desk.activity_log' as never)
       .select('*')
       .order('timestamp', { ascending: false })
       .limit(limit);
@@ -62,27 +63,42 @@ export function ActivityLogViewer({ desk, limit = 50 }: ActivityLogViewerProps) 
     }
 
     const { data } = await query;
-    setEntries((data as any) ?? []);
+    setEntries((data as ActivityEntry[]) ?? []);
     setLoading(false);
   }
 
-  const actions = Array.from(new Set(entries.map(e => e.action)));
-  const filtered = filter === 'all' ? entries : entries.filter(e => e.action === filter);
+  const actions = Array.from(new Set(entries.map((e) => e.action)));
+  const filtered = filter === 'all' ? entries : entries.filter((e) => e.action === filter);
 
   return (
-    <div className="rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
+    <div
+      className="rounded-xl"
+      style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}
+    >
       {/* Header */}
-      <div className="px-4 py-3 border-b flex justify-between items-center" style={{ borderColor: 'rgba(195,199,204,0.3)' }}>
+      <div
+        className="px-4 py-3 border-b flex justify-between items-center"
+        style={{ borderColor: 'rgba(195,199,204,0.3)' }}
+      >
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-sm" style={{ color: '#273946' }}>history</span>
-          <h3 className="text-sm font-semibold" style={{ color: '#1A242B' }}>Activity Log</h3>
-          <span className="text-xs" style={{ color: '#9CA3AF' }}>({entries.length})</span>
+          <span className="material-symbols-outlined text-sm" style={{ color: '#273946' }}>
+            history
+          </span>
+          <h3 className="text-sm font-semibold" style={{ color: '#1A242B' }}>
+            Activity Log
+          </h3>
+          <span className="text-xs" style={{ color: '#9CA3AF' }}>
+            ({entries.length})
+          </span>
         </div>
       </div>
 
       {/* Filter */}
-      <div className="px-4 py-2 border-b flex gap-1 overflow-x-auto" style={{ borderColor: 'rgba(195,199,204,0.15)' }}>
-        <button
+      <div
+        className="px-4 py-2 border-b flex gap-1 overflow-x-auto"
+        style={{ borderColor: 'rgba(195,199,204,0.15)' }}
+      >
+        <button type="button"
           onClick={() => setFilter('all')}
           className="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors cursor-pointer"
           style={{
@@ -92,8 +108,8 @@ export function ActivityLogViewer({ desk, limit = 50 }: ActivityLogViewerProps) 
         >
           All
         </button>
-        {actions.map(a => (
-          <button
+        {actions.map((a) => (
+          <button type="button"
             key={a}
             onClick={() => setFilter(a)}
             className="px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap transition-colors cursor-pointer"
@@ -110,17 +126,28 @@ export function ActivityLogViewer({ desk, limit = 50 }: ActivityLogViewerProps) 
       {/* List */}
       <div className="max-h-96 overflow-y-auto">
         {loading ? (
-          <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>Loading...</div>
+          <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>
+            Loading...
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>No activity recorded</div>
+          <div className="p-8 text-center text-sm" style={{ color: '#54626C' }}>
+            No activity recorded
+          </div>
         ) : (
-          filtered.map(entry => (
-            <div key={entry.id} className="px-4 py-3 border-b hover:bg-gray-50 transition-colors flex items-start gap-3" style={{ borderColor: 'rgba(195,199,204,0.1)' }}>
+          filtered.map((entry) => (
+            <div
+              key={entry.id}
+              className="px-4 py-3 border-b hover:bg-gray-50 transition-colors flex items-start gap-3"
+              style={{ borderColor: 'rgba(195,199,204,0.1)' }}
+            >
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
                 style={{ backgroundColor: `${ACTION_COLORS[entry.action] ?? '#54626C'}15` }}
               >
-                <span className="material-symbols-outlined text-sm" style={{ color: ACTION_COLORS[entry.action] ?? '#54626C' }}>
+                <span
+                  className="material-symbols-outlined text-sm"
+                  style={{ color: ACTION_COLORS[entry.action] ?? '#54626C' }}
+                >
                   {ACTION_ICONS[entry.action] ?? 'info'}
                 </span>
               </div>
@@ -130,9 +157,17 @@ export function ActivityLogViewer({ desk, limit = 50 }: ActivityLogViewerProps) 
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-xs" style={{ color: '#9CA3AF' }}>
-                    {new Date(entry.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    {new Date(entry.timestamp).toLocaleString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
                   </span>
-                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: '#f4f3f0', color: '#54626C' }}>
+                  <span
+                    className="text-xs px-1.5 py-0.5 rounded"
+                    style={{ backgroundColor: '#f4f3f0', color: '#54626C' }}
+                  >
                     {entry.desk} desk
                   </span>
                 </div>

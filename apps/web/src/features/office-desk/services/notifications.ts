@@ -53,9 +53,7 @@ export async function createMentionNotifications(
     } as MentionNotificationData,
   }));
 
-  const { error: insertError } = await supabase
-    .from('notifications')
-    .insert(notifications);
+  const { error: insertError } = await supabase.from('notifications').insert(notifications);
 
   if (insertError) {
     return { error: new Error(insertError.message) };
@@ -67,11 +65,7 @@ export async function createMentionNotifications(
 /**
  * Get notifications for a user.
  */
-export async function getNotifications(
-  userId: string,
-  limit = 20,
-  offset = 0
-) {
+export async function getNotifications(userId: string, limit = 20, offset = 0) {
   return supabase
     .from('notifications')
     .select('*')

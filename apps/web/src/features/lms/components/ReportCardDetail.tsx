@@ -2,10 +2,7 @@
 // Row 71: Full card view for teacher workflow
 
 import { useEffect, useState } from 'react';
-import {
-  getReportCardById,
-  type ReportCardWithRelations,
-} from '../services/supabase';
+import { type ReportCardWithRelations, getReportCardById } from '../services/supabase';
 import { StatusBadge } from './StatusBadge';
 
 interface ReportCardDetailProps {
@@ -14,11 +11,7 @@ interface ReportCardDetailProps {
   onEdit?: (cardId: string) => void;
 }
 
-export function ReportCardDetail({
-  cardId,
-  onBack,
-  onEdit,
-}: ReportCardDetailProps) {
+export function ReportCardDetail({ cardId, onBack, onEdit }: ReportCardDetailProps) {
   const [card, setCard] = useState<ReportCardWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,14 +46,11 @@ export function ReportCardDetail({
   return (
     <div style={styles.card}>
       <div style={styles.header}>
-        <button onClick={onBack} style={styles.backButton}>
+        <button type="button" onClick={onBack} style={styles.backButton}>
           Back to List
         </button>
         {isDraft && onEdit && (
-          <button
-            onClick={() => onEdit(card.id)}
-            style={styles.editButton}
-          >
+          <button type="button" onClick={() => onEdit(card.id)} style={styles.editButton}>
             Edit
           </button>
         )}
@@ -100,9 +90,7 @@ export function ReportCardDetail({
             <div style={styles.timelineDot} />
             <div>
               <div style={styles.timelineLabel}>Created</div>
-              <div style={styles.timelineDate}>
-                {new Date(card.created_at).toLocaleString()}
-              </div>
+              <div style={styles.timelineDate}>{new Date(card.created_at).toLocaleString()}</div>
             </div>
           </div>
           {card.released_at && (
@@ -110,9 +98,7 @@ export function ReportCardDetail({
               <div style={{ ...styles.timelineDot, backgroundColor: '#3182ce' }} />
               <div>
                 <div style={styles.timelineLabel}>Released</div>
-                <div style={styles.timelineDate}>
-                  {new Date(card.released_at).toLocaleString()}
-                </div>
+                <div style={styles.timelineDate}>{new Date(card.released_at).toLocaleString()}</div>
               </div>
             </div>
           )}
@@ -121,9 +107,7 @@ export function ReportCardDetail({
               <div style={{ ...styles.timelineDot, backgroundColor: '#38a169' }} />
               <div>
                 <div style={styles.timelineLabel}>Visible to Learner</div>
-                <div style={styles.timelineDate}>
-                  {new Date(card.visible_at).toLocaleString()}
-                </div>
+                <div style={styles.timelineDate}>{new Date(card.visible_at).toLocaleString()}</div>
               </div>
             </div>
           )}

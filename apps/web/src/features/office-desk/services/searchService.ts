@@ -10,7 +10,18 @@ export type SearchEntityType = 'contacts' | 'leads' | 'invoices' | 'all';
 
 export interface SearchFilter {
   field: string;
-  operator: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'ilike' | 'in' | 'is_null' | 'is_not_null';
+  operator:
+    | 'eq'
+    | 'neq'
+    | 'gt'
+    | 'gte'
+    | 'lt'
+    | 'lte'
+    | 'like'
+    | 'ilike'
+    | 'in'
+    | 'is_null'
+    | 'is_not_null';
   value: unknown;
 }
 
@@ -76,11 +87,7 @@ export interface SearchHistoryEntry {
 // FULL-TEXT SEARCH
 // ═══════════════════════════════════════════════════════════
 
-function buildSearchQuery(
-  entityType: SearchEntityType,
-  query: string,
-  tenantId: string
-) {
+function buildSearchQuery(entityType: SearchEntityType, query: string, tenantId: string) {
   const searchTerms = query.trim().split(/\s+/).join(' & ');
 
   switch (entityType) {
@@ -91,7 +98,9 @@ function buildSearchQuery(
         .select('*', { count: 'exact' })
         .eq('tenant_id', tenantId)
         .is('deleted_at', null)
-        .or(`name.ilike.%${query}%,email.ilike.%${query}%,company.ilike.%${query}%,phone.ilike.%${query}%`)
+        .or(
+          `name.ilike.%${query}%,email.ilike.%${query}%,company.ilike.%${query}%,phone.ilike.%${query}%`
+        )
         .order('created_at', { ascending: false });
 
     case 'invoices':
@@ -192,8 +201,21 @@ export async function search<T = Record<string, unknown>>(
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applyFilter(queryBuilder: any, filter: SearchFilter): any {
+interface QueryBuilder {
+  eq(field: string, value: unknown): QueryBuilder;
+  neq(field: string, value: unknown): QueryBuilder;
+  gt(field: string, value: unknown): QueryBuilder;
+  gte(field: string, value: unknown): QueryBuilder;
+  lt(field: string, value: unknown): QueryBuilder;
+  lte(field: string, value: unknown): QueryBuilder;
+  like(field: string, value: string): QueryBuilder;
+  ilike(field: string, value: string): QueryBuilder;
+  in(field: string, value: unknown[]): QueryBuilder;
+  is(field: string, value: null): QueryBuilder;
+  not(field: string, op: string, value: unknown): QueryBuilder;
+}
+
+function applyFilter(queryBuilder: QueryBuilder, filter: SearchFilter): QueryBuilder {
   const { field, operator, value } = filter;
 
   switch (operator) {
@@ -304,19 +326,13 @@ export async function selectSavedSearches(userId: string, tenantId: string) {
 }
 
 export async function getSavedSearch(searchId: string) {
-  return supabaseUntyped
-    .from('office_desk.saved_searches')
-    .select('*')
-    .eq('id', searchId)
-    .single();
+  return supabaseUntyped.from('office_desk.saved_searches').select('*').eq('id', searchId).single();
 }
 
-export async function createSavedSearch(search: Omit<SavedSearch, 'id' | 'created_at' | 'updated_at' | 'use_count' | 'last_used_at'>) {
-  return supabaseUntyped
-    .from('office_desk.saved_searches')
-    .insert(search)
-    .select()
-    .single();
+export async function createSavedSearch(
+  search: Omit<SavedSearch, 'id' | 'created_at' | 'updated_at' | 'use_count' | 'last_used_at'>
+) {
+  return supabaseUntyped.from('office_desk.saved_searches').insert(search).select().single();
 }
 
 export async function updateSavedSearch(searchId: string, updates: Partial<SavedSearch>) {
@@ -329,10 +345,7 @@ export async function updateSavedSearch(searchId: string, updates: Partial<Saved
 }
 
 export async function deleteSavedSearch(searchId: string) {
-  return supabaseUntyped
-    .from('office_desk.saved_searches')
-    .delete()
-    .eq('id', searchId);
+  return supabaseUntyped.from('office_desk.saved_searches').delete().eq('id', searchId);
 }
 
 export async function incrementSearchUsage(searchId: string) {
@@ -371,10 +384,7 @@ export async function addSearchHistory(entry: Omit<SearchHistoryEntry, 'id' | 's
 }
 
 export async function clearSearchHistory(userId: string) {
-  return supabaseUntyped
-    .from('office_desk.search_history')
-    .delete()
-    .eq('user_id', userId);
+  return supabaseUntyped.from('office_desk.search_history').delete().eq('user_id', userId);
 }
 
 // ═══════════════════════════════════════════════════════════

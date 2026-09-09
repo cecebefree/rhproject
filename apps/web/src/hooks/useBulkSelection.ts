@@ -1,1 +1,5 @@
-export { useBulkSelection, BulkSelectionProvider, type EntityType } from '../features/office-desk/components/BulkSelectionContext';
+export {
+  useBulkSelection,
+  BulkSelectionProvider,
+  type EntityType,
+} from '../features/office-desk/components/BulkSelectionContext';

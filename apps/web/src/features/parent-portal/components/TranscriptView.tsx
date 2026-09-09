@@ -20,15 +20,12 @@ interface TranscriptData {
   overall_gpa: number | null;
 }
 
-export function TranscriptView({
-  studentId,
-  studentName,
-  onBack,
-}: TranscriptViewProps) {
+export function TranscriptView({ studentId, studentName, onBack }: TranscriptViewProps) {
   const [transcript, setTranscript] = useState<TranscriptData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: studentId triggers transcript load
   useEffect(() => {
     loadTranscript();
   }, [studentId]);
@@ -39,8 +36,8 @@ export function TranscriptView({
       const { data, error } = await getChildTranscript(studentId);
       if (error) throw error;
       setTranscript(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load transcript');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load transcript');
     } finally {
       setLoading(false);
     }
@@ -85,11 +82,11 @@ export function TranscriptView({
     if (!transcript) return;
 
     // Generate transcript text
-    let text = `ACADEMIC TRANSCRIPT\n`;
+    let text = 'ACADEMIC TRANSCRIPT\n';
     text += `${'='.repeat(50)}\n\n`;
     text += `Student: ${studentName}\n`;
     text += `Date: ${new Date().toLocaleDateString()}\n\n`;
-    text += `SUBJECTS\n`;
+    text += 'SUBJECTS\n';
     text += `${'-'.repeat(50)}\n`;
 
     for (const course of transcript.courses) {
@@ -101,7 +98,7 @@ export function TranscriptView({
     text += `\n${'='.repeat(50)}\n`;
     text += `Overall GPA: ${transcript.overall_gpa !== null ? `${transcript.overall_gpa}% (${getGpaLabel(transcript.overall_gpa)})` : '--'}\n`;
     text += `\n${'='.repeat(50)}\n`;
-    text += `This is an official academic transcript.\n`;
+    text += 'This is an official academic transcript.\n';
 
     // Download as text file
     const blob = new Blob([text], { type: 'text/plain' });
@@ -127,14 +124,12 @@ export function TranscriptView({
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
-          <h2 className="text-lg font-medium text-gray-900">
-            Transcript — {studentName}
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900">Transcript — {studentName}</h2>
         </div>
-        <button
+        <button type="button"
           onClick={handleDownloadTranscript}
           className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
@@ -153,9 +148,7 @@ export function TranscriptView({
         <div className="mb-6 p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg text-white">
           <div className="text-sm opacity-90">Overall GPA</div>
           <div className="text-4xl font-bold mt-1">
-            {transcript.overall_gpa !== null
-              ? getGpaLabel(transcript.overall_gpa)
-              : '--'}
+            {transcript.overall_gpa !== null ? getGpaLabel(transcript.overall_gpa) : '--'}
           </div>
           <div className="text-sm opacity-75 mt-2">
             {transcript.courses.length} subjects completed
@@ -165,9 +158,7 @@ export function TranscriptView({
 
       {/* Transcript Table */}
       {!transcript || transcript.courses.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No subjects or grades found.
-        </div>
+        <div className="text-center py-8 text-gray-500">No subjects or grades found.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -207,9 +198,7 @@ export function TranscriptView({
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm">
                     {course.grade_letter ? (
-                      <span className="font-medium text-gray-900">
-                        {course.grade_letter}
-                      </span>
+                      <span className="font-medium text-gray-900">{course.grade_letter}</span>
                     ) : (
                       <span className="text-gray-400">--</span>
                     )}

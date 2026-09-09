@@ -8,7 +8,7 @@
  *   - stripe-webhook / paypal-webhook: webhook handlers (server-side only)
  */
 
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import { type Stripe, loadStripe } from '@stripe/stripe-js';
 import { supabase } from './supabase';
 
 // ─── Stripe.js singleton ────────────────────────────────────
@@ -16,9 +16,7 @@ let stripePromise: Promise<Stripe | null>;
 
 export const getStripe = () => {
   if (!stripePromise) {
-    stripePromise = loadStripe(
-      import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''
-    );
+    stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
   }
   return stripePromise;
 };
@@ -29,18 +27,15 @@ async function efCall<T>(fn: string, body: Record<string, unknown>): Promise<T> 
     data: { session },
   } = await supabase.auth.getSession();
 
-  const res = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fn}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session?.access_token ?? ''}`,
-        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify(body),
-    }
-  );
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${fn}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session?.access_token ?? ''}`,
+      apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body),
+  });
 
   const json = await res.json();
   if (!res.ok || json.success === false) {
@@ -157,10 +152,7 @@ export async function createPayPalPaymentIntentRPC(
 }
 
 // ─── Retry ──────────────────────────────────────────────────
-export async function retryPayment(
-  paymentId: string,
-  newToken?: string
-) {
+export async function retryPayment(paymentId: string, newToken?: string) {
   return efCall<{
     success: boolean;
     payment: { id: string; status: string; reference: string; paid_at: string };

@@ -23,17 +23,32 @@ const FORMAT_LABELS: Record<string, string> = {
   both: 'CSV + PDF',
 };
 
-export function ScheduledReportsList({ scheduledReports, onToggleActive, onDelete, onLoad }: ScheduledReportsListProps) {
+export function ScheduledReportsList({
+  scheduledReports,
+  onToggleActive,
+  onDelete,
+  onLoad,
+}: ScheduledReportsListProps) {
   useEffect(() => {
     onLoad();
   }, [onLoad]);
 
   return (
     <div style={{ padding: '20px' }}>
-      <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>Scheduled Reports</h3>
+      <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: '600' }}>
+        Scheduled Reports
+      </h3>
 
       {scheduledReports.length === 0 ? (
-        <div style={{ padding: '40px', textAlign: 'center', color: '#718096', backgroundColor: '#f7fafc', borderRadius: '8px' }}>
+        <div
+          style={{
+            padding: '40px',
+            textAlign: 'center',
+            color: '#718096',
+            backgroundColor: '#f7fafc',
+            borderRadius: '8px',
+          }}
+        >
           No scheduled reports yet. Use the Report Builder to create one.
         </div>
       ) : (
@@ -53,7 +68,9 @@ export function ScheduledReportsList({ scheduledReports, onToggleActive, onDelet
               }}
             >
               <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}
+                >
                   <span style={{ fontWeight: '600', fontSize: '15px' }}>{report.name}</span>
                   <span
                     style={{
@@ -85,7 +102,7 @@ export function ScheduledReportsList({ scheduledReports, onToggleActive, onDelet
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button
+                <button type="button"
                   onClick={() => onToggleActive(report.id, !report.is_active)}
                   style={{
                     padding: '6px 12px',
@@ -99,7 +116,7 @@ export function ScheduledReportsList({ scheduledReports, onToggleActive, onDelet
                 >
                   {report.is_active ? 'Pause' : 'Resume'}
                 </button>
-                <button
+                <button type="button"
                   onClick={() => {
                     if (confirm('Are you sure you want to delete this scheduled report?')) {
                       onDelete(report.id);

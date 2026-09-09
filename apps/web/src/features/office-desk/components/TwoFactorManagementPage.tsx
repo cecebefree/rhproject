@@ -1,14 +1,14 @@
 // TwoFactorManagementPage — 2FA status, enable/disable, backup codes
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useResponsive } from '../../../components/MobileNav';
 import {
-  useTwoFactorStatus,
+  useBackupCodesCount,
   useTwoFactorDisable,
   useTwoFactorRegenerate,
-  useBackupCodesCount,
+  useTwoFactorStatus,
 } from '../../../hooks/useTwoFactor';
 import { TwoFactorSetupModal } from './TwoFactorSetupModal';
-import { useResponsive } from '../../../components/MobileNav';
 
 interface TwoFactorManagementPageProps {
   userId: string;
@@ -16,11 +16,7 @@ interface TwoFactorManagementPageProps {
   email: string;
 }
 
-export function TwoFactorManagementPage({
-  userId,
-  tenantId,
-  email,
-}: TwoFactorManagementPageProps) {
+export function TwoFactorManagementPage({ userId, tenantId, email }: TwoFactorManagementPageProps) {
   const { isMobile } = useResponsive();
   const {
     enabled,
@@ -83,7 +79,7 @@ export function TwoFactorManagementPage({
   if (statusLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
       </div>
     );
   }
@@ -93,9 +89,7 @@ export function TwoFactorManagementPage({
       {/* Status Card */}
       <div
         className={`p-4 rounded-lg border ${
-          enabled
-            ? 'bg-green-50 border-green-200'
-            : 'bg-gray-50 border-gray-200'
+          enabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
         }`}
       >
         <div className="flex items-center gap-3">
@@ -130,7 +124,7 @@ export function TwoFactorManagementPage({
                 You have {backupCodesCount} backup codes remaining.
               </p>
               <div className="flex gap-2">
-                <button
+                <button type="button"
                   onClick={() => setShowRegenerateModal(true)}
                   disabled={regenerateLoading}
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
@@ -146,7 +140,7 @@ export function TwoFactorManagementPage({
               <p className="text-sm text-gray-600 mb-3">
                 This will remove the extra layer of security from your account.
               </p>
-              <button
+              <button type="button"
                 onClick={() => setShowDisableModal(true)}
                 disabled={disableLoading}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
@@ -162,7 +156,7 @@ export function TwoFactorManagementPage({
             <p className="text-sm text-gray-600 mb-3">
               Add an extra layer of security to your account by enabling two-factor authentication.
             </p>
-            <button
+            <button type="button"
               onClick={() => setShowSetupModal(true)}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             >
@@ -181,9 +175,9 @@ export function TwoFactorManagementPage({
           </p>
           <div className="bg-white p-3 rounded-md mb-3">
             <div className="grid grid-cols-2 gap-2">
-              {newBackupCodes.map((code, index) => (
+              {newBackupCodes.map((code) => (
                 <div
-                  key={index}
+                  key={code}
                   className="font-mono text-sm bg-gray-50 p-2 rounded border border-gray-200"
                 >
                   {code}
@@ -191,7 +185,7 @@ export function TwoFactorManagementPage({
               ))}
             </div>
           </div>
-          <button
+          <button type="button"
             onClick={handleCopyNewCodes}
             className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
@@ -220,6 +214,7 @@ export function TwoFactorManagementPage({
               setDisableCode('');
             }
           }}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setShowDisableModal(false); setDisableCode(''); } }}
         >
           <div
             className={`bg-white rounded-lg shadow-xl ${
@@ -242,7 +237,7 @@ export function TwoFactorManagementPage({
               className="w-full px-4 py-3 text-center text-2xl font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
             />
             <div className="flex gap-2">
-              <button
+              <button type="button"
                 onClick={() => {
                   setShowDisableModal(false);
                   setDisableCode('');
@@ -251,7 +246,7 @@ export function TwoFactorManagementPage({
               >
                 Cancel
               </button>
-              <button
+              <button type="button"
                 onClick={handleDisable}
                 disabled={disableCode.length !== 6 || disableLoading}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
@@ -273,6 +268,7 @@ export function TwoFactorManagementPage({
               setRegenerateCode('');
             }
           }}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setShowRegenerateModal(false); setRegenerateCode(''); } }}
         >
           <div
             className={`bg-white rounded-lg shadow-xl ${
@@ -295,7 +291,7 @@ export function TwoFactorManagementPage({
               className="w-full px-4 py-3 text-center text-2xl font-mono border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
             />
             <div className="flex gap-2">
-              <button
+              <button type="button"
                 onClick={() => {
                   setShowRegenerateModal(false);
                   setRegenerateCode('');
@@ -304,7 +300,7 @@ export function TwoFactorManagementPage({
               >
                 Cancel
               </button>
-              <button
+              <button type="button"
                 onClick={handleRegenerate}
                 disabled={regenerateCode.length !== 6 || regenerateLoading}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"

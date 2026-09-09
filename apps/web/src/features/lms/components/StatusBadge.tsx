@@ -10,10 +10,7 @@ interface StatusBadgeProps {
   status: RegistrationStatus | ReportCardStatus | PaymentRequestStatus | AttendanceStatus;
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; bg: string; fg: string }
-> = {
+const STATUS_CONFIG: Record<string, { label: string; bg: string; fg: string }> = {
   pending_init: { label: 'Pending Init', bg: '#fef3c7', fg: '#92400e' },
   pending_review: { label: 'Pending Review', bg: '#dbeafe', fg: '#1e40af' },
   approved: { label: 'Approved', bg: '#d1fae5', fg: '#065f46' },

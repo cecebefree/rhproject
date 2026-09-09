@@ -1,6 +1,5 @@
 // TeacherScreen — Row 37 wiring
-// Live data: profiles (name, role, curriculum, grade, stage, intake)
-// + conversations via conversation_members (059_chat_tables.sql).
+// Live data: courses taught via teacherClient, enrolled students per course.
 // Source: frozen Design 7 (07-teacher-variant.md)
 
 import { useEffect, useState } from 'react';
@@ -10,21 +9,15 @@ import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
+import {
+  type TeacherCourse,
+  type EnrolledStudent,
+  fetchTeacherDashboard,
+} from '../../src/lib/teacherClient';
 
 interface Profile {
   name: string;
   role: string;
-}
-
-interface GroupRow {
-  conversation_id: string;
-  role: string;
-  joined_at: string;
-  conversations: {
-    id: string;
-    category: string;
-    created_at: string;
-  }[];
 }
 
 function SectionLoader() {
@@ -46,7 +39,10 @@ function SectionError({ message }: { message: string }) {
 
 export default function TeacherScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [groups, setGroups] = useState<GroupRow[]>([]);
+  const [courses, setCourses] = useState<TeacherCourse[]>([]);
+  const [studentsByCourse, setStudentsByCourse] = useState<
+    Map<string, EnrolledStudent[]>
+  >(new Map());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mediaEnabled, setMediaEnabled] = useState(false);
@@ -83,15 +79,16 @@ export default function TeacherScreen() {
         else setProfile(prof);
       }
 
-      // 2. Groups (conversation memberships)
-      const { data: groupData, error: groupErr } = await supabase
-        .from('conversation_members')
-        .select('conversation_id, role, joined_at, conversations!inner(id, category, created_at)')
-        .eq('profile_id', user.id);
+      // 2. Teacher dashboard — courses + enrolled students
+      const { data: dashboard, error: dashErr } = await fetchTeacherDashboard();
 
       if (!cancelled) {
-        if (groupErr) setError(groupErr.message);
-        else setGroups(groupData ?? []);
+        if (dashErr) {
+          setError(dashErr);
+        } else if (dashboard) {
+          setCourses(dashboard.courses);
+          setStudentsByCourse(dashboard.studentsByCourse);
+        }
         setLoading(false);
       }
     }
@@ -146,20 +143,25 @@ export default function TeacherScreen() {
         />
       </View>
 
-      {/* My Groups */}
+      {/* My Courses */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>My Groups</Text>
-        {groups.length === 0 ? (
-          <EmptyState title="No groups yet" message="You'll be added during onboarding" />
+        <Text style={styles.sectionTitle}>My Courses</Text>
+        {courses.length === 0 ? (
+          <EmptyState
+            title="No courses yet"
+            message="Courses you teach will appear here"
+          />
         ) : (
-          groups.map((g) => {
-            const convo = g.conversations[0];
+          courses.map((course) => {
+            const students = studentsByCourse.get(course.id) ?? [];
             return (
-              <View key={g.conversation_id} style={styles.groupItem}>
-                <Text style={styles.groupCategory}>{convo?.category ?? 'general'}</Text>
-                <Text style={styles.groupRole}>Role: {g.role}</Text>
+              <View key={course.id} style={styles.groupItem}>
+                <Text style={styles.groupCategory}>{course.title}</Text>
+                <Text style={styles.groupRole}>
+                  {course.type} · {course.platform}
+                </Text>
                 <Text style={styles.groupJoined}>
-                  Joined: {new Date(g.joined_at).toLocaleDateString()}
+                  {students.length} student{students.length !== 1 ? 's' : ''} enrolled
                 </Text>
               </View>
             );

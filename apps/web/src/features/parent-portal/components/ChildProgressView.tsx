@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getChildProgress, type ChildProgress } from '../../lms/services/supabase';
+import { type ChildProgress, getChildProgress } from '../../lms/services/supabase';
 
 interface ChildProgressViewProps {
   studentId: string;
@@ -18,6 +18,7 @@ export function ChildProgressView({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: studentId triggers progress load
   useEffect(() => {
     loadProgress();
   }, [studentId]);
@@ -28,8 +29,8 @@ export function ChildProgressView({
       const { data, error } = await getChildProgress(studentId);
       if (error) throw error;
       setProgress(data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load progress');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load progress');
     } finally {
       setLoading(false);
     }
@@ -61,7 +62,7 @@ export function ChildProgressView({
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="mb-4">
-          <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
         </div>
@@ -76,7 +77,7 @@ export function ChildProgressView({
     return (
       <div className="bg-white shadow rounded-lg p-6">
         <div className="mb-4">
-          <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
         </div>
@@ -89,12 +90,10 @@ export function ChildProgressView({
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
-          <button onClick={onBack} className="text-gray-500 hover:text-gray-700">
+          <button type="button" onClick={onBack} className="text-gray-500 hover:text-gray-700">
             &larr; Back
           </button>
-          <h2 className="text-lg font-medium text-gray-900">
-            {progress.student_name}'s Progress
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900">{progress.student_name}'s Progress</h2>
         </div>
       </div>
 
@@ -102,17 +101,12 @@ export function ChildProgressView({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 rounded-lg p-4">
           <div className="text-sm text-blue-700">Enrolled Courses</div>
-          <div className="text-2xl font-bold text-blue-900">
-            {progress.courses.length}
-          </div>
+          <div className="text-2xl font-bold text-blue-900">{progress.courses.length}</div>
         </div>
 
         <div className="bg-green-50 rounded-lg p-4">
           <div className="text-sm text-green-700">Overall GPA</div>
-          <div
-            className="text-2xl font-bold"
-            style={{ color: getGpaColor(progress.overall_gpa) }}
-          >
+          <div className="text-2xl font-bold" style={{ color: getGpaColor(progress.overall_gpa) }}>
             {progress.overall_gpa !== null ? `${progress.overall_gpa}%` : '--'}
           </div>
         </div>
@@ -124,7 +118,7 @@ export function ChildProgressView({
               const valid = progress.courses.filter((c) => c.attendance_pct !== null);
               if (valid.length === 0) return '--';
               const avg = Math.round(
-                valid.reduce((sum, c) => sum + (c.attendance_pct || 0), 0) / valid.length,
+                valid.reduce((sum, c) => sum + (c.attendance_pct || 0), 0) / valid.length
               );
               return `${avg}%`;
             })()}
@@ -136,9 +130,7 @@ export function ChildProgressView({
       <h3 className="text-md font-semibold text-gray-900 mb-3">Courses</h3>
 
       {progress.courses.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          No courses enrolled yet.
-        </div>
+        <div className="text-center py-8 text-gray-500">No courses enrolled yet.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -195,10 +187,8 @@ export function ChildProgressView({
                     )}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    <button
-                      onClick={() =>
-                        onSelectCourse(course.course_id, course.course_title)
-                      }
+                    <button type="button"
+                      onClick={() => onSelectCourse(course.course_id, course.course_title)}
                       className="text-indigo-600 hover:text-indigo-900"
                     >
                       Details

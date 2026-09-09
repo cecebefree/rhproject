@@ -9,7 +9,12 @@ interface RoleSelectorProps {
   disabled?: boolean;
 }
 
-export function RoleSelector({ roles, selectedRoleId, onChange, disabled = false }: RoleSelectorProps) {
+export function RoleSelector({
+  roles,
+  selectedRoleId,
+  onChange,
+  disabled = false,
+}: RoleSelectorProps) {
   return (
     <select
       value={selectedRoleId}

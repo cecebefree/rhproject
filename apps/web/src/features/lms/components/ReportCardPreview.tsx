@@ -2,10 +2,7 @@
 // Row 71: Parent/student preview with download option
 
 import { useEffect, useState } from 'react';
-import {
-  getReportCardById,
-  type ReportCardWithRelations,
-} from '../services/supabase';
+import { type ReportCardWithRelations, getReportCardById } from '../services/supabase';
 
 interface ReportCardPreviewProps {
   cardId: string;
@@ -64,11 +61,7 @@ export function ReportCardPreview({ cardId, onBack }: ReportCardPreviewProps) {
     if (card.visible_at) {
       lines.push(`Visible:  ${new Date(card.visible_at).toLocaleDateString()}`);
     }
-    lines.push(
-      '',
-      '='.repeat(50),
-      'This is an official report card.',
-    );
+    lines.push('', '='.repeat(50), 'This is an official report card.');
 
     const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -93,10 +86,10 @@ export function ReportCardPreview({ cardId, onBack }: ReportCardPreviewProps) {
     <div style={styles.card}>
       {onBack && (
         <div style={styles.header}>
-          <button onClick={onBack} style={styles.backButton}>
+          <button type="button" onClick={onBack} style={styles.backButton}>
             &larr; Back
           </button>
-          <button onClick={handleDownload} style={styles.downloadButton}>
+          <button type="button" onClick={handleDownload} style={styles.downloadButton}>
             Download
           </button>
         </div>
@@ -136,9 +129,7 @@ export function ReportCardPreview({ cardId, onBack }: ReportCardPreviewProps) {
       )}
 
       {card.released_at && (
-        <div style={styles.meta}>
-          Released on {new Date(card.released_at).toLocaleDateString()}
-        </div>
+        <div style={styles.meta}>Released on {new Date(card.released_at).toLocaleDateString()}</div>
       )}
     </div>
   );

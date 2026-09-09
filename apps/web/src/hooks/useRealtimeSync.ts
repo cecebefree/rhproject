@@ -3,8 +3,8 @@
  * Provides live data with optimistic update support.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { RealtimeClient, type SubscriptionOptions, type PayloadCallback } from '../services/realtime';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { PayloadCallback, RealtimeClient, SubscriptionOptions } from '../services/realtime';
 
 interface UseRealtimeSyncOptions {
   enabled?: boolean;
@@ -65,8 +65,8 @@ export function useRealtimeSync<T extends Record<string, unknown>>(
       const oldRecord = payload.old as T | null;
 
       // Update data based on event type
-      setData(prev => {
-        const index = prev.findIndex(item => item.id === newRecord?.id);
+      setData((prev) => {
+        const index = prev.findIndex((item) => item.id === newRecord?.id);
 
         switch (payload.eventType) {
           case 'INSERT':
@@ -88,7 +88,7 @@ export function useRealtimeSync<T extends Record<string, unknown>>(
           case 'DELETE':
             if (oldRecord) {
               onDelete?.(oldRecord as Record<string, unknown>);
-              return prev.filter(item => item.id !== oldRecord.id);
+              return prev.filter((item) => item.id !== oldRecord.id);
             }
             return prev;
 
@@ -98,7 +98,7 @@ export function useRealtimeSync<T extends Record<string, unknown>>(
       });
 
       setLastUpdated(new Date().toISOString());
-      setUpdatedBy(newRecord?.updated_by as string || newRecord?.created_by as string || null);
+      setUpdatedBy((newRecord?.updated_by as string) || (newRecord?.created_by as string) || null);
 
       setTimeout(() => setIsSyncing(false), 500);
     };
@@ -189,7 +189,7 @@ export function useRealtimeRecord<T extends Record<string, unknown>>(
       }
 
       setLastUpdated(new Date().toISOString());
-      setUpdatedBy(newRecord?.updated_by as string || newRecord?.created_by as string || null);
+      setUpdatedBy((newRecord?.updated_by as string) || (newRecord?.created_by as string) || null);
 
       setTimeout(() => setIsSyncing(false), 500);
     };
