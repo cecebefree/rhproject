@@ -11,7 +11,7 @@ import {
   supabase,
 } from '../services/supabase';
 
-type MainTab = 'overview' | 'crm' | 'public-leads' | 'marketing' | 'careers';
+type MainTab = 'overview' | 'crm' | 'public-leads' | 'pipeline' | 'marketing' | 'careers';
 type SubTab =
   | 'all'
   | 'call'
@@ -29,6 +29,7 @@ const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'overview', label: 'OVERVIEW' },
   { key: 'crm', label: 'FRONTDESK CRM' },
   { key: 'public-leads', label: 'PUBLIC LEADS' },
+  { key: 'pipeline', label: 'PIPELINE' },
   { key: 'marketing', label: 'MARKETING CAMPAIGNS' },
   { key: 'careers', label: 'CAREERS & APPLICATIONS' },
 ];
@@ -155,10 +156,10 @@ export function FrontDeskPage() {
     setLoading(true);
     setError(null);
 
-    const sourceFilter = SOURCE_FILTER_MAP[subTab];
+    const sourceFilter = mainTab === 'pipeline' ? null : SOURCE_FILTER_MAP[subTab];
 
     let query = supabase
-      .from('front_desk.leads')
+      .from('leads')
       .select('*')
       .is('archived_at', null)
       .order('created_at', { ascending: false });
@@ -167,7 +168,7 @@ export function FrontDeskPage() {
       query = query.eq('source', sourceFilter);
     }
 
-    if (pipelineFilter !== 'all') {
+    if (mainTab === 'pipeline' && pipelineFilter !== 'all') {
       query = query.eq('pipeline', pipelineFilter);
     }
 
@@ -179,7 +180,7 @@ export function FrontDeskPage() {
       setLeads(data || []);
     }
     setLoading(false);
-  }, [subTab, pipelineFilter]);
+  }, [mainTab, subTab, pipelineFilter]);
 
   useEffect(() => {
     fetchLeads();
@@ -319,58 +320,50 @@ export function FrontDeskPage() {
         </nav>
       </div>
 
-      {/* Sub Tabs */}
+      {/* Sub Tabs — show source tabs for public-leads, pipeline tabs for pipeline */}
       <div
         className="flex items-center gap-6 overflow-x-auto shrink-0 pb-1"
         style={{ borderBottom: '1px solid rgba(195,199,204,0.2)' }}
       >
-        {SUB_TABS.map((tab) => {
-          const isActive = tab.key === subTab;
-          return (
-            <button type="button"
-              key={tab.key}
-              onClick={() => setSubTab(tab.key)}
-              className="whitespace-nowrap py-3 px-1 transition-colors"
-              style={{
-                fontFamily: '"EB Garamond", serif',
-                fontSize: '14px',
-                fontWeight: isActive ? 700 : 500,
-                color: isActive ? '#273946' : '#54626C',
-                borderBottom: isActive ? '2px solid #E8A020' : '2px solid transparent',
-              }}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Pipeline Tabs */}
-      <div
-        className="flex items-center gap-4 overflow-x-auto shrink-0 pb-1"
-        style={{ borderBottom: '1px solid rgba(195,199,204,0.15)' }}
-      >
-        <span style={{ fontSize: '11px', fontWeight: 600, color: '#54626C', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          Pipeline:
-        </span>
-        {PIPELINE_TABS.map((tab) => {
-          const isActive = tab.key === pipelineFilter;
-          return (
-            <button type="button"
-              key={tab.key}
-              onClick={() => setPipelineFilter(tab.key)}
-              className="whitespace-nowrap py-2 px-3 rounded transition-colors"
-              style={{
-                fontSize: '12px',
-                fontWeight: isActive ? 600 : 400,
-                color: isActive ? '#ffffff' : '#54626C',
-                backgroundColor: isActive ? '#273946' : 'rgba(39,57,70,0.05)',
-              }}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+        {mainTab === 'pipeline'
+          ? PIPELINE_TABS.map((tab) => {
+              const isActive = tab.key === pipelineFilter;
+              return (
+                <button type="button"
+                  key={tab.key}
+                  onClick={() => setPipelineFilter(tab.key)}
+                  className="whitespace-nowrap py-3 px-1 transition-colors"
+                  style={{
+                    fontFamily: '"EB Garamond", serif',
+                    fontSize: '14px',
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#273946' : '#54626C',
+                    borderBottom: isActive ? '2px solid #E8A020' : '2px solid transparent',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })
+          : SUB_TABS.map((tab) => {
+              const isActive = tab.key === subTab;
+              return (
+                <button type="button"
+                  key={tab.key}
+                  onClick={() => setSubTab(tab.key)}
+                  className="whitespace-nowrap py-3 px-1 transition-colors"
+                  style={{
+                    fontFamily: '"EB Garamond", serif',
+                    fontSize: '14px',
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#273946' : '#54626C',
+                    borderBottom: isActive ? '2px solid #E8A020' : '2px solid transparent',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
       </div>
 
       {/* Content */}

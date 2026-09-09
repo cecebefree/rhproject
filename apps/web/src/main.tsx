@@ -37,6 +37,7 @@ const RegistrationCancel = lazy(() => import('./features/registration/Registrati
 const RegistrationPage = lazy(() => import('./features/registration/RegistrationPage'));
 const RegistrationSuccess = lazy(() => import('./features/registration/RegistrationSuccess'));
 const AdultProfilePage = lazy(() => import('./pages/AdultProfilePage'));
+const ContactFormPage = lazy(() => import('./pages/ContactFormPage'));
 const CRMPage = lazy(() => import('./pages/CRMPage'));
 const FamilyProfilePage = lazy(() => import('./pages/FamilyProfilePage'));
 const ServiceDeskLogin = lazy(() => import('./pages/ServiceDeskLogin'));
@@ -116,6 +117,11 @@ function App() {
           <ServiceDeskAuthProvider>
             <Routes>
               <Route path="/" element={<IndexPage />} />
+              <Route path="/contact" element={
+                <Suspense fallback={<PageLoader />}>
+                  <ContactFormPage />
+                </Suspense>
+              } />
               <Route path="/service-desk" element={
                 <Suspense fallback={<PageLoader />}>
                   <ServiceDeskLogin />
