@@ -272,6 +272,11 @@ function App() {
                     <OfficeDeskRegistrationsPage />
                   </Suspense>
                 } />
+                <Route path="registrations/:registrationId" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <OfficeDeskRegistrationsPage />
+                  </Suspense>
+                } />
                 <Route path="contracts" element={
                   <Suspense fallback={<PageLoader />}>
                     <OfficeDeskContractsPage />

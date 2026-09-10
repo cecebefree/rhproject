@@ -10,7 +10,7 @@ type MainTab =
   | 'school-admin'
   | 'accounting'
   | 'payment-analytics';
-type SubTab = 'debit-orders' | 'invoices' | 'contracts';
+type SubTab = 'registrations' | 'contracts' | 'class-assignments' | 'invoices' | 'debit-orders';
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'enrollment', label: 'ENROLLMENT' },
@@ -23,15 +23,18 @@ const MAIN_TABS: { key: MainTab; label: string }[] = [
 ];
 
 const SUB_TABS: { key: SubTab; label: string; route: string }[] = [
-  { key: 'debit-orders', label: 'Debit Orders', route: 'debit-orders' },
-  { key: 'invoices', label: 'Invoices & Statements', route: 'invoices' },
+  { key: 'registrations', label: 'Registrations', route: 'registrations' },
   { key: 'contracts', label: 'Contracts', route: 'contracts' },
+  { key: 'class-assignments', label: 'Class Assignments', route: 'class-assignments' },
+  { key: 'invoices', label: 'Invoices & Statements', route: 'invoices' },
+  { key: 'debit-orders', label: 'Debit Orders', route: 'debit-orders' },
 ];
 
 export default function OfficeDeskPage() {
   const { deskId } = useParams<{ deskId: string }>();
   const navigate = useNavigate();
   const [mainTab, setMainTab] = useState<MainTab>('family-accounts');
+  const [showFilter, setShowFilter] = useState(false);
 
   // Derive active sub-tab from URL
   const currentPath = window.location.pathname;
@@ -61,6 +64,7 @@ export default function OfficeDeskPage() {
         </div>
         <div className="flex gap-3">
           <button type="button"
+            onClick={() => setShowFilter(!showFilter)}
             className="px-4 py-2 rounded flex items-center gap-2 transition-colors"
             style={{
               border: '1px solid #273946',
@@ -83,6 +87,7 @@ export default function OfficeDeskPage() {
             Filter
           </button>
           <button type="button"
+            onClick={() => navigate('/service/office-desk/registrations')}
             className="px-4 py-2 rounded flex items-center gap-2 shadow-sm transition-colors"
             style={{
               backgroundColor: '#273946',
