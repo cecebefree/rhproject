@@ -10,7 +10,14 @@ type MainTab =
   | 'school-admin'
   | 'accounting'
   | 'payment-analytics';
-type SubTab = 'registrations' | 'contracts' | 'class-assignments' | 'invoices' | 'debit-orders';
+
+type SubTab = 'pipeline' | 'registrations' | 'contracts' | 'class-assignments' | 'class-instances' | 'invoices' | 'debit-orders' | 'analytics' | 'reports' | 'settings' | 'webhooks' | 'billing';
+
+interface SubTabDef {
+  key: SubTab;
+  label: string;
+  route: string;
+}
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'enrollment', label: 'ENROLLMENT' },
@@ -22,23 +29,56 @@ const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'payment-analytics', label: 'PAYMENT ANALYTICS' },
 ];
 
-const SUB_TABS: { key: SubTab; label: string; route: string }[] = [
-  { key: 'registrations', label: 'Registrations', route: 'registrations' },
-  { key: 'contracts', label: 'Contracts', route: 'contracts' },
-  { key: 'class-assignments', label: 'Class Assignments', route: 'class-assignments' },
-  { key: 'invoices', label: 'Invoices & Statements', route: 'invoices' },
-  { key: 'debit-orders', label: 'Debit Orders', route: 'debit-orders' },
-];
+const SUB_TABS_BY_MAIN: Record<MainTab, SubTabDef[]> = {
+  enrollment: [
+    { key: 'pipeline', label: 'Pipeline', route: 'enrollment-pipeline' },
+    { key: 'registrations', label: 'Registrations', route: 'registrations' },
+    { key: 'contracts', label: 'Contracts', route: 'contracts' },
+    { key: 'class-assignments', label: 'Class Assignments', route: 'class-assignments' },
+  ],
+  'user-profiles': [
+    { key: 'registrations', label: 'All Profiles', route: 'registrations' },
+    { key: 'contracts', label: 'Contracts', route: 'contracts' },
+  ],
+  'family-accounts': [
+    { key: 'registrations', label: 'Registrations', route: 'registrations' },
+    { key: 'invoices', label: 'Invoices', route: 'invoices' },
+    { key: 'debit-orders', label: 'Debit Orders', route: 'debit-orders' },
+    { key: 'contracts', label: 'Contracts', route: 'contracts' },
+  ],
+  ledger: [
+    { key: 'invoices', label: 'Invoices & Statements', route: 'invoices' },
+    { key: 'debit-orders', label: 'Debit Orders', route: 'debit-orders' },
+    { key: 'billing', label: 'Billing', route: 'billing' },
+  ],
+  'school-admin': [
+    { key: 'class-instances', label: 'Class Instances', route: 'class-instances' },
+    { key: 'class-assignments', label: 'Class Assignments', route: 'class-assignments' },
+    { key: 'pipeline', label: 'Pipeline', route: 'enrollment-pipeline' },
+  ],
+  accounting: [
+    { key: 'invoices', label: 'Invoices & Statements', route: 'invoices' },
+    { key: 'debit-orders', label: 'Debit Orders', route: 'debit-orders' },
+    { key: 'billing', label: 'Billing', route: 'billing' },
+  ],
+  'payment-analytics': [
+    { key: 'analytics', label: 'Analytics', route: 'analytics' },
+    { key: 'reports', label: 'Reports', route: 'reports' },
+    { key: 'invoices', label: 'Invoices', route: 'invoices' },
+    { key: 'settings', label: 'Settings', route: 'settings' },
+    { key: 'webhooks', label: 'Webhooks', route: 'webhooks' },
+  ],
+};
 
 export default function OfficeDeskPage() {
   const { deskId } = useParams<{ deskId: string }>();
   const navigate = useNavigate();
-  const [mainTab, setMainTab] = useState<MainTab>('family-accounts');
+  const [mainTab, setMainTab] = useState<MainTab>('enrollment');
   const [showFilter, setShowFilter] = useState(false);
 
-  // Derive active sub-tab from URL
   const currentPath = window.location.pathname;
-  const activeSubTab = SUB_TABS.find((t) => currentPath.includes(t.route))?.key ?? 'invoices';
+  const subTabs = SUB_TABS_BY_MAIN[mainTab];
+  const activeSubTab = subTabs.find((t) => currentPath.includes(t.route))?.key ?? subTabs[0]?.key;
 
   return (
     <AdminLayout activeDesk="office-desk">
@@ -154,7 +194,7 @@ export default function OfficeDeskPage() {
         className="flex items-center gap-6 overflow-x-auto shrink-0 pb-1"
         style={{ borderBottom: '1px solid rgba(195,199,204,0.2)' }}
       >
-        {SUB_TABS.map((tab) => {
+        {subTabs.map((tab) => {
           const isActive = tab.key === activeSubTab;
           return (
             <button type="button"

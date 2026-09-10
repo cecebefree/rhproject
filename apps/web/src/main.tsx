@@ -15,8 +15,10 @@ const FrontDeskPage = lazy(() => import('./features/front-desk').then(m => ({ de
 const FrontDeskLeadDetailPage = lazy(() => import('./features/front-desk/pages/FrontDeskLeadDetailPage'));
 const OfficeDeskBillingPage = lazy(() => import('./features/lms/pages/OfficeDeskBillingPage'));
 const OfficeDeskClassAssignmentsPage = lazy(() => import('./features/lms/pages/OfficeDeskClassAssignmentsPage'));
+const OfficeDeskClassInstancesPage = lazy(() => import('./features/lms/pages/OfficeDeskClassInstancesPage'));
 const OfficeDeskContractsPage = lazy(() => import('./features/lms/pages/OfficeDeskContractsPage'));
 const OfficeDeskDebitOrdersPage = lazy(() => import('./features/lms/pages/OfficeDeskDebitOrdersPage'));
+const OfficeDeskEnrollmentPipelinePage = lazy(() => import('./features/lms/pages/OfficeDeskEnrollmentPipelinePage'));
 const OfficeDeskInvoiceDetailPage = lazy(() => import('./features/lms/pages/OfficeDeskInvoiceDetailPage'));
 const OfficeDeskInvoicesPage = lazy(() => import('./features/lms/pages/OfficeDeskInvoicesPage'));
 const OfficeDeskLeadDetailPage = lazy(() => import('./features/lms/pages/OfficeDeskLeadDetailPage'));
@@ -285,6 +287,16 @@ function App() {
                 <Route path="class-assignments" element={
                   <Suspense fallback={<PageLoader />}>
                     <OfficeDeskClassAssignmentsPage />
+                  </Suspense>
+                } />
+                <Route path="class-instances" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <OfficeDeskClassInstancesPage />
+                  </Suspense>
+                } />
+                <Route path="enrollment-pipeline" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <OfficeDeskEnrollmentPipelinePage />
                   </Suspense>
                 } />
                 <Route path="debit-orders" element={
