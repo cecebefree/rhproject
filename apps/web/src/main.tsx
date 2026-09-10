@@ -14,6 +14,7 @@ const AdminCoursesPage = lazy(() => import('./features/admin/components/AdminCou
 const FrontDeskPage = lazy(() => import('./features/front-desk').then(m => ({ default: m.FrontDeskPage })));
 const FrontDeskLeadDetailPage = lazy(() => import('./features/front-desk/pages/FrontDeskLeadDetailPage'));
 const OfficeDeskBillingPage = lazy(() => import('./features/lms/pages/OfficeDeskBillingPage'));
+const OfficeDeskClassAssignmentsPage = lazy(() => import('./features/lms/pages/OfficeDeskClassAssignmentsPage'));
 const OfficeDeskContractsPage = lazy(() => import('./features/lms/pages/OfficeDeskContractsPage'));
 const OfficeDeskDebitOrdersPage = lazy(() => import('./features/lms/pages/OfficeDeskDebitOrdersPage'));
 const OfficeDeskInvoiceDetailPage = lazy(() => import('./features/lms/pages/OfficeDeskInvoiceDetailPage'));
@@ -37,6 +38,7 @@ const RegistrationCancel = lazy(() => import('./features/registration/Registrati
 const RegistrationPage = lazy(() => import('./features/registration/RegistrationPage'));
 const RegistrationSuccess = lazy(() => import('./features/registration/RegistrationSuccess'));
 const AdultProfilePage = lazy(() => import('./pages/AdultProfilePage'));
+const ContractSignerPage = lazy(() => import('./pages/ContractSignerPage'));
 const ContactFormPage = lazy(() => import('./pages/ContactFormPage'));
 const CRMPage = lazy(() => import('./pages/CRMPage'));
 const FamilyProfilePage = lazy(() => import('./pages/FamilyProfilePage'));
@@ -117,6 +119,11 @@ function App() {
           <ServiceDeskAuthProvider>
             <Routes>
               <Route path="/" element={<IndexPage />} />
+              <Route path="/contract/:contractId/sign" element={
+                <Suspense fallback={<PageLoader />}>
+                  <ContractSignerPage />
+                </Suspense>
+              } />
               <Route path="/contact" element={
                 <Suspense fallback={<PageLoader />}>
                   <ContactFormPage />
@@ -268,6 +275,11 @@ function App() {
                 <Route path="contracts" element={
                   <Suspense fallback={<PageLoader />}>
                     <OfficeDeskContractsPage />
+                  </Suspense>
+                } />
+                <Route path="class-assignments" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <OfficeDeskClassAssignmentsPage />
                   </Suspense>
                 } />
                 <Route path="debit-orders" element={
