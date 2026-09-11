@@ -1,313 +1,145 @@
-// useSearch — Hook for search state, filters, pagination (Row 2)
+// useSearch — Hook for search functionality with autocomplete and history
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   type AutocompleteResult,
-  type SavedSearch,
   type SearchEntityType,
-  type SearchFilters,
   type SearchHistoryEntry,
-  type SearchOptions,
-  type SearchResult,
-  addSearchHistory,
+  type SearchFilters,
   autocomplete,
-  clearSearchHistory,
-  createSavedSearch,
-  deleteSavedSearch,
-  search,
-  selectSavedSearches,
   selectSearchHistory,
-  updateSavedSearch,
+  addSearchHistory,
+  search,
 } from '../features/office-desk/services/searchService';
 
 interface UseSearchOptions {
   tenantId: string;
   userId: string;
-  defaultEntityType?: SearchEntityType;
-  defaultPageSize?: number;
 }
 
-export function useSearch({
-  tenantId,
-  userId,
-  defaultEntityType = 'all',
-  defaultPageSize = 20,
-}: UseSearchOptions) {
-  // Search state
+interface UseSearchReturn {
+  query: string;
+  setQuery: (query: string) => void;
+  entityType: SearchEntityType;
+  setEntityType: (type: SearchEntityType) => void;
+  suggestions: AutocompleteResult[];
+  searchHistory: SearchHistoryEntry[];
+  loadingSuggestions: boolean;
+  results: Record<string, unknown>[];
+  loading: boolean;
+  total: number;
+  fetchSuggestions: (q: string) => void;
+  executeSearch: () => Promise<void>;
+  applyHistory: (entry: SearchHistoryEntry) => void;
+  clearResults: () => void;
+}
+
+export function useSearch({ tenantId, userId }: UseSearchOptions): UseSearchReturn {
   const [query, setQuery] = useState('');
-  const [entityType, setEntityType] = useState<SearchEntityType>(defaultEntityType);
-  const [filters, setFilters] = useState<SearchFilters>({});
-  const [sortBy, setSortBy] = useState('created_at');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(defaultPageSize);
-
-  // Results state
-  const [results, setResults] = useState<SearchResult>({
-    data: [],
-    total: 0,
-    page: 1,
-    page_size: defaultPageSize,
-    total_pages: 0,
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Autocomplete state
+  const [entityType, setEntityType] = useState<SearchEntityType>('all');
   const [suggestions, setSuggestions] = useState<AutocompleteResult[]>([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-
-  // Saved searches state
-  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
-  const [loadingSaved, setLoadingSaved] = useState(false);
-
-  // Search history state
   const [searchHistory, setSearchHistory] = useState<SearchHistoryEntry[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [results, setResults] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
 
-  // Execute search
-  const executeSearch = useCallback(
-    async (overrides?: Partial<SearchOptions>) => {
-      setLoading(true);
-      setError(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-      try {
-        const options: SearchOptions = {
-          entity_type: entityType,
-          query,
-          filters,
-          sort_by: sortBy,
-          sort_order: sortOrder,
-          page,
-          page_size: pageSize,
-          tenant_id: tenantId,
-          ...overrides,
-        };
-
-        const result = await search(options);
-        setResults(result);
-
-        // Add to search history if there's a query or filters
-        if (query || Object.keys(filters).length > 0) {
-          await addSearchHistory({
-            tenant_id: tenantId,
-            user_id: userId,
-            entity_type: entityType,
-            search_query: query,
-            filters,
-            result_count: result.total,
-          });
-        }
-
-        return result;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Search failed';
-        setError(message);
-        return null;
-      } finally {
-        setLoading(false);
-      }
-    },
-    [query, entityType, filters, sortBy, sortOrder, page, pageSize, tenantId, userId]
-  );
-
-  // Fetch autocomplete suggestions
+  // Fetch suggestions with debounce
   const fetchSuggestions = useCallback(
-    async (searchQuery: string) => {
-      if (!searchQuery || searchQuery.length < 2) {
+    (q: string) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      if (!q || q.length < 2) {
         setSuggestions([]);
+        setLoadingSuggestions(false);
         return;
       }
 
       setLoadingSuggestions(true);
-      try {
-        const results = await autocomplete(searchQuery, tenantId, 5);
-        setSuggestions(results);
-      } catch {
-        setSuggestions([]);
-      } finally {
-        setLoadingSuggestions(false);
-      }
+
+      debounceRef.current = setTimeout(async () => {
+        try {
+          const data = await autocomplete(q, tenantId, 5);
+          setSuggestions(data);
+        } catch (err) {
+          console.error('Failed to fetch suggestions:', err);
+          setSuggestions([]);
+        } finally {
+          setLoadingSuggestions(false);
+        }
+      }, 300);
     },
     [tenantId]
   );
 
-  // Load saved searches
-  const loadSavedSearches = useCallback(async () => {
-    setLoadingSaved(true);
+  // Execute search
+  const executeSearch = useCallback(async () => {
+    if (!query.trim()) return;
+
+    setLoading(true);
     try {
-      const { data, error: fetchError } = await selectSavedSearches(userId, tenantId);
-      if (!fetchError && data) {
-        setSavedSearches(data);
-      }
+      const result = await search({
+        entity_type: entityType,
+        query: query.trim(),
+        tenant_id: tenantId,
+        page: 1,
+        page_size: 20,
+      });
+
+      setResults(result.data);
+      setTotal(result.total);
+
+      // Add to search history
+      await addSearchHistory({
+        tenant_id: tenantId,
+        user_id: userId,
+        entity_type: entityType,
+        search_query: query.trim(),
+        filters: {},
+        result_count: result.total,
+      });
+
+      // Refresh history
+      const history = await selectSearchHistory(userId, tenantId, 10);
+      setSearchHistory(history);
+    } catch (err) {
+      console.error('Search failed:', err);
     } finally {
-      setLoadingSaved(false);
+      setLoading(false);
     }
-  }, [userId, tenantId]);
+  }, [query, entityType, tenantId, userId]);
 
-  // Save current search
-  const saveSearch = useCallback(
-    async (name: string, description?: string) => {
-      try {
-        const { data, error: createError } = await createSavedSearch({
-          tenant_id: tenantId,
-          user_id: userId,
-          name,
-          description: description || null,
-          entity_type: entityType,
-          search_query: query || null,
-          filters,
-          sort_by: sortBy,
-          sort_order: sortOrder,
-          is_default: false,
-        });
-
-        if (!createError && data) {
-          setSavedSearches((prev) => [data, ...prev]);
-          return data;
-        }
-        return null;
-      } catch {
-        return null;
-      }
-    },
-    [tenantId, userId, entityType, query, filters, sortBy, sortOrder]
-  );
-
-  // Apply saved search
-  const applySavedSearch = useCallback(
-    async (savedSearch: {
-      search_query?: string | null;
-      filters?: Record<string, unknown>;
-      entity_type?: string;
-      sort_by?: string;
-      sort_order?: string;
-      id?: string;
-      use_count?: number;
-      [key: string]: unknown;
-    }) => {
-      setQuery(savedSearch.search_query || '');
-      if (savedSearch.entity_type) {
-        setEntityType(savedSearch.entity_type as SearchEntityType);
-      }
-      if (savedSearch.filters) {
-        setFilters(savedSearch.filters as SearchFilters);
-      }
-      if (savedSearch.sort_by) setSortBy(savedSearch.sort_by);
-      if (savedSearch.sort_order) setSortOrder(savedSearch.sort_order as 'asc' | 'desc');
-      setPage(1);
-
-      // Increment usage count if it's a full SavedSearch
-      if (savedSearch.id && savedSearch.use_count !== undefined) {
-        await updateSavedSearch(savedSearch.id, {
-          use_count: savedSearch.use_count + 1,
-          last_used_at: new Date().toISOString(),
-        });
-      }
-    },
-    []
-  );
-
-  // Delete saved search
-  const deleteSaved = useCallback(async (searchId: string) => {
-    const { error: deleteError } = await deleteSavedSearch(searchId);
-    if (!deleteError) {
-      setSavedSearches((prev) => prev.filter((s) => s.id !== searchId));
-      return true;
-    }
-    return false;
+  // Apply history entry
+  const applyHistory = useCallback((entry: SearchHistoryEntry) => {
+    setQuery(entry.search_query);
+    setEntityType(entry.entity_type);
   }, []);
 
-  // Load search history
-  const loadSearchHistory = useCallback(async () => {
-    setLoadingHistory(true);
-    try {
-      const { data, error: fetchError } = await selectSearchHistory(userId, tenantId, 10);
-      if (!fetchError && data) {
-        setSearchHistory(data);
-      }
-    } finally {
-      setLoadingHistory(false);
-    }
-  }, [userId, tenantId]);
-
-  // Clear search history
-  const clearHistory = useCallback(async () => {
-    const { error: clearError } = await clearSearchHistory(userId);
-    if (!clearError) {
-      setSearchHistory([]);
-      return true;
-    }
-    return false;
-  }, [userId]);
-
-  // Reset search
-  const resetSearch = useCallback(() => {
+  // Clear results
+  const clearResults = useCallback(() => {
+    setResults([]);
+    setTotal(0);
     setQuery('');
-    setEntityType(defaultEntityType);
-    setFilters({});
-    setSortBy('created_at');
-    setSortOrder('desc');
-    setPage(1);
-    setResults({
-      data: [],
-      total: 0,
-      page: 1,
-      page_size: defaultPageSize,
-      total_pages: 0,
-    });
-    setError(null);
-  }, [defaultEntityType, defaultPageSize]);
-
-  // Load saved searches and history on mount
-  useEffect(() => {
-    loadSavedSearches();
-    loadSearchHistory();
-  }, [loadSavedSearches, loadSearchHistory]);
+  }, []);
 
   return {
-    // Search state
     query,
     setQuery,
     entityType,
     setEntityType,
-    filters,
-    setFilters,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
-    page,
-    setPage,
-    pageSize,
-    setPageSize,
-
-    // Results
+    suggestions,
+    searchHistory,
+    loadingSuggestions,
     results,
     loading,
-    error,
-
-    // Actions
-    executeSearch,
-    resetSearch,
-
-    // Autocomplete
-    suggestions,
-    loadingSuggestions,
+    total,
     fetchSuggestions,
-
-    // Saved searches
-    savedSearches,
-    loadingSaved,
-    saveSearch,
-    applySavedSearch,
-    deleteSavedSearch: deleteSaved,
-    loadSavedSearches,
-
-    // Search history
-    searchHistory,
-    loadingHistory,
-    loadSearchHistory,
-    clearHistory,
+    executeSearch,
+    applyHistory,
+    clearResults,
   };
 }

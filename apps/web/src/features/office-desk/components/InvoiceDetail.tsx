@@ -14,6 +14,7 @@ import {
   updateInvoice,
   updateInvoiceItem,
 } from '../services/supabase';
+import { InvoiceSend } from './InvoiceSend';
 import { PaymentForm } from './PaymentForm';
 
 interface InvoiceDetailProps {
@@ -53,6 +54,7 @@ export function InvoiceDetail({
 
   // Payment
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showInvoiceSend, setShowInvoiceSend] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -533,7 +535,7 @@ export function InvoiceDetail({
         )}
         {status === 'draft' && hasPermission('invoices.send') && (
           <button type="button"
-            onClick={handleSend}
+            onClick={() => setShowInvoiceSend(true)}
             disabled={saving}
             style={{
               padding: '8px 16px',
@@ -653,6 +655,20 @@ export function InvoiceDetail({
             />
           </div>
         </div>
+      )}
+
+      {/* Invoice Send Modal */}
+      {showInvoiceSend && invoice && (
+        <InvoiceSend
+          invoice={invoice}
+          clientEmail={(invoice as unknown as { lead?: { email?: string } }).lead?.email || ''}
+          clientName={(invoice as unknown as { lead?: { name?: string } }).lead?.name || 'Client'}
+          onSent={() => {
+            setShowInvoiceSend(false);
+            handleSend();
+          }}
+          onCancel={() => setShowInvoiceSend(false)}
+        />
       )}
     </div>
   );

@@ -12,6 +12,11 @@ import {
   selectInvoices,
   subscribeToInvoices,
 } from '../services/supabase';
+import BulkActionBar from './BulkActionBar';
+import BulkAssignModal from './BulkAssignModal';
+import BulkDeleteModal from './BulkDeleteModal';
+import BulkEditModal from './BulkEditModal';
+import BulkStatusChangeModal from './BulkStatusChangeModal';
 import { useBulkSelection } from './BulkSelectionContext';
 
 interface InvoiceListProps {
@@ -27,8 +32,14 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | ''>('');
   const [deleting, setDeleting] = useState<string | null>(null);
   const { isMobile } = useResponsive();
-  const { select, deselect, toggle, isSelected, selectAllOnPage, deselectAll, selectedCount } =
+  const { select, deselect, toggle, isSelected, selectAllOnPage, deselectAll, selectedCount, selectedIds } =
     useBulkSelection();
+
+  // Bulk modal states
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
+  const [showBulkAssign, setShowBulkAssign] = useState(false);
+  const [showBulkStatus, setShowBulkStatus] = useState(false);
 
   const toggleSelectAll = () => {
     if (selectedCount === invoices.length) {
@@ -69,6 +80,13 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
       sub.unsubscribe();
     };
   }, [tenantId, search, statusFilter]);
+
+  const refreshInvoices = async () => {
+    setLoading(true);
+    const { data } = await selectInvoices(tenantId, search || undefined, statusFilter || undefined);
+    if (data) setInvoices(data as unknown as Invoice[]);
+    setLoading(false);
+  };
 
   const handleDelete = async (invoiceId: string) => {
     if (!confirm('Delete this invoice?')) return;
@@ -496,6 +514,36 @@ export function InvoiceList({ tenantId, onSelect, onCreateNew }: InvoiceListProp
           </div>
         </>
       )}
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        onEdit={() => setShowBulkEdit(true)}
+        onDelete={() => setShowBulkDelete(true)}
+        onAssign={() => setShowBulkAssign(true)}
+        onStatusChange={() => setShowBulkStatus(true)}
+      />
+
+      {/* Bulk Modals */}
+      <BulkEditModal
+        isOpen={showBulkEdit}
+        onClose={() => setShowBulkEdit(false)}
+        onSuccess={() => { setShowBulkEdit(false); refreshInvoices(); }}
+      />
+      <BulkDeleteModal
+        isOpen={showBulkDelete}
+        onClose={() => setShowBulkDelete(false)}
+        onSuccess={() => { setShowBulkDelete(false); refreshInvoices(); }}
+      />
+      <BulkAssignModal
+        isOpen={showBulkAssign}
+        onClose={() => setShowBulkAssign(false)}
+        onSuccess={() => { setShowBulkAssign(false); refreshInvoices(); }}
+      />
+      <BulkStatusChangeModal
+        isOpen={showBulkStatus}
+        onClose={() => setShowBulkStatus(false)}
+        onSuccess={() => { setShowBulkStatus(false); refreshInvoices(); }}
+      />
     </div>
   );
 }

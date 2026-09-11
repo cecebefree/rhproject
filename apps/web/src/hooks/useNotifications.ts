@@ -1,103 +1,74 @@
-// useNotifications — hook for fetching + subscribing to notifications (Row 74)
-// Wraps the existing notification service from office-desk
-
 import { useCallback, useEffect, useState } from 'react';
-import {
-  type Notification,
-  getNotifications,
-  getUnreadCount,
-  markAllAsRead,
-  markAsRead,
-  subscribeToNotifications,
-} from '../features/office-desk/services/notifications';
+import { supabase } from '../features/office-desk/services/supabase';
 
-interface UseNotificationsReturn {
-  notifications: Notification[];
-  unreadCount: number;
-  loading: boolean;
-  error: string | null;
-  markRead: (id: string) => Promise<void>;
-  markAllRead: () => Promise<void>;
-  refresh: () => Promise<void>;
+interface Notification {
+  id: string;
+  registration_id: string;
+  notification_type: string;
+  sent_at: string;
+  email_to: string;
+  status: string;
+  error_message: string | null;
+  created_at: string;
 }
 
-export function useNotifications(userId: string | null): UseNotificationsReturn {
+interface UseNotificationsResult {
+  notifications: Notification[];
+  unreadCount: number;
+  failedCount: number;
+  loading: boolean;
+  refresh: () => Promise<void>;
+  markRead: (id: string) => void;
+}
+
+export function useNotifications(): UseNotificationsResult {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
-  const fetchNotifications = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const { data, error: fetchErr } = await getNotifications(userId, 15);
-      if (fetchErr) {
-        setError(fetchErr.message);
-      } else {
-        setNotifications((data as Notification[]) ?? []);
-      }
-
-      const { count, error: countErr } = await getUnreadCount(userId);
-      if (!countErr) {
-        setUnreadCount(count ?? 0);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load notifications');
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
-
-  // Realtime subscription
-  useEffect(() => {
-    if (!userId) return;
-
-    const channel = subscribeToNotifications(userId, (payload) => {
-      if (payload.eventType === 'INSERT') {
-        setNotifications((prev) => [payload.new, ...prev]);
-        setUnreadCount((prev) => prev + 1);
-      }
-    });
-
-    return () => {
-      if (channel && typeof channel === 'object' && 'unsubscribe' in channel) {
-        (channel as { unsubscribe: () => void }).unsubscribe();
-      }
-    };
-  }, [userId]);
-
-  const markRead = useCallback(async (id: string) => {
-    await markAsRead(id);
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
+  const loadNotifications = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('office_desk.notifications' as never)
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    setNotifications((data as Notification[]) ?? []);
+    setLoading(false);
   }, []);
 
-  const markAllRead = useCallback(async () => {
-    if (!userId) return;
-    await markAllAsRead(userId);
-    setNotifications((prev) =>
-      prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() }))
-    );
-    setUnreadCount(0);
-  }, [userId]);
+  useEffect(() => {
+    loadNotifications();
+
+    const channel = supabase
+      .channel('notifications-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'office_desk', table: 'notifications' },
+        () => {
+          loadNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadNotifications]);
+
+  const unreadCount = notifications.filter((n) => !readIds.has(n.id)).length;
+  const failedCount = notifications.filter((n) => n.status === 'failed').length;
+
+  const markRead = useCallback((id: string) => {
+    setReadIds((prev) => new Set(prev).add(id));
+  }, []);
 
   return {
     notifications,
     unreadCount,
+    failedCount,
     loading,
-    error,
+    refresh: loadNotifications,
     markRead,
-    markAllRead,
-    refresh: fetchNotifications,
   };
 }

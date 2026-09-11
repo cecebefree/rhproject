@@ -16,6 +16,7 @@ const FrontDeskLeadDetailPage = lazy(() => import('./features/front-desk/pages/F
 const OfficeDeskBillingPage = lazy(() => import('./features/lms/pages/OfficeDeskBillingPage'));
 const OfficeDeskClassAssignmentsPage = lazy(() => import('./features/lms/pages/OfficeDeskClassAssignmentsPage'));
 const OfficeDeskClassInstancesPage = lazy(() => import('./features/lms/pages/OfficeDeskClassInstancesPage'));
+const OfficeDeskContactsPage = lazy(() => import('./features/lms/pages/OfficeDeskContactsPage'));
 const OfficeDeskContractsPage = lazy(() => import('./features/lms/pages/OfficeDeskContractsPage'));
 const OfficeDeskDebitOrdersPage = lazy(() => import('./features/lms/pages/OfficeDeskDebitOrdersPage'));
 const OfficeDeskEnrollmentPipelinePage = lazy(() => import('./features/lms/pages/OfficeDeskEnrollmentPipelinePage'));
@@ -26,6 +27,7 @@ const OfficeDeskLeadsPage = lazy(() => import('./features/lms/pages/OfficeDeskLe
 const OfficeDeskPage = lazy(() => import('./features/lms/pages/OfficeDeskPage'));
 const OfficeDeskRegistrationsPage = lazy(() => import('./features/lms/pages/OfficeDeskRegistrationsPage'));
 const OfficeDeskReportsPage = lazy(() => import('./features/lms/pages/OfficeDeskReportsPage'));
+const OfficeDeskActivityPage = lazy(() => import('./features/lms/pages/OfficeDeskActivityPage'));
 const OfficeDeskSettingsPage = lazy(() => import('./features/lms/pages/OfficeDeskSettingsPage'));
 const SchoolDeskAttendancePage = lazy(() => import('./features/lms/pages/SchoolDeskAttendancePage'));
 const SchoolDeskChatPage = lazy(() => import('./features/lms/pages/SchoolDeskChatPage'));
@@ -33,6 +35,7 @@ const SchoolDeskPage = lazy(() => import('./features/lms/pages/SchoolDeskPage'))
 const SchoolDeskStudentProfilePage = lazy(() => import('./features/lms/pages/StudentProfilePage'));
 const TeacherDashboardPage = lazy(() => import('./features/lms/pages/TeacherDashboardPage'));
 const AnalyticsPage = lazy(() => import('./features/office-desk/components/AnalyticsPage'));
+const EmailTemplateManagementPage = lazy(() => import('./features/office-desk/components/EmailTemplateManagementPage'));
 const FamilyAccountsDefault = lazy(() => import('./features/office-desk/components/FamilyAccountsDefault').then(m => ({ default: m.FamilyAccountsDefault })));
 const WebhookManagementPage = lazy(() => import('./features/office-desk/components/WebhookManagementPage'));
 const ParentPortalPage = lazy(() => import('./features/parent-portal/pages/ParentPortalPage'));
@@ -42,6 +45,8 @@ const RegistrationSuccess = lazy(() => import('./features/registration/Registrat
 const AdultProfilePage = lazy(() => import('./pages/AdultProfilePage'));
 const ContractSignerPage = lazy(() => import('./pages/ContractSignerPage'));
 const ContactFormPage = lazy(() => import('./pages/ContactFormPage'));
+const EnrollmentFormPage = lazy(() => import('./pages/EnrollmentFormPage'));
+const InviteAcceptPageRoute = lazy(() => import('./pages/InviteAcceptPageRoute'));
 const CRMPage = lazy(() => import('./pages/CRMPage'));
 const FamilyProfilePage = lazy(() => import('./pages/FamilyProfilePage'));
 const ServiceDeskLogin = lazy(() => import('./pages/ServiceDeskLogin'));
@@ -124,6 +129,16 @@ function App() {
               <Route path="/contract/:contractId/sign" element={
                 <Suspense fallback={<PageLoader />}>
                   <ContractSignerPage />
+                </Suspense>
+              } />
+              <Route path="/enroll/:formToken" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EnrollmentFormPage />
+                </Suspense>
+              } />
+              <Route path="/invite/:token" element={
+                <Suspense fallback={<PageLoader />}>
+                  <InviteAcceptPageRoute />
                 </Suspense>
               } />
               <Route path="/contact" element={
@@ -284,6 +299,16 @@ function App() {
                     <OfficeDeskContractsPage />
                   </Suspense>
                 } />
+                <Route path="contacts" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <OfficeDeskContactsPage />
+                  </Suspense>
+                } />
+                <Route path="contacts/:contactId" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <OfficeDeskContactsPage />
+                  </Suspense>
+                } />
                 <Route path="class-assignments" element={
                   <Suspense fallback={<PageLoader />}>
                     <OfficeDeskClassAssignmentsPage />
@@ -327,6 +352,16 @@ function App() {
                 <Route path="analytics" element={
                   <Suspense fallback={<PageLoader />}>
                     <AnalyticsPage />
+                  </Suspense>
+                } />
+                <Route path="activity" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <OfficeDeskActivityPage />
+                  </Suspense>
+                } />
+                <Route path="email-templates" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <EmailTemplateManagementPage />
                   </Suspense>
                 } />
               </Route>

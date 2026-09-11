@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDashboardMetrics } from '../hooks/useDashboardMetrics';
+import { supabase, type Lead } from '../services/supabase';
 
 type DashboardPeriod = 'today' | 'week' | 'month';
 
@@ -10,6 +11,26 @@ interface DashboardProps {
 export function Dashboard({ showPeriodSelector = true }: DashboardProps) {
   const [period, setPeriod] = useState<DashboardPeriod>('today');
   const { metrics, loading, error } = useDashboardMetrics(period);
+  const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
+  const [loadingRecent, setLoadingRecent] = useState(true);
+
+  // Fetch recent leads for activity feed
+  const fetchRecentLeads = useCallback(async () => {
+    setLoadingRecent(true);
+    const { data, error: fetchError } = await supabase
+      .from('leads')
+      .select('id, full_name, source, status, created_at')
+      .order('created_at', { ascending: false })
+      .limit(10);
+    if (!fetchError && data) {
+      setRecentLeads(data as Lead[]);
+    }
+    setLoadingRecent(false);
+  }, []);
+
+  useEffect(() => {
+    fetchRecentLeads();
+  }, [fetchRecentLeads]);
 
   if (error) {
     return <div className="text-red-600 p-4">Error: {error}</div>;
@@ -104,6 +125,48 @@ export function Dashboard({ showPeriodSelector = true }: DashboardProps) {
       ) : (
         <div className="p-8 text-center text-gray-500">No data available</div>
       )}
+
+      {/* Recent Activity */}
+      <div className="mt-8 border rounded bg-white shadow-sm">
+        <div className="px-6 py-4 border-b">
+          <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
+          <p className="text-sm text-gray-500">Latest leads and updates</p>
+        </div>
+        <div className="divide-y">
+          {loadingRecent ? (
+            <div className="p-6 text-center text-gray-500">Loading recent activity...</div>
+          ) : recentLeads.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">No recent activity</div>
+          ) : (
+            recentLeads.map((lead) => (
+              <div key={lead.id} className="px-6 py-3 flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-medium">
+                    {lead.full_name?.charAt(0) || '?'}
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-900">{lead.full_name}</div>
+                    <div className="text-xs text-gray-500">Source: {lead.source || 'Unknown'}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    lead.status === 'enquiry' ? 'bg-yellow-100 text-yellow-800' :
+                    lead.status === 'qualified' ? 'bg-blue-100 text-blue-800' :
+                    lead.status === 'invoiced' ? 'bg-green-100 text-green-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {lead.status}
+                  </span>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {new Date(lead.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

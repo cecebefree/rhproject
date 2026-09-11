@@ -1,6 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { AdminLayout } from '../../../components/AdminLayout';
+import { AdvancedFilterPanel } from '../../office-desk/components/AdvancedFilterPanel';
+import { NotificationCenter } from '../../office-desk/components/NotificationCenter';
+import { SearchBar } from '../../office-desk/components/SearchBar';
+import type { SearchEntityType, SearchFilters } from '../../office-desk/services/searchService';
+import { supabase } from '../../office-desk/services/supabase';
+import { useNotifications } from '../../../hooks/useNotifications';
+import { useSearch } from '../../../hooks/useSearch';
 
 type MainTab =
   | 'enrollment'
@@ -11,7 +18,7 @@ type MainTab =
   | 'accounting'
   | 'payment-analytics';
 
-type SubTab = 'pipeline' | 'registrations' | 'contracts' | 'class-assignments' | 'class-instances' | 'invoices' | 'debit-orders' | 'analytics' | 'reports' | 'settings' | 'webhooks' | 'billing';
+type SubTab = 'pipeline' | 'registrations' | 'contracts' | 'class-assignments' | 'class-instances' | 'invoices' | 'debit-orders' | 'analytics' | 'reports' | 'settings' | 'webhooks' | 'billing' | 'email-templates' | 'contacts' | 'activity';
 
 interface SubTabDef {
   key: SubTab;
@@ -38,6 +45,7 @@ const SUB_TABS_BY_MAIN: Record<MainTab, SubTabDef[]> = {
   ],
   'user-profiles': [
     { key: 'registrations', label: 'All Profiles', route: 'registrations' },
+    { key: 'contacts', label: 'Contacts', route: 'contacts' },
     { key: 'contracts', label: 'Contracts', route: 'contracts' },
   ],
   'family-accounts': [
@@ -65,8 +73,10 @@ const SUB_TABS_BY_MAIN: Record<MainTab, SubTabDef[]> = {
     { key: 'analytics', label: 'Analytics', route: 'analytics' },
     { key: 'reports', label: 'Reports', route: 'reports' },
     { key: 'invoices', label: 'Invoices', route: 'invoices' },
+    { key: 'activity', label: 'Activity', route: 'activity' },
     { key: 'settings', label: 'Settings', route: 'settings' },
     { key: 'webhooks', label: 'Webhooks', route: 'webhooks' },
+    { key: 'email-templates', label: 'Email Templates', route: 'email-templates' },
   ],
 };
 
@@ -75,6 +85,23 @@ export default function OfficeDeskPage() {
   const navigate = useNavigate();
   const [mainTab, setMainTab] = useState<MainTab>('enrollment');
   const [showFilter, setShowFilter] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [filters, setFilters] = useState<SearchFilters>({});
+  const [filterEntity, setFilterEntity] = useState<SearchEntityType>('all');
+  const [userId, setUserId] = useState<string>('');
+
+  // Notifications hook
+  const { unreadCount, failedCount } = useNotifications();
+
+  // Get current user
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
+
+  // Search hook
+  const searchHook = useSearch({ tenantId: deskId || '', userId });
 
   const currentPath = window.location.pathname;
   const subTabs = SUB_TABS_BY_MAIN[mainTab];
@@ -102,7 +129,60 @@ export default function OfficeDeskPage() {
             Manage family accounts, invoices, and financial records.
           </p>
         </div>
+
+        {/* Search Bar */}
+        <SearchBar
+          query={searchHook.query}
+          entityType={searchHook.entityType}
+          suggestions={searchHook.suggestions}
+          searchHistory={searchHook.searchHistory}
+          loadingSuggestions={searchHook.loadingSuggestions}
+          onQueryChange={searchHook.setQuery}
+          onSearch={searchHook.executeSearch}
+          onEntityTypeChange={searchHook.setEntityType}
+          onFetchSuggestions={searchHook.fetchSuggestions}
+          onApplyHistory={searchHook.applyHistory}
+          onQuickFilter={({ field, operator, value }) => {
+            // Quick filter handler
+            console.log('Quick filter:', field, operator, value);
+          }}
+          onShowFilters={() => setShowFilter(true)}
+          hasActiveFilters={searchHook.loading}
+        />
+
         <div className="flex gap-3">
+          {/* Notification Bell */}
+          <button type="button"
+            onClick={() => setShowNotifications(true)}
+            className="relative px-3 py-2 rounded flex items-center gap-2 transition-colors"
+            style={{
+              border: '1px solid #273946',
+              color: '#273946',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(39,57,70,0.05)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+              notifications
+            </span>
+            {unreadCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
+                style={{
+                  backgroundColor: failedCount > 0 ? '#FEE2E2' : '#DBEAFE',
+                  color: failedCount > 0 ? '#C8281E' : '#1D4ED8',
+                  fontSize: '10px',
+                }}
+              >
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
           <button type="button"
             onClick={() => setShowFilter(!showFilter)}
             className="px-4 py-2 rounded flex items-center gap-2 transition-colors"
@@ -151,6 +231,25 @@ export default function OfficeDeskPage() {
           </button>
         </div>
       </div>
+
+      {/* Advanced Filter Panel */}
+      {showFilter && (
+        <div className="shrink-0">
+          <AdvancedFilterPanel
+            entityType={filterEntity}
+            filters={filters}
+            onFiltersChange={setFilters}
+            onApply={() => {/* filters applied via context */}}
+            onClear={() => setFilters({})}
+            onClose={() => setShowFilter(false)}
+          />
+        </div>
+      )}
+
+      {/* Notification Center */}
+      {showNotifications && (
+        <NotificationCenter onClose={() => setShowNotifications(false)} />
+      )}
 
       {/* Main Tabs */}
       <div className="overflow-x-auto shrink-0">

@@ -1,7 +1,8 @@
 // AdvancedFilterPanel — Filter builder with date picker, status, tags (Row 2)
 
-import { useState } from 'react';
-import type { SearchEntityType, SearchFilter, SearchFilters } from '../services/searchService';
+import { useState, useEffect } from 'react';
+import type { SearchEntityType, SearchFilter, SearchFilters, SearchHistoryEntry } from '../services/searchService';
+import { selectSavedSearches } from '../services/searchService';
 
 interface AdvancedFilterPanelProps {
   entityType: SearchEntityType;
@@ -84,6 +85,7 @@ export function AdvancedFilterPanel({
 
   const statusOptions = STATUS_OPTIONS[entityType] || [];
   const fieldOptions = CUSTOM_FIELD_OPTIONS[entityType] || [];
+  const [savedSearches, setSavedSearches] = useState<SearchHistoryEntry[]>([]);
 
   const handleToggleStatus = (status: string) => {
     setSelectedStatuses((prev) =>
