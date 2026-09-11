@@ -53,7 +53,7 @@ export default function ContactFormPage() {
           phone: form.phone || undefined,
           message: form.message || undefined,
           curriculum_interest: form.curriculum || undefined,
-          student_age: form.student_age ? parseInt(form.student_age) : undefined,
+          student_age: form.student_age ? Number.parseInt(form.student_age) : undefined,
         }),
       });
 

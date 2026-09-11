@@ -174,7 +174,7 @@ export default function PipelineDetail({ pipelineId, onBack, onRefresh }: Pipeli
     setActionLoading(true);
     try {
       let functionName = '';
-      let body: Record<string, unknown> = { pipeline_id: pipelineId };
+      const body: Record<string, unknown> = { pipeline_id: pipelineId };
 
       switch (action) {
         case 'send_form':

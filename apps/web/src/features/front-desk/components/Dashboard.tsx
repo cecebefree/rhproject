@@ -19,7 +19,7 @@ export function Dashboard({ showPeriodSelector = true }: DashboardProps) {
     setLoadingRecent(true);
     const { data, error: fetchError } = await supabase
       .from('leads')
-      .select('id, full_name, source, status, created_at')
+      .select('id, name, source, status, created_at')
       .order('created_at', { ascending: false })
       .limit(10);
     if (!fetchError && data) {
@@ -142,10 +142,10 @@ export function Dashboard({ showPeriodSelector = true }: DashboardProps) {
               <div key={lead.id} className="px-6 py-3 flex items-center justify-between hover:bg-gray-50">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-medium">
-                    {lead.full_name?.charAt(0) || '?'}
+                    {lead.name?.charAt(0) || '?'}
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-900">{lead.full_name}</div>
+                    <div className="text-sm font-medium text-gray-900">{lead.name}</div>
                     <div className="text-xs text-gray-500">Source: {lead.source || 'Unknown'}</div>
                   </div>
                 </div>

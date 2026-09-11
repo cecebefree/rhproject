@@ -3,48 +3,61 @@ import { supabase } from '../features/office-desk/services/supabase';
 
 interface Notification {
   id: string;
-  registration_id: string;
-  notification_type: string;
-  sent_at: string;
-  email_to: string;
-  status: string;
-  error_message: string | null;
+  tenant_id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  data: Record<string, unknown> | null;
+  read_at: string | null;
   created_at: string;
 }
 
 interface UseNotificationsResult {
   notifications: Notification[];
   unreadCount: number;
-  failedCount: number;
   loading: boolean;
   refresh: () => Promise<void>;
-  markRead: (id: string) => void;
+  markRead: (id: string) => Promise<void>;
+  markAllRead: () => Promise<void>;
 }
 
-export function useNotifications(): UseNotificationsResult {
+export function useNotifications(userId: string): UseNotificationsResult {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [readIds, setReadIds] = useState<Set<string>>(new Set());
 
   const loadNotifications = useCallback(async () => {
+    if (!userId) return;
     setLoading(true);
+
     const { data } = await supabase
-      .from('office_desk.notifications' as never)
+      .from('notifications')
       .select('*')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(20);
+
     setNotifications((data as Notification[]) ?? []);
+
+    const { count } = await supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .is('read_at', null);
+
+    setUnreadCount(count ?? 0);
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     loadNotifications();
 
     const channel = supabase
-      .channel('notifications-realtime')
+      .channel(`notifications-${userId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'office_desk', table: 'notifications' },
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
         () => {
           loadNotifications();
         }
@@ -54,21 +67,32 @@ export function useNotifications(): UseNotificationsResult {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadNotifications]);
+  }, [userId, loadNotifications]);
 
-  const unreadCount = notifications.filter((n) => !readIds.has(n.id)).length;
-  const failedCount = notifications.filter((n) => n.status === 'failed').length;
-
-  const markRead = useCallback((id: string) => {
-    setReadIds((prev) => new Set(prev).add(id));
+  const markRead = useCallback(async (id: string) => {
+    await supabase
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('id', id);
+    setUnreadCount((prev) => Math.max(0, prev - 1));
   }, []);
+
+  const markAllRead = useCallback(async () => {
+    if (!userId) return;
+    await supabase
+      .from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .is('read_at', null);
+    setUnreadCount(0);
+  }, [userId]);
 
   return {
     notifications,
     unreadCount,
-    failedCount,
     loading,
     refresh: loadNotifications,
     markRead,
+    markAllRead,
   };
 }

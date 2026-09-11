@@ -91,7 +91,7 @@ export default function OfficeDeskPage() {
   const [userId, setUserId] = useState<string>('');
 
   // Notifications hook
-  const { unreadCount, failedCount } = useNotifications();
+  const { unreadCount } = useNotifications(userId);
 
   // Get current user
   useEffect(() => {
@@ -173,8 +173,8 @@ export default function OfficeDeskPage() {
               <span
                 className="absolute -top-1 -right-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
                 style={{
-                  backgroundColor: failedCount > 0 ? '#FEE2E2' : '#DBEAFE',
-                  color: failedCount > 0 ? '#C8281E' : '#1D4ED8',
+                  backgroundColor: '#DBEAFE',
+                  color: '#1D4ED8',
                   fontSize: '10px',
                 }}
               >

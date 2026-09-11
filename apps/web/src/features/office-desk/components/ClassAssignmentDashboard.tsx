@@ -43,7 +43,7 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 
 function formatTime(time: string): string {
   const [h, m] = time.split(':');
-  const hour = parseInt(h, 10);
+  const hour = Number.parseInt(h, 10);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const hour12 = hour % 12 || 12;
   return `${hour12}:${m} ${ampm}`;
@@ -174,6 +174,7 @@ export default function ClassAssignmentDashboard() {
             </select>
             {pendingCount > 0 && (
               <button
+                type="button"
                 onClick={handleBulkApprove}
                 className="bg-green-600 text-white px-4 py-1.5 rounded text-sm hover:bg-green-700"
               >

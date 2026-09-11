@@ -45,7 +45,7 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 
 function formatTime(time: string): string {
   const [h, m] = time.split(':');
-  const hour = parseInt(h, 10);
+  const hour = Number.parseInt(h, 10);
   const ampm = hour >= 12 ? 'PM' : 'AM';
   const hour12 = hour % 12 || 12;
   return `${hour12}:${m} ${ampm}`;
@@ -254,6 +254,7 @@ export default function OfficeDeskClassInstancesPage() {
               ))}
             </select>
             <button
+              type="button"
               onClick={openCreate}
               className="bg-[#273946] text-white px-4 py-1.5 rounded text-sm font-medium hover:bg-[#112430]"
             >
@@ -340,7 +341,7 @@ export default function OfficeDeskClassInstancesPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Day of Week</label>
                   <select
                     value={form.day_of_week}
-                    onChange={(e) => setForm({ ...form, day_of_week: parseInt(e.target.value) })}
+                    onChange={(e) => setForm({ ...form, day_of_week: Number.parseInt(e.target.value) })}
                     className="w-full border rounded px-3 py-2 text-sm"
                   >
                     {DAYS.map((d, i) => (
@@ -371,7 +372,7 @@ export default function OfficeDeskClassInstancesPage() {
                   <input
                     type="number"
                     value={form.max_students}
-                    onChange={(e) => setForm({ ...form, max_students: parseInt(e.target.value) || 30 })}
+                    onChange={(e) => setForm({ ...form, max_students: Number.parseInt(e.target.value) || 30 })}
                     className="w-full border rounded px-3 py-2 text-sm"
                   />
                 </div>
@@ -390,12 +391,14 @@ export default function OfficeDeskClassInstancesPage() {
               </div>
               <div className="flex justify-end gap-3 mt-6">
                 <button
+                  type="button"
                   onClick={() => setShowForm(false)}
                   className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={saving}
                   className="px-4 py-2 text-sm bg-[#273946] text-white rounded hover:bg-[#112430] disabled:opacity-50"
@@ -456,12 +459,14 @@ export default function OfficeDeskClassInstancesPage() {
                   <td className="p-3">
                     <div className="flex gap-2">
                       <button
+                        type="button"
                         onClick={() => openEdit(inst)}
                         className="text-blue-600 hover:text-blue-800 text-xs"
                       >
                         Edit
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleDelete(inst.id)}
                         className="text-red-600 hover:text-red-800 text-xs"
                       >
