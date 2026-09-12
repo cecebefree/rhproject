@@ -2,14 +2,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../../../components/AdminLayout';
 import { supabaseUntyped as supabase } from '../services/supabase';
+import SchoolDeskNewsPage from './SchoolDeskNewsPage';
+import SchoolDeskCommunicationPage from './SchoolDeskCommunicationPage';
 
-type MainTab = 'students' | 'attendance' | 'programs' | 'messages';
+type MainTab = 'students' | 'attendance' | 'programs' | 'messages' | 'news' | 'communications';
 type SubTab = 'all' | 'active' | 'inactive' | 'new' | 'graduated';
 
 const MAIN_TABS: { key: MainTab; label: string }[] = [
   { key: 'students', label: 'STUDENTS' },
   { key: 'attendance', label: 'ATTENDANCE' },
   { key: 'programs', label: 'PROGRAMS' },
+  { key: 'news', label: 'NEWS' },
+  { key: 'communications', label: 'COMMUNICATIONS' },
   { key: 'messages', label: 'MESSAGES' },
 ];
 
@@ -300,138 +304,152 @@ export default function SchoolDeskPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto min-h-0 pb-12">
-        {loading && (
-          <div
-            className="flex items-center justify-center rounded-xl mt-4"
-            style={{
-              border: '1px solid rgba(195,199,204,0.3)',
-              backgroundColor: '#ffffff',
-              minHeight: '400px',
-            }}
-          >
-            <div className="flex flex-col items-center gap-3">
+        {mainTab === 'news' && <SchoolDeskNewsPage />}
+        {mainTab === 'communications' && <SchoolDeskCommunicationPage />}
+        {mainTab !== 'news' && mainTab !== 'communications' && (
+          <>
+            {loading && (
               <div
-                className="w-8 h-8 border-3 border-[#E8A020] border-t-transparent rounded-full animate-spin"
-              />
-              <p className="text-sm" style={{ color: '#54626C' }}>
-                Loading students...
-              </p>
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: '#FEF2F2', border: '1px solid rgba(220,38,38,0.2)' }}>
-            <p className="text-sm" style={{ color: '#DC2626' }}>{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && (
-          <div
-            className="mt-4 rounded-xl overflow-hidden"
-            style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}
-          >
-            {/* Table Header */}
-            <div
-              className="grid grid-cols-12 gap-4 px-4 py-3 text-xs font-semibold uppercase tracking-wider"
-              style={{
-                backgroundColor: '#F8F7F4',
-                borderBottom: '1px solid rgba(195,199,204,0.3)',
-                color: '#54626C',
-                fontSize: '11px',
-                letterSpacing: '0.12em',
-                fontFamily: '"Source Sans 3", sans-serif',
-              }}
-            >
-              <div className="col-span-4">Student</div>
-              <div className="col-span-2">Grade</div>
-              <div className="col-span-2">Status</div>
-              <div className="col-span-2">Enrolled</div>
-              <div className="col-span-2">Program</div>
-            </div>
-
-            {/* Table Body */}
-            <div className="overflow-y-auto" style={{ maxHeight: '600px' }}>
-              {filtered.length === 0 ? (
-                <div className="p-8 text-center">
-                  <span
-                    className="material-symbols-outlined block mx-auto mb-3"
-                    style={{ fontSize: '48px', color: '#C7C7CC' }}
-                  >
-                    school
-                  </span>
+                className="flex items-center justify-center rounded-xl mt-4"
+                style={{
+                  border: '1px solid rgba(195,199,204,0.3)',
+                  backgroundColor: '#ffffff',
+                  minHeight: '400px',
+                }}
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <div
+                    className="w-8 h-8 border-3 border-[#E8A020] border-t-transparent rounded-full animate-spin"
+                  />
                   <p className="text-sm" style={{ color: '#54626C' }}>
-                    No students found
+                    Loading students...
                   </p>
                 </div>
-              ) : (
-                filtered.map((student) => {
-                  const statusColor = STATUS_COLORS[student.enrollment_status] || STATUS_COLORS.active;
-                  return (
-                    <button
-                      type="button"
-                      key={student.id}
-                      onClick={() => navigate(`/service/school-desk/student/${student.id}`)}
-                      className="grid grid-cols-12 gap-4 px-4 py-3 text-left w-full transition-colors"
-                      style={{
-                        borderBottom: '1px solid rgba(195,199,204,0.15)',
-                        background: 'transparent',
-                        cursor: 'pointer',
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(248,247,244,0.5)';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      {/* Student Name + Email */}
-                      <div className="col-span-4">
-                        <p className="text-sm font-medium" style={{ color: '#1A242B' }}>
-                          {student.first_name} {student.last_name}
-                        </p>
-                        <p className="text-xs mt-0.5" style={{ color: '#54626C' }}>
-                          {student.email || 'No email'}
-                        </p>
-                      </div>
+              </div>
+            )}
 
-                      {/* Grade */}
-                      <div className="col-span-2 flex items-center">
-                        <span className="text-sm" style={{ color: '#54626C' }}>
-                          {student.grade || '—'}
-                        </span>
-                      </div>
+            {error && (
+              <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: '#FEF2F2', border: '1px solid rgba(220,38,38,0.2)' }}>
+                <p className="text-sm" style={{ color: '#DC2626' }}>{error}</p>
+              </div>
+            )}
 
-                      {/* Status Badge */}
-                      <div className="col-span-2 flex items-center">
-                        <span
-                          className="text-xs px-2 py-1 rounded font-medium"
-                          style={{ backgroundColor: statusColor.bg, color: statusColor.text }}
+            {!loading && !error && (
+              <div
+                className="mt-4 rounded-xl overflow-hidden"
+                style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}
+              >
+                <div
+                  className="grid grid-cols-12 gap-4 px-4 py-3 text-xs font-semibold uppercase tracking-wider"
+                  style={{
+                    backgroundColor: '#F8F7F4',
+                    borderBottom: '1px solid rgba(195,199,204,0.3)',
+                    color: '#54626C',
+                    fontSize: '11px',
+                    letterSpacing: '0.12em',
+                    fontFamily: '"Source Sans 3", sans-serif',
+                  }}
+                >
+                  <div className="col-span-4">Student</div>
+                  <div className="col-span-2">Grade</div>
+                  <div className="col-span-2">Status</div>
+                  <div className="col-span-2">Enrolled</div>
+                  <div className="col-span-2">Program</div>
+                </div>
+
+                <div className="overflow-y-auto" style={{ maxHeight: '600px' }}>
+                  {filtered.length === 0 ? (
+                    <div className="p-8 text-center">
+                      <span
+                        className="material-symbols-outlined block mx-auto mb-3"
+                        style={{ fontSize: '48px', color: '#C7C7CC' }}
+                      >
+                        school
+                      </span>
+                      <p className="text-sm" style={{ color: '#54626C' }}>
+                        No students found
+                      </p>
+                    </div>
+                  ) : (
+                    filtered.map((student) => {
+                      const statusColor = STATUS_COLORS[student.enrollment_status] || STATUS_COLORS.active;
+                      return (
+                        <button
+                          type="button"
+                          key={student.id}
+                          onClick={() => navigate(`/service/school-desk/student/${student.id}`)}
+                          className="grid grid-cols-12 gap-4 px-4 py-3 text-left w-full transition-colors"
+                          style={{
+                            borderBottom: '1px solid rgba(195,199,204,0.15)',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                          }}
+                          onMouseEnter={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(248,247,244,0.5)';
+                          }}
+                          onMouseLeave={(e) => {
+                            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+                          }}
                         >
-                          {student.enrollment_status}
-                        </span>
-                      </div>
+                          <div className="col-span-4">
+                            <p className="text-sm font-medium" style={{ color: '#1A242B' }}>
+                              {student.first_name} {student.last_name}
+                            </p>
+                            <p className="text-xs mt-0.5" style={{ color: '#54626C' }}>
+                              {student.email || 'No email'}
+                            </p>
+                          </div>
 
-                      {/* Enrollment Date */}
-                      <div className="col-span-2 flex items-center">
-                        <span className="text-sm" style={{ color: '#54626C' }}>
-                          {student.enrollment_date
-                            ? new Date(student.enrollment_date).toLocaleDateString()
-                            : '—'}
-                        </span>
-                      </div>
+                          <div className="col-span-2 flex items-center">
+                            <span className="text-sm" style={{ color: '#54626C' }}>
+                              {student.grade || '—'}
+                            </span>
+                          </div>
 
-                      {/* Program */}
-                      <div className="col-span-2 flex items-center">
-                        <span className="text-sm" style={{ color: '#54626C' }}>
-                          {student.academic_group_id ? 'Assigned' : '—'}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })
-              )}
-            </div>
+                          <div className="col-span-2 flex items-center">
+                            <span
+                              className="text-xs px-2 py-1 rounded font-medium"
+                              style={{ backgroundColor: statusColor.bg, color: statusColor.text }}
+                            >
+                              {student.enrollment_status}
+                            </span>
+                          </div>
+
+                          <div className="col-span-2 flex items-center">
+                            <span className="text-sm" style={{ color: '#54626C' }}>
+                              {student.enrollment_date
+                                ? new Date(student.enrollment_date).toLocaleDateString()
+                                : '—'}
+                            </span>
+                          </div>
+
+                          <div className="col-span-2 flex items-center">
+                            <span className="text-sm" style={{ color: '#54626C' }}>
+                              {student.academic_group_id ? 'Assigned' : '—'}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        {mainTab === 'attendance' && (
+          <div className="mt-4 p-8 text-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
+            <p className="text-sm" style={{ color: '#54626C' }}>Attendance tracking coming soon.</p>
+          </div>
+        )}
+        {mainTab === 'programs' && (
+          <div className="mt-4 p-8 text-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
+            <p className="text-sm" style={{ color: '#54626C' }}>Program management coming soon.</p>
+          </div>
+        )}
+        {mainTab === 'messages' && (
+          <div className="mt-4 p-8 text-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
+            <p className="text-sm" style={{ color: '#54626C' }}>Internal messaging coming soon.</p>
           </div>
         )}
       </div>

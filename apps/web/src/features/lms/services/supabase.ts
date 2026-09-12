@@ -146,11 +146,31 @@ export function subscribeToRegistrations(
 // NEWS TYPES & QUERIES (Row 68)
 // ═══════════════════════════════════════════════════════════
 
+export type NewsCategory = 'junior_news' | 'senior_news' | 'staff_news' | 'adult_news' | 'general_news';
+
+export const NEWS_CATEGORY_LABELS: Record<NewsCategory, string> = {
+  junior_news: 'Junior News',
+  senior_news: 'Senior News',
+  staff_news: 'Staff/Teacher News',
+  adult_news: 'Adult News',
+  general_news: 'General News',
+};
+
+export const NEWS_CATEGORY_COLORS: Record<NewsCategory, { bg: string; text: string }> = {
+  junior_news: { bg: '#DBEAFE', text: '#1E40AF' },
+  senior_news: { bg: '#E9D5FF', text: '#6B21A8' },
+  staff_news: { bg: '#D1FAE5', text: '#065F46' },
+  adult_news: { bg: '#FEF3C7', text: '#92400E' },
+  general_news: { bg: '#F3F4F6', text: '#374151' },
+};
+
 export interface News {
   id: string;
   tenant_id: string;
   title: string;
   content: string;
+  category: NewsCategory;
+  target_audience: string[];
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -161,7 +181,7 @@ export interface News {
 export async function selectNews(
   tenantId: string,
   search?: string,
-  options?: { includeDrafts?: boolean; createdBy?: string }
+  options?: { includeDrafts?: boolean; createdBy?: string; category?: NewsCategory }
 ) {
   let query = supabaseUntyped
     .from('school_desk.news')
@@ -177,6 +197,10 @@ export async function selectNews(
     query = query.eq('created_by', options.createdBy);
   }
 
+  if (options?.category) {
+    query = query.eq('category', options.category);
+  }
+
   if (search) {
     query = query.ilike('title', `%${search}%`);
   }
@@ -190,6 +214,8 @@ export async function insertNews(news: {
   tenant_id: string;
   title: string;
   content: string;
+  category?: NewsCategory;
+  target_audience?: string[];
   created_by: string;
   publish?: boolean;
 }) {
@@ -199,6 +225,8 @@ export async function insertNews(news: {
       tenant_id: news.tenant_id,
       title: news.title,
       content: news.content,
+      category: news.category || 'general_news',
+      target_audience: news.target_audience || ['all'],
       created_by: news.created_by,
       published_at: news.publish ? new Date().toISOString() : null,
     })
@@ -211,6 +239,8 @@ export async function updateNews(
   updates: {
     title?: string;
     content?: string;
+    category?: NewsCategory;
+    target_audience?: string[];
     publish?: boolean;
   }
 ) {
@@ -1477,4 +1507,266 @@ export function subscribeToParentStudentLink(
       callback as (payload: Record<string, unknown>) => void
     )
     .subscribe();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCHOOL DESK COMMUNICATIONS
+// ═══════════════════════════════════════════════════════════
+
+export type CommType = 'call' | 'email';
+export type CommDirection = 'inbound' | 'outbound';
+export type CallOutcome = 'answered' | 'missed' | 'voicemail' | 'busy' | 'no_answer';
+export type EmailStatus = 'draft' | 'sent' | 'delivered' | 'failed' | 'read';
+export type MeetingType = 'video' | 'phone' | 'in_person';
+export type MeetingStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+export type MeetingRecurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+export type ParticipantStatus = 'invited' | 'accepted' | 'declined' | 'tentative' | 'attended';
+
+export interface Communication {
+  id: string;
+  tenant_id: string;
+  comm_type: CommType;
+  direction: CommDirection;
+  profile_id: string;
+  call_duration: number | null;
+  call_outcome: CallOutcome | null;
+  call_notes: string | null;
+  email_subject: string | null;
+  email_body: string | null;
+  email_from: string | null;
+  email_to: string | null;
+  email_status: EmailStatus | null;
+  email_read_at: string | null;
+  metadata: Record<string, unknown>;
+  recorded_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Meeting {
+  id: string;
+  tenant_id: string;
+  title: string;
+  description: string | null;
+  meeting_type: MeetingType;
+  meeting_url: string | null;
+  meeting_id: string | null;
+  meeting_pass: string | null;
+  scheduled_at: string;
+  duration_minutes: number;
+  timezone: string;
+  organizer_id: string;
+  max_participants: number;
+  status: MeetingStatus;
+  recurrence: MeetingRecurrence;
+  recurrence_end: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MeetingParticipant {
+  id: string;
+  meeting_id: string;
+  profile_id: string;
+  status: ParticipantStatus;
+  responded_at: string | null;
+  joined_at: string | null;
+  left_at: string | null;
+  created_at: string;
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMMUNICATIONS CRUD
+// ═══════════════════════════════════════════════════════════
+
+export async function selectCommunications(
+  tenantId: string,
+  options?: { commType?: CommType; direction?: CommDirection; profileId?: string; limit?: number }
+) {
+  let query = supabaseUntyped
+    .from('school_desk.communications')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false });
+
+  if (options?.commType) query = query.eq('comm_type', options.commType);
+  if (options?.direction) query = query.eq('direction', options.direction);
+  if (options?.profileId) query = query.eq('profile_id', options.profileId);
+  if (options?.limit) query = query.limit(options.limit);
+
+  return query;
+}
+
+export async function insertCommunication(comm: {
+  tenant_id: string;
+  comm_type: CommType;
+  direction: CommDirection;
+  profile_id: string;
+  call_duration?: number;
+  call_outcome?: CallOutcome;
+  call_notes?: string;
+  email_subject?: string;
+  email_body?: string;
+  email_from?: string;
+  email_to?: string;
+  email_status?: EmailStatus;
+  recorded_by?: string;
+}) {
+  return supabaseUntyped
+    .from('school_desk.communications')
+    .insert({
+      tenant_id: comm.tenant_id,
+      comm_type: comm.comm_type,
+      direction: comm.direction,
+      profile_id: comm.profile_id,
+      call_duration: comm.call_duration || null,
+      call_outcome: comm.call_outcome || null,
+      call_notes: comm.call_notes || null,
+      email_subject: comm.email_subject || null,
+      email_body: comm.email_body || null,
+      email_from: comm.email_from || null,
+      email_to: comm.email_to || null,
+      email_status: comm.email_status || null,
+      recorded_by: comm.recorded_by || null,
+    })
+    .select()
+    .single();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MEETINGS CRUD
+// ═══════════════════════════════════════════════════════════
+
+export async function selectMeetings(
+  tenantId: string,
+  options?: { status?: MeetingStatus; from?: string; to?: string; limit?: number }
+) {
+  let query = supabaseUntyped
+    .from('school_desk.meetings')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('scheduled_at', { ascending: false });
+
+  if (options?.status) query = query.eq('status', options.status);
+  if (options?.from) query = query.gte('scheduled_at', options.from);
+  if (options?.to) query = query.lte('scheduled_at', options.to);
+  if (options?.limit) query = query.limit(options.limit);
+
+  return query;
+}
+
+export async function insertMeeting(meeting: {
+  tenant_id: string;
+  title: string;
+  description?: string;
+  meeting_type: MeetingType;
+  meeting_url?: string;
+  scheduled_at: string;
+  duration_minutes?: number;
+  organizer_id: string;
+  max_participants?: number;
+  recurrence?: MeetingRecurrence;
+}) {
+  return supabaseUntyped
+    .from('school_desk.meetings')
+    .insert({
+      tenant_id: meeting.tenant_id,
+      title: meeting.title,
+      description: meeting.description || null,
+      meeting_type: meeting.meeting_type,
+      meeting_url: meeting.meeting_url || null,
+      scheduled_at: meeting.scheduled_at,
+      duration_minutes: meeting.duration_minutes || 30,
+      organizer_id: meeting.organizer_id,
+      max_participants: meeting.max_participants || 15,
+      recurrence: meeting.recurrence || 'none',
+    })
+    .select()
+    .single();
+}
+
+export async function updateMeeting(
+  meetingId: string,
+  updates: {
+    title?: string;
+    description?: string;
+    meeting_url?: string;
+    scheduled_at?: string;
+    duration_minutes?: number;
+    status?: MeetingStatus;
+    max_participants?: number;
+  }
+) {
+  return supabaseUntyped
+    .from('school_desk.meetings')
+    .update(updates)
+    .eq('id', meetingId)
+    .select()
+    .single();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MEETING PARTICIPANTS
+// ═══════════════════════════════════════════════════════════
+
+export async function selectMeetingParticipants(meetingId: string) {
+  return supabaseUntyped
+    .from('school_desk.meeting_participants')
+    .select('*')
+    .eq('meeting_id', meetingId)
+    .order('created_at', { ascending: true });
+}
+
+export async function insertMeetingParticipant(participant: {
+  meeting_id: string;
+  profile_id: string;
+  status?: ParticipantStatus;
+}) {
+  return supabaseUntyped
+    .from('school_desk.meeting_participants')
+    .insert({
+      meeting_id: participant.meeting_id,
+      profile_id: participant.profile_id,
+      status: participant.status || 'invited',
+    })
+    .select()
+    .single();
+}
+
+export async function updateMeetingParticipant(
+  participantId: string,
+  updates: {
+    status?: ParticipantStatus;
+    joined_at?: string;
+    left_at?: string;
+  }
+) {
+  return supabaseUntyped
+    .from('school_desk.meeting_participants')
+    .update(updates)
+    .eq('id', participantId)
+    .select()
+    .single();
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENROLLED PROFILES (for contact lookup)
+// ═══════════════════════════════════════════════════════════
+
+export async function selectEnrolledProfiles(tenantId: string) {
+  return supabaseUntyped
+    .from('profiles')
+    .select('id, name, email, role, tenant_id')
+    .eq('tenant_id', tenantId)
+    .in('role', ['student', 'parent', 'teacher'])
+    .order('name');
+}
+
+export async function selectStudents(tenantId: string) {
+  return supabaseUntyped
+    .from('students')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false });
 }
