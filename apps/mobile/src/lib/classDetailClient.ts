@@ -24,7 +24,7 @@ export async function fetchClassDetail(classId: string): Promise<{
 
   // 1. Fetch course
   const { data: course, error: courseErr } = await supabase
-    .from('courses')
+    .schema('public').from('courses')
     .select('id, title, description, price, status, type, platform, teacher_id')
     .eq('id', classId)
     .single();
@@ -45,7 +45,7 @@ export async function fetchClassDetail(classId: string): Promise<{
   // 3. Check enrollment status
   let enrollmentStatus: 'enrolled' | 'available' | 'waitlisted' = 'available';
   const { data: enrollment } = await supabase
-    .from('student_class')
+    .schema('public').from('student_class')
     .select('class_id')
     .eq('student_id', user.id)
     .eq('class_id', classId)
@@ -58,7 +58,7 @@ export async function fetchClassDetail(classId: string): Promise<{
 
   // 4. Fetch schedule slots
   const { data: slotData } = await supabase
-    .from('schedule_slot')
+    .schema('public').from('schedule_slot')
     .select('id, label, start_time, end_time, days_of_week')
     .eq('course_id', classId)
     .eq('is_active', true)

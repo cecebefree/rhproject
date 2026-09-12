@@ -79,7 +79,7 @@ export default function HubDetailScreen() {
 
       // 1. Fetch course details
       const { data: courseData, error: courseErr } = await supabase
-        .from('courses')
+        .schema('public').from('courses')
         .select('id, title, description, status, type, platform, teacher_id')
         .eq('id', courseId)
         .single();
@@ -91,7 +91,7 @@ export default function HubDetailScreen() {
 
       // 2. Fetch schedule slots
       const { data: slotData, error: slotErr } = await supabase
-        .from('schedule_slot')
+        .schema('public').from('schedule_slot')
         .select('id, label, start_time, end_time, days_of_week')
         .eq('course_id', courseId)
         .eq('is_active', true)

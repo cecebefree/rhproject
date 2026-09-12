@@ -66,7 +66,7 @@ export default function ReportCardScreen() {
       // RLS (rc_learner_select_visible) restricts to student_id = auth.uid()
       // AND status = 'visible'. Explicit eq() filter is defense-in-depth.
       const { data, error: cardsErr } = await supabase
-        .from('report_cards')
+        .schema('public').from('report_cards')
         .select('id, term, subject, grade, status, visible_at')
         .eq('student_id', user.id)
         .eq('status', 'visible')

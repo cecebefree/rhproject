@@ -37,7 +37,7 @@ export async function getCurrentUser(): Promise<{
 
   // Try profiles first
   const { data: profile } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('role')
     .eq('id', user.id)
     .single();
@@ -48,7 +48,7 @@ export async function getCurrentUser(): Promise<{
 
   // Fallback: users table (auth trigger writes here)
   const { data: userRow } = await supabase
-    .from('users')
+    .schema('public').from('users')
     .select('role')
     .eq('id', user.id)
     .single();
@@ -75,7 +75,7 @@ export async function fetchStudentProfile(): Promise<{
 
   // 1. Fetch profile
   const { data: profile, error: profErr } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('id, name, role, created_at, curriculum, grade, stage, intake')
     .eq('id', user.id)
     .single();
@@ -130,7 +130,7 @@ export async function fetchEnrolledClasses(): Promise<{
 
   // 1. Fetch active enrollments from student_class
   const { data: enrollments, error: enrErr } = await supabase
-    .from('student_class')
+    .schema('public').from('student_class')
     .select('id, class_id, enrolled_at, is_active')
     .eq('student_id', user.id)
     .eq('is_active', true)
@@ -147,7 +147,7 @@ export async function fetchEnrolledClasses(): Promise<{
   // 2. Fetch course details
   const classIds = enrollments.map((e) => e.class_id);
   const { data: courses, error: courseErr } = await supabase
-    .from('courses')
+    .schema('public').from('courses')
     .select('id, title, description, type, platform, teacher_id, section')
     .in('id', classIds);
 
@@ -175,7 +175,7 @@ export async function fetchEnrolledClasses(): Promise<{
   >();
 
   const { data: slots } = await supabase
-    .from('schedule_slot')
+    .schema('public').from('schedule_slot')
     .select('course_id, label, start_time, end_time, days_of_week')
     .in('course_id', classIds)
     .eq('is_active', true)
@@ -242,7 +242,7 @@ export async function fetchRegistrationStatus(): Promise<{
   }
 
   const { data: prof } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('name, email')
     .eq('id', user.id)
     .single();
@@ -283,7 +283,7 @@ export async function fetchAdultProfile(): Promise<{
 
   // 1. Fetch profile
   const { data: profile, error: profErr } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('id, name, surname, email, phone, role, zone, nation, city, created_at')
     .eq('id', user.id)
     .single();
@@ -346,7 +346,7 @@ export async function fetchAdultProfile(): Promise<{
 
       // Fetch profiles for children
       const { data: childProfiles } = await supabase
-        .from('profiles')
+        .schema('public').from('profiles')
         .select('id, name, role')
         .in('id', childIds);
 
@@ -503,7 +503,7 @@ export async function fetchPaymentHistory(): Promise<{
 
   // Also fetch debit order payments from public.payments
   const { data: debitPayments } = await supabase
-    .from('payments')
+    .schema('public').from('payments')
     .select('id, amount, status, payment_type, created_at, debit_order_id')
     .eq('student_id', user.id)
     .order('created_at', { ascending: false });
@@ -548,7 +548,7 @@ export async function fetchTeacherProfile(): Promise<{
 
   // 1. Fetch profile
   const { data: profile, error: profErr } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('id, name, surname, email, phone, role, zone, nation, city, created_at')
     .eq('id', user.id)
     .single();
@@ -559,7 +559,7 @@ export async function fetchTeacherProfile(): Promise<{
 
   // 2. Fetch courses where this user is teacher
   const { data: courses, error: courseErr } = await supabase
-    .from('courses')
+    .schema('public').from('courses')
     .select('id, title, type, platform, section')
     .eq('teacher_id', user.id);
 
@@ -571,7 +571,7 @@ export async function fetchTeacherProfile(): Promise<{
   const classesTaught = await Promise.all(
     (courses ?? []).map(async (course) => {
       const { data: enrollments } = await supabase
-        .from('student_class')
+        .schema('public').from('student_class')
         .select('student_id')
         .eq('class_id', course.id)
         .eq('is_active', true);
@@ -586,7 +586,7 @@ export async function fetchTeacherProfile(): Promise<{
       }[] = [];
       if (studentIds.length > 0) {
         const { data: studentProfiles } = await supabase
-          .from('profiles')
+          .schema('public').from('profiles')
           .select('id, name, email')
           .in('id', studentIds);
 
@@ -649,7 +649,7 @@ export async function updateStudentProfile(updates: {
   }
 
   const { error } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', user.id);
 

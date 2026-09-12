@@ -118,7 +118,7 @@ export default function ClassScreen() {
 
       // 2. Get user role
       const { data: profile } = await supabase
-        .from('profiles')
+        .schema('public').from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
@@ -131,7 +131,7 @@ export default function ClassScreen() {
       if (role === 'teacher' || role === 'admin') {
         // Teacher/admin: see courses they teach
         const { data, error } = await supabase
-          .from('courses')
+          .schema('public').from('courses')
           .select('id, title, description, status, type, platform, teacher_id')
           .eq('status', 'published');
 
@@ -142,7 +142,7 @@ export default function ClassScreen() {
       } else {
         // Student: see enrolled courses via student_class
         const { data, error } = await supabase
-          .from('student_class')
+          .schema('public').from('student_class')
           .select(
             'class_id, courses!student_class_class_id_fkey(id, title, description, status, type, platform, teacher_id)'
           )
@@ -182,7 +182,7 @@ export default function ClassScreen() {
 
       if (courseIds.length > 0) {
         const { data, error } = await supabase
-          .from('schedule_slot')
+          .schema('public').from('schedule_slot')
           .select('id, label, start_time, end_time, days_of_week, course_id')
           .in('course_id', courseIds)
           .eq('is_active', true)

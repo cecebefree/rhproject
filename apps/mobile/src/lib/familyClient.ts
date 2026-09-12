@@ -40,7 +40,7 @@ export async function fetchFamilyChildren(): Promise<ChildProfile[]> {
 
   // Get linked students via parent_student_link
   const { data: links, error: linkErr } = await supabase
-    .from('parent_student_link')
+    .schema('public').from('parent_student_link')
     .select('student_id, relationship')
     .eq('parent_id', user.id)
     .is('deleted_at', null);
@@ -51,7 +51,7 @@ export async function fetchFamilyChildren(): Promise<ChildProfile[]> {
   // Get student profiles
   const studentIds = links.map(l => l.student_id);
   const { data: profiles, error: profErr } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('id, name, grade, curriculum')
     .in('id', studentIds);
 

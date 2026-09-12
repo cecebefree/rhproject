@@ -68,7 +68,7 @@ async function fetchLmsEvents(userId: string): Promise<ScheduleEvent[]> {
 
   // 2. Fetch enrolled class IDs
   const { data: enrollments, error: enrErr } = await supabase
-    .from('student_class')
+    .schema('public').from('student_class')
     .select('class_id')
     .in('student_id', studentIds)
     .eq('is_active', true);
@@ -80,11 +80,11 @@ async function fetchLmsEvents(userId: string): Promise<ScheduleEvent[]> {
   // 3. Fetch course details + schedule slots in parallel
   const [coursesResult, slotsResult] = await Promise.all([
     supabase
-      .from('courses')
+      .schema('public').from('courses')
       .select('id, title, description, type, platform')
       .in('id', classIds),
     supabase
-      .from('schedule_slot')
+      .schema('public').from('schedule_slot')
       .select('id, course_id, label, start_time, end_time, days_of_week')
       .in('course_id', classIds)
       .eq('is_active', true),
@@ -146,7 +146,7 @@ async function fetchLmsEvents(userId: string): Promise<ScheduleEvent[]> {
  */
 async function fetchOttEvents(): Promise<ScheduleEvent[]> {
   const { data: clubs, error } = await supabase
-    .from('clubs')
+    .schema('public').from('clubs')
     .select('id, name, description, schedule, category')
     .order('name');
 
@@ -191,7 +191,7 @@ async function fetchOttEvents(): Promise<ScheduleEvent[]> {
  */
 async function fetchSocialEvents(): Promise<ScheduleEvent[]> {
   const { data: groups, error } = await supabase
-    .from('group_conversations')
+    .schema('public').from('group_conversations')
     .select('id, name, type, scheduled_event')
     .not('scheduled_event', 'is', null)
     .order('scheduled_event');
@@ -227,7 +227,7 @@ async function fetchSocialEvents(): Promise<ScheduleEvent[]> {
 async function resolveStudentIds(userId: string): Promise<string[]> {
   // Check if user is a student via profile role
   const { data: profile } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('role')
     .eq('id', userId)
     .single();
@@ -238,7 +238,7 @@ async function resolveStudentIds(userId: string): Promise<string[]> {
 
   // Adult/parent: fetch linked children
   const { data: links } = await supabase
-    .from('family_child')
+    .schema('public').from('family_child')
     .select('child_id')
     .eq('guardian_id', userId);
 

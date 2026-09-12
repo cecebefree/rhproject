@@ -69,7 +69,7 @@ export default function TeacherScreen() {
 
       // 1. Profile
       const { data: prof, error: profErr } = await supabase
-        .from('profiles')
+        .schema('public').from('profiles')
         .select('name, role')
         .eq('id', user.id)
         .single();

@@ -37,7 +37,7 @@ export function useHomeFilter(): HomeFilterResult {
 
     // 1. Determine user role
     const { data: profile } = await supabase
-      .from('profiles')
+      .schema('public').from('profiles')
       .select('role')
       .eq('id', user.id)
       .single();
@@ -60,7 +60,7 @@ export function useHomeFilter(): HomeFilterResult {
   async function loadAdultHomeFeed(parentId: string): Promise<void> {
     // Step 1: get child IDs from family_child
     const { data: links, error: linkErr } = await supabase
-      .from('family_child')
+      .schema('public').from('family_child')
       .select('child_id')
       .eq('guardian_id', parentId);
 
@@ -74,7 +74,7 @@ export function useHomeFilter(): HomeFilterResult {
 
     // Step 2: fetch enrollments for those children
     const { data: enrollments, error: enrErr } = await supabase
-      .from('student_class')
+      .schema('public').from('student_class')
       .select('student_id, class_id, enrolled_at, is_active')
       .in('student_id', childIds)
       .eq('is_active', true)
@@ -94,7 +94,7 @@ export function useHomeFilter(): HomeFilterResult {
     // Step 3: fetch course details
     const classIds = [...new Set(enrollments.map((e) => e.class_id))];
     const { data: courses } = await supabase
-      .from('courses')
+      .schema('public').from('courses')
       .select('id, title, description, type, platform, status, teacher_id')
       .in('id', classIds);
 
@@ -112,7 +112,7 @@ export function useHomeFilter(): HomeFilterResult {
 
     // Step 5: fetch schedule slots for "Coming Up" section
     const { data: slots } = await supabase
-      .from('schedule_slot')
+      .schema('public').from('schedule_slot')
       .select('course_id, label, start_time, end_time, days_of_week')
       .in('course_id', classIds)
       .eq('is_active', true)
@@ -155,7 +155,7 @@ export function useHomeFilter(): HomeFilterResult {
   // ─── STUDENT HOME FEED ─────────────────────────────────────
   async function loadStudentHomeFeed(studentId: string): Promise<void> {
     const { data: enrollments, error: enrErr } = await supabase
-      .from('student_class')
+      .schema('public').from('student_class')
       .select('student_id, class_id, enrolled_at, is_active')
       .eq('student_id', studentId)
       .eq('is_active', true)
@@ -174,7 +174,7 @@ export function useHomeFilter(): HomeFilterResult {
 
     const classIds = [...new Set(enrollments.map((e) => e.class_id))];
     const { data: courses } = await supabase
-      .from('courses')
+      .schema('public').from('courses')
       .select('id, title, description, type, platform, status, teacher_id')
       .in('id', classIds);
 

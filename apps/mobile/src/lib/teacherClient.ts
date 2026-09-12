@@ -47,7 +47,7 @@ export async function fetchTeacherCourses(): Promise<{
   }
 
   const { data, error } = await supabase
-    .from('courses')
+    .schema('public').from('courses')
     .select('id, title, description, type, platform, status, teacher_id')
     .eq('teacher_id', user.id)
     .order('title');
@@ -67,7 +67,7 @@ export async function fetchCourseStudents(courseId: string): Promise<{
   error: string | null;
 }> {
   const { data, error } = await supabase
-    .from('student_class')
+    .schema('public').from('student_class')
     .select('id, class_id, student_id, is_active, enrolled_at')
     .eq('class_id', courseId)
     .eq('is_active', true)

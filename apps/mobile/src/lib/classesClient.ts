@@ -29,7 +29,7 @@ export async function fetchClassesWithEnrollment(): Promise<{
 
   // 1. Fetch all published classes
   const { data: allCourses, error: courseErr } = await supabase
-    .from('courses')
+    .schema('public').from('courses')
     .select('id, title, description, type, platform, status, teacher_id')
     .eq('status', 'published')
     .order('title');
@@ -44,7 +44,7 @@ export async function fetchClassesWithEnrollment(): Promise<{
 
   // 2. Fetch user's enrollments
   const { data: enrollments } = await supabase
-    .from('student_class')
+    .schema('public').from('student_class')
     .select('class_id')
     .eq('student_id', user.id)
     .eq('is_active', true);
@@ -83,7 +83,7 @@ export async function fetchClassSchedule(classId: string): Promise<{
   error: string | null;
 }> {
   const { data, error } = await supabase
-    .from('schedule_slot')
+    .schema('public').from('schedule_slot')
     .select('id, label, start_time, end_time, days_of_week, course_id')
     .eq('course_id', classId)
     .eq('is_active', true)
@@ -105,7 +105,7 @@ export async function fetchClassSchedule(classId: string): Promise<{
 export async function fetchStudentClasses(studentId: string): Promise<ClassDataResult> {
   // 1. Fetch enrolled courses via student_class join
   const { data: enrolled, error: enrErr } = await supabase
-    .from('student_class')
+    .schema('public').from('student_class')
     .select(
       'class_id, courses!student_class_class_id_fkey(id, title, description, status, type, platform, teacher_id)'
     )
@@ -145,7 +145,7 @@ export async function fetchStudentClasses(studentId: string): Promise<ClassDataR
   // 3. Fetch schedule slots for these courses
   const courseIds = courseRows.map((c) => c.id);
   const { data: slotData, error: slotErr } = await supabase
-    .from('schedule_slot')
+    .schema('public').from('schedule_slot')
     .select('id, label, start_time, end_time, days_of_week, course_id')
     .in('course_id', courseIds)
     .eq('is_active', true)
@@ -167,7 +167,7 @@ export async function fetchStudentClasses(studentId: string): Promise<ClassDataR
 export async function fetchTeacherClasses(teacherId: string): Promise<ClassDataResult> {
   // 1. Fetch all published courses
   const { data: courses, error: courseErr } = await supabase
-    .from('courses')
+    .schema('public').from('courses')
     .select('id, title, description, status, type, platform, teacher_id')
     .eq('status', 'published')
     .order('title');
@@ -192,7 +192,7 @@ export async function fetchTeacherClasses(teacherId: string): Promise<ClassDataR
   // 3. Fetch schedule slots for these courses
   const courseIds = courses.map((c) => c.id);
   const { data: slotData, error: slotErr } = await supabase
-    .from('schedule_slot')
+    .schema('public').from('schedule_slot')
     .select('id, label, start_time, end_time, days_of_week, course_id')
     .in('course_id', courseIds)
     .eq('is_active', true)

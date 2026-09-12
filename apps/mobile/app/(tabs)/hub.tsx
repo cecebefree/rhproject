@@ -113,7 +113,7 @@ export default function HubScreen() {
 
       // 1. Get user role
       const { data: profile } = await supabase
-        .from('profiles')
+        .schema('public').from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
@@ -126,7 +126,7 @@ export default function HubScreen() {
       if (role === 'teacher' || role === 'admin') {
         // Teacher/admin: see courses they teach
         const { data, error: coursesErr } = await supabase
-          .from('courses')
+          .schema('public').from('courses')
           .select('id, title, description, status, type, platform, teacher_id')
           .eq('teacher_id', user.id)
           .eq('status', 'published')
@@ -139,7 +139,7 @@ export default function HubScreen() {
       } else {
         // Student: see enrolled enrichment courses via student_class
         const { data, error: coursesErr } = await supabase
-          .from('student_class')
+          .schema('public').from('student_class')
           .select(
             'class_id, courses!student_class_class_id_fkey(id, title, description, status, type, platform, teacher_id)'
           )
@@ -162,7 +162,7 @@ export default function HubScreen() {
 
       if (courseIds.length > 0 && !cancelled) {
         const { data: slotData } = await supabase
-          .from('schedule_slot')
+          .schema('public').from('schedule_slot')
           .select('id, label, start_time, end_time, days_of_week, course_id')
           .in('course_id', courseIds)
           .eq('is_active', true)

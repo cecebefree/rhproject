@@ -76,7 +76,7 @@ export async function fetchPayments(): Promise<{
 
   // Debit order payments from public.payments
   const { data: debitPayments } = await supabase
-    .from('payments')
+    .schema('public').from('payments')
     .select('id, amount, status, payment_type, created_at, debit_order_id')
     .eq('student_id', user.id)
     .order('created_at', { ascending: false });

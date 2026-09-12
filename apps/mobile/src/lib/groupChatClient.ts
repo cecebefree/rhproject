@@ -42,7 +42,7 @@ export async function fetchGroupConversations(): Promise<GroupConversation[]> {
   if (!tenantId) throw new Error('No tenant associated with this account');
 
   const { data, error } = await supabase
-    .from('group_conversations')
+    .schema('public').from('group_conversations')
     .select('id, name, category, lead, member_count, last_message, updated_at')
     .eq('tenant_id', tenantId)
     .order('updated_at', { ascending: false });
@@ -67,7 +67,7 @@ export async function fetchGroupMessages(groupId: string): Promise<GroupMessage[
   if (!user) throw new Error('Not authenticated');
 
   const { data, error } = await supabase
-    .from('group_messages')
+    .schema('public').from('group_messages')
     .select('id, sender_name, sender_handle, content, created_at, sender_id')
     .eq('group_id', groupId)
     .order('created_at', { ascending: true })
@@ -90,7 +90,7 @@ export async function fetchGroupMessages(groupId: string): Promise<GroupMessage[
 
 export async function fetchGroupInfo(groupId: string): Promise<GroupInfo> {
   const { data, error } = await supabase
-    .from('group_conversations')
+    .schema('public').from('group_conversations')
     .select('id, name, category, lead, member_count, description, rules')
     .eq('id', groupId)
     .single();

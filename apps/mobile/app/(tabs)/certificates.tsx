@@ -69,7 +69,7 @@ export default function CertificatesScreen() {
       // Explicit eq(status, 'issued') is defense-in-depth — excludes
       // superseded/revoked from display.
       const { data, error: certsErr } = await supabase
-        .from('certificates')
+        .schema('public').from('certificates')
         .select('id, cert_class, title, description, signatory, issued_at, status, file_url')
         .eq('user_id', user.id)
         .eq('status', 'issued')

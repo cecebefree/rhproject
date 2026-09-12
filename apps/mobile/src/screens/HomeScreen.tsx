@@ -77,7 +77,7 @@ export function HomeScreen({
       if (!user) return;
 
       const { data: profile } = await supabase
-        .from('profiles')
+        .schema('public').from('profiles')
         .select('name')
         .eq('id', user.id)
         .single();

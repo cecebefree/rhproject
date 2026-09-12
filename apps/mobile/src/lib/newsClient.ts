@@ -58,7 +58,7 @@ export async function fetchPublishedNews(limit = 10): Promise<NewsResult> {
 
   // Get user's role and stage from profiles
   const { data: profile } = await supabase
-    .from('profiles')
+    .schema('public').from('profiles')
     .select('role, stage')
     .eq('id', user.id)
     .single();
