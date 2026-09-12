@@ -250,6 +250,8 @@ export async function updateNews(
 
   if (updates.title !== undefined) updateData.title = updates.title;
   if (updates.content !== undefined) updateData.content = updates.content;
+  if (updates.category !== undefined) updateData.category = updates.category;
+  if (updates.target_audience !== undefined) updateData.target_audience = updates.target_audience;
   if (updates.publish !== undefined) {
     updateData.published_at = updates.publish ? new Date().toISOString() : null;
   }
@@ -1634,6 +1636,42 @@ export async function insertCommunication(comm: {
     .single();
 }
 
+export async function updateCommunication(
+  commId: string,
+  updates: {
+    call_duration?: number;
+    call_outcome?: CallOutcome;
+    call_notes?: string;
+    email_subject?: string;
+    email_body?: string;
+    email_status?: EmailStatus;
+  }
+) {
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  };
+  if (updates.call_duration !== undefined) updateData.call_duration = updates.call_duration;
+  if (updates.call_outcome !== undefined) updateData.call_outcome = updates.call_outcome;
+  if (updates.call_notes !== undefined) updateData.call_notes = updates.call_notes;
+  if (updates.email_subject !== undefined) updateData.email_subject = updates.email_subject;
+  if (updates.email_body !== undefined) updateData.email_body = updates.email_body;
+  if (updates.email_status !== undefined) updateData.email_status = updates.email_status;
+
+  return supabaseUntyped
+    .from('school_desk.communications')
+    .update(updateData)
+    .eq('id', commId)
+    .select()
+    .single();
+}
+
+export async function deleteCommunication(commId: string) {
+  return supabaseUntyped
+    .from('school_desk.communications')
+    .delete()
+    .eq('id', commId);
+}
+
 // ═══════════════════════════════════════════════════════════
 // MEETINGS CRUD
 // ═══════════════════════════════════════════════════════════
@@ -1700,10 +1738,17 @@ export async function updateMeeting(
 ) {
   return supabaseUntyped
     .from('school_desk.meetings')
-    .update(updates)
+    .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', meetingId)
     .select()
     .single();
+}
+
+export async function deleteMeeting(meetingId: string) {
+  return supabaseUntyped
+    .from('school_desk.meetings')
+    .delete()
+    .eq('id', meetingId);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1725,13 +1770,23 @@ export async function insertMeetingParticipant(participant: {
 }) {
   return supabaseUntyped
     .from('school_desk.meeting_participants')
-    .insert({
-      meeting_id: participant.meeting_id,
-      profile_id: participant.profile_id,
-      status: participant.status || 'invited',
-    })
+    .upsert(
+      {
+        meeting_id: participant.meeting_id,
+        profile_id: participant.profile_id,
+        status: participant.status || 'invited',
+      },
+      { onConflict: 'meeting_id,profile_id' }
+    )
     .select()
     .single();
+}
+
+export async function deleteMeetingParticipant(participantId: string) {
+  return supabaseUntyped
+    .from('school_desk.meeting_participants')
+    .delete()
+    .eq('id', participantId);
 }
 
 export async function updateMeetingParticipant(
@@ -1754,7 +1809,7 @@ export async function updateMeetingParticipant(
 // ENROLLED PROFILES (for contact lookup)
 // ═══════════════════════════════════════════════════════════
 
-export async function selectEnrolledProfiles(tenantId: string) {
+export async function selectProfilesByRole(tenantId: string) {
   return supabaseUntyped
     .from('profiles')
     .select('id, name, email, role, tenant_id')

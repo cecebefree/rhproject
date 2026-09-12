@@ -47,6 +47,7 @@ interface Student {
 export default function SchoolDeskPage() {
   const navigate = useNavigate();
   const [students, setStudents] = useState<Student[]>([]);
+  const [programs, setPrograms] = useState<{ id: string; title: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mainTab, setMainTab] = useState<MainTab>('students');
@@ -67,6 +68,7 @@ export default function SchoolDeskPage() {
     const { data, error: fetchError } = await supabase
       .from('students')
       .select('*')
+      .eq('tenant_id', import.meta.env.VITE_DEFAULT_TENANT_ID)
       .order('created_at', { ascending: false });
 
     if (fetchError) {
@@ -77,9 +79,20 @@ export default function SchoolDeskPage() {
     setLoading(false);
   }, []);
 
+  const fetchPrograms = useCallback(async () => {
+    const { data } = await supabase
+      .from('school_desk.programs')
+      .select('id, title')
+      .eq('tenant_id', import.meta.env.VITE_DEFAULT_TENANT_ID)
+      .in('status', ['published', 'active'])
+      .order('title');
+    if (data) setPrograms(data as { id: string; title: string }[]);
+  }, []);
+
   useEffect(() => {
     fetchStudents();
-  }, [fetchStudents]);
+    fetchPrograms();
+  }, [fetchStudents, fetchPrograms]);
 
   async function handleEnroll() {
     if (!enrollStudentId || !enrollCourseId) return;
@@ -437,21 +450,6 @@ export default function SchoolDeskPage() {
             )}
           </>
         )}
-        {mainTab === 'attendance' && (
-          <div className="mt-4 p-8 text-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
-            <p className="text-sm" style={{ color: '#54626C' }}>Attendance tracking coming soon.</p>
-          </div>
-        )}
-        {mainTab === 'programs' && (
-          <div className="mt-4 p-8 text-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
-            <p className="text-sm" style={{ color: '#54626C' }}>Program management coming soon.</p>
-          </div>
-        )}
-        {mainTab === 'messages' && (
-          <div className="mt-4 p-8 text-center rounded-xl" style={{ border: '1px solid rgba(195,199,204,0.3)', backgroundColor: '#ffffff' }}>
-            <p className="text-sm" style={{ color: '#54626C' }}>Internal messaging coming soon.</p>
-          </div>
-        )}
       </div>
 
       {/* Enroll Modal */}
@@ -512,6 +510,9 @@ export default function SchoolDeskPage() {
                   style={{ border: '1px solid rgba(195,199,204,0.5)', color: '#1A242B' }}
                 >
                   <option value="">Select program...</option>
+                  {programs.map((p) => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
                 </select>
               </div>
 

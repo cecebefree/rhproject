@@ -10,18 +10,10 @@ import {
   NEWS_CATEGORY_LABELS,
   NEWS_CATEGORY_COLORS,
   selectNews,
-  insertNews,
 } from '../services/supabase';
+import { NewsForm } from '../components/NewsForm';
 
 const CATEGORIES: NewsCategory[] = ['general_news', 'junior_news', 'senior_news', 'staff_news', 'adult_news'];
-
-const TARGET_OPTIONS = [
-  { value: 'students', label: 'Students' },
-  { value: 'parents', label: 'Parents' },
-  { value: 'teachers', label: 'Teachers' },
-  { value: 'staff', label: 'Staff' },
-  { value: 'all', label: 'Everyone' },
-];
 
 export default function SchoolDeskNewsPage() {
   const { deskId } = useParams<{ deskId: string }>();
@@ -32,15 +24,17 @@ export default function SchoolDeskNewsPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<NewsCategory | 'all'>('all');
   const [search, setSearch] = useState('');
+  const [userId, setUserId] = useState('');
 
   // Compose modal
   const [showCompose, setShowCompose] = useState(false);
-  const [composeTitle, setComposeTitle] = useState('');
-  const [composeContent, setComposeContent] = useState('');
-  const [composeCategory, setComposeCategory] = useState<NewsCategory>('general_news');
-  const [composeTargets, setComposeTargets] = useState<string[]>(['all']);
-  const [composing, setComposing] = useState(false);
-  const [composeError, setComposeError] = useState<string | null>(null);
+  const [editingNews, setEditingNews] = useState<News | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
+      if (data.user) setUserId(data.user.id);
+    });
+  }, []);
 
   const fetchNews = useCallback(async () => {
     setLoading(true);
@@ -73,47 +67,15 @@ export default function SchoolDeskNewsPage() {
     return () => { supabase.removeChannel(channel); };
   }, [tenantId, fetchNews]);
 
-  async function handleCompose() {
-    if (!composeTitle.trim() || !composeContent.trim()) {
-      setComposeError('Title and content are required');
-      return;
-    }
-    setComposing(true);
-    setComposeError(null);
-
-    const { error: insertError } = await insertNews({
-      tenant_id: tenantId,
-      title: composeTitle,
-      content: composeContent,
-      category: composeCategory,
-      target_audience: composeTargets,
-      created_by: (await supabase.auth.getUser()).data.user?.id || '',
-      publish: true,
-    });
-
-    setComposing(false);
-    if (insertError) {
-      setComposeError(insertError.message);
-    } else {
-      setShowCompose(false);
-      setComposeTitle('');
-      setComposeContent('');
-      setComposeCategory('general_news');
-      setComposeTargets(['all']);
-      fetchNews();
-    }
+  function handleEditNews(item: News) {
+    setEditingNews(item);
+    setShowCompose(true);
   }
 
-  function toggleTarget(target: string) {
-    if (target === 'all') {
-      setComposeTargets(['all']);
-      return;
-    }
-    setComposeTargets((prev) => {
-      const filtered = prev.filter((t) => t !== 'all' && t !== target);
-      filtered.push(target);
-      return filtered.length === 0 ? ['all'] : filtered;
-    });
+  function handleComposeSuccess() {
+    setShowCompose(false);
+    setEditingNews(null);
+    fetchNews();
   }
 
   const filteredNews = activeCategory === 'all'
@@ -241,92 +203,15 @@ export default function SchoolDeskNewsPage() {
       {/* Compose Modal */}
       {showCompose && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setShowCompose(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b">
-              <h2 className="text-lg font-semibold">Compose News</h2>
-            </div>
-            <div className="px-6 py-4 space-y-4">
-              {composeError && (
-                <div className="p-3 bg-red-50 text-red-700 rounded text-sm">{composeError}</div>
-              )}
-
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select
-                  value={composeCategory}
-                  onChange={(e) => setComposeCategory(e.target.value as NewsCategory)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{NEWS_CATEGORY_LABELS[cat]}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Target Audience */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Target Audience</label>
-                <div className="flex flex-wrap gap-2">
-                  {TARGET_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => toggleTarget(opt.value)}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                        composeTargets.includes(opt.value)
-                          ? 'bg-[#273946] text-white border-[#273946]'
-                          : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={composeTitle}
-                  onChange={(e) => setComposeTitle(e.target.value)}
-                  placeholder="News headline"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                />
-              </div>
-
-              {/* Content */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                <textarea
-                  value={composeContent}
-                  onChange={(e) => setComposeContent(e.target.value)}
-                  placeholder="Write your news article..."
-                  rows={8}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                />
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setShowCompose(false)}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleCompose}
-                disabled={composing}
-                className="px-4 py-2 bg-[#273946] text-white rounded text-sm font-medium hover:bg-[#112430] disabled:opacity-50"
-              >
-                {composing ? 'Publishing...' : 'Publish'}
-              </button>
-            </div>
+          <div className="absolute inset-0 bg-black/30" onClick={() => { setShowCompose(false); setEditingNews(null); }} />
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto p-6">
+            <NewsForm
+              tenantId={tenantId}
+              userId={userId}
+              news={editingNews}
+              onSuccess={handleComposeSuccess}
+              onCancel={() => { setShowCompose(false); setEditingNews(null); }}
+            />
           </div>
         </div>
       )}

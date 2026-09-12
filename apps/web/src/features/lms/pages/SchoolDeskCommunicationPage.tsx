@@ -9,16 +9,19 @@ import {
   type Meeting,
   type MeetingParticipant,
   type CommType,
+  type CallOutcome,
   type MeetingType,
   type MeetingStatus,
   selectCommunications,
   insertCommunication,
+  deleteCommunication,
   selectMeetings,
   insertMeeting,
   updateMeeting,
+  deleteMeeting,
   selectMeetingParticipants,
   insertMeetingParticipant,
-  selectEnrolledProfiles,
+  selectProfilesByRole,
 } from '../services/supabase';
 
 type Tab = 'inbox' | 'outbox' | 'meetings' | 'compose';
@@ -60,7 +63,7 @@ export default function SchoolDeskCommunicationPage() {
   const [composeProfileId, setComposeProfileId] = useState('');
   const [composeSubject, setComposeSubject] = useState('');
   const [composeBody, setComposeBody] = useState('');
-  const [composeOutcome, setComposeOutcome] = useState<string>('answered');
+  const [composeOutcome, setComposeOutcome] = useState<CallOutcome>('answered');
   const [composeDuration, setComposeDuration] = useState('');
   const [composing, setComposing] = useState(false);
   const [composeError, setComposeError] = useState<string | null>(null);
@@ -77,10 +80,12 @@ export default function SchoolDeskCommunicationPage() {
   const [meetingMaxParticipants, setMeetingMaxParticipants] = useState('15');
   const [meetingParticipantIds, setMeetingParticipantIds] = useState<string[]>([]);
   const [creatingMeeting, setCreatingMeeting] = useState(false);
+  const [meetingError, setMeetingError] = useState<string | null>(null);
 
   const fetchProfiles = useCallback(async () => {
-    const { data } = await selectEnrolledProfiles(tenantId);
-    if (data) setProfiles(data as Profile[]);
+    const { data, error: fetchError } = await selectProfilesByRole(tenantId);
+    if (fetchError) setError(fetchError.message);
+    else if (data) setProfiles(data as Profile[]);
   }, [tenantId]);
 
   const fetchCommunications = useCallback(async () => {
@@ -96,8 +101,9 @@ export default function SchoolDeskCommunicationPage() {
   }, [tenantId]);
 
   const fetchMeetings = useCallback(async () => {
-    const { data } = await selectMeetings(tenantId, { limit: 50 });
-    if (data) setMeetings(data as Meeting[]);
+    const { data, error: fetchError } = await selectMeetings(tenantId, { limit: 50 });
+    if (fetchError) setError(fetchError.message);
+    else if (data) setMeetings(data as Meeting[]);
   }, [tenantId]);
 
   useEffect(() => {
@@ -120,6 +126,11 @@ export default function SchoolDeskCommunicationPage() {
         { event: '*', schema: 'school_desk', table: 'meetings', filter: `tenant_id=eq.${tenantId}` },
         () => { fetchMeetings(); }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'school_desk', table: 'meeting_participants' },
+        () => { fetchMeetings(); }
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [tenantId, fetchCommunications, fetchMeetings]);
@@ -139,7 +150,7 @@ export default function SchoolDeskCommunicationPage() {
       direction: 'outbound',
       profile_id: composeProfileId,
       call_duration: composeType === 'call' ? parseInt(composeDuration || '0', 10) : undefined,
-      call_outcome: composeType === 'call' ? composeOutcome as never : undefined,
+      call_outcome: composeType === 'call' ? composeOutcome : undefined,
       call_notes: composeType === 'call' ? composeBody : undefined,
       email_subject: composeType === 'email' ? composeSubject : undefined,
       email_body: composeType === 'email' ? composeBody : undefined,
@@ -164,9 +175,16 @@ export default function SchoolDeskCommunicationPage() {
 
   async function handleCreateMeeting() {
     if (!meetingTitle || !meetingDate || !meetingTime) return;
-    setCreatingMeeting(true);
 
-    const scheduledAt = new Date(`${meetingDate}T${meetingTime}`).toISOString();
+    const scheduledAt = new Date(`${meetingDate}T${meetingTime}`);
+    if (scheduledAt <= new Date()) {
+      setMeetingError('Meeting must be scheduled for a future date/time');
+      return;
+    }
+
+    setCreatingMeeting(true);
+    setMeetingError(null);
+
     const user = (await supabase.auth.getUser()).data.user;
 
     const { data: meeting, error } = await insertMeeting({
@@ -175,19 +193,24 @@ export default function SchoolDeskCommunicationPage() {
       description: meetingDescription || undefined,
       meeting_type: meetingType,
       meeting_url: meetingUrl || undefined,
-      scheduled_at: scheduledAt,
+      scheduled_at: scheduledAt.toISOString(),
       duration_minutes: parseInt(meetingDuration, 10),
       organizer_id: user?.id || '',
       max_participants: parseInt(meetingMaxParticipants, 10),
     });
 
     if (!error && meeting) {
-      // Add participants
-      for (const profileId of meetingParticipantIds) {
-        await insertMeetingParticipant({
-          meeting_id: (meeting as Meeting).id,
-          profile_id: profileId,
-        });
+      const results = await Promise.allSettled(
+        meetingParticipantIds.map((profileId) =>
+          insertMeetingParticipant({
+            meeting_id: (meeting as Meeting).id,
+            profile_id: profileId,
+          })
+        )
+      );
+      const failures = results.filter((r) => r.status === 'rejected');
+      if (failures.length > 0) {
+        setMeetingError(`${failures.length} participant(s) failed to add`);
       }
       setShowMeetingForm(false);
       setMeetingTitle('');
@@ -199,6 +222,8 @@ export default function SchoolDeskCommunicationPage() {
       setMeetingMaxParticipants('15');
       setMeetingParticipantIds([]);
       fetchMeetings();
+    } else if (error) {
+      setMeetingError(error.message);
     }
     setCreatingMeeting(false);
   }
@@ -288,6 +313,20 @@ export default function SchoolDeskCommunicationPage() {
                             {new Date(comm.created_at).toLocaleString()}
                           </div>
                         </div>
+                        <div className="mt-2 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (confirm('Delete this communication?')) {
+                                await deleteCommunication(comm.id);
+                                fetchCommunications();
+                              }
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     );
                   })
@@ -339,6 +378,32 @@ export default function SchoolDeskCommunicationPage() {
                               <div>{new Date(meeting.scheduled_at).toLocaleDateString()}</div>
                               <div>{new Date(meeting.scheduled_at).toLocaleTimeString()}</div>
                             </div>
+                          </div>
+                          <div className="mt-3 flex justify-end gap-2">
+                            {meeting.status === 'scheduled' && (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  await updateMeeting(meeting.id, { status: 'cancelled' });
+                                  fetchMeetings();
+                                }}
+                                className="text-xs text-yellow-600 hover:text-yellow-800"
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (confirm('Delete this meeting?')) {
+                                  await deleteMeeting(meeting.id);
+                                  fetchMeetings();
+                                }
+                              }}
+                              className="text-xs text-red-500 hover:text-red-700"
+                            >
+                              Delete
+                            </button>
                           </div>
                         </div>
                       );
@@ -438,7 +503,7 @@ export default function SchoolDeskCommunicationPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Outcome</label>
                         <select
                           value={composeOutcome}
-                          onChange={(e) => setComposeOutcome(e.target.value)}
+                          onChange={(e) => setComposeOutcome(e.target.value as CallOutcome)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                         >
                           <option value="answered">Answered</option>
@@ -496,6 +561,9 @@ export default function SchoolDeskCommunicationPage() {
               <p className="text-xs text-gray-500">Max 15 participants for online meetings</p>
             </div>
             <div className="px-6 py-4 space-y-4">
+              {meetingError && (
+                <div className="p-3 bg-red-50 text-red-700 rounded text-sm">{meetingError}</div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <input

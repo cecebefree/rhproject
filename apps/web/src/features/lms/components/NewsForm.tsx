@@ -3,7 +3,25 @@
 
 import { useEffect, useState } from 'react';
 import { insertNews, updateNews } from '../services/supabase';
-import type { News } from '../services/supabase';
+import type { News, NewsCategory } from '../services/supabase';
+
+const CATEGORIES: NewsCategory[] = ['general_news', 'junior_news', 'senior_news', 'staff_news', 'adult_news'];
+
+const CATEGORY_LABELS: Record<NewsCategory, string> = {
+  general_news: 'General News',
+  junior_news: 'Junior News',
+  senior_news: 'Senior News',
+  staff_news: 'Staff News',
+  adult_news: 'Adult News',
+};
+
+const TARGET_OPTIONS = [
+  { value: 'students', label: 'Students' },
+  { value: 'parents', label: 'Parents' },
+  { value: 'teachers', label: 'Teachers' },
+  { value: 'staff', label: 'Staff' },
+  { value: 'all', label: 'Everyone' },
+];
 
 interface NewsFormProps {
   tenantId: string;
@@ -16,6 +34,8 @@ interface NewsFormProps {
 export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFormProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState<NewsCategory>('general_news');
+  const [targetAudience, setTargetAudience] = useState<string[]>(['all']);
   const [publish, setPublish] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,9 +44,20 @@ export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFo
     if (news) {
       setTitle(news.title);
       setContent(news.content);
+      setCategory(news.category || 'general_news');
+      setTargetAudience(news.target_audience || ['all']);
       setPublish(news.published_at !== null);
     }
   }, [news]);
+
+  function toggleTarget(value: string) {
+    setTargetAudience((prev) => {
+      if (value === 'all') return ['all'];
+      const filtered = prev.filter((t) => t !== 'all' && t !== value);
+      filtered.push(value);
+      return filtered.length === 0 ? ['all'] : filtered;
+    });
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,6 +68,8 @@ export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFo
       const { error: updateError } = await updateNews(news.id, {
         title,
         content,
+        category,
+        target_audience: targetAudience,
         publish,
       });
 
@@ -52,6 +85,8 @@ export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFo
         tenant_id: tenantId,
         title,
         content,
+        category,
+        target_audience: targetAudience,
         created_by: userId,
         publish,
       });
@@ -63,6 +98,8 @@ export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFo
       } else {
         setTitle('');
         setContent('');
+        setCategory('general_news');
+        setTargetAudience(['all']);
         setPublish(false);
         onSuccess?.();
       }
@@ -98,6 +135,39 @@ export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFo
             rows={10}
             style={styles.textarea}
           />
+        </div>
+
+        <div style={styles.field}>
+          <label htmlFor="news-category" style={styles.label}>Category</label>
+          <select
+            id="news-category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as NewsCategory)}
+            style={styles.input}
+          >
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
+            ))}
+          </select>
+        </div>
+
+        <div style={styles.field}>
+          <label style={styles.label}>Target Audience</label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {TARGET_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => toggleTarget(opt.value)}
+                style={{
+                  ...styles.chip,
+                  ...(targetAudience.includes(opt.value) ? styles.chipActive : {}),
+                }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div style={styles.toggleRow}>
@@ -224,5 +294,19 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '6px',
     fontSize: '14px',
     marginBottom: '16px',
+  },
+  chip: {
+    padding: '6px 12px',
+    border: '1px solid #e2e8f0',
+    borderRadius: '16px',
+    backgroundColor: 'white',
+    fontSize: '13px',
+    color: '#4a5568',
+    cursor: 'pointer',
+  },
+  chipActive: {
+    backgroundColor: '#3182ce',
+    color: 'white',
+    borderColor: '#3182ce',
   },
 };
