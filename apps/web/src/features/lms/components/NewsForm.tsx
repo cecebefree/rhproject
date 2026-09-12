@@ -53,8 +53,9 @@ export function NewsForm({ tenantId, userId, news, onSuccess, onCancel }: NewsFo
   function toggleTarget(value: string) {
     setTargetAudience((prev) => {
       if (value === 'all') return ['all'];
+      const isSelected = prev.includes(value);
       const filtered = prev.filter((t) => t !== 'all' && t !== value);
-      filtered.push(value);
+      if (!isSelected) filtered.push(value);
       return filtered.length === 0 ? ['all'] : filtered;
     });
   }
