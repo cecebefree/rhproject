@@ -1,0 +1,15 @@
+BEGIN;
+SELECT plan(5);
+SELECT is((SELECT COUNT(*) FROM pg_policies WHERE tablename = 'tickets' AND schemaname = 'public')::int, 3, 'tickets table has 3+ RLS policies');
+SELECT is((SELECT relrowsecurity FROM pg_class WHERE relname = 'tickets')::boolean, true, 'RLS is enabled on tickets table');
+SET ROLE authenticated;
+SET LOCAL "request.jwt.claims" TO '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+DELETE FROM public.tickets WHERE assigned_to = '11111111-1111-1111-1111-111111111111';
+INSERT INTO public.tickets (id, assigned_to, created_by, subject, desk_type) VALUES ('ticket-001', '11111111-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'Test RLS', 'school_desk');
+SELECT is((SELECT COUNT(*) FROM public.tickets WHERE id = 'ticket-001')::int, 1, 'User A can read ticket assigned to them');
+SET LOCAL "request.jwt.claims" TO '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+SELECT is((SELECT COUNT(*) FROM public.tickets WHERE id = 'ticket-001')::int, 0, 'User B cannot read ticket assigned to User A');
+SET LOCAL "request.jwt.claims" TO '{"sub":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","role":"admin"}';
+SELECT is((SELECT COUNT(*) FROM public.tickets WHERE id = 'ticket-001')::int, 1, 'Admin can read all tickets');
+SELECT * FROM finish();
+ROLLBACK;
