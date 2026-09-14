@@ -56,6 +56,6 @@ COMMENT ON COLUMN school_desk.news.target_audience IS 'Target audience array: st
 -- REBUILD INDEX
 -- ═══════════════════════════════════════════════════════════
 DROP INDEX IF EXISTS idx_news_category;
-CREATE INDEX idx_news_category ON school_desk.news (tenant_id, category, published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_news_category ON school_desk.news (tenant_id, category, published_at DESC);
 
 COMMIT;

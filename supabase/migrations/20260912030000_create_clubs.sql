@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public.clubs (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id   UUID NOT NULL REFERENCES public.profiles(tenant_id),
+  tenant_id   UUID NOT NULL,
   name        TEXT NOT NULL,
   description TEXT,
   category    TEXT NOT NULL DEFAULT 'general',   -- junior | senior | general

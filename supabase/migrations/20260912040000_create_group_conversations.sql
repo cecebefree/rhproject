@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public.group_conversations (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id       UUID NOT NULL REFERENCES public.profiles(tenant_id),
+  tenant_id       UUID NOT NULL,
   name            TEXT NOT NULL,
   category        TEXT NOT NULL DEFAULT 'social',  -- social | study | announcement
   type            TEXT NOT NULL DEFAULT 'group',    -- group | channel
