@@ -29,7 +29,7 @@
 | # | Item | Gate | Status |
 |---|------|------|--------|
 | 13 | FIELD-REGISTER LOCK — CI guard script at supabase/guard-field-register.sh; wired into ci.yml; red-run demonstrated; closes only when (a) script exists, (b) wired in CI, (c) red-run passes | CI guard | **CLOSED** — per item-13-field-register-guard.md (2026-07-15) [pre-AR-10: no hash] |
-| 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | **DONE** — DPIA v3 complete (2026-09-14): breach notification, parental consent, encryption, retention all documented. All 10 checklist items verified. Approved by Cece Be 2026-09-14. |
+| 14 | AO-005 DPIA + disclosure copy — before any pupil-data wiring | Compliance | PARTIAL — draft v2 written, owner content review pending (reverted from DONE per hold order 2026-07-22) |
 | 15 | Gate-contracts scope note — name the MVP subset of the 14 section 5 gates | Planning | DONE — scope note finalized with CF-12 contract per Cece ruling 2026-07-22 [ed0870f] |
 | 16 | Deferred sweep + D26, with explicit D16 disposition (track or WONTFIX) | Housekeeping | DONE - deferred.md D1-D31 complete incl. D26; D16/D17/D18 Open tracked [pre-AR-10: no hash] |
 | 17 | Reconcile 2 (ratified) P2 status mismatches | Housekeeping | DONE - enumeration: next-steps-plan.md P2 tables, 17a session 2026-07-20, sealed at ae32461; governance sweep corrections sealed [ff91cca] |
@@ -98,7 +98,7 @@
 | 52 | Migrate leads table to `front_desk` schema: `ALTER TABLE public.leads SET SCHEMA front_desk` | 51 | **DONE** — leads moved to front_desk via migration 100. Verified on hosted 2026-08-12. |
 | 53 | Migrate office tables to `office_desk` schema: invoices, payments, registrations (new tables) | 51 | **DONE** — registrations, invoices, payments created in office_desk via migration 100. Verified on hosted 2026-08-12. |
 | 54 | Migrate school tables to `school_desk` schema: courses, enrollments, report_cards, announcements, chat tables | 51 | **DONE** — 7 tables (courses, enrollments, report_cards, announcement, conversations, conversation_members, messages) moved to school_desk via migration 102. Verified on hosted 2026-08-12. |
-| 55 | Update all RLS policies for schema-qualified table references | 52, 53, 54 | **DONE** — PostgREST schema cache bug resolved (2026-09-14). Created NOTIFY pgrst, 'reload schema' migration (20260914_120000_fix_postgrest_cache_invalidation.sql). Fixed pgTAP test (removed GROUP BY returning multiple rows). Local 379/379 pgTAP PASS. RLS policies now enforced via API. |
+| 55 | Update all RLS policies for schema-qualified table references | 52, 53, 54 | **BLOCKED** — local 379/379 pgTAP PASS, migrations 100-105 applied + pushed, config correct. Blocked on Supabase platform-level PostgREST schema cache bug. Support ticket drafted (docs/support/supabase-ticket-2026-08-12.md), not yet submitted. GitHub comment posted 2026-08-12: https://github.com/supabase/supabase/issues/45904#issuecomment-5263758989. Awaiting Supabase engineering response or manual server-side restart. |
 | 56 | Update all Edge Functions for schema-qualified queries | 52, 53, 54 | **DONE** — submit-lead, release-report-card, ai-tutor-proxy updated to schema-qualified queries (front_desk.leads, school_desk.report_cards, school_desk.courses). Deployed to hosted 2026-08-12, verified locally with 201 insert to front_desk.leads. release-report-card and ai-tutor-proxy auth-gated (401 without JWT), code confirmed correct. |
 
 ### F.2A — SECURITY LEAD FINDINGS (must resolve before any desk work)
