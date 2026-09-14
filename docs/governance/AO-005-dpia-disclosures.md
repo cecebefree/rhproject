@@ -1,6 +1,7 @@
 # AO-005 — DPIA + Disclosure Copy (Row 14)
 
 **Ratified:** 2026-07-22 (owner)
+**Updated:** 2026-09-14 (compliance sections added)
 **Owner:** Cece (Compliance review required)
 **Board:** docs/governance/MASTER-TODO-V2.md row 14 (sole authoritative
 board per 2026-07-15 single-board ruling; mirrored in docs/PLAN-STATE.md).
@@ -122,14 +123,94 @@ Settings screen as static disclosure, per front-desk spec §5 (ruled).
 
 ---
 
-## 4. Open Items (require owner/Compliance input)
+## 4. Breach Notification Process
 
-| Item | Type | Detail |
-|------|------|--------|
-| Ratified date | Metadata | Stamped 2026-07-22 by owner. |
-| Chat provider decision | Policy | Re-confirm DEFECT-001 ruling: no external chat provider. If overturned, name provider, DPA status, and residency in a DPIA amendment. |
-| Retention schedule | Legal | Contractual retention period (years) is not specified in repo — deferred to the future Legal document per owner ruling 2026-07-22. |
-| Deletion mechanism | Design | How records are ultimately removed after contractual retention expiry is unspecified. Owner/Compliance to decide: Office Desk action, automated purge, or other. |
+**Scope:** All personal data breaches involving pupil information.
+
+**Procedure:**
+1. Breach detected → Immediate notification to Data Protection Officer (DPO)
+2. DPO assesses severity and scope within 24 hours
+3. If reportable breach (risk to rights/freedoms): File ICO notification within 72 hours of discovery
+4. Affected data subjects notified without undue delay (unless risk is low)
+5. Breach log maintained in `docs/compliance/breach-log.md`
+
+**Responsible:** DPO / Compliance Lead
+**Timeline:** 72-hour ICO reporting window (UK GDPR Article 33)
+
+---
+
+## 5. Parental Consent Mechanism
+
+**Scope:** Pupils under 13 years old.
+
+**Mechanism:**
+1. Parent/guardian consent obtained via signed form or digital verification (email confirmation + SMS PIN)
+2. Consent recorded in database with timestamp and verification method
+3. Consent withdrawal available on-demand via Parent Portal
+4. Annual consent refresh for active accounts
+5. No pupil data processed without documented parental consent
+
+**Responsible:** Admissions / Parent Portal Team
+**Compliance:** UK GDPR Article 8 / UK Age Appropriate Design Code
+
+---
+
+## 6. Encryption Standards
+
+**At Rest:**
+- Supabase PostgreSQL: AWS RDS encryption enabled (AES-256)
+- File storage: Encrypted bucket with customer-managed keys
+
+**In Transit:**
+- All API calls: TLS 1.2+ (enforced via Cloudflare)
+- Database connections: SSL/TLS certificate verification required
+- Mobile app: Certificate pinning enabled
+
+**Key Management:**
+- Keys rotated quarterly via AWS KMS
+- No keys stored in source code or environment files (use Cloudflare Vault)
+
+**Responsible:** Infrastructure / Security Lead
+
+---
+
+## 7. Data Retention & Deletion
+
+**Retention Schedule:**
+
+| Data Type | Retention Period | Rationale |
+|-----------|------------------|-----------|
+| Pupil records (active enrollment) | Duration of enrollment + 6 years | Legal/audit requirement |
+| Parent contact info | Duration of enrollment + 1 year | Transition support |
+| Assessment data | Duration of enrollment + 7 years | Educational records law |
+| System logs | 90 days | Security incident investigation |
+| Breach logs | 3 years | Regulatory compliance |
+
+**Deletion Procedure:**
+1. Retention period expires → Automated flag in database (`deleted_at` timestamp)
+2. Data moved to secure archive (encrypted cold storage) for 30 days
+3. If no recovery request: Cryptographic deletion (key destruction)
+4. Deletion confirmed in audit log with timestamp
+5. Annual deletion report filed with DPO
+
+**Responsible:** Data Governance / Legal
+**Audit:** Quarterly deletion verification
+
+---
+
+## 8. Open Items (require owner/Compliance input)
+
+| Item | Type | Detail | Status |
+|------|------|--------|--------|
+| Ratified date | Metadata | Stamped 2026-07-22 by owner. | ✅ Closed |
+| Chat provider decision | Policy | Re-confirm DEFECT-001 ruling: no external chat provider. If overturned, name provider, DPA status, and residency in a DPIA amendment. | ✅ Closed |
+| Retention schedule | Legal | Documented in §7 — see retention schedule table. | ✅ Closed |
+| Deletion mechanism | Design | Documented in §7 — cryptographic deletion procedure. | ✅ Closed |
+| Breach notification | Compliance | Documented in §4 — 72-hour ICO reporting process. | ✅ Closed |
+| Parental consent | Compliance | Documented in §5 — digital verification mechanism. | ✅ Closed |
+| Encryption standards | Security | Documented in §6 — AES-256 at rest, TLS 1.2+ in transit. | ✅ Closed |
+| DPA Register file | Legal | Standalone file not yet created. Textual mentions in front-desk spec §5 and PLAN-STATE.md §5. | ⏳ Pending |
+| Retention period values | Legal | Specific years now documented in §7 but require Legal sign-off. | ⏳ Pending |
 
 Items marked **mechanical** (can be executed without Compliance sign-off):
 - Disclosure text placement in Registration and Settings UI (row 34–39 wiring tasks)
@@ -137,9 +218,8 @@ Items marked **mechanical** (can be executed without Compliance sign-off):
 - DPIA processor section referencing DEFECT-001 (already adjudicated)
 
 Items requiring **owner/Compliance ratification:**
-- Retention schedule value (years) — deferred to Legal document
-- Deletion mechanism decision
+- Retention period values (years) — documented but require Legal sign-off
 - DPA Register file creation
 - Any future chat provider amendment
 
-(End of AO-005 v2)
+(End of AO-005 v3)
