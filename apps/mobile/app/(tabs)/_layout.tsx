@@ -23,6 +23,22 @@ function ClassIcon({ color, size }: { color: string; size: number }) {
   );
 }
 
+function HubIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 4h6v6H4V4zm10 0h6v6h-6V4zM4 14h6v6H4v-6zm10 0h6v6h-6v-6z" fill={color} />
+    </Svg>
+  );
+}
+
+function ChatIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill={color} />
+    </Svg>
+  );
+}
+
 function ProfileIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -48,6 +64,7 @@ export default function TabLayout() {
           },
         }}
       >
+        {/* ═══ 5 MOBILE TABS ═══ */}
         <Tabs.Screen
           name="index"
           options={{
@@ -63,41 +80,40 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="hub"
+          options={{
+            title: 'Hub',
+            tabBarIcon: ({ color, size }) => <HubIcon color={color} size={size} />,
+          }}
+        />
+        <Tabs.Screen
+          name="social"
+          options={{
+            title: 'Chat',
+            tabBarIcon: ({ color, size }) => <ChatIcon color={color} size={size} />,
+          }}
+        />
+        <Tabs.Screen
           name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color, size }) => <ProfileIcon color={color} size={size} />,
           }}
         />
+
+        {/* ═══ HIDDEN SCREENS (sub-pages, web-only, admin) ═══ */}
         <Tabs.Screen name="front-desk" options={{ href: null }} />
         <Tabs.Screen name="office-desk" options={{ href: null }} />
-        {/* Phase 2+ tabs — hidden */}
-        <Tabs.Screen name="social" options={{ href: null }} />
         <Tabs.Screen name="browse-classes" options={{ href: null }} />
-        <Tabs.Screen name="hub" options={{ href: null }} />
         <Tabs.Screen name="report-card" options={{ href: null }} />
         <Tabs.Screen name="teacher" options={{ href: null }} />
         <Tabs.Screen name="family" options={{ href: null }} />
         <Tabs.Screen name="group-chat" options={{ href: null }} />
         <Tabs.Screen name="group-info" options={{ href: null }} />
-        <Tabs.Screen name="certificates" options={{
-          href: null,
-          title: 'Certificates',
-          tabBarIcon: ({ color, size }) => (
-            <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-              <Path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-            </Svg>
-          ),
-        }} />
+        <Tabs.Screen name="certificates" options={{ href: null }} />
         <Tabs.Screen name="class-detail" options={{ href: null }} />
         <Tabs.Screen name="hub-detail" options={{ href: null }} />
-        <Tabs.Screen
-          name="payments"
-          options={{
-            href: null,
-            title: 'Payments',
-          }}
-        />
+        <Tabs.Screen name="payments" options={{ href: null }} />
         <Tabs.Screen name="invoice-detail" options={{ href: null }} />
       </Tabs>
     </Suspense>

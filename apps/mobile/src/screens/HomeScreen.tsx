@@ -110,7 +110,24 @@ export function HomeScreen({
   }, [devotionalEnabled]);
 
   if (loading) {
-    return <LoadingState />;
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>?</Text>
+          </View>
+          <TouchableOpacity onPress={() => setMenuVisible(true)}>
+            <Text style={styles.hamburger}>☰</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.greetingRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greetingLabel}>{greeting.text}</Text>
+            <Text style={styles.greetingName}>Loading...</Text>
+          </View>
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -122,6 +139,7 @@ export function HomeScreen({
         maxToRenderPerBatch={10}
         windowSize={5}
         initialNumToRender={5}
+        contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <View>
             {/* Header */}
@@ -158,6 +176,13 @@ export function HomeScreen({
                 </View>
               </TouchableOpacity>
             </View>
+
+            {/* Error banner */}
+            {error && (
+              <View style={{ marginHorizontal: 16, marginBottom: 8, padding: 12, backgroundColor: '#fff3f3', borderRadius: 8, borderWidth: 1, borderColor: '#fdd' }}>
+                <Text style={{ color: BRAND_RED, fontSize: 13 }}>{error}</Text>
+              </View>
+            )}
 
             {/* Daily Devotional */}
             {devotionalEnabled && (

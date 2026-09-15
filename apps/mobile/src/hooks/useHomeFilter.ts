@@ -24,35 +24,37 @@ export function useHomeFilter(): HomeFilterResult {
     setLoading(true);
     setError(null);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      setClasses([]);
-      setError('Not authenticated');
+      if (!user) {
+        setClasses([]);
+        setError('Not authenticated');
+        setLoading(false);
+        return;
+      }
+
+      // 1. Determine user role
+      const { data: profile } = await supabase
+        .schema('public').from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      const role = profile?.role;
+
+      if (role === 'adult') {
+        await loadAdultHomeFeed(user.id);
+      } else {
+        await loadStudentHomeFeed(user.id);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // 1. Determine user role
-    const { data: profile } = await supabase
-      .schema('public').from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    const role = profile?.role;
-
-    if (role === 'adult') {
-      // ADULT: fetch enrollments for connected children only
-      await loadAdultHomeFeed(user.id);
-    } else {
-      // STUDENT / STAFF / ADMIN: fetch own enrollments
-      await loadStudentHomeFeed(user.id);
-    }
-
-    setLoading(false);
   }, []);
 
   // ─── ADULT HOME FEED ───────────────────────────────────────
