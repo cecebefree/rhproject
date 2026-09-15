@@ -15,7 +15,7 @@ interface ServiceDeskAuthContextValue extends ServiceDeskAuthState {
 
 const SESSION_KEY = 'serviceDeskAuth';
 
-const DESK_PASSWORD = import.meta.env.VITE_DESK_PASSWORD || 'redhouse2026';
+const DESK_PASSWORD = import.meta.env.VITE_DESK_PASSWORD || '';
 
 function readPersistedState(): ServiceDeskAuthState {
   try {
