@@ -2,11 +2,12 @@
 // Tables: public.group_conversations, public.group_messages
 // Realtime: Supabase Realtime subscription for live message delivery
 
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { EmptyState } from '../../src/components/EmptyState';
 import { LoadingState } from '../../src/components/LoadingState';
+import { ReactionButtons } from '../../src/components/ReactionButtons';
 import { fetchGroupMessages, sendMessage, type GroupMessage } from '../../src/lib/groupChatClient';
 import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
@@ -21,6 +22,7 @@ export default function GroupChatScreen() {
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Load messages when groupId changes
   useEffect(() => {
@@ -80,12 +82,12 @@ export default function GroupChatScreen() {
     const content = inputText.trim();
     setInputText('');
     setSending(true);
+    Keyboard.dismiss();
 
     try {
       const newMsg = await sendMessage(groupId, content);
       setMessages((prev) => [...prev, newMsg]);
     } catch (err) {
-      // Revert input on failure
       setInputText(content);
       console.error('Send failed:', err);
     } finally {
@@ -97,7 +99,11 @@ export default function GroupChatScreen() {
   if (error) return <EmptyState title="Error" message={error} />;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={90}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -115,7 +121,13 @@ export default function GroupChatScreen() {
       </View>
 
       {/* Messages */}
-      <ScrollView style={styles.messagesContainer}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.messagesContainer}
+        contentContainerStyle={styles.messagesContent}
+        keyboardShouldPersistTaps="handled"
+        onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      >
         {messages.length > 0 ? (
           messages.map((msg) => (
             <View
@@ -124,9 +136,12 @@ export default function GroupChatScreen() {
             >
               {!msg.isOwn && <Text style={styles.senderName}>{msg.senderName}</Text>}
               <Text style={[styles.messageText, msg.isOwn && styles.ownText]}>{msg.content}</Text>
-              <Text style={[styles.timestamp, msg.isOwn && styles.ownTimestamp]}>
-                {msg.timestamp}
-              </Text>
+              <View style={styles.messageFooter}>
+                <Text style={[styles.timestamp, msg.isOwn && styles.ownTimestamp]}>
+                  {msg.timestamp}
+                </Text>
+              </View>
+              <ReactionButtons messageId={msg.id} />
             </View>
           ))
         ) : (
@@ -152,7 +167,7 @@ export default function GroupChatScreen() {
           <Text style={styles.sendText}>{sending ? 'Sending...' : 'Send'}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -191,7 +206,10 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flex: 1,
+  },
+  messagesContent: {
     padding: spacing.md,
+    paddingBottom: spacing.sm,
   },
   messageBubble: {
     maxWidth: '80%',
@@ -220,6 +238,11 @@ const styles = StyleSheet.create({
   },
   ownText: {
     color: '#fff',
+  },
+  messageFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: spacing.xs,
   },
   timestamp: {
     fontSize: typography.sizes.caption,
