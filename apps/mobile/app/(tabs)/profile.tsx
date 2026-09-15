@@ -266,6 +266,55 @@ export default function ProfileScreen() {
         <TeacherSections profile={teacherProfile} onClassPress={handleClassPress} />
       )}
 
+      {/* ═══ QUICK LINKS (all screens) ═══ */}
+      <View style={styles.sectionCard}>
+        <View style={[styles.sectionCardHeader, { backgroundColor: colors.burgundy }]}>
+          <Text style={styles.sectionCardTitle}>Navigation</Text>
+        </View>
+        <View style={styles.sectionCardBody}>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/social')}>
+            <Text style={styles.infoLabel}>Social / Groups</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/browse-classes')}>
+            <Text style={styles.infoLabel}>Browse Classes</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/hub')}>
+            <Text style={styles.infoLabel}>Hub</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/report-card')}>
+            <Text style={styles.infoLabel}>Report Card</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/certificates')}>
+            <Text style={styles.infoLabel}>Certificates</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/payments')}>
+            <Text style={styles.infoLabel}>Payments</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/family')}>
+            <Text style={styles.infoLabel}>Family</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/teacher')}>
+            <Text style={styles.infoLabel}>Teacher</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/front-desk')}>
+            <Text style={styles.infoLabel}>Front Desk</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/office-desk')}>
+            <Text style={styles.infoLabel}>Office Desk</Text>
+            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* ═══ SUPPORT (shared) ═══ */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Support</Text>
