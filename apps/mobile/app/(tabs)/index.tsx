@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Modal } from 'react-native';
+import { useRouter } from 'expo-router';
 import { CalendarScreen } from '../../src/screens/CalendarScreen';
 import { HomeScreen } from '../../src/screens/HomeScreen';
 import { fetchMasterSchedule, type ScheduleEvent } from '../../src/lib/scheduleClient';
 import { fetchPublishedNews, type NewsArticle } from '../../src/lib/newsClient';
 
 export default function HomeTab() {
+  const router = useRouter();
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
   const [scheduleError, setScheduleError] = useState<string | null>(null);
@@ -47,6 +49,7 @@ export default function HomeTab() {
     <>
       <HomeScreen
         onNavigateToCalendar={() => setCalendarVisible(true)}
+        onNavigateToDevotional={() => router.push('/devotional')}
         scheduleEvents={scheduleEvents}
         scheduleError={scheduleError}
         newsArticles={newsArticles}

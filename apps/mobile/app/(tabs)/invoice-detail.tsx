@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { EmptyState } from '../../src/components/EmptyState';
 import { LoadingState } from '../../src/components/LoadingState';
@@ -146,6 +146,15 @@ export default function InvoiceDetailScreen() {
         )}
       </View>
 
+      {balance > 0 && (
+        <TouchableOpacity
+          style={styles.payButton}
+          onPress={() => Linking.openURL('https://redhouse.co.za/payments')}
+        >
+          <Text style={styles.payButtonText}>Pay Now — R{balance.toLocaleString()}</Text>
+        </TouchableOpacity>
+      )}
+
       {payments.length > 0 && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Payment History</Text>
@@ -216,4 +225,17 @@ const styles = StyleSheet.create({
   paymentDate: { fontSize: typography.sizes.caption, color: colors.charcoalLight },
   paymentBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   paymentStatus: { fontSize: typography.sizes.badge, fontWeight: typography.weights.medium, textTransform: 'capitalize' },
+  payButton: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: colors.burgundy,
+    borderRadius: 12,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  payButtonText: {
+    color: '#fff',
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
+  },
 });

@@ -157,8 +157,8 @@ export default function ProfileScreen() {
   );
 
   const handlePaymentPress = useCallback((payment: PaymentRecord) => {
-    console.log('Payment receipt:', payment.id);
-  }, []);
+    router.push('/(tabs)/payments');
+  }, [router]);
 
   const handleEditSave = useCallback(
     async (updates: { name: string; phone: string }) => {
@@ -379,6 +379,7 @@ function StudentSections({
   onPaymentPress: (payment: PaymentRecord) => void;
   onGroupPress: (groupId: string, groupName?: string) => void;
 }) {
+  const router = useRouter();
   return (
     <>
       {/* Academic */}
@@ -503,7 +504,14 @@ function StudentSections({
           <Text style={styles.sectionCardTitle}>Documents</Text>
         </View>
         <View style={styles.sectionCardBody}>
-          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Documents</Text>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/certificates')}>
+            <Text style={styles.infoLabel}>Certificates</Text>
+            <Text style={styles.infoValue}>→</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/report-card')}>
+            <Text style={styles.infoLabel}>Report Cards</Text>
+            <Text style={styles.infoValue}>→</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -513,7 +521,7 @@ function StudentSections({
           <Text style={styles.sectionCardTitle}>Activity</Text>
         </View>
         <View style={styles.sectionCardBody}>
-          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Activity</Text>
+          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Recent activity will appear here</Text>
         </View>
       </View>
 
@@ -546,7 +554,7 @@ function StudentSections({
           <Text style={styles.sectionCardTitle}>Service Desk</Text>
         </View>
         <View style={styles.sectionCardBody}>
-          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Service Desk</Text>
+          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Available on web only</Text>
         </View>
       </View>
 

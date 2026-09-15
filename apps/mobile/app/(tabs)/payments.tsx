@@ -3,7 +3,7 @@
 
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { LoadingState } from '../../src/components/LoadingState';
 import {
@@ -119,6 +119,15 @@ export default function PaymentsScreen() {
       </View>
 
       {/* Summary Cards */}
+      {summary && summary.outstandingBalance > 0 && (
+        <TouchableOpacity
+          style={styles.payOnlineButton}
+          onPress={() => Linking.openURL('https://redhouse.co.za/payments')}
+        >
+          <Text style={styles.payOnlineText}>Pay Online — R{summary.outstandingBalance.toFixed(2)}</Text>
+        </TouchableOpacity>
+      )}
+
       {summary && (
         <View style={styles.summaryRow}>
           <View style={[styles.summaryCard, { backgroundColor: '#D1FAE5' }]}>
@@ -490,5 +499,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
+  },
+  payOnlineButton: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    backgroundColor: colors.burgundy,
+    borderRadius: 12,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  payOnlineText: {
+    color: '#fff',
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.semibold,
   },
 });

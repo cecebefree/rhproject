@@ -6,7 +6,7 @@ export interface TenantConfig {
 
 export const TENANT_CONFIG: TenantConfig = {
   features: {
-    devotional: false,
+    devotional: true,
   },
 };
 

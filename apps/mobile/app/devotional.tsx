@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { fetchTodayDevotional, type DevotionalData } from '../src/lib/devotionalClient';
 import { isFeatureEnabled } from '../src/config/tenant';
 import { spacing } from '../src/theme/spacing';
@@ -28,6 +29,7 @@ const TILE_META: Record<TileKey, { icon: string; label: string; color: string }>
 };
 
 export default function DevotionalScreen() {
+  const router = useRouter();
   const [data, setData] = useState<DevotionalData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -92,19 +94,27 @@ export default function DevotionalScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Verse tile */}
-      {data.verse && <VerseTile ref_={data.verse.ref} content={data.verse.content} title={data.verse.title} />}
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Text style={styles.backText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Daily Devotional</Text>
+      </View>
+      <ScrollView style={styles.scrollContent} contentContainerStyle={styles.content}>
+        {/* Verse tile */}
+        {data.verse && <VerseTile ref_={data.verse.ref} content={data.verse.content} title={data.verse.title} />}
 
-      {/* Bible Plan tile */}
-      {data.biblePlan && <BiblePlanTile ref_={data.biblePlan.ref} title={data.biblePlan.title} day={data.biblePlan.day} />}
+        {/* Bible Plan tile */}
+        {data.biblePlan && <BiblePlanTile ref_={data.biblePlan.ref} title={data.biblePlan.title} day={data.biblePlan.day} />}
 
-      {/* Music tile */}
-      {data.music && <MediaTile icon={TILE_META.music.icon} label={TILE_META.music.label} ref_={data.music.ref} title={data.music.title} />}
+        {/* Music tile */}
+        {data.music && <MediaTile icon={TILE_META.music.icon} label={TILE_META.music.label} ref_={data.music.ref} title={data.music.title} />}
 
-      {/* Vlog tile */}
-      {data_vlog(data.vlog)}
-    </ScrollView>
+        {/* Vlog tile */}
+        {data_vlog(data.vlog)}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -177,6 +187,29 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: BRAND_NAVY,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    backgroundColor: BRAND_NAVY,
+  },
+  backButton: {
+    paddingRight: spacing.md,
+  },
+  backText: {
+    fontSize: 24,
+    color: '#fff',
+  },
+  headerTitle: {
+    fontSize: typography.sizes.h3,
+    fontWeight: typography.weights.semibold,
+    color: '#fff',
+  },
+  scrollContent: {
+    flex: 1,
   },
   content: {
     padding: spacing.md,

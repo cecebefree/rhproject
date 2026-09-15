@@ -36,6 +36,23 @@ export default function LoginScreen() {
     }
   }
 
+  async function handleForgotPassword() {
+    if (!email) {
+      Alert.alert('Error', 'Enter your email first, then tap Forgot Password');
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'redhouse://reset-password',
+    });
+    setLoading(false);
+    if (error) {
+      Alert.alert('Error', error.message);
+    } else {
+      Alert.alert('Check your email', 'We sent a password reset link to ' + email);
+    }
+  }
+
   async function handleSignUp() {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter email and password');
@@ -83,6 +100,9 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             secureTextEntry
           />
+          <TouchableOpacity onPress={handleForgotPassword} disabled={loading}>
+            <Text style={styles.forgotText}>Forgot Password?</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
@@ -114,6 +134,13 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: '700', color: colors.navy, marginBottom: 4 },
   subtitle: { fontSize: 16, color: colors.charcoalLight, marginBottom: 32 },
   form: { width: '100%', maxWidth: 320 },
+  forgotText: {
+    color: colors.burgundy,
+    fontSize: 14,
+    textAlign: 'right',
+    marginBottom: 12,
+    fontWeight: '500',
+  },
   input: {
     backgroundColor: '#fff',
     borderWidth: 1,

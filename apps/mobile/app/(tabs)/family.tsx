@@ -63,29 +63,27 @@ export default function FamilyScreen() {
             <Text style={styles.childRole}>
               {child.grade || 'No grade'} · {child.curriculum || 'No curriculum'}
             </Text>
-
-            {/* Ledger */}
-            <View style={styles.ledger}>
-              <Text style={styles.ledgerTitle}>Account</Text>
-              {invoices.length === 0 ? (
-                <Text style={styles.ledgerNote}>No invoices yet</Text>
-              ) : (
-                invoices.slice(0, 3).map((inv) => (
-                  <TouchableOpacity
-                    key={inv.id}
-                    style={styles.ledgerRow}
-                    onPress={() => router.push(`/(tabs)/invoice-detail?id=${inv.id}`)}
-                  >
-                    <Text style={styles.ledgerLabel}>{inv.description || 'Invoice'}</Text>
-                    <Text style={styles.ledgerValue}>
-                      R {inv.amount.toLocaleString()} — {inv.status}
-                    </Text>
-                  </TouchableOpacity>
-                ))
-              )}
-            </View>
           </View>
         ))
+      )}
+
+      {/* Family Ledger — invoices are per family account, not per child */}
+      {invoices.length > 0 && (
+        <View style={styles.ledger}>
+          <Text style={styles.ledgerTitle}>Account</Text>
+          {invoices.map((inv) => (
+            <TouchableOpacity
+              key={inv.id}
+              style={styles.ledgerRow}
+              onPress={() => router.push(`/(tabs)/invoice-detail?id=${inv.id}`)}
+            >
+              <Text style={styles.ledgerLabel}>{inv.description || 'Invoice'}</Text>
+              <Text style={styles.ledgerValue}>
+                R {inv.amount.toLocaleString()} — {inv.status}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       )}
     </ScrollView>
   );

@@ -64,7 +64,12 @@ export default function SocialScreen() {
         <View style={styles.scheduleSection}>
           <Text style={styles.scheduleSectionTitle}>Scheduled Events</Text>
           {scheduleEvents.slice(0, 4).map((event) => (
-            <TouchableOpacity key={event.id} style={styles.scheduleItem}>
+            <TouchableOpacity
+              key={event.id}
+              style={styles.scheduleItem}
+              activeOpacity={0.7}
+              onPress={() => router.push(`/(tabs)/group-chat?groupId=${event.source_id}&groupName=${encodeURIComponent(event.title)}`)}
+            >
               <View style={[styles.scheduleDot, { backgroundColor: event.color ?? '#8B5CF6' }]} />
               <View style={styles.scheduleInfo}>
                 <Text style={styles.scheduleEventTitle}>{event.title}</Text>

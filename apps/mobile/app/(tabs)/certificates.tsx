@@ -4,7 +4,7 @@
 // Source: Ruling ITEM-002-certificates.md
 
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { EmptyState } from '../../src/components/EmptyState';
 import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
@@ -113,6 +113,14 @@ export default function CertificatesScreen() {
             {cert.description ? <Text style={styles.certDesc}>{cert.description}</Text> : null}
             <Text style={styles.signatory}>Signatory: {cert.signatory}</Text>
             <Text style={styles.date}>Issued: {new Date(cert.issued_at).toLocaleDateString()}</Text>
+            {cert.file_url ? (
+              <TouchableOpacity
+                style={styles.viewButton}
+                onPress={() => Linking.openURL(cert.file_url!)}
+              >
+                <Text style={styles.viewButtonText}>View Certificate</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
         ))
       )}
@@ -195,5 +203,18 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.badge,
     fontWeight: typography.weights.medium,
     textTransform: 'capitalize',
+  },
+  viewButton: {
+    marginTop: spacing.sm,
+    backgroundColor: colors.burgundy,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  viewButtonText: {
+    color: '#fff',
+    fontSize: typography.sizes.body,
+    fontWeight: typography.weights.medium,
   },
 });

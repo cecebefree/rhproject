@@ -69,6 +69,20 @@ function getBarColor(idx: number): string {
   return palette[idx % palette.length];
 }
 
+function isLiveNow(event: ScheduleEvent): boolean {
+  if (event.day_of_week == null || !event.start_time || !event.end_time) return false;
+  const now = new Date();
+  const currentDay = now.getDay();
+  if (event.day_of_week !== currentDay) return false;
+
+  const [sh, sm] = event.start_time.split(':').map(Number);
+  const [eh, em] = event.end_time.split(':').map(Number);
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = sh * 60 + sm;
+  const endMinutes = eh * 60 + em;
+  return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+}
+
 export default function ClassScreen() {
   const router = useRouter();
   const [courses, setCourses] = useState<CourseRow[]>([]);
@@ -231,7 +245,17 @@ export default function ClassScreen() {
       </View>
 
       {/* Go to Class CTA */}
-      <TouchableOpacity style={styles.goToClassCard} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.goToClassCard}
+        activeOpacity={0.8}
+        onPress={() => {
+          if (scheduleEvents.length > 0) {
+            navigateToDetail(scheduleEvents[0].source_id);
+          } else if (courses.length > 0) {
+            navigateToDetail(courses[0].id);
+          }
+        }}
+      >
         <View style={styles.goToClassLeft}>
           <Text style={styles.goToClassLabel}>GO TO CLASS</Text>
           <Text style={styles.goToClassTitle}>Join your next live session</Text>
@@ -245,7 +269,7 @@ export default function ClassScreen() {
       <View style={styles.section}>
         <View style={[styles.sectionHeader, { backgroundColor: '#C8281E' }]}>
           <Text style={styles.sectionHeaderText}>COMING UP</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/browse-classes')}>
             <Text style={styles.sectionSeeAll}>See all</Text>
           </TouchableOpacity>
         </View>
@@ -270,7 +294,7 @@ export default function ClassScreen() {
                   {event.end_time ? `–${formatTime(event.end_time)}` : ''}
                 </Text>
               </View>
-              {idx === 0 ? (
+              {isLiveNow(event) ? (
                 <View style={styles.liveBadge}>
                   <Text style={styles.liveBadgeText}>LIVE</Text>
                 </View>
@@ -300,7 +324,7 @@ export default function ClassScreen() {
                       : ''}
                   </Text>
                 </View>
-                {idx === 0 ? (
+                {nextSlot && nextSlot.days_of_week.length > 0 && isLiveNow({ id: cls.id, title: cls.title, day_of_week: nextSlot.days_of_week[0], start_time: nextSlot.start_time, end_time: nextSlot.end_time, source: 'lms', source_id: cls.id, color: getBarColor(idx), description: null, meta: {} }) ? (
                   <View style={styles.liveBadge}>
                     <Text style={styles.liveBadgeText}>LIVE</Text>
                   </View>

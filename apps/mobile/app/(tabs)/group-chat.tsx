@@ -8,6 +8,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { EmptyState } from '../../src/components/EmptyState';
 import { LoadingState } from '../../src/components/LoadingState';
 import { ReactionButtons } from '../../src/components/ReactionButtons';
+import { SendIndicator, ReconnectingBanner, EmptyChat, type SendState } from '../../src/components/chat-ui';
 import { fetchGroupMessages, sendMessage, type GroupMessage } from '../../src/lib/groupChatClient';
 import { supabase } from '../../src/services/supabase';
 import { colors } from '../../src/theme/colors';
@@ -22,6 +23,8 @@ export default function GroupChatScreen() {
   const [error, setError] = useState<string | null>(null);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendState, setSendState] = useState<SendState>('sent');
+  const [isConnected, setIsConnected] = useState(true);
   const scrollViewRef = useRef<ScrollView>(null);
 
   // Load messages when groupId changes
@@ -69,7 +72,9 @@ export default function GroupChatScreen() {
           fetchGroupMessages(groupId).then((msgs) => setMessages(msgs)).catch(console.error);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        setIsConnected(status === 'SUBSCRIBED');
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -82,13 +87,16 @@ export default function GroupChatScreen() {
     const content = inputText.trim();
     setInputText('');
     setSending(true);
+    setSendState('sending');
     Keyboard.dismiss();
 
     try {
       const newMsg = await sendMessage(groupId, content);
       setMessages((prev) => [...prev, newMsg]);
+      setSendState('sent');
     } catch (err) {
       setInputText(content);
+      setSendState('failed');
       console.error('Send failed:', err);
     } finally {
       setSending(false);
@@ -104,6 +112,8 @@ export default function GroupChatScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
+      <ReconnectingBanner visible={!isConnected} />
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -145,7 +155,7 @@ export default function GroupChatScreen() {
             </View>
           ))
         ) : (
-          <EmptyState title="No messages yet" message="Say hello!" />
+          <EmptyChat />
         )}
       </ScrollView>
 
@@ -159,6 +169,7 @@ export default function GroupChatScreen() {
           onChangeText={setInputText}
           editable={!sending}
         />
+        <SendIndicator state={sendState} onRetry={handleSend} />
         <TouchableOpacity
           style={[styles.sendButton, sending && styles.sendButtonDisabled]}
           onPress={handleSend}
