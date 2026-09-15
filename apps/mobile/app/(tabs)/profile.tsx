@@ -245,7 +245,7 @@ export default function ProfileScreen() {
           groups={groups}
           onClassPress={handleClassPress}
           onPaymentPress={handlePaymentPress}
-          onGroupPress={(groupId) => router.push(`/(tabs)/group-chat?groupId=${groupId}`)}
+          onGroupPress={(groupId, groupName) => router.push(`/(tabs)/group-chat?groupId=${groupId}&groupName=${encodeURIComponent(groupName ?? '')}`)}
         />
       )}
 
@@ -332,7 +332,7 @@ function StudentSections({
   groups: GroupConversation[];
   onClassPress: (classId: string) => void;
   onPaymentPress: (payment: PaymentRecord) => void;
-  onGroupPress: (groupId: string) => void;
+  onGroupPress: (groupId: string, groupName?: string) => void;
 }) {
   return (
     <>
@@ -441,7 +441,7 @@ function StudentSections({
         <View style={styles.sectionCardBody}>
           {groups.length > 0 ? (
             groups.map((g) => (
-              <TouchableOpacity key={g.id} style={styles.infoRow} onPress={() => router.push(`/group-chat?groupId=${g.id}`)}>
+              <TouchableOpacity key={g.id} style={styles.infoRow} onPress={() => router.push(`/(tabs)/group-chat?groupId=${g.id}&groupName=${encodeURIComponent(g.name ?? '')}`)}>
                 <Text style={styles.infoLabel}>{g.name || 'Unnamed Group'}</Text>
                 <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'›'}</Text>
               </TouchableOpacity>
