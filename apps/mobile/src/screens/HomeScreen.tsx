@@ -348,7 +348,6 @@ export function HomeScreen({
           </View>
         }
         renderItem={() => null}
-        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
 

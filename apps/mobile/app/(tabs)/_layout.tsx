@@ -1,6 +1,4 @@
 import { Tabs } from 'expo-router';
-import { Suspense } from 'react';
-import { LoadingState } from '../../src/components/LoadingState';
 import { colors } from '../../src/theme/colors';
 import Svg, { Path } from 'react-native-svg';
 
@@ -52,8 +50,7 @@ function ProfileIcon({ color, size }: { color: string; size: number }) {
 
 export default function TabLayout() {
   return (
-    <Suspense fallback={<LoadingState />}>
-      <Tabs
+    <Tabs
         screenOptions={{
           tabBarActiveTintColor: colors.burgundy,
           tabBarInactiveTintColor: colors.charcoalLight,
@@ -116,6 +113,5 @@ export default function TabLayout() {
         <Tabs.Screen name="payments" options={{ href: null }} />
         <Tabs.Screen name="invoice-detail" options={{ href: null }} />
       </Tabs>
-    </Suspense>
   );
 }
