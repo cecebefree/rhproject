@@ -441,7 +441,7 @@ function StudentSections({
         <View style={styles.sectionCardBody}>
           {groups.length > 0 ? (
             groups.map((g) => (
-              <TouchableOpacity key={g.id} style={styles.infoRow} onPress={() => router.push(`/(tabs)/group-chat?groupId=${g.id}&groupName=${encodeURIComponent(g.name ?? '')}`)}>
+              <TouchableOpacity key={g.id} style={styles.infoRow} onPress={() => onGroupPress(g.id, g.name ?? '')}>
                 <Text style={styles.infoLabel}>{g.name || 'Unnamed Group'}</Text>
                 <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'›'}</Text>
               </TouchableOpacity>
