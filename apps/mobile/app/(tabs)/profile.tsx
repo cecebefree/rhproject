@@ -305,11 +305,7 @@ export default function ProfileScreen() {
             <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/front-desk')}>
-            <Text style={styles.infoLabel}>Front Desk</Text>
-            <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.infoRow} onPress={() => router.push('/(tabs)/office-desk')}>
-            <Text style={styles.infoLabel}>Office Desk</Text>
+            <Text style={styles.infoLabel}>Service Desks</Text>
             <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'>'}</Text>
           </TouchableOpacity>
         </View>
