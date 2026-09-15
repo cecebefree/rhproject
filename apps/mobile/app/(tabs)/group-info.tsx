@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
 import { Badge } from '../../src/components/Badge';
 import { EmptyState } from '../../src/components/EmptyState';
@@ -13,12 +14,26 @@ import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 
+const MEDIA_TOGGLE_KEY = 'group_media_enabled';
+
 export default function GroupInfoScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const [group, setGroup] = useState<GroupInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [mediaEnabled, setMediaEnabled] = useState(false);
+
+  // Load persisted media toggle
+  useEffect(() => {
+    AsyncStorage.getItem(MEDIA_TOGGLE_KEY).then((val) => {
+      if (val !== null) setMediaEnabled(val === 'true');
+    });
+  }, []);
+
+  const handleMediaToggle = async (value: boolean) => {
+    setMediaEnabled(value);
+    await AsyncStorage.setItem(MEDIA_TOGGLE_KEY, String(value));
+  };
 
   useEffect(() => {
     if (!groupId) {
@@ -81,7 +96,7 @@ export default function GroupInfoScreen() {
         </View>
         <Switch
           value={mediaEnabled}
-          onValueChange={setMediaEnabled}
+          onValueChange={handleMediaToggle}
           trackColor={{ false: colors.charcoalLight, true: colors.burgundy }}
         />
       </View>
