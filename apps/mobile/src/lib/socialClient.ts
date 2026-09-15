@@ -18,8 +18,15 @@ export async function fetchSocialGroups(): Promise<SocialGroup[]> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
-  const tenantId = user.app_metadata?.tenant_id ?? '';
-  if (!tenantId) throw new Error('No tenant associated with this account');
+  // Tenant ID from JWT claims (per RLS policy path, not app_metadata)
+  const { data: profile } = await supabase
+    .schema('public').from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile || !profile.tenant_id) throw new Error('No tenant associated with this account');
+  const tenantId = profile.tenant_id;
 
   const { data, error } = await supabase
     .schema('public').from('group_conversations')

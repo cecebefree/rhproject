@@ -5,9 +5,18 @@
 import { supabase } from '../services/supabase';
 import type { InvoiceRecord, PaymentRecord } from '../types/profile';
 
-// ═══════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
 // PAYMENTS
-// ═══════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
+
+async function getTenantId(userId: string): Promise<string | null> {
+  const { data: profile } = await supabase
+    .schema('public').from('profiles')
+    .select('tenant_id')
+    .eq('id', userId)
+    .single();
+  return profile?.tenant_id ?? null;
+}
 
 export async function fetchPayments(): Promise<{
   data: PaymentRecord[];
@@ -21,7 +30,7 @@ export async function fetchPayments(): Promise<{
     return { data: [], error: 'Not authenticated' };
   }
 
-  const tenantId = (user.app_metadata as Record<string, unknown>)?.tenant_id as string | undefined;
+  const tenantId = await getTenantId(user.id);
 
   // Office desk payments (invoice-linked)
   const { data: officePayments, error: officeErr } = await supabase
@@ -29,7 +38,6 @@ export async function fetchPayments(): Promise<{
     .select(
       'id, amount, currency, status, payment_method, reference, paid_at, created_at, invoice_id'
     )
-    .eq('tenant_id', tenantId ?? '')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
@@ -102,9 +110,9 @@ export async function fetchPayments(): Promise<{
   return { data: allPayments, error: null };
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // INVOICES
-// ═══════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 
 export async function fetchInvoices(): Promise<{
   data: InvoiceRecord[];
@@ -118,7 +126,7 @@ export async function fetchInvoices(): Promise<{
     return { data: [], error: 'Not authenticated' };
   }
 
-  const tenantId = (user.app_metadata as Record<string, unknown>)?.tenant_id as string | undefined;
+  const tenantId = await getTenantId(user.id);
 
   // Get family_account_id via office_desk.users
   const { data: officeUser } = await supabase
@@ -135,7 +143,6 @@ export async function fetchInvoices(): Promise<{
     .from('office_desk.invoices')
     .select('id, invoice_number, description, amount, currency, status, due_date, created_at')
     .eq('family_account_id', officeUser.family_account_id)
-    .eq('tenant_id', tenantId ?? '')
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -156,9 +163,9 @@ export async function fetchInvoices(): Promise<{
   return { data: invoices, error: null };
 }
 
-// ═══════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 // PAYMENTS DASHBOARD SUMMARY
-// ═══════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════
 
 export interface PaymentsSummary {
   totalPaid: number;

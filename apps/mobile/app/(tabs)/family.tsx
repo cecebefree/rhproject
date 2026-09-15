@@ -74,7 +74,7 @@ export default function FamilyScreen() {
                   <TouchableOpacity
                     key={inv.id}
                     style={styles.ledgerRow}
-                    onPress={() => router.push(`/invoice-detail?id=${inv.id}`)}
+                    onPress={() => router.push(`/(tabs)/invoice-detail?id=${inv.id}`)}
                   >
                     <Text style={styles.ledgerLabel}>{inv.description || 'Invoice'}</Text>
                     <Text style={styles.ledgerValue}>

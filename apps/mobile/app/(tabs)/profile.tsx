@@ -22,6 +22,7 @@ import {
   getCurrentUser,
   updateStudentProfile,
 } from '../../src/lib/profileClient';
+import { fetchGroupConversations, type GroupConversation } from '../../src/lib/groupChatClient';
 import { colors } from '../../src/theme/colors';
 import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
@@ -70,6 +71,7 @@ export default function ProfileScreen() {
 
   // Shared
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [groups, setGroups] = useState<GroupConversation[]>([]);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -87,11 +89,12 @@ export default function ProfileScreen() {
 
     // 2. Load role-specific data
     if (userRole === 'student') {
-      const [profileResult, classesResult, regResult, payResult] = await Promise.all([
+      const [profileResult, classesResult, regResult, payResult, groupsResult] = await Promise.all([
         fetchStudentProfile(),
         fetchEnrolledClasses(),
         fetchRegistrationStatus(),
         fetchPaymentHistory(),
+        fetchGroupConversations(),
       ]);
 
       if (profileResult.error) {
@@ -104,6 +107,7 @@ export default function ProfileScreen() {
       setEnrolledClasses(classesResult.data);
       setRegistration(regResult.data);
       setPayments(payResult.data);
+      setGroups(groupsResult);
     } else if (userRole === 'adult') {
       const [profileResult, invoicesResult, payResult] = await Promise.all([
         fetchAdultProfile(),
@@ -147,7 +151,7 @@ export default function ProfileScreen() {
 
   const handleClassPress = useCallback(
     (classId: string) => {
-      router.push(`/class-detail?classId=${classId}`);
+      router.push(`/(tabs)/class-detail?classId=${classId}`);
     },
     [router]
   );
@@ -238,8 +242,10 @@ export default function ProfileScreen() {
           enrolledClasses={enrolledClasses}
           registration={registration}
           payments={payments}
+          groups={groups}
           onClassPress={handleClassPress}
           onPaymentPress={handlePaymentPress}
+          onGroupPress={(groupId) => router.push(`/(tabs)/group-chat?groupId=${groupId}`)}
         />
       )}
 
@@ -314,15 +320,19 @@ function StudentSections({
   enrolledClasses,
   registration,
   payments,
+  groups,
   onClassPress,
   onPaymentPress,
+  onGroupPress,
 }: {
   profile: StudentProfile;
   enrolledClasses: EnrolledClass[];
   registration: RegistrationRecord | null;
   payments: PaymentRecord[];
+  groups: GroupConversation[];
   onClassPress: (classId: string) => void;
   onPaymentPress: (payment: PaymentRecord) => void;
+  onGroupPress: (groupId: string) => void;
 }) {
   return (
     <>
@@ -429,7 +439,16 @@ function StudentSections({
           <Text style={styles.sectionCardTitle}>Groups</Text>
         </View>
         <View style={styles.sectionCardBody}>
-          <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>Groups</Text>
+          {groups.length > 0 ? (
+            groups.map((g) => (
+              <TouchableOpacity key={g.id} style={styles.infoRow} onPress={() => router.push(`/group-chat?groupId=${g.id}`)}>
+                <Text style={styles.infoLabel}>{g.name || 'Unnamed Group'}</Text>
+                <Text style={{ color: colors.charcoalLight, fontSize: 16 }}>{'›'}</Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ color: colors.charcoalLight, fontSize: 14 }}>No groups joined</Text>
+          )}
         </View>
       </View>
 

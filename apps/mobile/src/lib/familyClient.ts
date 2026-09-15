@@ -69,15 +69,27 @@ export async function fetchFamilyChildren(): Promise<ChildProfile[]> {
   }) || [];
 }
 
+async function getTenantId(userId: string): Promise<string | null> {
+  const { data: profile } = await supabase
+    .schema('public').from('profiles')
+    .select('tenant_id')
+    .eq('id', userId)
+    .single();
+  return profile?.tenant_id ?? null;
+}
+
 export async function fetchFamilyInvoices(): Promise<InvoiceRecord[]> {
   const { data: { user }, error: userErr } = await supabase.auth.getUser();
   if (userErr || !user) throw new Error('Not authenticated');
+
+  const tenantId = await getTenantId(user.id);
+  if (!tenantId) return [];
 
   // Get family account
   const { data: fa, error: faErr } = await supabase
     .from('office_desk.family_accounts')
     .select('id')
-    .eq('tenant_id', user.app_metadata?.tenant_id ?? '')
+    .eq('tenant_id', tenantId)
     .limit(1)
     .single();
 
@@ -99,11 +111,14 @@ export async function fetchFamilyPayments(): Promise<PaymentRecord[]> {
   const { data: { user }, error: userErr } = await supabase.auth.getUser();
   if (userErr || !user) throw new Error('Not authenticated');
 
+  const tenantId = await getTenantId(user.id);
+  if (!tenantId) return [];
+
   // Get family account
   const { data: fa, error: faErr } = await supabase
     .from('office_desk.family_accounts')
     .select('id')
-    .eq('tenant_id', user.app_metadata?.tenant_id ?? '')
+    .eq('tenant_id', tenantId)
     .limit(1)
     .single();
 

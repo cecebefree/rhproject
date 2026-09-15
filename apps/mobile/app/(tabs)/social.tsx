@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { EmptyState } from '../../src/components/EmptyState';
 import { LoadingState } from '../../src/components/LoadingState';
 import { GroupCard } from '../../src/components/GroupCard';
@@ -14,6 +15,7 @@ import { spacing } from '../../src/theme/spacing';
 import { typography } from '../../src/theme/typography';
 
 export default function SocialScreen() {
+  const router = useRouter();
   const [groups, setGroups] = useState<SocialGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,11 @@ export default function SocialScreen() {
 
       {groups.length > 0 ? (
         groups.map((group) => (
-          <TouchableOpacity key={group.id} style={styles.groupTouchable}>
+          <TouchableOpacity
+            key={group.id}
+            style={styles.groupTouchable}
+            onPress={() => router.push(`/(tabs)/group-chat?groupId=${group.id}&groupName=${encodeURIComponent(group.name)}`)}
+          >
             <GroupCard
               name={group.name}
               category={group.category as any}

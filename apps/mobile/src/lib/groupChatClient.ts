@@ -1,5 +1,6 @@
 // groupChatClient.ts — Fetch group chat + group info data
 // Tables: public.group_conversations, public.group_messages
+// Per DEFECT-001: Broadcast-only realtime; no Postgres Changes
 
 import { supabase } from '../services/supabase';
 
@@ -38,8 +39,15 @@ export async function fetchGroupConversations(): Promise<GroupConversation[]> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
 
-  const tenantId = user.app_metadata?.tenant_id ?? '';
-  if (!tenantId) throw new Error('No tenant associated with this account');
+  // Tenant ID from JWT claims (per RLS policy path, not app_metadata)
+  const { data: profile } = await supabase
+    .schema('public').from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile || !profile.tenant_id) throw new Error('No tenant associated with this account');
+  const tenantId = profile.tenant_id;
 
   const { data, error } = await supabase
     .schema('public').from('group_conversations')
@@ -86,6 +94,48 @@ export async function fetchGroupMessages(groupId: string): Promise<GroupMessage[
     }),
     isOwn: row.sender_id === user.id,
   }));
+}
+
+export async function sendMessage(groupId: string, content: string): Promise<GroupMessage> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
+  // Fetch sender name from profile
+  const { data: profile } = await supabase
+    .schema('public').from('profiles')
+    .select('name')
+    .eq('id', user.id)
+    .single();
+
+  const senderName = profile?.name ?? 'Unknown';
+
+  const { data, error } = await supabase
+    .schema('public').from('group_messages')
+    .insert({
+      group_id: groupId,
+      sender_id: user.id,
+      sender_name: senderName,
+      sender_handle: user.email ?? '',
+      content: content,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return {
+    id: data.id,
+    senderName: data.sender_name ?? 'Unknown',
+    senderHandle: data.sender_handle ?? '',
+    content: data.content ?? '',
+    timestamp: new Date(data.created_at).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    isOwn: data.sender_id === user.id,
+  };
 }
 
 export async function fetchGroupInfo(groupId: string): Promise<GroupInfo> {
